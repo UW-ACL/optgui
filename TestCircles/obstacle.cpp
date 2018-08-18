@@ -1,20 +1,19 @@
 #include "obstacle.h"
 
 
-obstacle::obstacle(QGraphicsItem *parent)
+Obstacle::Obstacle(QGraphicsScene *parent, qreal rad)
 {
-    this->setFlags(QGraphicsItem::ItemIsMovable);
-    this->setFlag(QGraphicsItem::ItemIsSelectable);
-    this->radius = 50;
+    this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsScenePositionChanges);
+    this->radius = rad;
     this->setSelected(false);
 }
 
-QRectF obstacle::boundingRect() const
+QRectF Obstacle::boundingRect() const
 {
-    return QRectF(QPointF(0, 0), QSizeF(this->radius * 2, this->radius * 2));
+    return QRectF(0, 0, this->radius * 2, this->radius * 2);
 }
 
-void obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     QRectF rec = this->boundingRect();
     QBrush brush(Qt::gray);
@@ -30,4 +29,23 @@ void obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setPen(pen);
 
     painter->drawEllipse(rec);
+}
+
+QVariant Obstacle::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == ItemPositionChange && scene()) {
+        // value is the new position.
+        QPointF newPos = value.toPointF();
+        QRectF rect = scene()->sceneRect();
+        rect.setBottom(rect.bottom()  - radius*2);
+        rect.setRight(rect.right() - radius*2);
+
+        if (!rect.contains(newPos)) {
+            // Keep the item inside the scene rect.
+            newPos.setX(qMin(rect.right(), qMax(newPos.x(), rect.left())));
+            newPos.setY(qMin(rect.bottom(), qMax(newPos.y(), rect.top())));
+            return newPos;
+        }
+    }
+    return QGraphicsItem::itemChange(change, value);
 }

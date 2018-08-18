@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-07-06T14:18:23
+# Project created by QtCreator 2018-08-12T18:57:24
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = TestCircles
+TARGET = InterfacePrototype
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -25,20 +25,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
-    obstacle.cpp \
+        dialog.cpp \
     view.cpp \
+    obstacle.cpp \
     canvas.cpp \
+    menubutton.cpp \
     controlbox.cpp \
-    createbutton.cpp
+    controlpanel.cpp \
+    circlebutton.cpp
 
 HEADERS += \
-        mainwindow.h \
-    obstacle.h \
+        dialog.h \
     view.h \
+    obstacle.h \
     canvas.h \
+    menubutton.h \
     controlbox.h \
-    createbutton.h
+    controlpanel.h \
+    circlebutton.h
 
 FORMS += \
-        mainwindow.ui
+        dialog.ui

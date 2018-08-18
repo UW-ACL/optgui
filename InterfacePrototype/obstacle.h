@@ -1,23 +1,21 @@
 #ifndef OBSTACLE_H
 #define OBSTACLE_H
 
-#include <QPainter>
 #include <QGraphicsItem>
-#include <QGraphicsScene>
+#include <QPainter>
 
 class Obstacle : public QGraphicsItem
 {
+    Q_GADGET
+
 public:
-    Obstacle(QGraphicsScene *parent = nullptr, qreal rad=50);
+    Obstacle(QGraphicsItem *parent = 0, qreal rad = 25);
 
     QRectF boundingRect() const;
     void paint(QPainter * painter,
                const QStyleOptionGraphicsItem * option,
                QWidget * widget);
     qreal radius;
-private:
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-
 };
 
 #endif // OBSTACLE_H

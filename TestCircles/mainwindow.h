@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include "controlbox.h"
+#include "view.h"
+#include "canvas.h"
 
 namespace Ui {
 class MainWindow;
@@ -15,7 +18,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    QGraphicsScene *canvas;
+    Canvas *canvas;
+    View *view;
+    ControlBox *controls;
 
 private:
     Ui::MainWindow *ui;
