@@ -6,7 +6,7 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     : QGraphicsView(scene, parent)
 {
     this->setAcceptDrops(true);
-
+    this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     this->setRenderHint(QPainter::Antialiasing);
     this->setDragMode(QGraphicsView::ScrollHandDrag);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -24,8 +24,10 @@ View::View(QGraphicsScene *scene, QWidget * parent)
 
     this->controls->hide();
 
+    this->setZoom();
     connect(this->openButton, SIGNAL(clicked()), this, SLOT(openMenu()));
-    connect(this->controls->closeButton, SIGNAL(clicked()), this, SLOT(closeMenu()), Qt::DirectConnection );
+    connect(this->controls->closeButton, SIGNAL(clicked()), this, SLOT(closeMenu()), Qt::DirectConnection);
+    connect(this->controls->controlPanel->zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setZoom()));
 }
 
 void View::openMenu() {
@@ -37,6 +39,14 @@ void View::openMenu() {
 void View::closeMenu() {
     this->controls->hide();
     this->openButton->show();
+    repaint();
+}
+
+void View::setZoom() {
+    this->scaleFactor = qreal(this->controls->controlPanel->zoomSlider->value() - 1) / 5;
+    this->resetMatrix();
+    this->scale(scaleFactor, scaleFactor);
+
     repaint();
 }
 
@@ -85,12 +95,14 @@ void View::dropEvent(QDropEvent *event)
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
 
         QPoint offset;
-        dataStream >> offset;
+        qreal size;
+        dataStream >> offset >> size;
 
         event->acceptProposedAction();
-        qDebug() << "drop event";
-        Obstacle *circle = new Obstacle();
+        this->scene()->clearSelection();
+        Obstacle *circle = new Obstacle(nullptr, size);
         this->scene()->addItem(circle);
-        circle->setPos(event->pos() - offset);
+        circle->setPos(mapToScene(event->pos()) - offset);
+
     }
 }

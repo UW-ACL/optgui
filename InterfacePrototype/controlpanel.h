@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <circlebutton.h>
+#include <zoomslider.h>
 
 class ControlPanel : public QWidget
 {
@@ -11,6 +12,7 @@ class ControlPanel : public QWidget
 public:
     explicit ControlPanel(QWidget *parent = nullptr);
     CircleButton *circleButton;
+    ZoomSlider *zoomSlider;
 };
 
 #endif // CONTROLPANEL_H

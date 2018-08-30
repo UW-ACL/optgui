@@ -20,9 +20,11 @@ class View : public QGraphicsView
 public:
     View(QGraphicsScene *scene, QWidget *parent = nullptr);
     void resizeEvent(QResizeEvent *event);
+    qreal scaleFactor;
 private slots:
     void openMenu();
     void closeMenu();
+    void setZoom();
 private:
     QRectF maxRect();
     MenuButton *openButton;

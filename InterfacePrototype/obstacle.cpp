@@ -1,11 +1,15 @@
 #include "obstacle.h"
 
+#include <QDebug>
+#include <QGraphicsView>
+
 Obstacle::Obstacle(QGraphicsItem *parent, qreal rad)
     : QGraphicsItem(parent)
 {
     this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsScenePositionChanges);
     this->radius = rad;
-    this->setSelected(false);
+    this->resizeHandle = new ResizeHandle(this);
+    this->setSelected(true);
 }
 
 QRectF Obstacle::boundingRect() const
@@ -15,18 +19,41 @@ QRectF Obstacle::boundingRect() const
 
 void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QRectF rec = this->boundingRect();
     QBrush brush(Qt::gray);
     QPen pen(Qt::black);
 
     if(this->isSelected()) {
-        pen.setWidth(4);
+        this->resizeHandle->setPos(0, this->radius);
+        this->resizeHandle->show();
+        pen.setWidth(3);
     } else {
-        pen.setWidth(2);
+        this->resizeHandle->hide();
+        pen.setWidth(1);
     }
 
     painter->setBrush(brush);
     painter->setPen(pen);
 
-    painter->drawEllipse(rec);
+    painter->drawEllipse(1, 1, this->radius*2-2, this->radius*2-2);
+
+    //qDebug() << pos().x() << pos().y();
+}
+
+QVariant Obstacle::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    if (change == ItemPositionChange && scene()) {
+        // value is the new position.
+        QPointF newPos = value.toPointF();
+        QRectF itemRect = this->boundingRect();
+        itemRect.moveTopLeft(newPos);
+        QRectF rect = scene()->sceneRect();
+
+        if (!rect.contains(itemRect)) {
+            //qDebug() << "item out of bounds";
+            this->scene()->setSceneRect((this->scene()->sceneRect()).united(this->scene()->itemsBoundingRect()));
+            this->scene()->update();
+            this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
+        }
+    }
+    return QGraphicsItem::itemChange(change, value);
 }

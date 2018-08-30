@@ -26,7 +26,7 @@ void CircleButton::mousePressEvent(QMouseEvent *event)
     QPoint hotSpot = event->pos();
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-    dataStream << QPoint(hotSpot);
+    dataStream << QPoint(hotSpot) << qreal(25);
 
     QMimeData *mimeData = new QMimeData;
     mimeData->setData("circle-obstacle", itemData);

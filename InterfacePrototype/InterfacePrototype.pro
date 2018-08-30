@@ -32,7 +32,9 @@ SOURCES += \
     menubutton.cpp \
     controlbox.cpp \
     controlpanel.cpp \
-    circlebutton.cpp
+    circlebutton.cpp \
+    zoomslider.cpp \
+    resizehandle.cpp
 
 HEADERS += \
         dialog.h \
@@ -42,7 +44,9 @@ HEADERS += \
     menubutton.h \
     controlbox.h \
     controlpanel.h \
-    circlebutton.h
+    circlebutton.h \
+    zoomslider.h \
+    resizehandle.h
 
 FORMS += \
         dialog.ui
