@@ -35,8 +35,7 @@ void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setPen(pen);
 
     painter->drawEllipse(1, 1, this->radius*2-2, this->radius*2-2);
-
-    //qDebug() << pos().x() << pos().y();
+    // painter->drawText(0, 0, QString::number(this->pos().x())+ ", " + QString::number(this->pos().y()));
 }
 
 QVariant Obstacle::itemChange(GraphicsItemChange change, const QVariant &value)

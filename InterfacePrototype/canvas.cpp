@@ -44,8 +44,13 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
         gridWidth /= 2;
     }
 
-    painter->drawRect(bounding);
-    //painter->drawRect(itemsBoundingRect());
+    //    painter->drawRect(itemsBoundingRect());
+    //    painter->setPen(QPen(Qt::red));
+    //    painter->drawRect(bounding);
+    painter->drawText(1, -2, "0");
+    //painter->drawText(0, 100, "+100");
+    //painter->drawText(0, -100, "-100");
+
     //qDebug() << itemsBoundingRect().x() << itemsBoundingRect().y();
 }
 
@@ -53,10 +58,28 @@ void Canvas::drawGrids(QPainter *painter, QPen pen, qreal width, QRectF bounding
     pen.setWidth(width);
     painter->setPen(pen);
 
-    for (int i = bounding.left(); i < bounding.right(); i += segment) {
-        painter->drawLine(i, bounding.top(), i, bounding.bottom());
+    qreal top = (int)((bounding.top() - segment) / segment) * segment;
+    qreal bot = (int)((bounding.bottom() + segment) / segment) * segment;
+    qreal left = (int)((bounding.left() - segment) / segment) * segment;
+    qreal right = (int)((bounding.right() + segment) / segment) * segment;
+
+    // Right
+    for (int i = 0; i <= bounding.right() + segment; i += segment) {
+        painter->drawLine(i, top, i, bot);
     }
-    for (int i = bounding.top(); i < bounding.bottom(); i += segment) {
-        painter->drawLine(bounding.left(), i, bounding.right(), i);
+
+    // Left
+    for (int i = 0; i >= bounding.left() - segment; i -= segment) {
+        painter->drawLine(i, top, i, bot);
+    }
+
+    // Bottom
+    for (int i = 0; i <= bounding.bottom() + segment; i += segment) {
+        painter->drawLine(left, i, right, i);
+    }
+
+    // Top
+    for (int i = 0; i >= bounding.top() - segment; i -= segment) {
+        painter->drawLine(left, i, right, i);
     }
 }

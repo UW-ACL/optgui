@@ -26,7 +26,6 @@ private slots:
     void closeMenu();
     void setZoom();
 private:
-    QRectF maxRect();
     MenuButton *openButton;
     ControlBox *controls;
 protected:
