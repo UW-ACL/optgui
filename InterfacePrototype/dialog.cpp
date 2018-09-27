@@ -17,11 +17,6 @@ Dialog::Dialog(QWidget *parent)
     this->canvas = new Canvas(this);
     this->view = new View(canvas, this);
     this->layout()->addWidget(view);
-    //this->canvas->setSceneRect(this->view->rect());
-
-    // qDebug() << "view rect" << this->view->width() << this->view->height();
-
-    // this->canvas->addItem(new Obstacle());
 }
 
 Dialog::~Dialog()

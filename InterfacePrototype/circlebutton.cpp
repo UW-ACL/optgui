@@ -3,7 +3,12 @@
 CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
 {
     generateIcon();
+
     this->setPixmap(this->buttonIcon);
+    this->setLineWidth(3);
+    this->setFrameShape(QFrame::Panel);
+    this->setFrameShadow(QFrame::Raised);
+    this->clicked = false;
 }
 
 void CircleButton::generateIcon() {
@@ -21,8 +26,27 @@ void CircleButton::generateIcon() {
     this->buttonIcon = pix;
 }
 
+/*
 void CircleButton::mousePressEvent(QMouseEvent *event)
 {
+    if (this->clicked) {
+        this->setFrameShadow(QFrame::Sunken);
+    } else {
+        this->setFrameShadow(QFrame::Raised);
+    }
+    this->clicked = !this->clicked;
+}
+*/
+
+void CircleButton::mousePressEvent(QMouseEvent *event)
+{
+    if (this->clicked) {
+        this->setFrameShadow(QFrame::Sunken);
+    } else {
+        this->setFrameShadow(QFrame::Raised);
+    }
+    this->clicked = !this->clicked;
+
     QPoint hotSpot = event->pos();
     QByteArray itemData;
     QDataStream dataStream(&itemData, QIODevice::WriteOnly);

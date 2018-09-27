@@ -26,9 +26,6 @@ ControlBox::ControlBox(QWidget *parent, Qt::WindowFlags flags)
 
     this->controlPanel = new ControlPanel(this);
     this->layout()->addWidget(this->controlPanel);
-    this->layout()->setAlignment(this->controlPanel, Qt::AlignTop );
-
-
 }
 
 

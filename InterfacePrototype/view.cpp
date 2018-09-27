@@ -6,7 +6,7 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     : QGraphicsView(scene, parent)
 {
     this->setAcceptDrops(true);
-    this->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     this->setRenderHint(QPainter::Antialiasing);
     this->setDragMode(QGraphicsView::ScrollHandDrag);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -25,6 +25,7 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     this->controls->hide();
 
     this->setZoom();
+
     connect(this->openButton, SIGNAL(clicked()), this, SLOT(openMenu()));
     connect(this->controls->closeButton, SIGNAL(clicked()), this, SLOT(closeMenu()), Qt::DirectConnection);
     connect(this->controls->controlPanel->zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setZoom()));
@@ -52,26 +53,15 @@ void View::setZoom() {
 
 void View::resizeEvent(QResizeEvent *event)
 {
-    this->scene()->setSceneRect(maxRect());
+    QGraphicsView::resizeEvent(event);
+
+    QRectF oldView = this->viewport()->rect();
+    oldView.translate(-oldView.center().x(), -oldView.center().y());
+
+    this->scene()->setSceneRect((this->scene()->sceneRect()).united(oldView));
     this->setSceneRect(this->scene()->sceneRect());
 }
 
-QRectF View::maxRect() {
-    qreal viewX = this->rect().width();
-    qreal viewY = this->rect().height();
-    qreal sceneX = this->scene()->sceneRect().width();
-    qreal sceneY = this->scene()->sceneRect().height();
-
-    if (viewX > sceneX && viewY > sceneY) {
-        return QRectF(0, 0, viewX, viewY);
-    } else if (viewX > sceneX) {
-        return QRectF(0, 0, viewX, sceneY);
-    } else if (viewY > sceneY) {
-        return QRectF(0, 0, sceneX, viewY);
-    } else {
-        return this->scene()->sceneRect();
-    }
-}
 
 void View::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -103,6 +93,8 @@ void View::dropEvent(QDropEvent *event)
         Obstacle *circle = new Obstacle(nullptr, size);
         this->scene()->addItem(circle);
         circle->setPos(mapToScene(event->pos()) - offset);
-
     }
 }
+
+
+

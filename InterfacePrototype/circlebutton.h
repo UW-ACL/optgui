@@ -16,6 +16,7 @@ public:
     void mousePressEvent(QMouseEvent *event);
 private:
     QPixmap buttonIcon;
+    bool clicked;
 
     void generateIcon();
 };
