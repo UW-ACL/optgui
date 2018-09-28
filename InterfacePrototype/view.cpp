@@ -5,7 +5,6 @@
 View::View(QGraphicsScene *scene, QWidget * parent)
     : QGraphicsView(scene, parent)
 {
-    this->setAcceptDrops(true);
     this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     this->setRenderHint(QPainter::Antialiasing);
     this->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -23,12 +22,15 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     this->layout()->setAlignment(this->openButton, Qt::AlignRight);
 
     this->controls->hide();
-
     this->setZoom();
+    this->placeCircle = false;
 
     connect(this->openButton, SIGNAL(clicked()), this, SLOT(openMenu()));
     connect(this->controls->closeButton, SIGNAL(clicked()), this, SLOT(closeMenu()), Qt::DirectConnection);
     connect(this->controls->controlPanel->zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(setZoom()));
+
+    connect(this->controls->controlPanel->circleButton, SIGNAL(circleClicked()), this, SLOT(circleClicked()));
+    connect(this, SIGNAL(circlePlaced()), this->controls->controlPanel->circleButton, SLOT(circlePlaced()));
 }
 
 void View::openMenu() {
@@ -62,38 +64,24 @@ void View::resizeEvent(QResizeEvent *event)
     this->setSceneRect(this->scene()->sceneRect());
 }
 
-
-void View::dragEnterEvent(QDragEnterEvent *event)
+void View::mousePressEvent(QMouseEvent *event)
 {
-    if (event->mimeData()->hasFormat("circle-obstacle")) {
-        event->acceptProposedAction();
-    }
-}
-
-void View::dragMoveEvent(QDragMoveEvent *event)
-{
-    if (event->mimeData()->hasFormat("circle-obstacle")) {
-        event->acceptProposedAction();
-    }
-}
-
-void View::dropEvent(QDropEvent *event)
-{
-    if (event->mimeData()->hasFormat("circle-obstacle")) {
-        const QMimeData *mime = event->mimeData();
-        QByteArray itemData = mime->data("circle-obstacle");
-        QDataStream dataStream(&itemData, QIODevice::ReadOnly);
-
-        QPoint offset;
-        qreal size;
-        dataStream >> offset >> size;
-
-        event->acceptProposedAction();
-        this->scene()->clearSelection();
+    if (this->placeCircle) {
+        qreal size = 25;
         Obstacle *circle = new Obstacle(nullptr, size);
         this->scene()->addItem(circle);
-        circle->setPos(mapToScene(event->pos()) - offset);
+        qreal xPos = event->pos().x() - size;
+        qreal yPos = event->pos().y() - size;
+        circle->setPos(this->mapToScene(QPoint(xPos, yPos)));
+        emit circlePlaced();
+        this->placeCircle = false;
     }
+
+    QGraphicsView::mousePressEvent(event);
+}
+
+void View::circleClicked() {
+    this->placeCircle = true;
 }
 
 

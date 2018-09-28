@@ -48,7 +48,6 @@ QVariant Obstacle::itemChange(GraphicsItemChange change, const QVariant &value)
         QRectF rect = scene()->sceneRect();
 
         if (!rect.contains(itemRect)) {
-            //qDebug() << "item out of bounds";
             this->scene()->setSceneRect((this->scene()->sceneRect()).united(this->scene()->itemsBoundingRect()));
             this->scene()->update();
             this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());

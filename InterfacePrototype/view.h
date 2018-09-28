@@ -21,17 +21,19 @@ public:
     View(QGraphicsScene *scene, QWidget *parent = nullptr);
     void resizeEvent(QResizeEvent *event);
     qreal scaleFactor;
+signals:
+    void circlePlaced();
 private slots:
+    void circleClicked();
     void openMenu();
     void closeMenu();
     void setZoom();
 private:
     MenuButton *openButton;
     ControlBox *controls;
+    bool placeCircle;
 protected:
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dropEvent(QDropEvent *event);
+    void mousePressEvent(QMouseEvent *event);
 };
 
 #endif // VIEW_H

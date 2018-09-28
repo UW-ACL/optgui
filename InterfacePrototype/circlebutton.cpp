@@ -26,38 +26,20 @@ void CircleButton::generateIcon() {
     this->buttonIcon = pix;
 }
 
-/*
 void CircleButton::mousePressEvent(QMouseEvent *event)
 {
     if (this->clicked) {
-        this->setFrameShadow(QFrame::Sunken);
-    } else {
         this->setFrameShadow(QFrame::Raised);
+    } else {
+        this->setFrameShadow(QFrame::Sunken);
+        emit circleClicked();
     }
     this->clicked = !this->clicked;
+
+    QLabel::mousePressEvent(event);
 }
-*/
 
-void CircleButton::mousePressEvent(QMouseEvent *event)
-{
-    if (this->clicked) {
-        this->setFrameShadow(QFrame::Sunken);
-    } else {
-        this->setFrameShadow(QFrame::Raised);
-    }
-    this->clicked = !this->clicked;
-
-    QPoint hotSpot = event->pos();
-    QByteArray itemData;
-    QDataStream dataStream(&itemData, QIODevice::WriteOnly);
-    dataStream << QPoint(hotSpot) << qreal(25);
-
-    QMimeData *mimeData = new QMimeData;
-    mimeData->setData("circle-obstacle", itemData);
-
-    QDrag* drag = new QDrag(this);
-    drag->setMimeData(mimeData);
-    drag->setHotSpot(hotSpot);
-    drag->setPixmap(this->buttonIcon);
-    drag->exec();
+void CircleButton::circlePlaced() {
+    this->clicked = false;
+    this->setFrameShadow(QFrame::Raised);
 }
