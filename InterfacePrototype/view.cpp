@@ -10,6 +10,7 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     this->setDragMode(QGraphicsView::ScrollHandDrag);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
     this->openButton = new MenuButton(this, Qt::LeftArrow);
     this->controls = new ControlBox(this);
@@ -70,9 +71,12 @@ void View::mousePressEvent(QMouseEvent *event)
         qreal size = 25;
         Obstacle *circle = new Obstacle(nullptr, size);
         this->scene()->addItem(circle);
+        /*
         qreal xPos = event->pos().x() - size;
         qreal yPos = event->pos().y() - size;
         circle->setPos(this->mapToScene(QPoint(xPos, yPos)));
+        */
+        circle->setPos(this->mapToScene(event->pos()));
         emit circlePlaced();
         this->placeCircle = false;
     }
