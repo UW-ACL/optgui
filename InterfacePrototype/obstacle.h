@@ -4,14 +4,16 @@ class ResizeHandle;
 #define OBSTACLE_H
 
 #include <QGraphicsItem>
+#include <QGraphicsEllipseItem>
 #include <QPainter>
 #include <QGraphicsScene>
-#include <resizehandle.h>
+#include "resizehandle.h"
+#include <QGraphicsView>
 
-class Obstacle : public QGraphicsItem
+class Obstacle : public QGraphicsEllipseItem
 {
 public:
-    Obstacle(QGraphicsItem *parent = 0, qreal rad = 25);
+    Obstacle(qreal rad = 25, QGraphicsItem *parent = 0);
 
     QRectF boundingRect() const;
     void paint(QPainter * painter,

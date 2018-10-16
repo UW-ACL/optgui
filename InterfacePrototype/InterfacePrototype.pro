@@ -34,7 +34,14 @@ SOURCES += \
     controlpanel.cpp \
     circlebutton.cpp \
     zoomslider.cpp \
-    resizehandle.cpp
+    resizehandle.cpp \
+    eraserbutton.cpp \
+    polyobstacle.cpp \
+    polydot.cpp \
+    polybutton.cpp \
+    polyhandle.cpp \
+    linebutton.cpp \
+    lineobstacle.cpp
 
 HEADERS += \
         dialog.h \
@@ -46,7 +53,17 @@ HEADERS += \
     controlpanel.h \
     circlebutton.h \
     zoomslider.h \
-    resizehandle.h
+    resizehandle.h \
+    eraserbutton.h \
+    polyobstacle.h \
+    polydot.h \
+    polybutton.h \
+    polyhandle.h \
+    linebutton.h \
+    lineobstacle.h
 
 FORMS += \
         dialog.ui
+
+RESOURCES += \
+    resources.qrc

@@ -1,10 +1,7 @@
 #include "obstacle.h"
 
-#include <QDebug>
-#include <QGraphicsView>
-
-Obstacle::Obstacle(QGraphicsItem *parent, qreal rad)
-    : QGraphicsItem(parent)
+Obstacle::Obstacle(qreal rad, QGraphicsItem *parent)
+    : QGraphicsEllipseItem(parent)
 {
     this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsScenePositionChanges);
     this->radius = rad;
@@ -19,7 +16,9 @@ QRectF Obstacle::boundingRect() const
 
 void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QBrush brush(Qt::gray);
+    QColor fill = Qt::gray;
+    fill.setAlpha(200);
+    QBrush brush(fill);
     QPen pen(Qt::black);
 
     if(this->isSelected()) {
@@ -34,20 +33,24 @@ void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setBrush(brush);
     painter->setPen(pen);
 
+    this->setRect(this->boundingRect());
     painter->drawEllipse(-this->radius+1, -this->radius+1, this->radius*2-2, this->radius*2-2);
+    this->scene()->update();
+//    painter->setBrush(Qt::transparent);
+//    painter->setPen(QPen(Qt::red));
+//    painter->drawRect(this->boundingRect());
 }
 
 QVariant Obstacle::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == ItemPositionChange && scene()) {
-        // value is the new position.
-        QPointF newPos = value.toPointF();
-        QRectF itemRect = this->boundingRect();
-        itemRect.moveTopLeft(newPos);
+        // value is the new position
+        // QPointF newPos = value.toPointF();
+        QRectF itemRect = this->sceneBoundingRect();
         QRectF rect = scene()->sceneRect();
 
         if (!rect.contains(itemRect)) {
-            this->scene()->setSceneRect((this->scene()->sceneRect()).united(this->scene()->itemsBoundingRect()));
+            this->scene()->setSceneRect((this->scene()->sceneRect()).united(itemRect));
             this->scene()->update();
             this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
         }

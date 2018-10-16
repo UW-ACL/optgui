@@ -1,24 +1,25 @@
-#ifndef CIRCLEBUTTON_H
-#define CIRCLEBUTTON_H
+#ifndef LINEBUTTON_H
+#define LINEBUTTON_H
 
 #include <QLabel>
 #include <QPixmap>
 #include <QPainter>
 #include <QMouseEvent>
 
-class CircleButton : public QLabel
+class LineButton : public QLabel
 {
     Q_OBJECT
 
 public:
-    explicit CircleButton(QWidget *parent = nullptr);
+    explicit LineButton(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event);
 public slots:
+    void linePlaced();
     void buttonOn();
     void buttonOff();
 signals:
-    void circleOn();
-    void circleOff();
+    void lineOn();
+    void lineOff();
 private:
     QPixmap *buttonIcon;
     bool clicked;
@@ -26,4 +27,4 @@ private:
     void generateIcon();
 };
 
-#endif // CIRCLEBUTTON_H
+#endif // LINEBUTTON_H

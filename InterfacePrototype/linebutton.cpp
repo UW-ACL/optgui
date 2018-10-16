@@ -1,6 +1,7 @@
-#include "circlebutton.h"
+#include "linebutton.h"
 
-CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
+
+LineButton::LineButton(QWidget *parent) : QLabel(parent)
 {
     generateIcon();
 
@@ -11,22 +12,24 @@ CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
     this->clicked = false;
 }
 
-void CircleButton::generateIcon() {
+void LineButton::generateIcon() {
     QPixmap *pix = new QPixmap(50, 50);
     pix->fill(Qt::transparent);
     QPainter painter(pix);
     painter.setRenderHint(QPainter::Antialiasing);
     QPen pen(Qt::black);
-    pen.setWidth(2);
+    pen.setWidth(3);
     painter.setPen(pen);
     painter.setBrush(Qt::gray);
-    painter.drawEllipse(1, 1, 48, 48);
+
+    painter.drawLine(QPointF(10, 40), QPointF(40, 10));
+
     painter.end();
 
     this->buttonIcon = pix;
 }
 
-void CircleButton::mousePressEvent(QMouseEvent *event)
+void LineButton::mousePressEvent(QMouseEvent *event)
 {
     if (this->clicked) {
         this->buttonOff();
@@ -37,14 +40,18 @@ void CircleButton::mousePressEvent(QMouseEvent *event)
     QLabel::mousePressEvent(event);
 }
 
-void CircleButton::buttonOn() {
+void LineButton::linePlaced() {
+    this->buttonOff();
+}
+
+void LineButton::buttonOn() {
     this->setFrameShadow(QFrame::Sunken);
-    emit circleOn();
+    emit lineOn();
     this->clicked = true;
 }
 
-void CircleButton::buttonOff() {
+void LineButton::buttonOff() {
     this->setFrameShadow(QFrame::Raised);
-    emit circleOff();
+    emit lineOff();
     this->clicked = false;
 }

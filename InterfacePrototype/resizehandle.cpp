@@ -1,18 +1,16 @@
 #include "resizehandle.h"
 
-#include <obstacle.h>
-#include <QDebug>
-
 ResizeHandle::ResizeHandle(Obstacle *parent)
     : QGraphicsItem(parent)
 {
     this->circle = parent;
     this->resize = false;
+    this->radius = 7;
 }
 
 QRectF ResizeHandle::boundingRect() const
 {
-    return QRectF(-5, -5, 10, 10);
+    return QRectF(-this->radius, -this->radius, this->radius*2, this->radius*2);
 }
 
 void ResizeHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -30,7 +28,6 @@ void ResizeHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 void ResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() == Qt::LeftButton) {
-        //qDebug() << mouseEvent->pos().manhattanLength() << circle->boundingRect().center().manhattanLength();
         this->resize = true;
     }
     //QGraphicsItem::mousePressEvent(mouseEvent);
@@ -39,11 +36,11 @@ void ResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 void ResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (resize) {
-        //qDebug() << "resizing" << (qFabs(mouseEvent->pos().x() - circle->pos().x()));
         this->circle->radius = (qFabs(mouseEvent->scenePos().x() - circle->scenePos().x()));
         //this->update();
         //this->circle->update();
-        this->circle->scene()->update();
+        this->scene()->update();
+        //this->circle->scene()->update();
     }
     //QGraphicsItem::mouseMoveEvent(mouseEvent);
 }

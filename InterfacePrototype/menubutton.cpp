@@ -6,5 +6,4 @@ MenuButton::MenuButton(QWidget *parent, Qt::ArrowType arrow)
     this->setArrowType(arrow);
     this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     this->setFixedSize(10, 40);
-    //this->setBaseSize(20, 40);
 }

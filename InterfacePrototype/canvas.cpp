@@ -1,7 +1,5 @@
 #include "canvas.h"
 
-#include <qDebug>
-
 Canvas::Canvas(QObject *parent)
     : QGraphicsScene(parent)
 {
@@ -44,9 +42,9 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
         gridWidth /= 2;
     }
 
-    //    painter->drawRect(itemsBoundingRect());
-    //    painter->setPen(QPen(Qt::red));
-    //    painter->drawRect(bounding);
+//        painter->drawRect(itemsBoundingRect());
+//        painter->setPen(QPen(Qt::red));
+//        painter->drawRect(bounding);
     painter->drawText(1, -2, "0");
     //painter->drawText(0, 100, "+100");
     //painter->drawText(0, -100, "-100");

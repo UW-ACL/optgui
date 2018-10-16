@@ -4,9 +4,10 @@ class Obstacle;
 #define RESIZEHANDLE_H
 
 #include <QGraphicsItem>
+#include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
-#include <obstacle.h>
+#include "obstacle.h"
 #include <QtMath>
 
 class ResizeHandle : public QGraphicsItem
@@ -24,6 +25,7 @@ protected:
 private:
     bool resize;
     Obstacle *circle;
+    qreal radius;
 };
 
 #endif // RESIZEHANDLE_H
