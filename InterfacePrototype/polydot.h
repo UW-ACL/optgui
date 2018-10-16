@@ -4,9 +4,9 @@
 #include <QPainter>
 #include <QRectF>
 #include <QPointF>
-#include <QGraphicsItem>
+#include <QGraphicsEllipseItem>
 
-class PolyDot : public QGraphicsItem
+class PolyDot : public QGraphicsEllipseItem
 {
 public:
     PolyDot(QPointF *point, QGraphicsItem *parent = 0);

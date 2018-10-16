@@ -47,10 +47,6 @@ void PolyButton::mousePressEvent(QMouseEvent *event)
     QLabel::mousePressEvent(event);
 }
 
-void PolyButton::circlePlaced() {
-    this->buttonOff();
-}
-
 void PolyButton::buttonOn() {
     this->setFrameShadow(QFrame::Sunken);
     emit polygonOn();

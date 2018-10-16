@@ -1,7 +1,7 @@
 #include "polyhandle.h"
 
 PolyHandle::PolyHandle(QPointF *point, QGraphicsItem *parent)
-    : QGraphicsItem(parent)
+    : QGraphicsEllipseItem(parent)
 {
     this->radius = 7;
     this->point = point;
@@ -16,6 +16,7 @@ QRectF PolyHandle::boundingRect() const
 
 void PolyHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    this->setRect(this->boundingRect());
     QRectF rec = this->boundingRect();
     QBrush brush(Qt::white);
     QPen pen(Qt::black);

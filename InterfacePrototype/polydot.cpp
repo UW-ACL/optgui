@@ -1,7 +1,7 @@
 #include "polydot.h"
 
 PolyDot::PolyDot(QPointF *point, QGraphicsItem *parent)
-    : QGraphicsItem(parent)
+    : QGraphicsEllipseItem(parent)
 {
     this->radius = 7;
     this->point = point;
@@ -15,6 +15,7 @@ QRectF PolyDot::boundingRect() const
 
 void PolyDot::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    this->setRect(this->boundingRect());
     QRectF rec = this->boundingRect();
     QBrush brush(Qt::white);
     QPen pen(Qt::black);

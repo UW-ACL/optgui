@@ -40,18 +40,14 @@ void LineButton::mousePressEvent(QMouseEvent *event)
     QLabel::mousePressEvent(event);
 }
 
-void LineButton::linePlaced() {
-    this->buttonOff();
-}
-
 void LineButton::buttonOn() {
     this->setFrameShadow(QFrame::Sunken);
-    emit lineOn();
     this->clicked = true;
+    emit lineOn();
 }
 
 void LineButton::buttonOff() {
     this->setFrameShadow(QFrame::Raised);
-    emit lineOff();
     this->clicked = false;
+    emit lineOff();
 }

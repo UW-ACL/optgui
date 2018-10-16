@@ -1,6 +1,5 @@
-#ifndef LINEOBSTACLE_H
-#define LINEOBSTACLE_H
-
+#ifndef STARTVECTOR_H
+#define STARTVECTOR_H
 
 #include <QGraphicsItem>
 #include <QGraphicsLineItem>
@@ -11,10 +10,10 @@
 #include <QVector>
 #include <QPointF>
 
-class LineObstacle : public QGraphicsLineItem
+class StartVector : public QGraphicsLineItem
 {
 public:
-    explicit LineObstacle(QVector<QPointF*> *pointVector, QGraphicsItem *parent = 0);
+    explicit StartVector(QVector<QPointF*> *pointVector, QGraphicsItem *parent = 0);
     void paint(QPainter * painter,
                const QStyleOptionGraphicsItem * option,
                QWidget * widget);
@@ -27,4 +26,4 @@ private:
     void hideHandles();
 };
 
-#endif // LINEOBSTACLE_H
+#endif // STARTVECTOR_H

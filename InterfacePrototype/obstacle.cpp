@@ -16,6 +16,7 @@ QRectF Obstacle::boundingRect() const
 
 void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    this->setRect(this->boundingRect());
     QColor fill = Qt::gray;
     fill.setAlpha(200);
     QBrush brush(fill);
@@ -33,7 +34,6 @@ void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setBrush(brush);
     painter->setPen(pen);
 
-    this->setRect(this->boundingRect());
     painter->drawEllipse(-this->radius+1, -this->radius+1, this->radius*2-2, this->radius*2-2);
     this->scene()->update();
 //    painter->setBrush(Qt::transparent);

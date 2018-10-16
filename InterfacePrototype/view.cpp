@@ -1,5 +1,6 @@
 #include "view.h"
 
+
 View::View(QGraphicsScene *scene, QWidget * parent)
     : QGraphicsView(scene, parent)
 {
@@ -8,7 +9,7 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     this->setDragMode(QGraphicsView::ScrollHandDrag);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    this->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
 
     this->openButton = new MenuButton(this, Qt::LeftArrow);
     this->controls = new ControlBox(this);
@@ -45,12 +46,25 @@ View::View(QGraphicsScene *scene, QWidget * parent)
     connect(this->controls->controlPanel->lineButton, SIGNAL(lineOff()), this, SLOT(lineOff()), Qt::DirectConnection); // line mode off
     connect(this, SIGNAL(lineButtonOff()), this->controls->controlPanel->lineButton, SLOT(buttonOff()), Qt::DirectConnection); // line button off
 
+    connect(this->controls->controlPanel->startButton, SIGNAL(startOn()), this, SLOT(startOn()), Qt::DirectConnection); // start mode on
+    connect(this->controls->controlPanel->startButton, SIGNAL(startOff()), this, SLOT(startOff()), Qt::DirectConnection); // start mode off
+    connect(this, SIGNAL(startButtonOff()), this->controls->controlPanel->startButton, SLOT(buttonOff()), Qt::DirectConnection); // start button off
+
+    connect(this->controls->controlPanel->vectorButton, SIGNAL(vectorOn()), this, SLOT(vectorOn()), Qt::DirectConnection); // vector mode on
+    connect(this->controls->controlPanel->vectorButton, SIGNAL(vectorOff()), this, SLOT(vectorOff()), Qt::DirectConnection); // vector mode off
+    connect(this, SIGNAL(vectorButtonOff()), this->controls->controlPanel->vectorButton, SLOT(buttonOff()), Qt::DirectConnection); // vector button off
 
     connect(this->scene(), SIGNAL(selectionChanged()), this, SLOT(eraseItem())); // eraser item
 
     this->polyVector = new QVector<PolyDot*>();
     this->placePolygon = false;
     this->placeLine = false;
+    this->placeStart = false;
+    this->placeVector = false;
+
+    this->startDot = nullptr;
+    this->endDot = nullptr;
+    this->startVector = nullptr;
 }
 
 void View::openMenu() {
@@ -62,6 +76,7 @@ void View::openMenu() {
 void View::closeMenu() {
     this->controls->hide();
     this->openButton->show();
+    this->scene()->update();
     repaint();
 }
 
@@ -134,6 +149,36 @@ void View::mousePressEvent(QMouseEvent *event)
                 this->bringToFront(dot);
             }
         }
+    } else if (this->placeStart) {
+        if (this->startDot == nullptr) {
+            QPointF *point = new QPointF(this->mapToScene(event->pos()));
+            this->startDot = new StartDot(point, Qt::green);
+            this->scene()->addItem(this->startDot);
+            this->bringToFront(this->startDot);
+        } else {
+            StartDot *item = dynamic_cast<StartDot*>(itemAt(event->pos()));
+            if (item == nullptr || item != this->startDot) {
+                QPointF *point = new QPointF(this->mapToScene(event->pos()));
+                this->endDot = new StartDot(point, Qt::red);
+                this->scene()->addItem(this->endDot);
+                this->bringToFront(this->endDot);
+
+                emit startButtonOff();
+            }
+        }
+    } else if (this->placeVector) {
+        if (this->startDot != nullptr) {
+            QPointF *point = new QPointF(this->mapToScene(event->pos()));
+            QVector<QPointF*> *pointVector = new QVector<QPointF*>();
+            pointVector->append(this->startDot->point);
+            pointVector->append(point);
+
+            this->startVector = new StartVector(pointVector);
+            this->scene()->addItem(this->startVector);
+            this->bringToFront(this->startVector);
+
+            emit vectorButtonOff();
+        }
     } else if (this->placeLine) {
         if (this->polyVector->isEmpty()) {
             QPointF *point = new QPointF(this->mapToScene(event->pos()));
@@ -183,33 +228,91 @@ void View::clearPolyVector() {
 void View::circleOn() {
     this->placeCircle = true;
     this->deselectAll();
-    emit polygonButtonOff();
-    emit eraserButtonOff();
-    emit lineButtonOff();
+
+    if (this->placePolygon) { emit polygonButtonOff(); }
+    if (this->eraserMode) { emit eraserButtonOff(); }
+    if (this->placeLine) { emit lineButtonOff(); }
+    if (this->placeStart) { emit startButtonOff(); }
+    if (this->placeVector) { emit vectorButtonOff(); }
 }
 
 void View::polygonOn() {
     this->placePolygon = true;
     this->deselectAll();
-    emit circleButtonOff();
-    emit eraserButtonOff();
-    emit lineButtonOff();
+
+    if (this->placeCircle) { emit circleButtonOff(); }
+    if (this->eraserMode) { emit eraserButtonOff(); }
+    if (this->placeLine) { emit lineButtonOff(); }
+    if (this->placeStart) { emit startButtonOff(); }
+    if (this->placeVector) { emit vectorButtonOff(); }
 }
 
 void View::lineOn() {
     this->placeLine = true;
     this->deselectAll();
-    emit polygonButtonOff();
-    emit circleButtonOff();
-    emit eraserButtonOff();
+
+    if (this->placePolygon) { emit polygonButtonOff(); }
+    if (this->eraserMode) { emit eraserButtonOff(); }
+    if (this->placeCircle) { emit circleButtonOff(); }
+    if (this->placeStart) { emit startButtonOff(); }
+    if (this->placeVector) { emit vectorButtonOff(); }
 }
 
 void View::eraserOn() {
     this->eraserMode = true;
     this->deselectAll();
-    emit polygonButtonOff();
-    emit circleButtonOff();
-    emit lineButtonOff();
+
+    if (this->placePolygon) { emit polygonButtonOff(); }
+    if (this->placeCircle) { emit circleButtonOff(); }
+    if (this->placeLine) { emit lineButtonOff(); }
+    if (this->placeStart) { emit startButtonOff(); }
+    if (this->placeVector) { emit vectorButtonOff(); }
+}
+
+void View::startOn() {
+    this->placeStart = true;
+    this->deselectAll();
+
+    if (this->startDot) {
+        this->scene()->removeItem(this->startDot);
+        //this->startDot->~QGraphicsEllipseItem();
+        this->startDot = nullptr;
+    }
+
+    if (this->endDot) {
+        this->scene()->removeItem(this->endDot);
+        //this->endDot->~QGraphicsEllipseItem();
+        this->endDot = nullptr;
+    }
+
+    if (this->startVector) {
+        this->scene()->removeItem(this->startVector);
+        //this->startVector->~QGraphicsItem();
+        this->startVector = nullptr;
+    }
+
+    if (this->placePolygon) { emit polygonButtonOff(); }
+    if (this->eraserMode) { emit eraserButtonOff(); }
+    if (this->placeLine) { emit lineButtonOff(); }
+    if (this->placeCircle) { emit circleButtonOff(); }
+    if (this->placeVector) { emit vectorButtonOff(); }
+}
+
+void View::vectorOn() {
+    this->placeVector = true;
+    this->deselectAll();
+
+    if (this->startVector) {
+        this->scene()->removeItem(this->startVector);
+        //this->startVector->~QGraphicsLineItem();
+        this->startVector = nullptr;
+    }
+
+    if (this->placePolygon) { emit polygonButtonOff(); }
+    if (this->eraserMode) { emit eraserButtonOff(); }
+    if (this->placeLine) { emit lineButtonOff(); }
+    if (this->placeStart) { emit startButtonOff(); }
+    if (this->placeCircle) { emit circleButtonOff(); }
 }
 
 void View::circleOff() {
@@ -228,6 +331,19 @@ void View::eraserOff() {
 void View::lineOff() {
     this->placeLine = false;
     this->clearPolyVector();
+}
+
+void View::vectorOff() {
+    this->placeVector = false;
+}
+
+void View::startOff() {
+    this->placeStart = false;
+    if (this->endDot == nullptr) {
+        this->scene()->removeItem(this->startDot);
+        //this->startDot->~QGraphicsEllipseItem();
+        this->startDot = nullptr;
+    }
 }
 
 void View::deselectAll() {

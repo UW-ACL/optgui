@@ -31,12 +31,12 @@ void EraserButton::mousePressEvent(QMouseEvent *event)
 
 void EraserButton::buttonOn() {
     this->setFrameShadow(QFrame::Sunken);
-    emit eraserOn();
     this->clicked = true;
+    emit eraserOn();
 }
 
 void EraserButton::buttonOff() {
     this->setFrameShadow(QFrame::Raised);
-    emit eraserOff();
     this->clicked = false;
+    emit eraserOff();
 }

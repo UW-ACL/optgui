@@ -11,6 +11,8 @@
 #include "polydot.h"
 #include "polyobstacle.h"
 #include "lineobstacle.h"
+#include "startdot.h"
+#include "startvector.h"
 
 class View : public QGraphicsView
 {
@@ -31,16 +33,22 @@ public slots:
     void eraserOff();
     void lineOn();
     void lineOff();
+    void vectorOn();
+    void vectorOff();
 signals:
     void circleButtonOff();
     void polygonButtonOff();
     void eraserButtonOff();
     void lineButtonOff();
+    void startButtonOff();
+    void vectorButtonOff();
 private slots:
     void openMenu();
     void closeMenu();
     void setZoom();
     void eraseItem();
+    void startOn();
+    void startOff();
 private:
     MenuButton *openButton;
     ControlBox *controls;
@@ -48,7 +56,12 @@ private:
     bool eraserMode;
     bool placePolygon;
     bool placeLine;
+    bool placeStart;
+    bool placeVector;
     QVector<PolyDot*> *polyVector;
+    StartDot *startDot;
+    StartDot *endDot;
+    StartVector *startVector;
 
 protected:
     void mousePressEvent(QMouseEvent *event);

@@ -41,7 +41,11 @@ SOURCES += \
     polybutton.cpp \
     polyhandle.cpp \
     linebutton.cpp \
-    lineobstacle.cpp
+    lineobstacle.cpp \
+    startdot.cpp \
+    startvector.cpp \
+    startbutton.cpp \
+    vectorbutton.cpp
 
 HEADERS += \
         dialog.h \
@@ -60,7 +64,11 @@ HEADERS += \
     polybutton.h \
     polyhandle.h \
     linebutton.h \
-    lineobstacle.h
+    lineobstacle.h \
+    startdot.h \
+    startvector.h \
+    startbutton.h \
+    vectorbutton.h
 
 FORMS += \
         dialog.ui

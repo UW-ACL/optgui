@@ -1,7 +1,7 @@
 #include "resizehandle.h"
 
 ResizeHandle::ResizeHandle(Obstacle *parent)
-    : QGraphicsItem(parent)
+    : QGraphicsEllipseItem(parent)
 {
     this->circle = parent;
     this->resize = false;
@@ -15,6 +15,7 @@ QRectF ResizeHandle::boundingRect() const
 
 void ResizeHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    this->setRect(this->boundingRect());
     QRectF rec = this->boundingRect();
     QBrush brush(Qt::white);
     QPen pen(Qt::black);

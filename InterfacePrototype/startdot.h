@@ -1,15 +1,17 @@
-#ifndef POLYHANDLE_H
-#define POLYHANDLE_H
+#ifndef STARTDOT_H
+#define STARTDOT_H
+
 
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QGraphicsScene>
+#include <QGraphicsView>
 
-class PolyHandle : public QGraphicsEllipseItem
+class StartDot : public QGraphicsEllipseItem
 {
 public:
-    explicit PolyHandle(QPointF *point, QGraphicsItem *parent = 0);
+    explicit StartDot(QPointF *point, QColor color, QGraphicsItem *parent = 0);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QRectF boundingRect() const;
     QPointF *point;
@@ -18,8 +20,10 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent);
 private:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     bool resize;
     qreal radius;
+    QColor color;
 };
 
-#endif // POLYHANDLE_H
+#endif // STARTDOT_H

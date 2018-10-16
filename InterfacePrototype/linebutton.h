@@ -14,7 +14,6 @@ public:
     explicit LineButton(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event);
 public slots:
-    void linePlaced();
     void buttonOn();
     void buttonOff();
 signals:

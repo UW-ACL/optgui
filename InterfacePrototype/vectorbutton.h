@@ -1,5 +1,5 @@
-#ifndef POLYBUTTON_H
-#define POLYBUTTON_H
+#ifndef VECTORBUTTON_H
+#define VECTORBUTTON_H
 
 
 #include <QLabel>
@@ -7,19 +7,19 @@
 #include <QPainter>
 #include <QMouseEvent>
 
-class PolyButton : public QLabel
+class VectorButton : public QLabel
 {
     Q_OBJECT
 
 public:
-    explicit PolyButton(QWidget *parent = nullptr);
+    explicit VectorButton(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event);
 public slots:
     void buttonOn();
     void buttonOff();
 signals:
-    void polygonOn();
-    void polygonOff();
+    void vectorOn();
+    void vectorOff();
 private:
     QPixmap *buttonIcon;
     bool clicked;
@@ -27,4 +27,4 @@ private:
     void generateIcon();
 };
 
-#endif // POLYBUTTON_H
+#endif // VECTORBUTTON_H

@@ -8,6 +8,8 @@
 #include "eraserbutton.h"
 #include "polybutton.h"
 #include "linebutton.h"
+#include "startbutton.h"
+#include "vectorbutton.h"
 
 class ControlPanel : public QWidget
 {
@@ -19,6 +21,8 @@ public:
     EraserButton *eraserButton;
     PolyButton *polyButton;
     LineButton *lineButton;
+    StartButton *startButton;
+    VectorButton *vectorButton;
 };
 
 #endif // CONTROLPANEL_H
