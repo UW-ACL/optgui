@@ -1,6 +1,6 @@
-#include "circlebutton.h"
+#include "startbutton.h"
 
-CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
+StartButton::StartButton(QWidget *parent) : QLabel(parent)
 {
     generateIcon();
 
@@ -11,22 +11,29 @@ CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
     this->clicked = false;
 }
 
-void CircleButton::generateIcon() {
-    QPixmap *pix = new QPixmap(50, 50);
+void StartButton::generateIcon() {
+    QPixmap *pix = new QPixmap(50, 25);
     pix->fill(Qt::transparent);
     QPainter painter(pix);
     painter.setRenderHint(QPainter::Antialiasing);
-    QPen pen(Qt::black);
+    QPen pen(Qt::green);
     pen.setWidth(2);
     painter.setPen(pen);
     painter.setBrush(Qt::gray);
-    painter.drawEllipse(1, 1, 48, 48);
+
+    QRectF rect(0, 0, 50, 25);
+    painter.drawText(rect, Qt::AlignLeft, "Start + End");
+//    pen.setColor(Qt::black);
+//    painter.drawText(rect, Qt::AlignCenter, "+");
+//    pen.setColor(Qt::red);
+//    painter.drawText(rect, Qt::AlignCenter, "End");
+
     painter.end();
 
     this->buttonIcon = pix;
 }
 
-void CircleButton::mousePressEvent(QMouseEvent *event)
+void StartButton::mousePressEvent(QMouseEvent *event)
 {
     if (this->clicked) {
         this->buttonOff();
@@ -37,14 +44,15 @@ void CircleButton::mousePressEvent(QMouseEvent *event)
     QLabel::mousePressEvent(event);
 }
 
-void CircleButton::buttonOn() {
+void StartButton::buttonOn() {
     this->setFrameShadow(QFrame::Sunken);
     this->clicked = true;
-    emit circleOn();
+    emit startOn();
 }
 
-void CircleButton::buttonOff() {
+void StartButton::buttonOff() {
     this->setFrameShadow(QFrame::Raised);
     this->clicked = false;
-    emit circleOff();
+    emit startOff();
 }
+

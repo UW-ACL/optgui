@@ -3,16 +3,17 @@ class Obstacle;
 #ifndef RESIZEHANDLE_H
 #define RESIZEHANDLE_H
 
-#include <QGraphicsItem>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
-#include <obstacle.h>
+#include "obstacle.h"
 #include <QtMath>
 
-class ResizeHandle : public QGraphicsItem
+class ResizeHandle : public QGraphicsEllipseItem
 {
 public:
-    ResizeHandle(Obstacle *parent = 0);
+    ResizeHandle(Obstacle *parent);
     QRectF boundingRect() const;
     void paint(QPainter * painter,
                const QStyleOptionGraphicsItem * option,
@@ -24,6 +25,7 @@ protected:
 private:
     bool resize;
     Obstacle *circle;
+    qreal radius;
 };
 
 #endif // RESIZEHANDLE_H

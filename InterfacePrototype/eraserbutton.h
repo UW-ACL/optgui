@@ -1,24 +1,23 @@
-#ifndef CIRCLEBUTTON_H
-#define CIRCLEBUTTON_H
+#ifndef ERASERBUTTON_H
+#define ERASERBUTTON_H
 
 #include <QLabel>
 #include <QPixmap>
-#include <QPainter>
 #include <QMouseEvent>
 
-class CircleButton : public QLabel
+class EraserButton : public QLabel
 {
     Q_OBJECT
 
 public:
-    explicit CircleButton(QWidget *parent = nullptr);
+    explicit EraserButton(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event);
 public slots:
-    void buttonOn();
     void buttonOff();
+    void buttonOn();
 signals:
-    void circleOn();
-    void circleOff();
+    void eraserOn();
+    void eraserOff();
 private:
     QPixmap *buttonIcon;
     bool clicked;
@@ -26,4 +25,4 @@ private:
     void generateIcon();
 };
 
-#endif // CIRCLEBUTTON_H
+#endif // ERASERBUTTON_H

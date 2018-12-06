@@ -1,19 +1,20 @@
-#include "resizehandle.h"
+#include "polyhandle.h"
 
-ResizeHandle::ResizeHandle(Obstacle *parent)
+PolyHandle::PolyHandle(QPointF *point, QGraphicsItem *parent)
     : QGraphicsEllipseItem(parent)
 {
-    this->circle = parent;
-    this->resize = false;
     this->radius = 7;
+    this->point = point;
+    this->setPos(*this->point);
+    this->resize = false;
 }
 
-QRectF ResizeHandle::boundingRect() const
+QRectF PolyHandle::boundingRect() const
 {
     return QRectF(-this->radius, -this->radius, this->radius*2, this->radius*2);
 }
 
-void ResizeHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void PolyHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     this->setRect(this->boundingRect());
     QRectF rec = this->boundingRect();
@@ -26,7 +27,7 @@ void ResizeHandle::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
     painter->drawEllipse(rec);
 }
 
-void ResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
+void PolyHandle::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() == Qt::LeftButton) {
         this->resize = true;
@@ -34,19 +35,23 @@ void ResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     //QGraphicsItem::mousePressEvent(mouseEvent);
 }
 
-void ResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
+void PolyHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (resize) {
-        this->circle->radius = (qFabs(mouseEvent->scenePos().x() - circle->scenePos().x()));
+        // TODO: act like pos is 0, 0
+        qreal xPos = mouseEvent->scenePos().x() - parentItem()->scenePos().x();
+        qreal yPos = mouseEvent->scenePos().y() - parentItem()->scenePos().y();
+        this->point->setX(xPos);
+        this->point->setY(yPos);
+        this->setPos(QPointF(xPos, yPos));
         //this->update();
         //this->circle->update();
         this->scene()->update();
-        //this->circle->scene()->update();
     }
     //QGraphicsItem::mouseMoveEvent(mouseEvent);
 }
 
-void ResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
+void PolyHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() == Qt::LeftButton) {
         this->resize = false;

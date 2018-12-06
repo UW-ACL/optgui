@@ -1,24 +1,25 @@
-#ifndef CIRCLEBUTTON_H
-#define CIRCLEBUTTON_H
+#ifndef POLYBUTTON_H
+#define POLYBUTTON_H
+
 
 #include <QLabel>
 #include <QPixmap>
 #include <QPainter>
 #include <QMouseEvent>
 
-class CircleButton : public QLabel
+class PolyButton : public QLabel
 {
     Q_OBJECT
 
 public:
-    explicit CircleButton(QWidget *parent = nullptr);
+    explicit PolyButton(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event);
 public slots:
     void buttonOn();
     void buttonOff();
 signals:
-    void circleOn();
-    void circleOff();
+    void polygonOn();
+    void polygonOff();
 private:
     QPixmap *buttonIcon;
     bool clicked;
@@ -26,4 +27,4 @@ private:
     void generateIcon();
 };
 
-#endif // CIRCLEBUTTON_H
+#endif // POLYBUTTON_H

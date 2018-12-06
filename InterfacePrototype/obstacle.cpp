@@ -1,10 +1,7 @@
 #include "obstacle.h"
 
-#include <QDebug>
-#include <QGraphicsView>
-
-Obstacle::Obstacle(QGraphicsItem *parent, qreal rad)
-    : QGraphicsItem(parent)
+Obstacle::Obstacle(qreal rad, QGraphicsItem *parent)
+    : QGraphicsEllipseItem(parent)
 {
     this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsScenePositionChanges);
     this->radius = rad;
@@ -14,16 +11,19 @@ Obstacle::Obstacle(QGraphicsItem *parent, qreal rad)
 
 QRectF Obstacle::boundingRect() const
 {
-    return QRectF(0, 0, this->radius * 2, this->radius * 2);
+    return QRectF(-this->radius, -this->radius, this->radius * 2, this->radius * 2);
 }
 
 void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    QBrush brush(Qt::gray);
+    this->setRect(this->boundingRect());
+    QColor fill = Qt::gray;
+    fill.setAlpha(200);
+    QBrush brush(fill);
     QPen pen(Qt::black);
 
     if(this->isSelected()) {
-        this->resizeHandle->setPos(0, this->radius);
+        this->resizeHandle->setPos(-this->radius, 0);
         this->resizeHandle->show();
         pen.setWidth(3);
     } else {
@@ -34,22 +34,23 @@ void Obstacle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     painter->setBrush(brush);
     painter->setPen(pen);
 
-    painter->drawEllipse(1, 1, this->radius*2-2, this->radius*2-2);
-    // painter->drawText(0, 0, QString::number(this->pos().x())+ ", " + QString::number(this->pos().y()));
+    painter->drawEllipse(-this->radius+1, -this->radius+1, this->radius*2-2, this->radius*2-2);
+    this->scene()->update();
+//    painter->setBrush(Qt::transparent);
+//    painter->setPen(QPen(Qt::red));
+//    painter->drawRect(this->boundingRect());
 }
 
 QVariant Obstacle::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == ItemPositionChange && scene()) {
-        // value is the new position.
-        QPointF newPos = value.toPointF();
-        QRectF itemRect = this->boundingRect();
-        itemRect.moveTopLeft(newPos);
+        // value is the new position
+        // QPointF newPos = value.toPointF();
+        QRectF itemRect = this->sceneBoundingRect();
         QRectF rect = scene()->sceneRect();
 
         if (!rect.contains(itemRect)) {
-            //qDebug() << "item out of bounds";
-            this->scene()->setSceneRect((this->scene()->sceneRect()).united(this->scene()->itemsBoundingRect()));
+            this->scene()->setSceneRect((this->scene()->sceneRect()).united(itemRect));
             this->scene()->update();
             this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
         }

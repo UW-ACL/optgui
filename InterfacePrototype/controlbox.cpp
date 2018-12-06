@@ -27,15 +27,3 @@ ControlBox::ControlBox(QWidget *parent, Qt::WindowFlags flags)
     this->controlPanel = new ControlPanel(this);
     this->layout()->addWidget(this->controlPanel);
 }
-
-
-void ControlBox::resizeEvent(QResizeEvent *event)
-{
-//    if (this->closeButton != nullptr && this->closeButton->isVisible()) {
-//        QRectF parentRect = this->rect();
-//        //qreal moveX = parentRect.right() - this->closeButton->width();
-//        qreal moveY = (parentRect.height() - this->closeButton->height())/2;
-//        this->closeButton->move(0, moveY);
-//    }
-    QFrame::resizeEvent(event);
-}

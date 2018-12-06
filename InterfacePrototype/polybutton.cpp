@@ -1,6 +1,6 @@
-#include "circlebutton.h"
+#include "polybutton.h"
 
-CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
+PolyButton::PolyButton(QWidget *parent) : QLabel(parent)
 {
     generateIcon();
 
@@ -11,7 +11,7 @@ CircleButton::CircleButton(QWidget *parent) : QLabel(parent)
     this->clicked = false;
 }
 
-void CircleButton::generateIcon() {
+void PolyButton::generateIcon() {
     QPixmap *pix = new QPixmap(50, 50);
     pix->fill(Qt::transparent);
     QPainter painter(pix);
@@ -20,13 +20,23 @@ void CircleButton::generateIcon() {
     pen.setWidth(2);
     painter.setPen(pen);
     painter.setBrush(Qt::gray);
-    painter.drawEllipse(1, 1, 48, 48);
+
+    QPolygonF poly;
+    poly << QPointF(25, 1);
+    poly << QPointF(49, 21);
+    poly << QPointF(40, 49);
+    poly << QPointF(10, 49);
+    poly << QPointF(1, 21);
+    poly << QPointF(25, 1);
+
+    painter.drawPolygon(poly);
+
     painter.end();
 
     this->buttonIcon = pix;
 }
 
-void CircleButton::mousePressEvent(QMouseEvent *event)
+void PolyButton::mousePressEvent(QMouseEvent *event)
 {
     if (this->clicked) {
         this->buttonOff();
@@ -37,14 +47,14 @@ void CircleButton::mousePressEvent(QMouseEvent *event)
     QLabel::mousePressEvent(event);
 }
 
-void CircleButton::buttonOn() {
+void PolyButton::buttonOn() {
     this->setFrameShadow(QFrame::Sunken);
+    emit polygonOn();
     this->clicked = true;
-    emit circleOn();
 }
 
-void CircleButton::buttonOff() {
+void PolyButton::buttonOff() {
     this->setFrameShadow(QFrame::Raised);
+    emit polygonOff();
     this->clicked = false;
-    emit circleOff();
 }

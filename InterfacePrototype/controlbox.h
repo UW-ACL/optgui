@@ -12,7 +12,6 @@ class ControlBox : public QFrame
 
 public:
     ControlBox(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::Widget);
-    void resizeEvent(QResizeEvent *event);
     MenuButton *closeButton;
     ControlPanel *controlPanel;
 };

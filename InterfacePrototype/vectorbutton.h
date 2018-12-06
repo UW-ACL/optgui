@@ -1,24 +1,25 @@
-#ifndef CIRCLEBUTTON_H
-#define CIRCLEBUTTON_H
+#ifndef VECTORBUTTON_H
+#define VECTORBUTTON_H
+
 
 #include <QLabel>
 #include <QPixmap>
 #include <QPainter>
 #include <QMouseEvent>
 
-class CircleButton : public QLabel
+class VectorButton : public QLabel
 {
     Q_OBJECT
 
 public:
-    explicit CircleButton(QWidget *parent = nullptr);
+    explicit VectorButton(QWidget *parent = nullptr);
     void mousePressEvent(QMouseEvent *event);
 public slots:
     void buttonOn();
     void buttonOff();
 signals:
-    void circleOn();
-    void circleOff();
+    void vectorOn();
+    void vectorOff();
 private:
     QPixmap *buttonIcon;
     bool clicked;
@@ -26,4 +27,4 @@ private:
     void generateIcon();
 };
 
-#endif // CIRCLEBUTTON_H
+#endif // VECTORBUTTON_H
