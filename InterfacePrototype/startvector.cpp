@@ -44,10 +44,10 @@ void StartVector::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
     }
 
     painter->setBrush(brush);
-    pen.setWidth(3);
+    pen.setWidth(4);
     painter->setPen(pen);
 
-    double angle = std::atan2(-line().dy(), line().dx());
+    double angle = std::atan2(line().dy(), -line().dx());
     qreal arrowSize = 10;
     QPointF arrowP3 = this->line().p2();
     QPointF arrowP1 = arrowP3 + QPointF(sin(angle + M_PI / 3) * arrowSize,
@@ -62,8 +62,6 @@ void StartVector::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 
     painter->drawLine(this->line());
 
-    pen.setWidth(1);
-    painter->setPen(pen);
     painter->drawPolygon(arrowHead);
 
     this->scene()->update();

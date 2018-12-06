@@ -4,6 +4,7 @@
 StartDot::StartDot(QPointF *point, QColor color, QGraphicsItem *parent)
     : QGraphicsEllipseItem(parent)
 {
+    this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
     this->radius = 7;
     this->point = point;
     this->setPos(*this->point);
@@ -54,9 +55,7 @@ void StartDot::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
     if (mouseEvent->button() == Qt::LeftButton) {
         this->resize = false;
-        qDebug() << "resize = true";
     }
-    //QGraphicsItem::mouseReleaseEvent(mouseEvent);
 }
 
 QVariant StartDot::itemChange(GraphicsItemChange change, const QVariant &value)

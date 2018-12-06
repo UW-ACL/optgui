@@ -22,7 +22,7 @@ void VectorButton::generateIcon() {
     painter.setBrush(Qt::gray);
 
     QRectF rect(0, 0, 50, 25);
-    painter.drawText(rect, Qt::AlignCenter, "Initial Vector");
+    painter.drawText(rect, Qt::AlignCenter, "Vector");
 
     painter.end();
 

@@ -22,11 +22,11 @@ void StartButton::generateIcon() {
     painter.setBrush(Qt::gray);
 
     QRectF rect(0, 0, 50, 25);
-    painter.drawText(rect, Qt::AlignLeft, "Start");
-    pen.setColor(Qt::black);
-    painter.drawText(rect, Qt::AlignCenter, "+");
-    pen.setColor(Qt::red);
-    painter.drawText(rect, Qt::AlignCenter, "End");
+    painter.drawText(rect, Qt::AlignLeft, "Start + End");
+//    pen.setColor(Qt::black);
+//    painter.drawText(rect, Qt::AlignCenter, "+");
+//    pen.setColor(Qt::red);
+//    painter.drawText(rect, Qt::AlignCenter, "End");
 
     painter.end();
 

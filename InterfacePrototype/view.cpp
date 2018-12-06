@@ -91,7 +91,6 @@ void View::eraseItem() {
     if (this->eraserMode) {
         foreach(QGraphicsItem *item, this->scene()->selectedItems()) {
             this->scene()->removeItem(item);
-            item->~QGraphicsItem();
         }
     }
 }
@@ -220,7 +219,6 @@ void View::clearPolyVector() {
         QGraphicsItem *item = polyVector->takeFirst();
         if (this->scene()->items().contains(item)) {
             this->scene()->removeItem(item);
-            item->~QGraphicsItem();
         }
     }
 }
@@ -275,19 +273,16 @@ void View::startOn() {
 
     if (this->startDot) {
         this->scene()->removeItem(this->startDot);
-        //this->startDot->~QGraphicsEllipseItem();
         this->startDot = nullptr;
     }
 
     if (this->endDot) {
         this->scene()->removeItem(this->endDot);
-        //this->endDot->~QGraphicsEllipseItem();
         this->endDot = nullptr;
     }
 
     if (this->startVector) {
         this->scene()->removeItem(this->startVector);
-        //this->startVector->~QGraphicsItem();
         this->startVector = nullptr;
     }
 
@@ -304,7 +299,6 @@ void View::vectorOn() {
 
     if (this->startVector) {
         this->scene()->removeItem(this->startVector);
-        //this->startVector->~QGraphicsLineItem();
         this->startVector = nullptr;
     }
 
@@ -341,7 +335,6 @@ void View::startOff() {
     this->placeStart = false;
     if (this->endDot == nullptr) {
         this->scene()->removeItem(this->startDot);
-        //this->startDot->~QGraphicsEllipseItem();
         this->startDot = nullptr;
     }
 }
