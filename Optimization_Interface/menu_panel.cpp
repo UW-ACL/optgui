@@ -100,6 +100,7 @@ void MenuPanel::initializeEllipseButton() {
     painter.setBrush(Qt::gray);
     painter.drawEllipse(1, 1, 48, 48);
     ellipse_button->setPixmap(pix);
+    ellipse_button->setToolTip(tr("Add ellipse constraint"));
     this->menu_buttons_->append(ellipse_button);
 }
 
@@ -123,6 +124,7 @@ void MenuPanel::initializePolygonButton() {
     painter.drawPolygon(poly);
 
     polygon_button->setPixmap(pix);
+    polygon_button->setToolTip(tr("Add polygon constraint"));
     this->menu_buttons_->append(polygon_button);
 }
 
@@ -139,6 +141,7 @@ void MenuPanel::initializePlaneButton() {
     painter.drawLine(QPointF(10, 40), QPointF(40, 10));
 
     plane_button->setPixmap(pix);
+    plane_button->setToolTip(tr("Add plane constraint"));
     this->menu_buttons_->append(plane_button);
 }
 
@@ -147,6 +150,7 @@ void MenuPanel::initializeEraserButton() {
     QPixmap pix(":/images/erasericon.png");
     pix = pix.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     eraser_button->setPixmap(pix);
+    eraser_button->setToolTip(tr("Delete item"));
     this->menu_buttons_->append(eraser_button);
 }
 
@@ -169,6 +173,7 @@ void MenuPanel::initializePathButton() {
     painter.drawEllipse(QPointF(42, 42), 6, 6);
 
     path_button->setPixmap(pix);
+    path_button->setToolTip(tr("Add waypoint to path"));
     this->menu_buttons_->append(path_button);
 }
 
@@ -198,6 +203,7 @@ void MenuPanel::initializeFlipButton() {
     painter.drawLine(line);
 
     flip_button->setPixmap(pix);
+    flip_button->setToolTip(tr("Flip constraint convexity"));
     this->menu_buttons_->append(flip_button);
 }
 
@@ -211,6 +217,7 @@ void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_->setValue(6);
     this->menu_->layout()->addWidget(this->zoom_slider_);
     this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
+    this->zoom_slider_->setToolTip(tr("Set zoom level"));
 }
 
 }  // namespace

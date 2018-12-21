@@ -7,6 +7,8 @@
 #define MAIN_WINDOW_H
 
 #include <QMainWindow>
+#include <QMenu>
+#include <QAction>
 
 #include "view.h"
 
@@ -14,11 +16,17 @@ namespace interface {
 
 class MainWindow : public QMainWindow
 {
+    Q_OBJECT
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 private:
+    void initializeMenu();
     View *view_;
+    QMenu *file_menu_;
+    QAction *save_file_;
+    QAction *load_file_;
 };
 
 }  // namespace

@@ -87,9 +87,4 @@ void ConstraintModel::removePathPoint(QPointF *item)
     this->path_->removeOne(item);
 }
 
-QVector<QPointF *> *ConstraintModel::getPathOrdering()
-{
-    return this->path_;
-}
-
 }  // namespace

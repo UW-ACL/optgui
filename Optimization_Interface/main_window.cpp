@@ -5,6 +5,9 @@
 
 #include "main_window.h"
 
+#include <QMenuBar>
+#include <QObject>
+
 namespace interface {
 
 MainWindow::MainWindow(QWidget *parent)
@@ -14,8 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("Optimiztion Interface");
 
     // Set default size
-    this->setMinimumSize(600, 400);
-    // this->resize(800, 600);
+    this->setMinimumSize(600, 450);
     this->showFullScreen();
 
     // Set view
@@ -23,11 +25,42 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Add view to layout
     this->setCentralWidget(this->view_);
+
+    // Initialize menu items
+    this->initializeMenu();
 }
 
 MainWindow::~MainWindow()
 {
+    // Delete menu items
+    delete this->load_file_;
+    delete this->save_file_;
+    delete this->file_menu_;
+
+    // Delete view
     delete this->view_;
+}
+
+void MainWindow::initializeMenu()
+{
+    // Initialize load file action
+    this->load_file_ = new QAction(tr("&Open"), this->file_menu_);
+    this->load_file_->setShortcuts(QKeySequence::Open);
+    this->load_file_->setToolTip(tr("Load layout from file"));
+    connect(this->load_file_, SIGNAL(triggered()), this->view_, SLOT(loadFile()));
+
+    // Initialize save file action
+    this->save_file_ = new QAction(tr("&Save"), this->file_menu_);
+    this->save_file_->setShortcuts(QKeySequence::Save);
+    this->save_file_->setToolTip(tr("Save current layout to file"));
+    connect(this->save_file_, SIGNAL(triggered()), this->view_, SLOT(saveFile()));
+
+    // Create file menu
+    this->file_menu_ = this->menuBar()->addMenu(tr("&File"));
+
+    // Add actions to menu
+    this->file_menu_->addAction(this->load_file_);
+    this->file_menu_->addAction(this->save_file_);
 }
 
 }  // namespace

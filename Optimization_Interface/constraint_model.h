@@ -21,6 +21,7 @@ class ConstraintModel
 public:
     ConstraintModel();
     ~ConstraintModel();
+
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
 
@@ -32,12 +33,12 @@ public:
 
     void addPathPoint(QPointF *item);
     void removePathPoint(QPointF *item);
-    QVector<QPointF *> *getPathOrdering();
-private:
+
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
     QVector<QPointF *> *path_;
+private:
     void initialize();
 };
 

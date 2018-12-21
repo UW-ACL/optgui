@@ -51,6 +51,29 @@ View::~View()
     delete this->controller_;
 }
 
+void View::loadFile()
+{
+    // Create new canvas
+    Canvas *new_canvas = new Canvas(this);
+    this->setScene(new_canvas);
+    delete this->canvas_;
+    this->canvas_ = new_canvas;
+
+    // Pass new canvas to controller
+    this->controller_->setCanvas(new_canvas);
+
+    // Set state to idle
+    this->setState(IDLE);
+
+    // Load file onto canvas
+    this->controller_->loadFile();
+}
+
+void View::saveFile()
+{
+    this->controller_->saveFile();
+}
+
 void View::initialize()
 {
     // Set Layout

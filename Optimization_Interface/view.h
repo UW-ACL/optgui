@@ -35,13 +35,15 @@ private slots:
     void closeMenu();
     void setZoom(int value);
     void setState(STATE button_type);
+    void loadFile();
+    void saveFile();
 private:
     void initialize();
+    Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;
     STATE state_;
     Canvas *canvas_;
-    Controller *controller_;
     QVector<QGraphicsItem*> *temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
