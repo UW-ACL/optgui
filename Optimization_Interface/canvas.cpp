@@ -25,6 +25,14 @@ void Canvas::initialize() {
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
+    // Set foreground pen
+    QColor foreground_color = Qt::gray;
+    // foreground_color.setAlpha(250);
+    this->foreground_pen_ = QPen(foreground_color);
+
+    // Set text font
+    this->font_ = QFont("SansSerif");
+
     // Connect slots
     connect(this, SIGNAL(selectionChanged()), this,
             SLOT(bringSelectedToFront()));
@@ -44,55 +52,90 @@ void Canvas::bringToFront(QGraphicsItem *item) {
                                         std::numeric_limits<qreal>::max());
 }
 
+void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
+    // Get scaling factor
+    qreal scale = 1;
+    if (!this->views().isEmpty()) {
+        scale = this->views().first()->matrix().m11();
+    }
+
+    qint32 segment_size = GRID_SIZE;
+    if (scale < 0.5) {
+        segment_size /= 0.5;
+    } else if (scale > 2) {
+        segment_size /= 2;
+    }
+
+    qreal pen_width = 2 / scale;
+    qreal font_size = 20 / scale;
+    qint32 offset = 40 / scale;
+    qint32 text_offset = 50 / scale;
+    qint32 notch_offset = 45 / scale;
+
+    this->foreground_pen_.setWidthF(pen_width);
+    this->font_.setPointSizeF(font_size);
+    painter->setPen(this->foreground_pen_);
+    painter->setFont(this->font_);
+
+    painter->drawLine(rect.left() + offset, rect.bottom() - offset,
+                      rect.left() + (offset + segment_size), rect.bottom() - offset);
+    for (qint32 i = 0; i <= segment_size; i += GRID_SIZE / 2) {
+        painter->drawLine(rect.left() + offset + i, rect.bottom() - offset,
+                          rect.left() + offset + i, rect.bottom() - text_offset);
+    }
+    painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
+                      QString::number(qreal(segment_size) / 100) + QString("m"));
+}
+
+qint64 Canvas::roundPast(qint64 n, qint64 m) {
+    return n >= 0 ? ((n + m - 1) / m) * m : ((n - m + 1) / m) * m;
+}
+
 void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     // Get scaling factor
-    qreal grids = 1;
+    qreal scale = 1;
     if (!this->views().isEmpty()) {
-        grids = this->views().first()->matrix().m11();
+        scale = this->views().first()->matrix().m11();
     }
 
     // Add grids proportional to scaling factor
-    qreal segment_size = GRID_SIZE;
-    qreal pen_width = 2;
+    qint64 segment_size = GRID_SIZE;
+    if (scale < 0.5) {
+        segment_size /= 0.5;
+    } else if (scale > 2) {
+        segment_size /= 2;
+    }
+
+    qreal pen_width = 2 / scale;
+    qreal font_size = 20 / scale;
+
 
     // Set boundries of grid
-    qreal top_bound = rect.top() - segment_size;
-    qreal bot_bound = rect.bottom() + segment_size;
-    qreal left_bound = rect.left() - segment_size;
-    qreal right_bound = rect.right() + segment_size;
+    qint64 top_bound = roundPast(qRound64(rect.top()), segment_size);
+    qint64 bot_bound = roundPast(qRound64(rect.bottom()), segment_size);
+    qint64 left_bound = roundPast(qRound64(rect.left()), segment_size);
+    qint64 right_bound = roundPast(qRound64(rect.right()), segment_size);
 
-    // Round to nearest segment_size
-    qint32 top = (qint32)(top_bound / segment_size) * segment_size;
-    qint32 bot = (qint32)(bot_bound / segment_size) * segment_size;
-    qint32 left = (qint32)(left_bound / segment_size) * segment_size;
-    qint32 right = (qint32)(right_bound / segment_size) * segment_size;
+    // Set pen
+    this->background_pen_.setWidthF(pen_width);
+    this->font_.setPointSizeF(font_size);
+    painter->setPen(this->background_pen_);
+    painter->setFont(this->font_);
 
-    for (qint32 i = 0; i < grids; i++) {
-        // Set pen
-        this->background_pen_.setWidth(pen_width);
-        painter->setPen(this->background_pen_);
+    // Draw vertical grid lines
+    for (qint32 i = 0; i <= right_bound; i += segment_size) {
+        painter->drawLine(i, top_bound, i, bot_bound);
+    }
+    for (qint32 i = 0; i >= left_bound; i -= segment_size) {
+        painter->drawLine(i, top_bound, i , bot_bound);
+    }
 
-        // Draw vertical grid lines
-        for (qint32 j = 0; j <= right_bound; j += segment_size) {
-            painter->drawLine(j , top, j , bot);
-        }
-        for (qint32 j = 0; j >= left_bound; j -= segment_size) {
-            painter->drawLine(j , top, j , bot);
-        }
-
-        // Draw horizontal grid lines
-        for (qint32 j = 0; j <= bot_bound; j += segment_size) {
-            painter->drawLine(left, j , right, j);
-        }
-        for (qint32 j = 0; j >= top_bound; j -= segment_size) {
-            painter->drawLine(left, j , right, j);
-        }
-
-        // Update segment_size
-        segment_size /= 2;
-
-        // Update pen width
-        pen_width /= 2;
+    // Draw horizontal grid lines
+    for (qint32 i = 0; i <= bot_bound; i += segment_size) {
+        painter->drawLine(left_bound, i , right_bound, i);
+    }
+    for (qint32 i = 0; i >= top_bound; i -= segment_size) {
+        painter->drawLine(left_bound, i, right_bound, i);
     }
 
     // Draw origin

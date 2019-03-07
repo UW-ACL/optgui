@@ -222,9 +222,9 @@ void MenuPanel::initializeZoomSlider() {
                                       QSizePolicy::Minimum);
     this->zoom_slider_->setTickInterval(1);
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
-    this->zoom_slider_->setMinimum(3);
-    this->zoom_slider_->setMaximum(9);
-    this->zoom_slider_->setValue(6);
+    this->zoom_slider_->setMinimum(2);
+    this->zoom_slider_->setMaximum(8);
+    this->zoom_slider_->setValue(5);
     this->zoom_slider_->setToolTip(tr("Set zoom level"));
     this->menu_->layout()->addWidget(this->zoom_slider_);
     this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);

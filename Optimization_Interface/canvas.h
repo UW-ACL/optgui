@@ -9,6 +9,7 @@
 #define CANVAS_H_
 
 #include <QGraphicsScene>
+#include <QFont>
 
 namespace interface {
 
@@ -22,12 +23,16 @@ class Canvas : public QGraphicsScene {
     void bringToFront(QGraphicsItem *item);
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
- private slots:
+    void drawForeground(QPainter *painter, const QRectF &rect) override;
+private slots:
     void bringSelectedToFront();
  private:
     void initialize();
     QPen background_pen_;
+    QPen foreground_pen_;
     qreal front_depth_;
+    qint64 roundPast(qint64 n, qint64 m);
+    QFont font_;
 };
 
 }  // namespace interface

@@ -85,6 +85,7 @@ void View::initialize() {
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     // Create open menu button
     this->menu_button_ = new QToolButton(this);
@@ -218,10 +219,11 @@ void View::closeMenu() {
 void View::openMenu() {
     this->menu_button_->hide();
     this->menu_panel_->show();
+    this->update();
 }
 
 void View::setZoom(int value) {
-    qreal scaleFactor = qreal(value - 1) / 5;
+    qreal scaleFactor = qreal(value) / (10 - value);
     this->resetMatrix();
     this->scale(scaleFactor, scaleFactor);
 }
