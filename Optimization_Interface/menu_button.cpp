@@ -7,29 +7,26 @@
 
 namespace interface {
 
-MenuButton::MenuButton(STATE button_type, QWidget *parent) : QLabel(parent)
-{
+MenuButton::MenuButton(STATE button_type, QWidget *parent)
+    : QLabel(parent) {
     this->button_type_ = button_type;
     this->initialize();
 }
 
-STATE MenuButton::getButtonType()
-{
+STATE MenuButton::getButtonType() {
     return this->button_type_;
 }
 
-void MenuButton::mousePressEvent(QMouseEvent *event)
-{
+void MenuButton::mousePressEvent(QMouseEvent *event) {
     this->setFrameShadow(QFrame::Sunken);
     emit changeState(this->button_type_);
     QLabel::mousePressEvent(event);
 }
 
-void MenuButton::initialize()
-{
+void MenuButton::initialize() {
     this->setLineWidth(3);
     this->setFrameShape(QFrame::Panel);
     this->setFrameShadow(QFrame::Raised);
 }
 
-}  // namespace
+}  // namespace interface

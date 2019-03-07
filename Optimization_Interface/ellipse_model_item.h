@@ -3,26 +3,27 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef ELLIPSE_MODEL_ITEM_H
-#define ELLIPSE_MODEL_ITEM_H
+// Data model for ellipse constraint
+
+#ifndef ELLIPSE_MODEL_ITEM_H_
+#define ELLIPSE_MODEL_ITEM_H_
 
 #include <QPointF>
 
-namespace interface
-{
+namespace interface {
 
 const double DEFAULT_RAD = 50;
 
-class EllipseModelItem
-{
-public:
-    EllipseModelItem(QPointF *pos) : radius_(DEFAULT_RAD), convex_(true) { pos_ = pos; }
+class EllipseModelItem {
+ public:
+    explicit EllipseModelItem(QPointF *pos) : radius_(DEFAULT_RAD),
+        direction_(true) { pos_ = pos; }
     ~EllipseModelItem() { delete pos_; }
     double radius_;
     QPointF *pos_;
-    bool convex_;
+    bool direction_;
 };
 
-}
+}  // namespace interface
 
-#endif // ELLIPSE_MODEL_ITEM_H
+#endif  // ELLIPSE_MODEL_ITEM_H_

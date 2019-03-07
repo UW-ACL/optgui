@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef VIEW_H
-#define VIEW_H
+// Renders graphical representations of constraints and controls
+
+#ifndef VIEW_H_
+#define VIEW_H_
 
 #include <QGraphicsView>
 #include <QToolButton>
@@ -20,25 +22,25 @@ namespace interface {
 
 const qreal DOT_SIZE = 20;
 
-class View : public QGraphicsView
-{
+class View : public QGraphicsView {
     Q_OBJECT
-
-public:
+ public:
     explicit View(QWidget *parent);
     ~View();
-protected:
+ protected:
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
-private slots:
+ private slots:
     void openMenu();
     void closeMenu();
     void setZoom(int value);
     void setState(STATE button_type);
     void loadFile();
     void saveFile();
-private:
+    void execute();
+ private:
     void initialize();
+    void clearMarkers();
     Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;
@@ -49,6 +51,6 @@ private:
     QBrush dot_brush_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // VIEW_H
+#endif  // VIEW_H_

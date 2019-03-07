@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+// Global constants
+
+#ifndef GLOBALS_H_
+#define GLOBALS_H_
 
 #include <QGraphicsItem>
 
@@ -16,7 +18,8 @@ namespace interface {
         ELLIPSE,
         POLYGON,
         PLANE,
-        PATH
+        PATH,
+        EXEC
     };
 
     enum GRAPHICS_TYPE {
@@ -25,6 +28,6 @@ namespace interface {
         PLANE_GRAPHIC = QGraphicsItem::UserType + 3,
         PATH_GRAPHIC = QGraphicsItem::UserType + 4
     };
-}  // namespace
+}  // namespace interface
 
-#endif // GLOBALS_H
+#endif  // GLOBALS_H_

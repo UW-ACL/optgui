@@ -9,44 +9,42 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <cmath>
+#include <limits>
 
 namespace interface {
 
 Canvas::Canvas(QObject *parent)
-    : QGraphicsScene(parent)
-{
+    : QGraphicsScene(parent) {
     this->initialize();
     this->front_depth_ = 0;
 }
 
-void Canvas::initialize()
-{
+void Canvas::initialize() {
     // Set background pen
     QColor background_color = Qt::gray;
-    background_color.setAlpha(200);
+    background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
     // Connect slots
-    connect(this, SIGNAL(selectionChanged()), this, SLOT(bringSelectedToFront()));
+    connect(this, SIGNAL(selectionChanged()), this,
+            SLOT(bringSelectedToFront()));
 }
 
-void Canvas::bringSelectedToFront()
-{
-    if (!this->selectedItems().isEmpty())
-    {
+void Canvas::bringSelectedToFront() {
+    if (!this->selectedItems().isEmpty()) {
         this->selectedItems().first()->setZValue(this->front_depth_);
-        this->front_depth_ = std::nextafter(this->front_depth_, std::numeric_limits<qreal>::max());
+        this->front_depth_ = std::nextafter(this->front_depth_,
+                                            std::numeric_limits<qreal>::max());
     }
 }
 
-void Canvas::bringToFront(QGraphicsItem *item)
-{
+void Canvas::bringToFront(QGraphicsItem *item) {
     item->setZValue(this->front_depth_);
-    this->front_depth_ = std::nextafter(this->front_depth_, std::numeric_limits<qreal>::max());
+    this->front_depth_ = std::nextafter(this->front_depth_,
+                                        std::numeric_limits<qreal>::max());
 }
 
-void Canvas::drawBackground(QPainter *painter, const QRectF &rect)
-{
+void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     // Get scaling factor
     qreal grids = 1;
     if (!this->views().isEmpty()) {
@@ -69,30 +67,25 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect)
     qint32 left = (qint32)(left_bound / segment_size) * segment_size;
     qint32 right = (qint32)(right_bound / segment_size) * segment_size;
 
-    for (qint32 i = 0; i < grids; i++)
-    {
+    for (qint32 i = 0; i < grids; i++) {
         // Set pen
         this->background_pen_.setWidth(pen_width);
         painter->setPen(this->background_pen_);
 
         // Draw vertical grid lines
-        for (qint32 j = 0; j <= right_bound; j += segment_size)
-        {
+        for (qint32 j = 0; j <= right_bound; j += segment_size) {
             painter->drawLine(j , top, j , bot);
         }
-        for (qint32 j = 0; j >= left_bound; j -= segment_size)
-        {
+        for (qint32 j = 0; j >= left_bound; j -= segment_size) {
             painter->drawLine(j , top, j , bot);
         }
 
         // Draw horizontal grid lines
-        for (qint32 j = 0; j <= bot_bound; j += segment_size)
-        {
-            painter->drawLine(left, j , right, j );
+        for (qint32 j = 0; j <= bot_bound; j += segment_size) {
+            painter->drawLine(left, j , right, j);
         }
-        for (qint32 j = 0; j >= top_bound; j -= segment_size)
-        {
-            painter->drawLine(left, j , right, j );
+        for (qint32 j = 0; j >= top_bound; j -= segment_size) {
+            painter->drawLine(left, j , right, j);
         }
 
         // Update segment_size
@@ -110,4 +103,4 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect)
     // painter->drawRect(this->sceneRect());
 }
 
-}  // namespace
+}  // namespace interface

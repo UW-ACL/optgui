@@ -12,34 +12,33 @@
 
 namespace interface {
 
-EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model, QGraphicsItem *parent)
-    : QGraphicsEllipseItem(parent)
-{
+EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
+                                         QGraphicsItem *parent)
+    : QGraphicsEllipseItem(parent) {
     this->model_ = model;
     this->resize_ = false;
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
-    this->setRect(-ELLIPSE_HANDLE_SIZE / 2, -ELLIPSE_HANDLE_SIZE / 2, ELLIPSE_HANDLE_SIZE, ELLIPSE_HANDLE_SIZE);
+    this->setRect(-ELLIPSE_HANDLE_SIZE / 2, -ELLIPSE_HANDLE_SIZE / 2,
+                  ELLIPSE_HANDLE_SIZE, ELLIPSE_HANDLE_SIZE);
 }
 
-void EllipseResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
+void EllipseResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         this->resize_ = true;
     }
 }
 
-void EllipseResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
+void EllipseResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         this->resize_ = false;
     }
 }
 
-void EllipseResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
+void EllipseResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
-        this->model_->radius_ = (qFabs(event->scenePos().x() - parentItem()->scenePos().x()));
+        this->model_->radius_ = (qFabs(event->scenePos().x() -
+                                       parentItem()->scenePos().x()));
         this->expandScene();
     }
 }
@@ -52,13 +51,13 @@ void EllipseResizeHandle::expandScene() {
         if (!rect.contains(newRect)) {
             this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
 
-            if (!this->scene()->views().isEmpty())
-            {
-                this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
+            if (!this->scene()->views().isEmpty()) {
+                this->scene()->views().first()->setSceneRect(
+                            this->scene()->sceneRect());
             }
         }
         this->scene()->update();
     }
 }
 
-}  // namespace
+}  // namespace interface

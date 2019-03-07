@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef MAIN_WINDOW_H
-#define MAIN_WINDOW_H
+// Main GUI window
+
+#ifndef MAIN_WINDOW_H_
+#define MAIN_WINDOW_H_
 
 #include <QMainWindow>
 #include <QMenu>
@@ -14,14 +16,13 @@
 
 namespace interface {
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
+ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-private:
+ private:
     void initializeMenu();
     View *view_;
     QMenu *file_menu_;
@@ -29,6 +30,6 @@ private:
     QAction *load_file_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // MAIN_WINDOW_H
+#endif  // MAIN_WINDOW_H_

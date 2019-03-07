@@ -13,9 +13,9 @@
 
 namespace interface {
 
-EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model, QGraphicsItem *parent)
-    : QGraphicsItem(parent)
-{
+EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
+                                         QGraphicsItem *parent)
+    : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->initialize();
@@ -32,7 +32,9 @@ void EllipseGraphicsItem::initialize() {
     this->pen_.setWidth(3);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
+    this->setFlags(QGraphicsItem::ItemIsMovable |
+                   QGraphicsItem::ItemIsSelectable |
+                   QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set position
     this->setPos(*this->model_->pos_);
@@ -42,28 +44,27 @@ void EllipseGraphicsItem::initialize() {
     this->resize_handle_->hide();
 }
 
-EllipseGraphicsItem::~EllipseGraphicsItem()
-{
+EllipseGraphicsItem::~EllipseGraphicsItem() {
     delete this->resize_handle_;
 }
 
-QRectF EllipseGraphicsItem::boundingRect() const
-{
+QRectF EllipseGraphicsItem::boundingRect() const {
     double rad = this->model_->radius_;
-    // Add exterior border if not convex
-    if (!this->model_->convex_) {
+    // Add exterior border if not direction
+    if (!this->model_->direction_) {
         rad += ELLIPSE_BORDER;
     }
     return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
 
-void EllipseGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
+void EllipseGraphicsItem::paint(QPainter *painter,
+                                const QStyleOptionGraphicsItem *option,
+                                QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
     // Show handles if selected
-    if(this->isSelected()) {
+    if (this->isSelected()) {
         this->resize_handle_->setPos(-this->model_->radius_, 0);
         this->resize_handle_->show();
         this->pen_.setWidth(3);
@@ -80,17 +81,15 @@ void EllipseGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 }
 
-int EllipseGraphicsItem::type() const
-{
+int EllipseGraphicsItem::type() const {
     return ELLIPSE_GRAPHIC;
 }
 
-QPainterPath EllipseGraphicsItem::shape() const
-{
+QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
     path.addEllipse(this->boundingRect());
-    // Add exterior border if not convex
-    if (!this->model_->convex_) {
+    // Add exterior border if not direction
+    if (!this->model_->direction_) {
         double rad = this->model_->radius_;
         path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
     }
@@ -105,23 +104,22 @@ void EllipseGraphicsItem::expandScene() {
         if (!rect.contains(newRect)) {
             this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
 
-            if (!this->scene()->views().isEmpty())
-            {
-                this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
+            if (!this->scene()->views().isEmpty()) {
+                this->scene()->views().first()->setSceneRect(
+                            this->scene()->sceneRect());
             }
         }
         this->scene()->update();
     }
 }
 
-void EllipseGraphicsItem::flipConvex()
-{
-    this->model_->convex_ = !this->model_->convex_;
+void EllipseGraphicsItem::flipDirection() {
+    this->model_->direction_ = !this->model_->direction_;
     this->expandScene();
 }
 
-QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
+QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
+                                         const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         // value is the new position.
         QPointF newPos = value.toPointF();
@@ -135,4 +133,4 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change, const QVaria
     return QGraphicsItem::itemChange(change, value);
 }
 
-}  // namespace
+}  // namespace interface

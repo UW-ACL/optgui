@@ -7,8 +7,7 @@
 
 namespace interface {
 
-ConstraintModel::ConstraintModel()
-{
+ConstraintModel::ConstraintModel() {
     this->initialize();
 }
 
@@ -20,8 +19,7 @@ void ConstraintModel::initialize() {
     this->path_ = new QVector<QPointF *>();
 }
 
-ConstraintModel::~ConstraintModel()
-{
+ConstraintModel::~ConstraintModel() {
     // Delete ellipses
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         delete ellipse;
@@ -47,44 +45,36 @@ ConstraintModel::~ConstraintModel()
     delete this->path_;
 }
 
-void ConstraintModel::addEllipse(EllipseModelItem *item)
-{
+void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
 }
 
-void ConstraintModel::removeEllipse(EllipseModelItem *item)
-{
+void ConstraintModel::removeEllipse(EllipseModelItem *item) {
     this->ellipses_->remove(item);
 }
 
-void ConstraintModel::addPolygon(PolygonModelItem *item)
-{
+void ConstraintModel::addPolygon(PolygonModelItem *item) {
     this->polygons_->insert(item);
 }
 
-void ConstraintModel::removePolygon(PolygonModelItem *item)
-{
+void ConstraintModel::removePolygon(PolygonModelItem *item) {
     this->polygons_->remove(item);
 }
 
-void ConstraintModel::addPlane(PlaneModelItem *item)
-{
+void ConstraintModel::addPlane(PlaneModelItem *item) {
     this->planes_->insert(item);
 }
 
-void ConstraintModel::removePlane(PlaneModelItem *item)
-{
+void ConstraintModel::removePlane(PlaneModelItem *item) {
     this->planes_->remove(item);
 }
 
-void ConstraintModel::addPathPoint(QPointF *item)
-{
+void ConstraintModel::addPathPoint(QPointF *item) {
     this->path_->append(item);
 }
 
-void ConstraintModel::removePathPoint(QPointF *item)
-{
+void ConstraintModel::removePathPoint(QPointF *item) {
     this->path_->removeOne(item);
 }
 
-}  // namespace
+}  // namespace interface

@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef CANVAS_H
-#define CANVAS_H
+// Component holding all graphical representations of data
+
+#ifndef CANVAS_H_
+#define CANVAS_H_
 
 #include <QGraphicsScene>
 
@@ -12,23 +14,22 @@ namespace interface {
 
 const qreal GRID_SIZE = 100;
 
-class Canvas : public QGraphicsScene
-{
+class Canvas : public QGraphicsScene {
     Q_OBJECT
 
-public:
+ public:
     explicit Canvas(QObject *parent = nullptr);
     void bringToFront(QGraphicsItem *item);
-protected:
+ protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
-private slots:
+ private slots:
     void bringSelectedToFront();
-private:
+ private:
     void initialize();
     QPen background_pen_;
     qreal front_depth_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // CANVAS_H
+#endif  // CANVAS_H_

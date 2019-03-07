@@ -3,24 +3,25 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef PLANE_MODEL_ITEM_H
-#define PLANE_MODEL_ITEM_H
+// Data model for plane constraint
+
+#ifndef PLANE_MODEL_ITEM_H_
+#define PLANE_MODEL_ITEM_H_
 
 #include <QPointF>
 
-namespace interface
-{
+namespace interface {
 
-class PlaneModelItem
-{
-public:
-    PlaneModelItem(QPointF *p1, QPointF *p2) : convex_(true) { p1_ = p1; p2_ = p2; }
+class PlaneModelItem {
+ public:
+    explicit PlaneModelItem(QPointF *p1, QPointF *p2) :
+        direction_(true) { p1_ = p1; p2_ = p2; }
     ~PlaneModelItem() { delete p1_; delete p2_; }
     QPointF *p1_;
     QPointF *p2_;
-    bool convex_;
+    bool direction_;
 };
 
-}
+}  // namespace interface
 
-#endif // PLANE_MODEL_ITEM_H
+#endif  // PLANE_MODEL_ITEM_H_

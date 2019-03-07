@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef CONSTRAINT_MODEL_H
-#define CONSTRAINT_MODEL_H
+// Model holding data for all constraints
+
+#ifndef CONSTRAINT_MODEL_H_
+#define CONSTRAINT_MODEL_H_
 
 #include <QSet>
 #include <QVector>
@@ -16,9 +18,8 @@
 
 namespace interface {
 
-class ConstraintModel
-{
-public:
+class ConstraintModel {
+ public:
     ConstraintModel();
     ~ConstraintModel();
 
@@ -38,10 +39,10 @@ public:
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
     QVector<QPointF *> *path_;
-private:
+ private:
     void initialize();
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // CONSTRAINT_MODEL_H
+#endif  // CONSTRAINT_MODEL_H_

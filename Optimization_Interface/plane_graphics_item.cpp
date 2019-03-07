@@ -13,9 +13,9 @@
 
 namespace interface {
 
-PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model, QGraphicsItem *parent)
-    : QGraphicsItem(parent)
-{
+PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
+                                     QGraphicsItem *parent)
+    : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->initialize();
@@ -32,7 +32,9 @@ void PlaneGraphicsItem::initialize() {
     this->pen_.setWidth(3);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
+    this->setFlags(QGraphicsItem::ItemIsMovable |
+                   QGraphicsItem::ItemIsSelectable |
+                   QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set resize handles
     this->p1_handle_ = new PolygonResizeHandle(this->model_->p1_, this);
@@ -41,19 +43,18 @@ void PlaneGraphicsItem::initialize() {
     this->p2_handle_->hide();
 }
 
-PlaneGraphicsItem::~PlaneGraphicsItem()
-{
+PlaneGraphicsItem::~PlaneGraphicsItem() {
     delete this->p1_handle_;
     delete this->p2_handle_;
 }
 
-QRectF PlaneGraphicsItem::boundingRect() const
-{
+QRectF PlaneGraphicsItem::boundingRect() const {
     return this->shape().boundingRect();
 }
 
-void PlaneGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
+void PlaneGraphicsItem::paint(QPainter *painter,
+                              const QStyleOptionGraphicsItem *option,
+                              QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -76,30 +77,29 @@ void PlaneGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
     painter->fillPath(this->shape(), this->brush_);
-    QLineF line(mapToScene(*this->model_->p1_), mapToScene(*this->model_->p2_));
+    QLineF line(mapFromScene(*this->model_->p1_), mapFromScene(*this->model_->p2_));
     painter->drawLine(line);
 }
 
-int PlaneGraphicsItem::type() const
-{
+int PlaneGraphicsItem::type() const {
     return PLANE_GRAPHIC;
 }
 
-QPainterPath PlaneGraphicsItem::shape() const
-{
+QPainterPath PlaneGraphicsItem::shape() const {
     QPainterPath path;
-    QLineF line;
-    // Flip shaded side if convex
-    if (this->model_->convex_) {
-        line = QLineF(mapToScene(*this->model_->p1_), mapToScene(*this->model_->p2_));
-    } else {
-        line = QLineF(mapToScene(*this->model_->p2_), mapToScene(*this->model_->p1_));
+
+    QLineF line(mapFromScene(*this->model_->p1_),
+                mapFromScene(*this->model_->p2_));
+    // Flip shaded side if direction
+    if (this->model_->direction_) {
+        line = QLineF(line.p2(), line.p1());
     }
 
     QPolygonF poly;
     poly << line.p1();
     poly << line.p2();
-    poly << line.normalVector().translated(line.dx(), line.dy()).pointAt(PLANE_BORDER / line.length());
+    poly << line.normalVector().translated(
+                line.dx(), line.dy()).pointAt(PLANE_BORDER / line.length());
     poly << line.normalVector().pointAt(PLANE_BORDER / line.length());
     path.addPolygon(poly);
 
@@ -116,21 +116,21 @@ void PlaneGraphicsItem::expandScene() {
 
             if (!this->scene()->views().isEmpty())
             {
-                this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
+                this->scene()->views().first()->setSceneRect(
+                            this->scene()->sceneRect());
             }
         }
         this->scene()->update();
     }
 }
 
-void PlaneGraphicsItem::flipConvex()
-{
-    this->model_->convex_ = !this->model_->convex_;
+void PlaneGraphicsItem::flipDirection() {
+    this->model_->direction_ = !this->model_->direction_;
     this->expandScene();
 }
 
-QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
+QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change,
+                                       const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         // value is the new position.
         QPointF newPos = value.toPointF();
@@ -146,4 +146,4 @@ QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change, const QVariant
     return QGraphicsItem::itemChange(change, value);
 }
 
-}  // namespace
+}  // namespace interface

@@ -10,8 +10,7 @@
 namespace interface {
 
 View::View(QWidget * parent)
-    : QGraphicsView(parent)
-{
+    : QGraphicsView(parent) {
     // Create Canvas
     this->canvas_ = new Canvas(this);
     this->setScene(this->canvas_);
@@ -32,13 +31,9 @@ View::View(QWidget * parent)
     this->initialize();
 }
 
-View::~View()
-{
+View::~View() {
     // Delete temporary markers
-    for (QGraphicsItem *dot : *this->temp_markers_) {
-        this->scene()->removeItem(dot);
-        delete dot;
-    }
+    this->clearMarkers();
     delete this->temp_markers_;
 
     // Delete layout components
@@ -51,8 +46,7 @@ View::~View()
     delete this->controller_;
 }
 
-void View::loadFile()
-{
+void View::loadFile() {
     // Create new canvas
     Canvas *new_canvas = new Canvas(this);
     this->setScene(new_canvas);
@@ -69,13 +63,19 @@ void View::loadFile()
     this->controller_->loadFile();
 }
 
-void View::saveFile()
-{
+void View::saveFile() {
     this->controller_->saveFile();
 }
 
-void View::initialize()
-{
+void View::initialize() {
+    // Set color
+    this->setAutoFillBackground(true);
+    QPalette palette = this->palette();
+    QColor background = QWidget::palette().window().color();
+    background.setAlpha(200);
+    palette.setColor(QPalette::Base, background);
+    this->setPalette(palette);
+
     // Set Layout
     this->setLayout(new QHBoxLayout(this));
     this->layout()->setMargin(0);
@@ -89,14 +89,16 @@ void View::initialize()
     // Create open menu button
     this->menu_button_ = new QToolButton(this);
     this->menu_button_->setArrowType(Qt::LeftArrow);
-    this->menu_button_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    this->menu_button_->setSizePolicy(QSizePolicy::Fixed,
+                                      QSizePolicy::Fixed);
     this->menu_button_->setFixedSize(10, 40);
     this->layout()->addWidget(this->menu_button_);
     this->layout()->setAlignment(this->menu_button_, Qt::AlignRight);
 
     // Create menu panel
     this->menu_panel_ = new MenuPanel(this);
-    this->menu_panel_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    this->menu_panel_->setSizePolicy(QSizePolicy::Expanding,
+                                     QSizePolicy::Expanding);
     this->menu_panel_->setFixedWidth(100);
     this->layout()->addWidget(this->menu_panel_);
     this->layout()->setAlignment(this->menu_panel_, Qt::AlignRight);
@@ -108,21 +110,27 @@ void View::initialize()
     this->setRenderHint(QPainter::Antialiasing);
 
     // Connect menu open/close
-    connect(this->menu_button_, SIGNAL(clicked()), this, SLOT(openMenu()));
-    connect(this->menu_panel_->close_button_, SIGNAL(clicked()), this, SLOT(closeMenu()));
-
-    // Connect zoom
-    connect(this->menu_panel_->zoom_slider_, SIGNAL(valueChanged(int)), this, SLOT(setZoom(int)));
+    connect(this->menu_button_, SIGNAL(clicked()),
+            this, SLOT(openMenu()));
+    connect(this->menu_panel_->close_button_, SIGNAL(clicked()),
+            this, SLOT(closeMenu()));
 
     // Connect menu buttons
-    for (MenuButton *button : *this->menu_panel_->menu_buttons_)
-    {
-        connect(button, SIGNAL(changeState(STATE)), this, SLOT(setState(STATE)));
+    for (MenuButton *button : *this->menu_panel_->menu_buttons_) {
+        connect(button, SIGNAL(changeState(STATE)),
+                this, SLOT(setState(STATE)));
     }
+
+    // Connect zoom
+    connect(this->menu_panel_->zoom_slider_, SIGNAL(valueChanged(int)),
+            this, SLOT(setZoom(int)));
+
+    // Connect execute button
+    connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
+            this, SLOT(execute()));
 }
 
-void View::mousePressEvent(QMouseEvent *event)
-{
+void View::mousePressEvent(QMouseEvent *event) {
     // Grab event position in scene coordinates
     QPointF pos = this->mapToScene(event->pos());
 
@@ -133,25 +141,24 @@ void View::mousePressEvent(QMouseEvent *event)
         }
         case POLYGON: {
             // Add markers until polygon is completed
-            if (!this->temp_markers_->isEmpty() && itemAt(event->pos()) == this->temp_markers_->first()) {
+            if (!this->temp_markers_->isEmpty() &&
+                    itemAt(event->pos()) == this->temp_markers_->first()) {
                 if (this->temp_markers_->size() >= 3) {
                     QVector<QPointF*> *poly = new QVector<QPointF*>();
                     for (QGraphicsItem *dot : *this->temp_markers_) {
-                        poly->append(new QPointF(dot->pos().x(), dot->pos().y()));
+                        poly->append(new QPointF(dot->pos().x(),
+                                                 dot->pos().y()));
                     }
                     this->controller_->addPolygon(poly);
                 }
                 // Clean up markers
-                for (QGraphicsItem *dot : *this->temp_markers_) {
-                    this->scene()->removeItem(dot);
-                    delete dot;
-                }
-                this->temp_markers_->clear();
+                this->clearMarkers();
             } else {
                 // Add temporary marker
-                QGraphicsItem *dot = this->scene()->addEllipse(-DOT_SIZE / 2, -DOT_SIZE / 2,
-                                                               DOT_SIZE, DOT_SIZE,
-                                                               dot_pen_, dot_brush_);
+                QGraphicsItem *dot =
+                        this->scene()->addEllipse(-DOT_SIZE / 2, -DOT_SIZE / 2,
+                                                  DOT_SIZE, DOT_SIZE,
+                                                  dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
             }
@@ -163,16 +170,13 @@ void View::mousePressEvent(QMouseEvent *event)
                 QPointF *p1 = new QPointF(temp_markers_->first()->pos());
                 this->controller_->addPlane(p1, new QPointF(pos));
                 // Clean up markers
-                for (QGraphicsItem *dot : *this->temp_markers_) {
-                    this->scene()->removeItem(dot);
-                    delete dot;
-                }
-                this->temp_markers_->clear();
+                this->clearMarkers();
             } else {
                 // Add temporary marker
-                QGraphicsItem *dot = this->scene()->addEllipse(-DOT_SIZE / 2, -DOT_SIZE / 2,
-                                                               DOT_SIZE, DOT_SIZE,
-                                                               dot_pen_, dot_brush_);
+                QGraphicsItem *dot =
+                        this->scene()->addEllipse(-DOT_SIZE / 2, -DOT_SIZE / 2,
+                                                  DOT_SIZE, DOT_SIZE,
+                                                  dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
             }
@@ -192,7 +196,7 @@ void View::mousePressEvent(QMouseEvent *event)
         case FLIP: {
             // Flip clicked item if possible
             if (itemAt(event->pos())) {
-                this->controller_->flipConvex(itemAt(event->pos()));
+                this->controller_->flipDirection(itemAt(event->pos()));
             }
             break;
         }
@@ -224,11 +228,7 @@ void View::setZoom(int value) {
 
 void View::setState(STATE button_type) {
     // Clear all temporary markers
-    for (QGraphicsItem *dot : *this->temp_markers_) {
-        this->scene()->removeItem(dot);
-        delete dot;
-    }
-    this->temp_markers_->clear();
+    this->clearMarkers();
 
     // Deselect items
     this->canvas_->clearSelection();
@@ -250,8 +250,22 @@ void View::setState(STATE button_type) {
     }
 }
 
-void View::resizeEvent(QResizeEvent *event)
-{
+void View::execute() {
+    this->clearMarkers();
+
+    this->controller_->execute();
+}
+
+void View::clearMarkers() {
+    // Clear all temporary markers
+    for (QGraphicsItem *dot : *this->temp_markers_) {
+        this->scene()->removeItem(dot);
+        delete dot;
+    }
+    this->temp_markers_->clear();
+}
+
+void View::resizeEvent(QResizeEvent *event) {
     // Expand scene to viewable area
     QRectF oldView = this->viewport()->rect();
     oldView.translate(-oldView.center().x(), -oldView.center().y());
@@ -262,4 +276,4 @@ void View::resizeEvent(QResizeEvent *event)
     QGraphicsView::resizeEvent(event);
 }
 
-}  // namespace
+}  // namespace interface

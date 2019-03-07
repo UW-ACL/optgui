@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef PATH_GRAPHICS_ITEM_H
-#define PATH_GRAPHICS_ITEM_H
+// Graphical representation of waypoint
+
+#ifndef PATH_GRAPHICS_ITEM_H_
+#define PATH_GRAPHICS_ITEM_H_
 
 #include <QGraphicsItem>
 #include <QPainter>
@@ -15,27 +17,29 @@ namespace interface {
 
 const qreal PATH_POINT_SIZE = 20;
 
-class PathGraphicsItem : public QGraphicsItem
-{
-public:
-    explicit PathGraphicsItem(QPointF *point, QVector<QPointF *> *path, QGraphicsItem *parent = nullptr);
+class PathGraphicsItem : public QGraphicsItem {
+ public:
+    explicit PathGraphicsItem(QPointF *point, QVector<QPointF *> *path,
+                              QGraphicsItem *parent = nullptr);
     QPointF *point_;
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
     int type() const override;
 
     void expandScene();
-protected:
+ protected:
     QPainterPath shape() const override;
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-private:
+    QVariant itemChange(GraphicsItemChange change,
+                        const QVariant &value) override;
+ private:
     void initialize();
     QPen pen_;
     QBrush brush_;
     QVector<QPointF *> *path_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // PATH_GRAPHICS_ITEM_H
+#endif  // PATH_GRAPHICS_ITEM_H_

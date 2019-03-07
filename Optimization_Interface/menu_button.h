@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef MENU_BUTTON_H
-#define MENU_BUTTON_H
+// Template for menu mode toggle buttons
+
+#ifndef MENU_BUTTON_H_
+#define MENU_BUTTON_H_
 
 #include <QLabel>
 
@@ -12,22 +14,20 @@
 
 namespace interface {
 
-class MenuButton : public QLabel
-{
+class MenuButton : public QLabel {
     Q_OBJECT
-
-public:
+ public:
     explicit MenuButton(STATE button_type, QWidget *parent);
     STATE getButtonType();
-signals:
+ signals:
     void changeState(STATE button_type);
-protected:
+ protected:
     void mousePressEvent(QMouseEvent *event) override;
-private:
+ private:
     void initialize();
     STATE button_type_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // MENU_BUTTON_H
+#endif  // MENU_BUTTON_H_

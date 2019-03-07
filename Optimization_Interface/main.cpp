@@ -3,14 +3,15 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
+// Runs main event loop
+
 #include <QApplication>
 
 #include "main_window.h"
 
 using interface::MainWindow;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     // Initialize application
     QApplication app(argc, argv);
 

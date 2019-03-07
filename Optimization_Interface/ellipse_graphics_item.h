@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef ELLIPSE_GRAPHICS_ITEM_H
-#define ELLIPSE_GRAPHICS_ITEM_H
+// Graphical representation for ellipse constraint
+
+#ifndef ELLIPSE_GRAPHICS_ITEM_H_
+#define ELLIPSE_GRAPHICS_ITEM_H_
 
 #include <QGraphicsItem>
 #include <QPainter>
@@ -16,29 +18,31 @@ namespace interface {
 
 const qreal ELLIPSE_BORDER = 15;
 
-class EllipseGraphicsItem : public QGraphicsItem
-{
-public:
-    explicit EllipseGraphicsItem(EllipseModelItem *model, QGraphicsItem *parent = nullptr);
+class EllipseGraphicsItem : public QGraphicsItem {
+ public:
+    explicit EllipseGraphicsItem(EllipseModelItem *model,
+                                 QGraphicsItem *parent = nullptr);
     ~EllipseGraphicsItem();
     EllipseModelItem *model_;
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
     int type() const override;
 
     void expandScene();
-    void flipConvex();
-protected:
+    void flipDirection();
+ protected:
     QPainterPath shape() const override;
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-private:
+    QVariant itemChange(GraphicsItemChange change,
+                        const QVariant &value) override;
+ private:
     void initialize();
     QPen pen_;
     QBrush brush_;
     EllipseResizeHandle *resize_handle_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // ELLIPSE_GRAPHICS_ITEM_H
+#endif  // ELLIPSE_GRAPHICS_ITEM_H_

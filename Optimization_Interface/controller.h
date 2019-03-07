@@ -3,17 +3,18 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+// Controller for modifying Model and Viewing components
+
+#ifndef CONTROLLER_H_
+#define CONTROLLER_H_
 
 #include "canvas.h"
 #include "constraint_model.h"
 
 namespace interface {
 
-class Controller
-{
-public:
+class Controller {
+ public:
     explicit Controller(Canvas *canvas);
     ~Controller();
 
@@ -25,11 +26,13 @@ public:
     void addPath(QPointF *point);
 
     void removeItem(QGraphicsItem *item);
-    void flipConvex(QGraphicsItem *item);
+    void flipDirection(QGraphicsItem *item);
 
     void loadFile();
     void saveFile();
-private:
+
+    void execute();
+ private:
     Canvas *canvas_;
     ConstraintModel *model_;
 
@@ -38,17 +41,17 @@ private:
     void loadPlane(PlaneModelItem *model);
     void loadPath(QPointF *point);
 
-    void writeEllipse(EllipseModelItem *model, QDataStream &out);
-    void writePolygon(PolygonModelItem *model, QDataStream &out);
-    void writePlane(PlaneModelItem *model, QDataStream &out);
-    void writePath(QPointF *point, QDataStream &out);
+    void writeEllipse(EllipseModelItem *model, QDataStream *out);
+    void writePolygon(PolygonModelItem *model, QDataStream *out);
+    void writePlane(PlaneModelItem *model, QDataStream *out);
+    void writePath(QPointF *point, QDataStream *out);
 
-    EllipseModelItem *readEllipse(QDataStream &in);
-    PolygonModelItem *readPolygon(QDataStream &in);
-    PlaneModelItem *readPlane(QDataStream &in);
-    QPointF *readPath(QDataStream &in);
+    EllipseModelItem *readEllipse(QDataStream *in);
+    PolygonModelItem *readPolygon(QDataStream *in);
+    PlaneModelItem *readPlane(QDataStream *in);
+    QPointF *readPath(QDataStream *in);
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // CONTROLLER_H
+#endif  // CONTROLLER_H_

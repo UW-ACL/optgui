@@ -13,9 +13,9 @@
 
 namespace interface {
 
-PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model, QGraphicsItem *parent)
-    : QGraphicsItem(parent)
-{
+PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
+                                         QGraphicsItem *parent)
+    : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->initialize();
@@ -32,7 +32,9 @@ void PolygonGraphicsItem::initialize() {
     this->pen_.setWidth(3);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
+    this->setFlags(QGraphicsItem::ItemIsMovable |
+                   QGraphicsItem::ItemIsSelectable |
+                   QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set resize handles
     this->resize_handles_ = new QVector<PolygonResizeHandle *>();
@@ -41,11 +43,9 @@ void PolygonGraphicsItem::initialize() {
         this->resize_handles_->append(handle);
         handle->hide();
     }
-
 }
 
-PolygonGraphicsItem::~PolygonGraphicsItem()
-{
+PolygonGraphicsItem::~PolygonGraphicsItem() {
     // Delete resize handles
     for (PolygonResizeHandle *handle : *this->resize_handles_) {
         delete handle;
@@ -53,13 +53,13 @@ PolygonGraphicsItem::~PolygonGraphicsItem()
     delete this->resize_handles_;
 }
 
-QRectF PolygonGraphicsItem::boundingRect() const
-{
+QRectF PolygonGraphicsItem::boundingRect() const {
     return this->shape().boundingRect();
 }
 
-void PolygonGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
-{
+void PolygonGraphicsItem::paint(QPainter *painter,
+                                const QStyleOptionGraphicsItem *option,
+                                QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -80,56 +80,54 @@ void PolygonGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
 
-    // Draw exterior shaded areas if not convex
-    if (this->model_->convex_) {
-        painter->drawPath(this->shape());
-    } else {
-        painter->fillPath(this->shape(), this->brush_);
-        for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-            QLineF line(mapFromScene(*this->model_->points_->at(i-1)), mapFromScene(*this->model_->points_->at(i)));
-            painter->drawLine(line);
-        }
-        QLineF line(mapFromScene(*this->model_->points_->last()), mapFromScene(*this->model_->points_->first()));
+    painter->fillPath(this->shape(), this->brush_);
+    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
+        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
+                    mapFromScene(*this->model_->points_->at(i)));
         painter->drawLine(line);
     }
+    QLineF line(mapFromScene(*this->model_->points_->last()),
+                mapFromScene(*this->model_->points_->first()));
+    painter->drawLine(line);
 }
 
-int PolygonGraphicsItem::type() const
-{
+int PolygonGraphicsItem::type() const {
     return POLYGON_GRAPHIC;
 }
 
-QPainterPath PolygonGraphicsItem::shape() const
-{
+QPainterPath PolygonGraphicsItem::shape() const {
     QPainterPath path;
 
-    // Add exterior shaded areas if not convex
-    if (this->model_->convex_) {
-        QPolygonF poly;
-        for (QPointF *point : *this->model_->points_) {
-            poly << mapFromScene(*point);
+    // Draw exterior shadings
+    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
+        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
+                    mapFromScene(*this->model_->points_->at(i)));
+        // Flip shading if direction is reversed
+        if (this->model_->direction_) {
+            line = QLineF(line.p2(), line.p1());
         }
-        poly << mapFromScene(*this->model_->points_->first());
-        path.addPolygon(poly);
-    } else {
-        for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-            QLineF line(mapFromScene(*this->model_->points_->at(i-1)), mapFromScene(*this->model_->points_->at(i)));
-
-            QPolygonF poly;
-            poly << line.p1();
-            poly << line.p2();
-            poly << line.normalVector().translated(line.dx(), line.dy()).pointAt(POLYGON_BORDER  / line.length());
-            poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
-            path.addPolygon(poly);
-        }
-        QLineF line(mapFromScene(*this->model_->points_->last()), mapFromScene(*this->model_->points_->first()));
         QPolygonF poly;
         poly << line.p1();
         poly << line.p2();
-        poly << line.normalVector().translated(line.dx(), line.dy()).pointAt(POLYGON_BORDER / line.length());
+        poly << line.normalVector().translated(
+                    line.dx(), line.dy()).pointAt(POLYGON_BORDER  / line.length());
         poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
         path.addPolygon(poly);
     }
+    QLineF line(mapFromScene(*this->model_->points_->last()),
+                mapFromScene(*this->model_->points_->first()));
+    // Flip shading if direction is reversed
+    if (this->model_->direction_) {
+        line = QLineF(line.p2(), line.p1());
+    }
+
+    QPolygonF poly;
+    poly << line.p1();
+    poly << line.p2();
+    poly << line.normalVector().translated(
+                line.dx(), line.dy()).pointAt(POLYGON_BORDER / line.length());
+    poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
+    path.addPolygon(poly);
 
     return path;
 }
@@ -142,23 +140,22 @@ void PolygonGraphicsItem::expandScene() {
         if (!rect.contains(newRect)) {
             this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
 
-            if (!this->scene()->views().isEmpty())
-            {
-                this->scene()->views().first()->setSceneRect(this->scene()->sceneRect());
+            if (!this->scene()->views().isEmpty()) {
+                this->scene()->views().first()->setSceneRect(
+                            this->scene()->sceneRect());
             }
         }
         this->scene()->update();
     }
 }
 
-void PolygonGraphicsItem::flipConvex()
-{
-    this->model_->convex_ = !this->model_->convex_;
+void PolygonGraphicsItem::flipDirection() {
+    this->model_->direction_ = !this->model_->direction_;
     this->expandScene();
 }
 
-QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
-{
+QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
+                                         const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         // value is the new position.
         QPointF newPos = value.toPointF();
@@ -175,4 +172,4 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change, const QVaria
     return QGraphicsItem::itemChange(change, value);
 }
 
-}  // namespace
+}  // namespace interface

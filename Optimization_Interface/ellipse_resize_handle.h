@@ -3,8 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#ifndef ELLIPSE_RESIZE_HANDLE_H
-#define ELLIPSE_RESIZE_HANDLE_H
+// Graphical resize handle for modifying ellipse constraints
+
+#ifndef ELLIPSE_RESIZE_HANDLE_H_
+#define ELLIPSE_RESIZE_HANDLE_H_
 
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
@@ -15,20 +17,20 @@ namespace interface {
 
 const qreal ELLIPSE_HANDLE_SIZE = 16;
 
-class EllipseResizeHandle : public QGraphicsEllipseItem
-{
-public:
-    EllipseResizeHandle(EllipseModelItem *model, QGraphicsItem *parent);
-protected:
+class EllipseResizeHandle : public QGraphicsEllipseItem {
+ public:
+    explicit EllipseResizeHandle(EllipseModelItem *model,
+                                 QGraphicsItem *parent);
+ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-private:
+ private:
     void expandScene();
     EllipseModelItem *model_;
     bool resize_;
 };
 
-}  // namespace
+}  // namespace interface
 
-#endif // ELLIPSE_RESIZE_HANDLE_H
+#endif  // ELLIPSE_RESIZE_HANDLE_H_

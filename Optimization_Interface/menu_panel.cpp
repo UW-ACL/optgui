@@ -13,18 +13,17 @@
 namespace interface {
 
 MenuPanel::MenuPanel(QWidget *parent, Qt::WindowFlags flags)
-    : QFrame(parent, flags)
-{
+    : QFrame(parent, flags) {
     this->initialize();
 }
 
-MenuPanel::~MenuPanel()
-{
+MenuPanel::~MenuPanel() {
     // delete menu controls
     for (MenuButton *button : *this->menu_buttons_) {
         delete button;
     }
     delete this->menu_buttons_;
+    delete this->exec_button_;
     delete this->zoom_slider_;
     delete this->menu_->layout();
 
@@ -34,8 +33,7 @@ MenuPanel::~MenuPanel()
     delete this->layout();
 }
 
-void MenuPanel::initialize()
-{
+void MenuPanel::initialize() {
     // Set color
     this->setAutoFillBackground(true);
     QPalette palette = this->palette();
@@ -81,8 +79,12 @@ void MenuPanel::initialize()
     // Show menu buttons
     for (MenuButton *button : *this->menu_buttons_) {
         this->menu_->layout()->addWidget(button);
-        this->menu_->layout()->setAlignment(button, Qt::AlignTop|Qt::AlignCenter);
+        this->menu_->layout()->setAlignment(button,
+                                            Qt::AlignTop|Qt::AlignCenter);
     }
+
+    // Create execute button
+    this->initializeExecButton();
 
     // Create zoom slider
     this->initializeZoomSlider();
@@ -193,9 +195,9 @@ void MenuPanel::initializeFlipButton() {
     QPolygonF poly;
     poly << line.p1();
     poly << line.p2();
-    poly << line.normalVector().translated(line.dx(), line.dy()).pointAt(10.0 / line.length());
+    poly << line.normalVector().translated(
+                line.dx(), line.dy()).pointAt(10.0 / line.length());
     poly << line.normalVector().pointAt(10.0 / line.length());
-
 
     painter.setPen(Qt::NoPen);
     painter.drawPolygon(poly);
@@ -203,21 +205,29 @@ void MenuPanel::initializeFlipButton() {
     painter.drawLine(line);
 
     flip_button->setPixmap(pix);
-    flip_button->setToolTip(tr("Flip constraint convexity"));
+    flip_button->setToolTip(tr("Flip constraint directionity"));
     this->menu_buttons_->append(flip_button);
+}
+
+void MenuPanel::initializeExecButton() {
+    this->exec_button_ = new QPushButton("Exec", this->menu_);
+    this->exec_button_->setToolTip(tr("Execute optimization with constraints"));
+    this->menu_->layout()->addWidget(this->exec_button_);
+    this->menu_->layout()->setAlignment(this->exec_button_, Qt::AlignBottom);
 }
 
 void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);
-    this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,
+                                      QSizePolicy::Minimum);
     this->zoom_slider_->setTickInterval(1);
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
     this->zoom_slider_->setMinimum(3);
     this->zoom_slider_->setMaximum(9);
     this->zoom_slider_->setValue(6);
+    this->zoom_slider_->setToolTip(tr("Set zoom level"));
     this->menu_->layout()->addWidget(this->zoom_slider_);
     this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
-    this->zoom_slider_->setToolTip(tr("Set zoom level"));
 }
 
-}  // namespace
+}  // namespace interface
