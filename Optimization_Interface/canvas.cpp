@@ -94,11 +94,13 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
 
     // Draw scale
     painter->drawLine(rect.left() + offset, rect.bottom() - offset,
-                      rect.left() + (offset + segment_size), rect.bottom() - offset);
+                      rect.left() + (offset + segment_size),
+                      rect.bottom() - offset);
     // Draw notches on scale
     for (qint32 i = 0; i <= segment_size; i += GRID_SIZE / 2) {
         painter->drawLine(rect.left() + offset + i, rect.bottom() - offset,
-                          rect.left() + offset + i, rect.bottom() - notch_offset);
+                          rect.left() + offset + i,
+                          rect.bottom() - notch_offset);
     }
 
     // Draw label

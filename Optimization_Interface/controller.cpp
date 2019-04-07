@@ -24,12 +24,28 @@ Controller::Controller(Canvas *canvas) {
     // initialize path graphic
     this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
     this->canvas_->addItem(this->path_graphic_);
+
+    // initialize course graphic
+    this->course_graphic_ = new CourseGraphicsItem(this->model_->course_);
+    this->canvas_->addItem(this->course_graphic_);
+
+    // initialize drone graphic
+    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
+    this->canvas_->addItem(this->drone_graphic_);
 }
 
 Controller::~Controller() {
     // deinitialize path graphic
     this->clearPath();
     delete this->path_graphic_;
+
+    // deinitialize course graphic
+    this->clearCourse();
+    delete this->course_graphic_;
+
+    // deinitialize drone graphic
+    this->clearDrone();
+    delete this->drone_graphic_;
 
     // clean up model
     delete this->model_;
@@ -78,7 +94,8 @@ void Controller::removeItem(QGraphicsItem *item) {
                         dynamic_cast<PolygonResizeHandle *>(item);
                 QPointF *point_model = point_handle->getPoint();
                 qgraphicsitem_cast<PathGraphicsItem *>
-                        (point_handle->parentItem())->removeHandle(point_handle);
+                        (point_handle->parentItem())->
+                        removeHandle(point_handle);
                 this->model_->removePathPoint(point_model);
                 this->canvas_->removeItem(point_handle);
                 this->canvas_->update();
@@ -130,6 +147,11 @@ void Controller::addPlane(QPointF *p1, QPointF *p2) {
 
 void Controller::addPath(QPointF *point) {
     this->loadPath(point);
+}
+
+void Controller::addCourse(QPointF *point) {
+    this->model_->addCoursePoint(point);
+    this->canvas_->update();
 }
 
 
@@ -320,9 +342,18 @@ void Controller::loadFile() {
 
         // Reset path graphic
         delete this->path_graphic_;
-
         this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
         this->canvas_->addItem(this->path_graphic_);
+
+        // Reset course graphic
+        delete this->course_graphic_;
+        this->course_graphic_ = new CourseGraphicsItem(this->model_->course_);
+        this->canvas_->addItem(this->course_graphic_);
+
+        // Reset drone graphic
+        delete this->drone_graphic_;
+        this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
+        this->canvas_->addItem(this->drone_graphic_);
 
         // Read ellipses
         quint32 num_ellipses;
@@ -364,6 +395,14 @@ void Controller::execute() {
 
 void Controller::clearPath() {
     this->canvas_->removeItem(this->path_graphic_);
+}
+
+void Controller::clearCourse() {
+    this->canvas_->removeItem(this->course_graphic_);
+}
+
+void Controller::clearDrone() {
+    this->canvas_->removeItem(this->drone_graphic_);
 }
 
 }  // namespace interface

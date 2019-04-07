@@ -35,10 +35,16 @@ class ConstraintModel {
     void addPathPoint(QPointF *item);
     void removePathPoint(QPointF *item);
 
+    void addCoursePoint(QPointF *item);
+    void clearCourse();
+
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
     QVector<QPointF *> *path_;
+    QVector<QPointF *> *course_;
+    QPointF *drone_;
+
  private:
     void initialize();
 };

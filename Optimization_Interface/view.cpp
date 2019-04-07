@@ -47,10 +47,14 @@ View::~View() {
 }
 
 void View::loadFile() {
+    // Clear graphics
+    this->controller_->clearPath();
+    this->controller_->clearCourse();
+    this->controller_->clearDrone();
+
     // Create new canvas
     Canvas *new_canvas = new Canvas(this);
     this->setScene(new_canvas);
-    this->controller_->clearPath();
     delete this->canvas_;
     this->canvas_ = new_canvas;
 

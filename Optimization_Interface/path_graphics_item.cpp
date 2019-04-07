@@ -24,7 +24,7 @@ PathGraphicsItem::PathGraphicsItem(QVector<QPointF *> *path,
 void PathGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::blue);
-    this->pen_.setWidth(3);
+    this->pen_.setWidth(1);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
@@ -53,11 +53,14 @@ void PathGraphicsItem::paint(QPainter *painter,
 
     // Create new handles if necessary
     if (this->path_->size() > this->resize_handles_->size()) {
-        for (qint32 i = this->resize_handles_->size(); i < this->path_->size(); i++) {
-            PolygonResizeHandle *handle = new PolygonResizeHandle(this->path_->at(i), this);
+        for (qint32 i = this->resize_handles_->size();
+             i < this->path_->size(); i++) {
+            PolygonResizeHandle *handle =
+                    new PolygonResizeHandle(this->path_->at(i), this);
             this->resize_handles_->append(handle);
             handle->show();
         }
+        this->expandScene();
     }
 
     // Draw connecting path
@@ -73,9 +76,10 @@ void PathGraphicsItem::paint(QPainter *painter,
     qint32 index = 0;
     for (PolygonResizeHandle *handle : *this->resize_handles_) {
         QColor color = Qt::white;
-        if (index == 0) {
-            color = Qt::green;
-        } else if (index == size - 1) {
+//        if (index == 0) {
+//            color = Qt::green;
+//        } else
+        if (index == size - 1) {
             color = Qt::red;
         }
         handle->setColor(color);
@@ -108,8 +112,8 @@ void PathGraphicsItem::expandScene() {
         QRectF newRect = this->sceneBoundingRect();
         QRectF rect = this->scene()->sceneRect();
         if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
+            this->scene()->setSceneRect(
+                        this->scene()->sceneRect().united(newRect));
             if (!this->scene()->views().isEmpty()) {
                 this->scene()->views().first()->setSceneRect(
                             this->scene()->sceneRect());

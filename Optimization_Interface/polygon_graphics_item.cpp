@@ -110,7 +110,8 @@ QPainterPath PolygonGraphicsItem::shape() const {
         poly << line.p1();
         poly << line.p2();
         poly << line.normalVector().translated(
-                    line.dx(), line.dy()).pointAt(POLYGON_BORDER / line.length());
+                    line.dx(),
+                    line.dy()).pointAt(POLYGON_BORDER /line.length());
         poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
         path.addPolygon(poly);
     }
@@ -138,8 +139,8 @@ void PolygonGraphicsItem::expandScene() {
         QRectF newRect = this->sceneBoundingRect();
         QRectF rect = this->scene()->sceneRect();
         if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
+            this->scene()->setSceneRect(
+                        this->scene()->sceneRect().united(newRect));
             if (!this->scene()->views().isEmpty()) {
                 this->scene()->views().first()->setSceneRect(
                             this->scene()->sceneRect());

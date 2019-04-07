@@ -10,6 +10,8 @@
 
 #include "canvas.h"
 #include "constraint_model.h"
+#include "course_graphics_item.h"
+#include "drone_graphics_item.h"
 #include "path_graphics_item.h"
 
 namespace interface {
@@ -25,6 +27,7 @@ class Controller {
     void addPolygon(QVector<QPointF *> *points);
     void addPlane(QPointF *p1, QPointF *p2);
     void addPath(QPointF *point);
+    void addCourse(QPointF *point);
 
     void removeItem(QGraphicsItem *item);
     void flipDirection(QGraphicsItem *item);
@@ -34,11 +37,15 @@ class Controller {
 
     void execute();
     void clearPath();
+    void clearCourse();
+    void clearDrone();
 
  private:
     Canvas *canvas_;
     ConstraintModel *model_;
     PathGraphicsItem *path_graphic_;
+    CourseGraphicsItem *course_graphic_;
+    DroneGraphicsItem *drone_graphic_;
 
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);

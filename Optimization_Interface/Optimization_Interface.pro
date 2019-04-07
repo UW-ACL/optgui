@@ -37,7 +37,9 @@ SOURCES += \
     polygon_graphics_item.cpp \
     polygon_resize_handle.cpp \
     plane_graphics_item.cpp \
-    path_graphics_item.cpp
+    path_graphics_item.cpp \
+    course_graphics_item.cpp \
+    drone_graphics_item.cpp
 
 HEADERS += \
         main_window.h \
@@ -56,7 +58,9 @@ HEADERS += \
     polygon_resize_handle.h \
     plane_model_item.h \
     plane_graphics_item.h \
-    path_graphics_item.h
+    path_graphics_item.h \
+    course_graphics_item.h \
+    drone_graphics_item.h
 
 RESOURCES += \
     resources.qrc
