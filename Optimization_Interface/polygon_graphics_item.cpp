@@ -110,7 +110,7 @@ QPainterPath PolygonGraphicsItem::shape() const {
         poly << line.p1();
         poly << line.p2();
         poly << line.normalVector().translated(
-                    line.dx(), line.dy()).pointAt(POLYGON_BORDER  / line.length());
+                    line.dx(), line.dy()).pointAt(POLYGON_BORDER / line.length());
         poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
         path.addPolygon(poly);
     }

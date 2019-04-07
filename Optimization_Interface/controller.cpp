@@ -20,9 +20,18 @@ namespace interface {
 Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
+
+    // initialize path graphic
+    this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
+    this->canvas_->addItem(this->path_graphic_);
 }
 
 Controller::~Controller() {
+    // deinitialize path graphic
+    this->clearPath();
+    delete this->path_graphic_;
+
+    // clean up model
     delete this->model_;
 }
 
@@ -62,15 +71,20 @@ void Controller::removeItem(QGraphicsItem *item) {
             delete item;
             break;
         }
-        case PATH_GRAPHIC: {
-            PathGraphicsItem *path_point = qgraphicsitem_cast<
-                    PathGraphicsItem *>(item);
-            QPointF *model = path_point->point_;
-            this->model_->removePathPoint(model);
-            this->canvas_->removeItem(path_point);
-            this->canvas_->update();
-            delete model;
-            delete path_point;
+        case HANDLE_GRAPHIC: {
+            if (item->parentItem() &&
+                    item->parentItem()->type() == PATH_GRAPHIC) {
+                PolygonResizeHandle *point_handle =
+                        dynamic_cast<PolygonResizeHandle *>(item);
+                QPointF *point_model = point_handle->getPoint();
+                qgraphicsitem_cast<PathGraphicsItem *>
+                        (point_handle->parentItem())->removeHandle(point_handle);
+                this->model_->removePathPoint(point_model);
+                this->canvas_->removeItem(point_handle);
+                this->canvas_->update();
+                delete point_model;
+                delete point_handle;
+            }
             break;
         }
     }
@@ -144,12 +158,8 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
 }
 
 void Controller::loadPath(QPointF *point) {
-    PathGraphicsItem *item_graphic = new PathGraphicsItem(point,
-                                                          this->model_->path_);
-    this->canvas_->addItem(item_graphic);
     this->model_->addPathPoint(point);
-    this->canvas_->bringToFront(item_graphic);
-    item_graphic->expandScene();
+    this->canvas_->update();
 }
 
 void Controller::writeEllipse(EllipseModelItem *model, QDataStream *out) {
@@ -304,9 +314,15 @@ void Controller::loadFile() {
 
         QDataStream *in = new QDataStream(file);
 
-        // Delete old model
+        // Reset model
         delete this->model_;
         this->model_ = new ConstraintModel();
+
+        // Reset path graphic
+        delete this->path_graphic_;
+
+        this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
+        this->canvas_->addItem(this->path_graphic_);
 
         // Read ellipses
         quint32 num_ellipses;
@@ -344,6 +360,10 @@ void Controller::loadFile() {
 
 void Controller::execute() {
     qDebug() << "executing";
+}
+
+void Controller::clearPath() {
+    this->canvas_->removeItem(this->path_graphic_);
 }
 
 }  // namespace interface

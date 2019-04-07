@@ -24,12 +24,15 @@ const qreal DOT_SIZE = 20;
 
 class View : public QGraphicsView {
     Q_OBJECT
+
  public:
     explicit View(QWidget *parent);
     ~View();
+
  protected:
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+
  private slots:
     void openMenu();
     void closeMenu();
@@ -38,9 +41,11 @@ class View : public QGraphicsView {
     void loadFile();
     void saveFile();
     void execute();
+
  private:
     void initialize();
     void clearMarkers();
+    void expandView();
     Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;

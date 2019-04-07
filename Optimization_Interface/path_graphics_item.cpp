@@ -13,27 +13,32 @@
 
 namespace interface {
 
-PathGraphicsItem::PathGraphicsItem(QPointF *point, QVector<QPointF *> *path,
+PathGraphicsItem::PathGraphicsItem(QVector<QPointF *> *path,
                                    QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
-    this->point_ = point;
     this->path_ = path;
     this->initialize();
 }
 
 void PathGraphicsItem::initialize() {
     // Set pen
-    this->pen_ = QPen(Qt::black);
+    this->pen_ = QPen(Qt::blue);
     this->pen_.setWidth(3);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemIsMovable |
-                   QGraphicsItem::ItemIsSelectable |
-                   QGraphicsItem::ItemSendsGeometryChanges);
+    this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
 
-    // Set position
-    this->setPos(this->point_->x(), this->point_->y());
+    // Initialize resize handles
+    this->resize_handles_ = new QVector<PolygonResizeHandle *>();
+}
+
+PathGraphicsItem::~PathGraphicsItem() {
+    // Delete resize handles
+    for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        delete handle;
+    }
+    delete this->resize_handles_;
 }
 
 QRectF PathGraphicsItem::boundingRect() const {
@@ -46,31 +51,41 @@ void PathGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    if (this->isSelected()) {
-        this->pen_.setWidth(3);
-    } else {
-        this->pen_.setWidth(1);
-    }
-    painter->setPen(this->pen_);
-
-    if (this->point_ == this->path_->first()) {
-        // Draw connecting path
-        painter->setPen(Qt::blue);
-        for (qint32 i = 1; i < this->path_->length(); i++) {
-            QLineF line(mapFromScene(*this->path_->at(i-1)),
-                        mapFromScene(*this->path_->at(i)));
-            painter->drawLine(line);
+    // Create new handles if necessary
+    if (this->path_->size() > this->resize_handles_->size()) {
+        for (qint32 i = this->resize_handles_->size(); i < this->path_->size(); i++) {
+            PolygonResizeHandle *handle = new PolygonResizeHandle(this->path_->at(i), this);
+            this->resize_handles_->append(handle);
+            handle->show();
         }
-
-        painter->setPen(this->pen_);
-        painter->setBrush(Qt::green);
-    } else if (this->point_ == this->path_->last()) {
-        painter->setBrush(Qt::red);
-    } else {
-        painter->setBrush(Qt::white);
     }
 
-    painter->drawPath(this->shape());
+    // Draw connecting path
+    painter->setPen(this->pen_);
+    for (qint32 i = 1; i < this->path_->length(); i++) {
+        QLineF line(mapFromScene(*this->path_->at(i-1)),
+                    mapFromScene(*this->path_->at(i)));
+        painter->drawLine(line);
+    }
+
+    // Set handle colors
+    qint32 size = this->resize_handles_->size();
+    qint32 index = 0;
+    for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        QColor color = Qt::white;
+        if (index == 0) {
+            color = Qt::green;
+        } else if (index == size - 1) {
+            color = Qt::red;
+        }
+        handle->setColor(color);
+        handle->updatePos();
+        index++;
+    }
+}
+
+void PathGraphicsItem::removeHandle(PolygonResizeHandle *handle) {
+    this->resize_handles_->removeOne(handle);
 }
 
 int PathGraphicsItem::type() const {
@@ -79,8 +94,11 @@ int PathGraphicsItem::type() const {
 
 QPainterPath PathGraphicsItem::shape() const {
     QPainterPath path;
-    path.addEllipse(QRectF(-PATH_POINT_SIZE / 2, -PATH_POINT_SIZE / 2,
-                           PATH_POINT_SIZE, PATH_POINT_SIZE));
+    QPolygonF poly;
+    for (QPointF *point : *this->path_) {
+        poly << *point;
+    }
+    path.addPolygon(poly);
     return path;
 }
 
@@ -102,14 +120,16 @@ void PathGraphicsItem::expandScene() {
 }
 
 QVariant PathGraphicsItem::itemChange(GraphicsItemChange change,
-                                      const QVariant &value) {
+                                         const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         // value is the new position.
         QPointF newPos = value.toPointF();
 
         // update model
-        this->point_->setX(newPos.x());
-        this->point_->setY(newPos.y());
+        QPointF diff = newPos - this->scenePos();
+        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+            handle->updateModel(diff);
+        }
 
         // check to expand the scene
         this->expandScene();

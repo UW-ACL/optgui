@@ -41,15 +41,16 @@ View::~View() {
     delete this->menu_panel_;
     delete this->layout();
 
-    // Delete canvas and controller
-    delete this->canvas_;
+    // Delete controller and canvas
     delete this->controller_;
+    delete this->canvas_;
 }
 
 void View::loadFile() {
     // Create new canvas
     Canvas *new_canvas = new Canvas(this);
     this->setScene(new_canvas);
+    this->controller_->clearPath();
     delete this->canvas_;
     this->canvas_ = new_canvas;
 
@@ -61,6 +62,10 @@ void View::loadFile() {
 
     // Load file onto canvas
     this->controller_->loadFile();
+
+    // Expand scene
+    this->expandView();
+    this->canvas_->expandScene();
 }
 
 void View::saveFile() {
@@ -85,6 +90,8 @@ void View::initialize() {
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+
+    // Set rendering preference
     this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
     // Create open menu button
@@ -129,6 +136,9 @@ void View::initialize() {
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
+
+    // Expand view to fill screen
+    this->expandView();
 }
 
 void View::mousePressEvent(QMouseEvent *event) {
@@ -268,14 +278,18 @@ void View::clearMarkers() {
 }
 
 void View::resizeEvent(QResizeEvent *event) {
+    this->expandView();
+
+    QGraphicsView::resizeEvent(event);
+}
+
+void View::expandView() {
     // Expand scene to viewable area
     QRectF oldView = this->viewport()->rect();
     oldView.translate(-oldView.center().x(), -oldView.center().y());
 
     this->scene()->setSceneRect((this->scene()->sceneRect()).united(oldView));
     this->setSceneRect(this->scene()->sceneRect());
-
-    QGraphicsView::resizeEvent(event);
 }
 
 }  // namespace interface

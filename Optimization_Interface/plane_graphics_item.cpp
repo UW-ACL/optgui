@@ -77,7 +77,8 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
     painter->fillPath(this->shape(), this->brush_);
-    QLineF line(mapFromScene(*this->model_->p1_), mapFromScene(*this->model_->p2_));
+    QLineF line(mapFromScene(*this->model_->p1_),
+                mapFromScene(*this->model_->p2_));
     painter->drawLine(line);
 }
 
@@ -114,8 +115,7 @@ void PlaneGraphicsItem::expandScene() {
         if (!rect.contains(newRect)) {
             this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
 
-            if (!this->scene()->views().isEmpty())
-            {
+            if (!this->scene()->views().isEmpty()) {
                 this->scene()->views().first()->setSceneRect(
                             this->scene()->sceneRect());
             }

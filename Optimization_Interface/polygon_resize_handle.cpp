@@ -9,6 +9,7 @@
 #include <QGraphicsView>
 
 #include "polygon_resize_handle.h"
+#include "globals.h"
 
 namespace interface {
 
@@ -18,8 +19,12 @@ PolygonResizeHandle::PolygonResizeHandle(QPointF *point, QGraphicsItem *parent)
     this->resize_ = false;
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
-    this->setRect(-POLYGON_HANDLE_SIZE / 2, -POLYGON_HANDLE_SIZE / 2,
-                  POLYGON_HANDLE_SIZE, POLYGON_HANDLE_SIZE);
+    this->setRect(-HANDLE_SIZE / 2, -HANDLE_SIZE / 2,
+                  HANDLE_SIZE, HANDLE_SIZE);
+}
+
+void PolygonResizeHandle::setColor(const QColor color) {
+    this->setBrush(QBrush(color));
 }
 
 void PolygonResizeHandle::updatePos() {
@@ -51,10 +56,18 @@ void PolygonResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
 }
 
+int PolygonResizeHandle::type() const {
+    return HANDLE_GRAPHIC;
+}
+
+QPointF *PolygonResizeHandle::getPoint() {
+    return this->point_;
+}
+
 void PolygonResizeHandle::expandScene() {
     if (scene()) {
         // expand scene if item goes out of bounds
-        QRectF newRect = parentItem()->sceneBoundingRect();
+        QRectF newRect = this->parentItem()->sceneBoundingRect();
         QRectF rect = this->scene()->sceneRect();
         if (!rect.contains(newRect)) {
             this->scene()->setSceneRect(scene()->sceneRect().united(newRect));

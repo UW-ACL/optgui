@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Graphical resize handle for modifying non-ellipse constraints
+// Graphical resize handle
 
 #ifndef POLYGON_RESIZE_HANDLE_H_
 #define POLYGON_RESIZE_HANDLE_H_
@@ -13,7 +13,7 @@
 
 namespace interface {
 
-const qreal POLYGON_HANDLE_SIZE = 16;
+const qreal HANDLE_SIZE = 16;
 
 class PolygonResizeHandle : public QGraphicsEllipseItem {
  public:
@@ -21,6 +21,9 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
                                  QGraphicsItem *parent);
     void updatePos();
     void updateModel(QPointF diff);
+    int type() const override;
+    QPointF *getPoint();
+    void setColor(const QColor color);
  protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;

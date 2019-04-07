@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set default size
     this->setMinimumSize(600, 450);
-    this->showFullScreen();
+    // this->showFullScreen();
 
     // Set view
     this->view_ = new View(this);

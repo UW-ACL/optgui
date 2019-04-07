@@ -14,6 +14,7 @@
 namespace interface {
 
 const qreal GRID_SIZE = 100;
+const QString UNIT = QString("m");
 
 class Canvas : public QGraphicsScene {
     Q_OBJECT
@@ -21,17 +22,19 @@ class Canvas : public QGraphicsScene {
  public:
     explicit Canvas(QObject *parent = nullptr);
     void bringToFront(QGraphicsItem *item);
+    void expandScene();
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
-private slots:
+ private slots:
     void bringSelectedToFront();
  private:
     void initialize();
     QPen background_pen_;
     QPen foreground_pen_;
     qreal front_depth_;
-    qint64 roundPast(qint64 n, qint64 m);
+    qint64 roundUpPast(qint64 n, qint64 m);
+    qint64 roundDownPast(qint64 n, qint64 m);
     QFont font_;
 };
 

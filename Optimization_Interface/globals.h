@@ -26,7 +26,8 @@ namespace interface {
         ELLIPSE_GRAPHIC = QGraphicsItem::UserType + 1,
         POLYGON_GRAPHIC = QGraphicsItem::UserType + 2,
         PLANE_GRAPHIC = QGraphicsItem::UserType + 3,
-        PATH_GRAPHIC = QGraphicsItem::UserType + 4
+        PATH_GRAPHIC = QGraphicsItem::UserType + 4,
+        HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
     };
 }  // namespace interface
 

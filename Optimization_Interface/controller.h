@@ -10,6 +10,7 @@
 
 #include "canvas.h"
 #include "constraint_model.h"
+#include "path_graphics_item.h"
 
 namespace interface {
 
@@ -32,9 +33,12 @@ class Controller {
     void saveFile();
 
     void execute();
+    void clearPath();
+
  private:
     Canvas *canvas_;
     ConstraintModel *model_;
+    PathGraphicsItem *path_graphic_;
 
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);

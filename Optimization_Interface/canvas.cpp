@@ -52,6 +52,21 @@ void Canvas::bringToFront(QGraphicsItem *item) {
                                         std::numeric_limits<qreal>::max());
 }
 
+void Canvas::expandScene() {
+    for (QGraphicsItem *item : this->items()) {
+        QRectF newRect = item->sceneBoundingRect();
+        QRectF rect = this->sceneRect();
+        if (!rect.contains(newRect)) {
+            this->setSceneRect(this->sceneRect().united(newRect));
+            if (!this->views().isEmpty()) {
+                this->views().first()->setSceneRect(
+                            this->sceneRect());
+            }
+            this->update();
+        }
+    }
+}
+
 void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     // Get scaling factor
     qreal scale = 1;
@@ -77,18 +92,26 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->foreground_pen_);
     painter->setFont(this->font_);
 
+    // Draw scale
     painter->drawLine(rect.left() + offset, rect.bottom() - offset,
                       rect.left() + (offset + segment_size), rect.bottom() - offset);
+    // Draw notches on scale
     for (qint32 i = 0; i <= segment_size; i += GRID_SIZE / 2) {
         painter->drawLine(rect.left() + offset + i, rect.bottom() - offset,
-                          rect.left() + offset + i, rect.bottom() - text_offset);
+                          rect.left() + offset + i, rect.bottom() - notch_offset);
     }
+
+    // Draw label
     painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
-                      QString::number(qreal(segment_size) / 100) + QString("m"));
+                      QString::number(qreal(segment_size) / 100) + UNIT);
 }
 
-qint64 Canvas::roundPast(qint64 n, qint64 m) {
-    return n >= 0 ? ((n + m - 1) / m) * m : ((n - m + 1) / m) * m;
+qint64 Canvas::roundUpPast(qint64 n, qint64 m) {
+    return ((n + m - 1) / m) * m;
+}
+
+qint64 Canvas::roundDownPast(qint64 n, qint64 m) {
+    return ((n - m + 1) / m) * m;
 }
 
 void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
@@ -111,10 +134,10 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
 
 
     // Set boundries of grid
-    qint64 top_bound = roundPast(qRound64(rect.top()), segment_size);
-    qint64 bot_bound = roundPast(qRound64(rect.bottom()), segment_size);
-    qint64 left_bound = roundPast(qRound64(rect.left()), segment_size);
-    qint64 right_bound = roundPast(qRound64(rect.right()), segment_size);
+    qint64 top_bound = roundDownPast(qRound64(rect.top()), segment_size);
+    qint64 bot_bound = roundUpPast(qRound64(rect.bottom()), segment_size);
+    qint64 left_bound = roundDownPast(qRound64(rect.left()), segment_size);
+    qint64 right_bound = roundUpPast(qRound64(rect.right()), segment_size);
 
     // Set pen
     this->background_pen_.setWidthF(pen_width);

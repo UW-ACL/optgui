@@ -13,22 +13,23 @@
 #include <QPointF>
 #include <QVector>
 
-namespace interface {
+#include "polygon_resize_handle.h"
 
-const qreal PATH_POINT_SIZE = 20;
+namespace interface {
 
 class PathGraphicsItem : public QGraphicsItem {
  public:
-    explicit PathGraphicsItem(QPointF *point, QVector<QPointF *> *path,
+    explicit PathGraphicsItem(QVector<QPointF *> *path,
                               QGraphicsItem *parent = nullptr);
-    QPointF *point_;
+    ~PathGraphicsItem();
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
-    int type() const override;
 
     void expandScene();
+    void removeHandle(PolygonResizeHandle *handle);
+    int type() const override;
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
@@ -38,6 +39,7 @@ class PathGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     QVector<QPointF *> *path_;
+    QVector<PolygonResizeHandle *> *resize_handles_;
 };
 
 }  // namespace interface
