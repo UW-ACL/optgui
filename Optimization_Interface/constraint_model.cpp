@@ -16,9 +16,9 @@ void ConstraintModel::initialize() {
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
-    this->path_ = new QVector<QPointF *>();
-    this->course_ = new QVector<QPointF *>();
-    this->drone_ = new QPointF(0, 0);
+    this->waypoints_ = new PathModelItem();
+    this->path_ = new PathModelItem();
+    this->drone_ = new DroneModelItem();
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -40,17 +40,11 @@ ConstraintModel::~ConstraintModel() {
     }
     delete this->planes_;
 
-    // Delete path points
-    for (QPointF *point : *this->path_) {
-        delete point;
-    }
-    delete this->path_;
+    // Delete waypoints
+    delete this->waypoints_;
 
-    // Delete course points
-    for (QPointF *point : *this->course_) {
-        delete point;
-    }
-    delete this->course_;
+    // Delete path
+    delete this->path_;
 
     // Delete drone
     delete this->drone_;
@@ -80,20 +74,20 @@ void ConstraintModel::removePlane(PlaneModelItem *item) {
     this->planes_->remove(item);
 }
 
+void ConstraintModel::addWaypoint(QPointF *item) {
+    this->waypoints_->points_->append(item);
+}
+
+void ConstraintModel::removeWaypoint(QPointF *item) {
+    this->waypoints_->points_->removeOne(item);
+}
+
 void ConstraintModel::addPathPoint(QPointF *item) {
-    this->path_->append(item);
+    this->path_->points_->append(item);
 }
 
-void ConstraintModel::removePathPoint(QPointF *item) {
-    this->path_->removeOne(item);
-}
-
-void ConstraintModel::addCoursePoint(QPointF *item) {
-    this->course_->append(item);
-}
-
-void ConstraintModel::clearCourse() {
-    this->course_->clear();
+void ConstraintModel::clearPath() {
+    this->path_->points_->clear();
 }
 
 }  // namespace interface

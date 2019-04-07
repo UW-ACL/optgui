@@ -17,11 +17,12 @@ const double DEFAULT_RAD = 50;
 class EllipseModelItem {
  public:
     explicit EllipseModelItem(QPointF *pos) : radius_(DEFAULT_RAD),
-        direction_(true) { pos_ = pos; }
+        direction_(true) { pos_ = pos; port_ = 0;}
     ~EllipseModelItem() { delete pos_; }
     double radius_;
     QPointF *pos_;
     bool direction_;
+    quint16 port_;
 };
 
 }  // namespace interface

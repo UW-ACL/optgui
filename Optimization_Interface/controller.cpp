@@ -12,7 +12,6 @@
 #include "ellipse_graphics_item.h"
 #include "polygon_graphics_item.h"
 #include "plane_graphics_item.h"
-#include "path_graphics_item.h"
 #include "globals.h"
 
 namespace interface {
@@ -21,27 +20,29 @@ Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
 
-    // initialize path graphic
-    this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
-    this->canvas_->addItem(this->path_graphic_);
+    // initialize waypoints graphic
+    this->waypoints_graphic_ = new WaypointsGraphicsItem(
+                this->model_->waypoints_->points_);
+    this->canvas_->addItem(this->waypoints_graphic_);
 
     // initialize course graphic
-    this->course_graphic_ = new CourseGraphicsItem(this->model_->course_);
-    this->canvas_->addItem(this->course_graphic_);
+    this->path_graphic_ = new PathGraphicsItem(
+                this->model_->path_->points_);
+    this->canvas_->addItem(this->path_graphic_);
 
     // initialize drone graphic
-    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
+    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_->point_);
     this->canvas_->addItem(this->drone_graphic_);
 }
 
 Controller::~Controller() {
+    // deinitialize waypoints graphic
+    this->clearWaypoints();
+    delete this->waypoints_graphic_;
+
     // deinitialize path graphic
     this->clearPath();
     delete this->path_graphic_;
-
-    // deinitialize course graphic
-    this->clearCourse();
-    delete this->course_graphic_;
 
     // deinitialize drone graphic
     this->clearDrone();
@@ -89,14 +90,14 @@ void Controller::removeItem(QGraphicsItem *item) {
         }
         case HANDLE_GRAPHIC: {
             if (item->parentItem() &&
-                    item->parentItem()->type() == PATH_GRAPHIC) {
+                    item->parentItem()->type() == WAYPOINTS_GRAPHIC) {
                 PolygonResizeHandle *point_handle =
                         dynamic_cast<PolygonResizeHandle *>(item);
                 QPointF *point_model = point_handle->getPoint();
-                qgraphicsitem_cast<PathGraphicsItem *>
+                qgraphicsitem_cast<WaypointsGraphicsItem *>
                         (point_handle->parentItem())->
                         removeHandle(point_handle);
-                this->model_->removePathPoint(point_model);
+                this->model_->removeWaypoint(point_model);
                 this->canvas_->removeItem(point_handle);
                 this->canvas_->update();
                 delete point_model;
@@ -145,12 +146,13 @@ void Controller::addPlane(QPointF *p1, QPointF *p2) {
     this->loadPlane(item_model);
 }
 
-void Controller::addPath(QPointF *point) {
-    this->loadPath(point);
+void Controller::addWaypoint(QPointF *point) {
+    this->model_->addWaypoint(point);
+    this->canvas_->update();
 }
 
-void Controller::addCourse(QPointF *point) {
-    this->model_->addCoursePoint(point);
+void Controller::addPathPoint(QPointF *point) {
+    this->model_->addPathPoint(point);
     this->canvas_->update();
 }
 
@@ -179,15 +181,11 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     item_graphic->expandScene();
 }
 
-void Controller::loadPath(QPointF *point) {
-    this->model_->addPathPoint(point);
-    this->canvas_->update();
-}
-
 void Controller::writeEllipse(EllipseModelItem *model, QDataStream *out) {
     *out << (bool)model->direction_;
     *out << *model->pos_;
     *out << (double)model->radius_;
+    *out << (quint16)model->port_;
 }
 
 void Controller::writePolygon(PolygonModelItem *model, QDataStream *out) {
@@ -196,16 +194,24 @@ void Controller::writePolygon(PolygonModelItem *model, QDataStream *out) {
     for (QPointF *point : *model->points_) {
         *out << *point;
     }
+    *out << (quint16)model->port_;
 }
 
 void Controller::writePlane(PlaneModelItem *model, QDataStream *out) {
     *out << (bool)model->direction_;
     *out << *model->p1_;
     *out << *model->p2_;
+    *out << (quint16)model->port_;
 }
 
-void Controller::writePath(QPointF *point, QDataStream *out) {
-    *out << *point;
+void Controller::writeWaypoints(PathModelItem *waypoints, QDataStream *out) {
+    quint32 num_waypoints =
+            this->model_->waypoints_->points_->size();
+    *out << num_waypoints;
+    for (QPointF *point : *this->model_->waypoints_->points_) {
+        *out << *point;
+    }
+    *out << (quint16)waypoints->port_;
 }
 
 EllipseModelItem *Controller::readEllipse(QDataStream *in) {
@@ -215,10 +221,13 @@ EllipseModelItem *Controller::readEllipse(QDataStream *in) {
     *in >> pos;
     double radius;
     *in >> radius;
+    quint16 port;
+    *in >> port;
 
     EllipseModelItem *model = new EllipseModelItem(new QPointF(pos));
     model->direction_ = direction;
     model->radius_ = radius;
+    model->port_ = port;
 
     return model;
 }
@@ -228,6 +237,7 @@ PolygonModelItem *Controller::readPolygon(QDataStream *in) {
     *in >> direction;
     quint32 size;
     *in >> size;
+
     QVector<QPointF *> *points = new QVector<QPointF *>();
     points->reserve(size);
     for (quint32 i = 0; i < size; i++) {
@@ -237,6 +247,10 @@ PolygonModelItem *Controller::readPolygon(QDataStream *in) {
     }
     PolygonModelItem *model = new PolygonModelItem(points);
     model->direction_ = direction;
+
+    quint16 port;
+    *in >> port;
+    model->port_ = port;
 
     return model;
 }
@@ -248,18 +262,28 @@ PlaneModelItem *Controller::readPlane(QDataStream *in) {
     *in >> p1;
     QPointF p2;
     *in >> p2;
+    quint16 port;
+    *in >> port;
 
     PlaneModelItem *model = new PlaneModelItem(new QPointF(p1),
                                                new QPointF(p2));
     model->direction_ = direction;
+    model->port_ = port;
 
     return model;
 }
 
-QPointF *Controller::readPath(QDataStream *in) {
-    QPointF point;
-    *in >> point;
-    return new QPointF(point);
+void Controller::readWaypoints(QDataStream *in) {
+    quint32 num_waypoints;
+    *in >> num_waypoints;
+    for (quint32 i = 0; i < num_waypoints; i++) {
+        QPointF point;
+        *in >> point;
+        this->addWaypoint(new QPointF(point));
+    }
+    quint16 port;
+    *in >> port;
+    this->model_->waypoints_->port_ = port;
 }
 
 void Controller::saveFile() {
@@ -303,12 +327,8 @@ void Controller::saveFile() {
             this->writePlane(model, out);
         }
 
-        // Write ellipses
-        quint32 num_paths = this->model_->path_->size();
-        *out << num_paths;
-        for (QPointF *model : *this->model_->path_) {
-            this->writePath(model, out);
-        }
+        // Write waypoints
+        this->writeWaypoints(this->model_->waypoints_, out);
 
         // Clean up IO
         delete out;
@@ -340,19 +360,20 @@ void Controller::loadFile() {
         delete this->model_;
         this->model_ = new ConstraintModel();
 
-        // Reset path graphic
-        delete this->path_graphic_;
-        this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
-        this->canvas_->addItem(this->path_graphic_);
+        // Reset waypoints graphic
+        delete this->waypoints_graphic_;
+        this->waypoints_graphic_ = new WaypointsGraphicsItem(
+                    this->model_->waypoints_->points_);
+        this->canvas_->addItem(this->waypoints_graphic_);
 
         // Reset course graphic
-        delete this->course_graphic_;
-        this->course_graphic_ = new CourseGraphicsItem(this->model_->course_);
-        this->canvas_->addItem(this->course_graphic_);
+        delete this->path_graphic_;
+        this->path_graphic_ = new PathGraphicsItem(this->model_->path_->points_);
+        this->canvas_->addItem(this->path_graphic_);
 
         // Reset drone graphic
         delete this->drone_graphic_;
-        this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
+        this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_->point_);
         this->canvas_->addItem(this->drone_graphic_);
 
         // Read ellipses
@@ -376,12 +397,8 @@ void Controller::loadFile() {
             this->loadPlane(this->readPlane(in));
         }
 
-        // Read paths
-        quint32 num_paths;
-        *in >> num_paths;
-        for (quint32 i = 0; i < num_paths; i++) {
-            this->loadPath(this->readPath(in));
-        }
+        // Read waypoints
+        this->readWaypoints(in);
 
         // clean up IO
         delete in;
@@ -393,12 +410,12 @@ void Controller::execute() {
     qDebug() << "executing";
 }
 
-void Controller::clearPath() {
-    this->canvas_->removeItem(this->path_graphic_);
+void Controller::clearWaypoints() {
+    this->canvas_->removeItem(this->waypoints_graphic_);
 }
 
-void Controller::clearCourse() {
-    this->canvas_->removeItem(this->course_graphic_);
+void Controller::clearPath() {
+    this->canvas_->removeItem(this->path_graphic_);
 }
 
 void Controller::clearDrone() {

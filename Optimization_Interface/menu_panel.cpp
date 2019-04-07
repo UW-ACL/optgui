@@ -72,7 +72,7 @@ void MenuPanel::initialize() {
     this->initializeEllipseButton();
     this->initializePolygonButton();
     this->initializePlaneButton();
-    this->initializePathButton();
+    this->initializeWaypointButton();
     this->initializeEraserButton();
     this->initializeFlipButton();
 
@@ -156,8 +156,8 @@ void MenuPanel::initializeEraserButton() {
     this->menu_buttons_->append(eraser_button);
 }
 
-void MenuPanel::initializePathButton() {
-    MenuButton *path_button = new MenuButton(PATH, this->menu_);
+void MenuPanel::initializeWaypointButton() {
+    MenuButton *waypoint_button = new MenuButton(WAYPOINT, this->menu_);
     QPixmap pix(50, 50);
     pix.fill(Qt::transparent);
     QPainter painter(&pix);
@@ -174,9 +174,9 @@ void MenuPanel::initializePathButton() {
     painter.setBrush(Qt::green);
     painter.drawEllipse(QPointF(42, 42), 6, 6);
 
-    path_button->setPixmap(pix);
-    path_button->setToolTip(tr("Add waypoint to path"));
-    this->menu_buttons_->append(path_button);
+    waypoint_button->setPixmap(pix);
+    waypoint_button->setToolTip(tr("Add waypoint"));
+    this->menu_buttons_->append(waypoint_button);
 }
 
 void MenuPanel::initializeFlipButton() {

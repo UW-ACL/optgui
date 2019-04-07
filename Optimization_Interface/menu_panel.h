@@ -30,7 +30,7 @@ class MenuPanel : public QFrame {
  private:
     void initialize();
     void initializeZoomSlider();
-    void initializePathButton();
+    void initializeWaypointButton();
     void initializeEraserButton();
     void initializePlaneButton();
     void initializePolygonButton();

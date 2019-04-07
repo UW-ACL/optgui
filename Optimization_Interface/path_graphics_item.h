@@ -3,33 +3,24 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Graphical representation of waypoint
+// Graphical representation for current drone path
 
 #ifndef PATH_GRAPHICS_ITEM_H_
 #define PATH_GRAPHICS_ITEM_H_
 
 #include <QGraphicsItem>
 #include <QPainter>
-#include <QPointF>
-#include <QVector>
-
-#include "polygon_resize_handle.h"
 
 namespace interface {
 
 class PathGraphicsItem : public QGraphicsItem {
  public:
-    explicit PathGraphicsItem(QVector<QPointF *> *path,
-                              QGraphicsItem *parent = nullptr);
-    ~PathGraphicsItem();
-
+    explicit PathGraphicsItem(QVector<QPointF *> *model,
+                                QGraphicsItem *parent = nullptr);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
-
     void expandScene();
-    void removeHandle(PolygonResizeHandle *handle);
-    int type() const override;
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
@@ -37,9 +28,7 @@ class PathGraphicsItem : public QGraphicsItem {
  private:
     void initialize();
     QPen pen_;
-    QBrush brush_;
-    QVector<QPointF *> *path_;
-    QVector<PolygonResizeHandle *> *resize_handles_;
+    QVector<QPointF *> *model_;
 };
 
 }  // namespace interface

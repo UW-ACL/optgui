@@ -16,7 +16,7 @@ namespace interface {
 class PolygonModelItem {
  public:
     explicit PolygonModelItem(QVector<QPointF *> *points) :
-        direction_(true) { points_ = points; }
+        direction_(true) { points_ = points; port_ = 0;}
     ~PolygonModelItem() {
         for (QPointF *point : *this->points_) {
             delete point;
@@ -25,6 +25,7 @@ class PolygonModelItem {
     }
     QVector<QPointF *> *points_;
     bool direction_;
+    quint16 port_;
 };
 
 }  // namespace interface

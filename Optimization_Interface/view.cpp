@@ -48,8 +48,8 @@ View::~View() {
 
 void View::loadFile() {
     // Clear graphics
+    this->controller_->clearWaypoints();
     this->controller_->clearPath();
-    this->controller_->clearCourse();
     this->controller_->clearDrone();
 
     // Create new canvas
@@ -197,8 +197,8 @@ void View::mousePressEvent(QMouseEvent *event) {
             }
             break;
         }
-        case PATH: {
-            this->controller_->addPath(new QPointF(pos));
+        case WAYPOINT: {
+            this->controller_->addWaypoint(new QPointF(pos));
             break;
         }
         case ERASER: {

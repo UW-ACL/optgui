@@ -10,9 +10,9 @@
 
 #include "canvas.h"
 #include "constraint_model.h"
-#include "course_graphics_item.h"
-#include "drone_graphics_item.h"
 #include "path_graphics_item.h"
+#include "drone_graphics_item.h"
+#include "waypoints_graphics_item.h"
 
 namespace interface {
 
@@ -26,8 +26,8 @@ class Controller {
     void addEllipse(QPointF *point);
     void addPolygon(QVector<QPointF *> *points);
     void addPlane(QPointF *p1, QPointF *p2);
-    void addPath(QPointF *point);
-    void addCourse(QPointF *point);
+    void addWaypoint(QPointF *point);
+    void addPathPoint(QPointF *point);
 
     void removeItem(QGraphicsItem *item);
     void flipDirection(QGraphicsItem *item);
@@ -36,31 +36,30 @@ class Controller {
     void saveFile();
 
     void execute();
+    void clearWaypoints();
     void clearPath();
-    void clearCourse();
     void clearDrone();
 
  private:
     Canvas *canvas_;
     ConstraintModel *model_;
+    WaypointsGraphicsItem *waypoints_graphic_;
     PathGraphicsItem *path_graphic_;
-    CourseGraphicsItem *course_graphic_;
     DroneGraphicsItem *drone_graphic_;
 
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
-    void loadPath(QPointF *point);
 
     void writeEllipse(EllipseModelItem *model, QDataStream *out);
     void writePolygon(PolygonModelItem *model, QDataStream *out);
     void writePlane(PlaneModelItem *model, QDataStream *out);
-    void writePath(QPointF *point, QDataStream *out);
+    void writeWaypoints(PathModelItem *waypoints, QDataStream *out);
 
     EllipseModelItem *readEllipse(QDataStream *in);
     PolygonModelItem *readPolygon(QDataStream *in);
     PlaneModelItem *readPlane(QDataStream *in);
-    QPointF *readPath(QDataStream *in);
+    void readWaypoints(QDataStream *in);
 };
 
 }  // namespace interface
