@@ -10,12 +10,14 @@
 
 #include <QPointF>
 
+#include "data_model.h"
+
 namespace interface {
 
-class PathModelItem {
+class PathModelItem : public DataModel {
  public:
-    explicit PathModelItem() :
-        points_(new QVector<QPointF *>()), port_(0) {}
+    explicit PathModelItem()
+        { this->points_ = new QVector<QPointF *>(); port_ = 0; }
     ~PathModelItem() {
         for (QPointF *point : *this->points_) {
             delete point;
@@ -23,7 +25,6 @@ class PathModelItem {
         delete this->points_;
     }
     QVector<QPointF *> *points_;
-    quint16 port_;
 };
 
 }  // namespace interface

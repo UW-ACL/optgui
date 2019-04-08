@@ -39,7 +39,9 @@ SOURCES += \
     plane_graphics_item.cpp \
     drone_graphics_item.cpp \
     waypoints_graphics_item.cpp \
-    path_graphics_item.cpp
+    path_graphics_item.cpp \
+    port_dialog.cpp \
+    port_selector.cpp
 
 HEADERS += \
         main_window.h \
@@ -62,7 +64,10 @@ HEADERS += \
     path_model_item.h \
     drone_model_item.h \
     waypoints_graphics_item.h \
-    path_graphics_item.h
+    path_graphics_item.h \
+    port_dialog.h \
+    port_selector.h \
+    data_model.h
 
 RESOURCES += \
     resources.qrc

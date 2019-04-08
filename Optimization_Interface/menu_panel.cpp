@@ -3,11 +3,12 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
+#include "menu_panel.h"
+
 #include <QHBoxLayout>
 #include <QPainter>
 #include <QtMath>
 
-#include "menu_panel.h"
 #include "view.h"
 
 namespace interface {

@@ -40,6 +40,7 @@ class View : public QGraphicsView {
     void setState(STATE button_type);
     void loadFile();
     void saveFile();
+    void setPorts();
     void execute();
 
  private:

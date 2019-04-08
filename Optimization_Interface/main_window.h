@@ -28,6 +28,7 @@ class MainWindow : public QMainWindow {
     QMenu *file_menu_;
     QAction *save_file_;
     QAction *load_file_;
+    QAction *set_ports_;
 };
 
 }  // namespace interface

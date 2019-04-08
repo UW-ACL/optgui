@@ -11,9 +11,11 @@
 #include <QVector>
 #include <QPointF>
 
+#include "data_model.h"
+
 namespace interface {
 
-class PolygonModelItem {
+class PolygonModelItem : public DataModel {
  public:
     explicit PolygonModelItem(QVector<QPointF *> *points) :
         direction_(true) { points_ = points; port_ = 0;}
@@ -25,7 +27,6 @@ class PolygonModelItem {
     }
     QVector<QPointF *> *points_;
     bool direction_;
-    quint16 port_;
 };
 
 }  // namespace interface

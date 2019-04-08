@@ -10,15 +10,16 @@
 
 #include <QPointF>
 
+#include "data_model.h"
+
 namespace interface {
 
-class DroneModelItem {
+class DroneModelItem : public DataModel {
  public:
-    explicit DroneModelItem() :
-        point_(new QPointF()), port_(0) {}
-    ~DroneModelItem() { delete this->point_;}
+    explicit DroneModelItem()
+            { this->point_ = new QPointF(0, 0); port_ = 0; }
+    ~DroneModelItem() { delete this->point_; }
     QPointF *point_;
-    quint16 port_;
 };
 
 }  // namespace interface

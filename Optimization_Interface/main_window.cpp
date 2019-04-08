@@ -40,6 +40,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::initializeMenu() {
+    // Create file menu
+    this->file_menu_ = this->menuBar()->addMenu(tr("&File"));
+
     // Initialize load file action
     this->load_file_ = new QAction(tr("&Open"), this->file_menu_);
     this->load_file_->setShortcuts(QKeySequence::Open);
@@ -54,12 +57,16 @@ void MainWindow::initializeMenu() {
     connect(this->save_file_, SIGNAL(triggered()),
             this->view_, SLOT(saveFile()));
 
-    // Create file menu
-    this->file_menu_ = this->menuBar()->addMenu(tr("&File"));
+    // Initialize set ports file action
+    this->set_ports_ = new QAction(tr("&Set Ports"), this->file_menu_);
+    this->set_ports_->setToolTip(tr("Set ports for constraints"));
+    connect(this->set_ports_, SIGNAL(triggered()),
+            this->view_, SLOT(setPorts()));
 
     // Add actions to menu
     this->file_menu_->addAction(this->load_file_);
     this->file_menu_->addAction(this->save_file_);
+    this->file_menu_->addAction(this->set_ports_);
 }
 
 }  // namespace interface

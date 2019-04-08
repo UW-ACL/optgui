@@ -10,9 +10,11 @@
 
 #include <QPointF>
 
+#include "data_model.h"
+
 namespace interface {
 
-class PlaneModelItem {
+class PlaneModelItem : public DataModel {
  public:
     explicit PlaneModelItem(QPointF *p1, QPointF *p2) :
         direction_(true) { p1_ = p1; p2_ = p2; port_ = 0;}
@@ -20,7 +22,6 @@ class PlaneModelItem {
     QPointF *p1_;
     QPointF *p2_;
     bool direction_;
-    quint16 port_;
 };
 
 }  // namespace interface

@@ -24,7 +24,7 @@ void PathGraphicsItem::initialize() {
     this->pen_.setWidth(2);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
+    this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
 }
 
 QRectF PathGraphicsItem::boundingRect() const {
@@ -75,7 +75,7 @@ QPainterPath PathGraphicsItem::shape() const {
 
 QVariant PathGraphicsItem::itemChange(GraphicsItemChange change,
                                         const QVariant &value) {
-    if (change == ItemPositionChange && scene()) {
+    if (change == ItemScenePositionHasChanged && scene()) {
         // check to expand the scene
         this->expandScene();
     }

@@ -26,7 +26,7 @@ void DroneGraphicsItem::initialize() {
     this->brush_ = QBrush(Qt::yellow);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
+    this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
 }
 
 QRectF DroneGraphicsItem::boundingRect() const {
@@ -40,7 +40,7 @@ void DroneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Update pos
-    this->setPos(this->mapFromScene(*this->model_));
+    this->setPos(*this->model_);
 
     // Draw current course
     painter->setPen(this->pen_);
@@ -80,7 +80,7 @@ QPainterPath DroneGraphicsItem::shape() const {
 
 QVariant DroneGraphicsItem::itemChange(GraphicsItemChange change,
                                         const QVariant &value) {
-    if (change == ItemPositionChange && scene()) {
+    if (change == ItemScenePositionHasChanged && scene()) {
         // check to expand the scene
         this->expandScene();
     }

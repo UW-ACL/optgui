@@ -5,11 +5,11 @@
 
 // Graphical representation for drone
 
-#include <QGraphicsItem>
-#include <QPainter>
-
 #ifndef DRONE_GRAPHICS_ITEM_H_
 #define DRONE_GRAPHICS_ITEM_H_
+
+#include <QGraphicsItem>
+#include <QPainter>
 
 namespace interface {
 
