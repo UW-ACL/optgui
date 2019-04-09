@@ -80,6 +80,13 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     QLineF line(mapFromScene(*this->model_->p1_),
                 mapFromScene(*this->model_->p2_));
     painter->drawLine(line);
+
+    // Label with port
+    if (this->model_->port_ != 0) {
+        QPointF text_pos(this->mapFromScene(*this->model_->p1_));
+        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+                          QString::number(this->model_->port_));
+    }
 }
 
 int PlaneGraphicsItem::type() const {

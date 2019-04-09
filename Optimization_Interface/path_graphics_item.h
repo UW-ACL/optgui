@@ -11,11 +11,13 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
+#include "path_model_item.h"
+
 namespace interface {
 
 class PathGraphicsItem : public QGraphicsItem {
  public:
-    explicit PathGraphicsItem(QVector<QPointF *> *model,
+    explicit PathGraphicsItem(PathModelItem *model,
                                 QGraphicsItem *parent = nullptr);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -28,7 +30,7 @@ class PathGraphicsItem : public QGraphicsItem {
  private:
     void initialize();
     QPen pen_;
-    QVector<QPointF *> *model_;
+    PathModelItem *model_;
 };
 
 }  // namespace interface

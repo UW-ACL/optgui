@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -41,7 +42,13 @@ SOURCES += \
     waypoints_graphics_item.cpp \
     path_graphics_item.cpp \
     port_dialog.cpp \
-    port_selector.cpp
+    port_selector.cpp \
+    item_server.cpp \
+    drone_server.cpp \
+    path_server.cpp \
+    ellipse_server.cpp \
+    polygon_server.cpp \
+    plane_server.cpp
 
 HEADERS += \
         main_window.h \
@@ -67,7 +74,13 @@ HEADERS += \
     path_graphics_item.h \
     port_dialog.h \
     port_selector.h \
-    data_model.h
+    data_model.h \
+    item_server.h \
+    drone_server.h \
+    path_server.h \
+    ellipse_server.h \
+    polygon_server.h \
+    plane_server.h
 
 RESOURCES += \
     resources.qrc

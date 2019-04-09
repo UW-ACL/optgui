@@ -11,11 +11,13 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
+#include "drone_model_item.h"
+
 namespace interface {
 
 class DroneGraphicsItem : public QGraphicsItem {
  public:
-    explicit DroneGraphicsItem(QPointF *model,
+    explicit DroneGraphicsItem(DroneModelItem *model,
                                QGraphicsItem *parent = nullptr);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -29,7 +31,7 @@ class DroneGraphicsItem : public QGraphicsItem {
     void initialize();
     QPen pen_;
     QBrush brush_;
-    QPointF *model_;
+    DroneModelItem *model_;
 };
 
 }  // namespace interface

@@ -27,6 +27,9 @@ PortDialog::PortDialog(QWidget *parent)
     // Set table
     this->initializeTable();
     this->ports_ = new QSet<quint16>();
+
+    // connect slots
+    this->connect(this, SIGNAL(finished(int)), this, SLOT(resetTable()));
 }
 
 PortDialog::~PortDialog() {
@@ -40,12 +43,10 @@ PortDialog::~PortDialog() {
 
 void PortDialog::setModel(ConstraintModel *model) {
     this->model_ = model;
-
-    this->table_->clearContents();
+    this->resetTable();
     this->table_->setRowCount(3 + this->model_->ellipses_->size() +
                               this->model_->polygons_->size() +
                               this->model_->planes_->size());
-    this->ports_->clear();
 
     // Set drone
     this->table_->setItem(0, 0, new QTableWidgetItem(tr("Drone")));
@@ -59,7 +60,8 @@ void PortDialog::setModel(ConstraintModel *model) {
     this->table_->item(1, 0)->setFlags(Qt::ItemIsEnabled);
     this->ports_->insert(this->model_->waypoints_->port_);
     this->table_->setCellWidget(1, 1,
-            new PortSelector(this->ports_, this->model_->waypoints_, this->table_));
+            new PortSelector(this->ports_, this->model_->waypoints_,
+                             this->table_));
 
     // Set path
     this->table_->setItem(2, 0, new QTableWidgetItem(tr("Drone Path")));
@@ -115,6 +117,11 @@ void PortDialog::setModel(ConstraintModel *model) {
     }
 }
 
+void PortDialog::resetTable() {
+    this->table_->clearContents();
+    this->ports_->clear();
+}
+
 void PortDialog::initializeTable() {
     // Create table
     this->table_ = new QTableWidget(this);
@@ -125,7 +132,8 @@ void PortDialog::initializeTable() {
     this->table_->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("Port")));
     this->table_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->table_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->table_->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    this->table_->horizontalHeader()->
+            setSectionResizeMode(QHeaderView::Stretch);
     this->table_->verticalHeader()->setVisible(false);
 
     // Set color

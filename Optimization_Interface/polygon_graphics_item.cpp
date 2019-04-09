@@ -80,7 +80,10 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
 
+    // Fill shading
     painter->fillPath(this->shape(), this->brush_);
+
+    // Draw outline
     for (qint32 i = 1; i < this->model_->points_->length(); i++) {
         QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
                     mapFromScene(*this->model_->points_->at(i)));
@@ -89,6 +92,13 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     QLineF line(mapFromScene(*this->model_->points_->last()),
                 mapFromScene(*this->model_->points_->first()));
     painter->drawLine(line);
+
+    // Label with port
+    if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
+        QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
+        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+                          QString::number(this->model_->port_));
+    }
 }
 
 int PolygonGraphicsItem::type() const {
@@ -98,7 +108,7 @@ int PolygonGraphicsItem::type() const {
 QPainterPath PolygonGraphicsItem::shape() const {
     QPainterPath path;
 
-    // Draw exterior shadings
+    // Define exterior shadings
     for (qint32 i = 1; i < this->model_->points_->length(); i++) {
         QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
                     mapFromScene(*this->model_->points_->at(i)));

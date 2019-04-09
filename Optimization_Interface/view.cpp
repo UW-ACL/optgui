@@ -73,11 +73,23 @@ void View::loadFile() {
 }
 
 void View::saveFile() {
+    this->setState(IDLE);
     this->controller_->saveFile();
 }
 
 void View::setPorts() {
+    this->setState(IDLE);
     this->controller_->setPorts();
+}
+
+void View::startServers() {
+    this->setState(IDLE);
+    this->controller_->startServers();
+}
+
+void View::closeServers() {
+    this->setState(IDLE);
+    this->controller_->closeServers();
 }
 
 void View::initialize() {

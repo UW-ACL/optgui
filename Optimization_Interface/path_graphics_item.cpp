@@ -10,7 +10,7 @@
 
 namespace interface {
 
-PathGraphicsItem::PathGraphicsItem(QVector<QPointF *> *model,
+PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
                                        QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
@@ -39,10 +39,18 @@ void PathGraphicsItem::paint(QPainter *painter,
 
     // Draw current course
     painter->setPen(this->pen_);
-    for (qint32 i = 1; i < this->model_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->at(i-1)),
-                    mapFromScene(*this->model_->at(i)));
+    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
+        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
+                    mapFromScene(*this->model_->points_->at(i)));
         painter->drawLine(line);
+    }
+
+    // Label with port
+    if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
+        painter->setPen(Qt::black);
+        QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
+        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+                          QString::number(this->model_->port_));
     }
 }
 
@@ -66,7 +74,7 @@ void PathGraphicsItem::expandScene() {
 QPainterPath PathGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    for (QPointF *point : *this->model_) {
+    for (QPointF *point : *this->model_->points_) {
         poly << *point;
     }
     path.addPolygon(poly);

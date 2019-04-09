@@ -8,12 +8,15 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include <QNetworkSession>
+
 #include "canvas.h"
 #include "constraint_model.h"
 #include "path_graphics_item.h"
 #include "drone_graphics_item.h"
 #include "waypoints_graphics_item.h"
 #include "port_dialog.h"
+#include "item_server.h"
 
 namespace interface {
 
@@ -38,6 +41,8 @@ class Controller {
     void loadFile();
     void saveFile();
     void setPorts();
+    void startServers();
+    void closeServers();
     void execute();
 
     void clearWaypointsGraphic();
@@ -51,6 +56,8 @@ class Controller {
     PathGraphicsItem *path_graphic_;
     DroneGraphicsItem *drone_graphic_;
     PortDialog *port_dialog_;
+    QNetworkSession *network_session_;
+    QVector<ItemServer *> *servers_;
 
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);

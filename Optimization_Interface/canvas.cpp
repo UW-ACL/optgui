@@ -33,6 +33,9 @@ void Canvas::initialize() {
     // Set text font
     this->font_ = QFont("SansSerif");
 
+    // Set flags
+    this->setItemIndexMethod(QGraphicsScene::ItemIndexMethod::NoIndex);
+
     // Connect slots
     connect(this, SIGNAL(selectionChanged()), this,
             SLOT(bringSelectedToFront()));

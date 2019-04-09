@@ -13,11 +13,11 @@
 
 namespace interface {
 
-WaypointsGraphicsItem::WaypointsGraphicsItem(QVector<QPointF *> *points,
+WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
                                    QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
-    this->waypoints_ = points;
+    this->model_ = model;
     this->initialize();
 }
 
@@ -52,11 +52,11 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Create new handles if necessary
-    if (this->waypoints_->size() > this->resize_handles_->size()) {
+    if (this->model_->points_->size() > this->resize_handles_->size()) {
         for (qint32 i = this->resize_handles_->size();
-             i < this->waypoints_->size(); i++) {
+             i < this->model_->points_->size(); i++) {
             PolygonResizeHandle *handle =
-                    new PolygonResizeHandle(this->waypoints_->at(i), this);
+                    new PolygonResizeHandle(this->model_->points_->at(i), this);
             this->resize_handles_->append(handle);
             handle->show();
         }
@@ -65,9 +65,9 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
 
     // Draw connecting path
     painter->setPen(this->pen_);
-    for (qint32 i = 1; i < this->waypoints_->length(); i++) {
-        QLineF line(mapFromScene(*this->waypoints_->at(i-1)),
-                    mapFromScene(*this->waypoints_->at(i)));
+    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
+        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
+                    mapFromScene(*this->model_->points_->at(i)));
         painter->drawLine(line);
     }
 
@@ -76,15 +76,23 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     qint32 index = 0;
     for (PolygonResizeHandle *handle : *this->resize_handles_) {
         QColor color = Qt::white;
-//        if (index == 0) {
-//            color = Qt::green;
-//        } else
+        //  if (index == 0) {
+        //      color = Qt::green;
+        //  } else
         if (index == size - 1) {
             color = Qt::red;
         }
         handle->setColor(color);
         handle->updatePos();
         index++;
+    }
+
+    // Label with port
+    if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
+        painter->setPen(Qt::black);
+        QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
+        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+                          QString::number(this->model_->port_));
     }
 }
 
@@ -99,7 +107,7 @@ int WaypointsGraphicsItem::type() const {
 QPainterPath WaypointsGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    for (QPointF *point : *this->waypoints_) {
+    for (QPointF *point : *this->model_->points_) {
         poly << *point;
     }
     path.addPolygon(poly);

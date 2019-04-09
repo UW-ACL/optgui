@@ -41,6 +41,8 @@ class View : public QGraphicsView {
     void loadFile();
     void saveFile();
     void setPorts();
+    void startServers();
+    void closeServers();
     void execute();
 
  private:

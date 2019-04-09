@@ -10,7 +10,8 @@
 
 namespace interface {
 
-DroneGraphicsItem::DroneGraphicsItem(QPointF *model, QGraphicsItem *parent)
+DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
+                                     QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
@@ -40,13 +41,20 @@ void DroneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Update pos
-    this->setPos(*this->model_);
+    this->setPos(*this->model_->point_);
 
     // Draw current course
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
 
     painter->drawPath(this->shape());
+
+    // Label with port
+    if (this->model_->port_ != 0) {
+        QPointF text_pos(this->mapFromScene(*this->model_->point_));
+        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+                          QString::number(this->model_->port_));
+    }
 }
 
 void DroneGraphicsItem::expandScene() {

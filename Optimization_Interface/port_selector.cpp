@@ -6,6 +6,7 @@
 #include "port_selector.h"
 
 #include <QDebug>
+#include <QTimer>
 
 namespace interface {
 
@@ -15,16 +16,21 @@ PortSelector::PortSelector(QSet<quint16> *ports,
     this->ports_ = ports;
     this->model_ = model;
 
-    // this->setInputMask("00000");
-
     this->setText(QString::number(this->model_->port_));
 
     this->connect(this, SIGNAL(editingFinished()), this, SLOT(updatePort()));
 }
 
+void PortSelector::focusInEvent(QFocusEvent *event) {
+    QLineEdit::focusInEvent(event);
+    QTimer::singleShot(0, this, SLOT(selectAll()));
+}
+
 void PortSelector::updatePort() {
     qint64 value = this->text().toInt();
     this->ports_->remove(this->model_->port_);
+
+    // check that port is in valid range and unused
     if (1024 <= value && value <= 65535 &&
             !this->ports_->contains((quint16)value)) {
         this->ports_->insert((quint16)value);

@@ -14,12 +14,13 @@
 #include <QVector>
 
 #include "polygon_resize_handle.h"
+#include "path_model_item.h"
 
 namespace interface {
 
 class WaypointsGraphicsItem : public QGraphicsItem {
  public:
-    explicit WaypointsGraphicsItem(QVector<QPointF *> *points,
+    explicit WaypointsGraphicsItem(PathModelItem *model,
                               QGraphicsItem *parent = nullptr);
     ~WaypointsGraphicsItem();
 
@@ -38,7 +39,7 @@ class WaypointsGraphicsItem : public QGraphicsItem {
     void initialize();
     QPen pen_;
     QBrush brush_;
-    QVector<QPointF *> *waypoints_;
+    PathModelItem *model_;
     QVector<PolygonResizeHandle *> *resize_handles_;
 };
 

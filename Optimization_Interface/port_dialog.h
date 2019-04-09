@@ -22,6 +22,8 @@ class PortDialog : public QDialog {
     explicit PortDialog(QWidget *parent = nullptr);
     ~PortDialog();
     void setModel(ConstraintModel *model);
+ private slots:
+    void resetTable();
  private:
     void initializeTable();
     QTableWidget *table_;
