@@ -38,6 +38,7 @@ class PolygonGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
  private:
     void initialize();
+    bool isConvex() const;
     QPen pen_;
     QBrush brush_;
     QVector<PolygonResizeHandle *> *resize_handles_;

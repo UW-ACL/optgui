@@ -63,6 +63,16 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    // Change color based on convexity
+    QColor fill;
+    if (this->isConvex()) {
+        fill = Qt::gray;
+    } else {
+        fill = Qt::red;
+    }
+    fill.setAlpha(200);
+    this->brush_ = QBrush(fill);
+
     // Show handles if selected
     if (this->isSelected()) {
         for (PolygonResizeHandle *handle : *this->resize_handles_) {
@@ -131,7 +141,6 @@ QPainterPath PolygonGraphicsItem::shape() const {
     if (this->model_->direction_) {
         line = QLineF(line.p2(), line.p1());
     }
-
     QPolygonF poly;
     poly << line.p1();
     poly << line.p2();
@@ -140,6 +149,7 @@ QPainterPath PolygonGraphicsItem::shape() const {
     poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
     path.addPolygon(poly);
 
+    // Return shape
     return path;
 }
 
@@ -181,6 +191,31 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+bool PolygonGraphicsItem::isConvex() const {
+    quint32 n = this->model_->points_->size();
+    if (n < 4) {
+        return true;
+    }
+
+    bool sign = false;
+    QVector<QPointF *> *points = this->model_->points_;
+
+    for (quint32 i = 0; i < n; i++) {
+        qreal dx1 = points->at((i + 2) % n)->x() - points->at((i + 1) % n)->x();
+        qreal dy1 = points->at((i + 2) % n)->y() - points->at((i + 1) % n)->y();
+        qreal dx2 = points->at(i)->x() - points->at((i + 1) % n)->x();
+        qreal dy2 = points->at(i)->y() - points->at((i + 1) % n)->y();
+        qreal z_cross_product = (dx1 * dy2) - (dy1 * dx2);
+
+        if (i == 0) {
+            sign = z_cross_product > 0;
+        } else if (sign != (z_cross_product > 0)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 }  // namespace interface
