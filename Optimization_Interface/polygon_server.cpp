@@ -8,6 +8,8 @@
 #include <QTcpSocket>
 #include <QDataStream>
 
+#include "globals.h"
+
 namespace interface {
 
 PolygonServer::PolygonServer(PolygonModelItem *model)
@@ -18,7 +20,7 @@ PolygonServer::PolygonServer(PolygonModelItem *model)
 void PolygonServer::interact() {
         QByteArray block;
         QDataStream in(&block, QIODevice::ReadOnly);
-        in.setVersion(QDataStream::Qt_5_11);
+        in.setVersion(VERSION_5_11);
 
         QTcpSocket *client_connection = this->nextPendingConnection();
         connect(client_connection, SIGNAL(disconnected()),

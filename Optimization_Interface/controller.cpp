@@ -388,7 +388,7 @@ void Controller::saveFile() {
         }
 
         QDataStream *out = new QDataStream(file);
-        out->setVersion(QDataStream::Qt_5_11);
+        out->setVersion(VERSION_5_11);
 
         // Write ellipses
         quint32 num_ellipses = this->model_->ellipses_->size();
@@ -565,7 +565,7 @@ void Controller::loadFile() {
         }
 
         QDataStream *in = new QDataStream(file);
-        in->setVersion(QDataStream::Qt_5_11);
+        in->setVersion(VERSION_5_11);
 
         // Reset model
         delete this->model_;

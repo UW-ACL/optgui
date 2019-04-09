@@ -9,9 +9,6 @@
 #ifndef POLYGON_SERVER_H_
 #define POLYGON_SERVER_H_
 
-#include <QTcpSocket>
-#include <QDataStream>
-
 #include "item_server.h"
 #include "polygon_model_item.h"
 

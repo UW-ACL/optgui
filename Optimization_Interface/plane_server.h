@@ -9,9 +9,6 @@
 #ifndef PLANE_SERVER_H_
 #define PLANE_SERVER_H_
 
-#include <QTcpSocket>
-#include <QDataStream>
-
 #include "item_server.h"
 #include "plane_model_item.h"
 

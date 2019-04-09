@@ -9,9 +9,6 @@
 #ifndef ELLIPSE_SERVER_H_
 #define ELLIPSE_SERVER_H_
 
-#include <QTcpSocket>
-#include <QDataStream>
-
 #include "item_server.h"
 #include "ellipse_model_item.h"
 

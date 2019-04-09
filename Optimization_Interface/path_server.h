@@ -9,9 +9,6 @@
 #ifndef PATH_SERVER_H_
 #define PATH_SERVER_H_
 
-#include <QTcpSocket>
-#include <QDataStream>
-
 #include "item_server.h"
 #include "path_model_item.h"
 

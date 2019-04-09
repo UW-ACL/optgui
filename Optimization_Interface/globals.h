@@ -29,6 +29,10 @@ namespace interface {
         WAYPOINTS_GRAPHIC = QGraphicsItem::UserType + 4,
         HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
     };
+
+    enum DATA_STREAM_VERSION {
+        VERSION_5_11 = QDataStream::Qt_5_11,
+    };
 }  // namespace interface
 
 #endif  // GLOBALS_H_
