@@ -1,2 +1,4 @@
 .DS_Store
 cpplint.py
+build*
+Optimization_Interface/Optimization_Interface.pro.user.*
