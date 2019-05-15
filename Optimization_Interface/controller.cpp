@@ -51,6 +51,8 @@ Controller::Controller(Canvas *canvas) {
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
+
+    this->previousPoint_ = nullptr;
 }
 
 Controller::~Controller() {
@@ -83,7 +85,6 @@ Controller::~Controller() {
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
         case POINT_GRAPHIC: {
-
             PointGraphicsItem *point = qgraphicsitem_cast<
                     PointGraphicsItem *>(item);
             PointModelItem *model = point->model_;
@@ -166,8 +167,9 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
-void Controller::addPoint(QPointF *point) {
+void Controller::updatePoint(QPointF *point) {
     PointModelItem *item_model = new PointModelItem(point);
+    if(this->previousPoint_) this->removeItem(this->previousPoint_);
     this->loadPoint(item_model);
 }
 
@@ -192,11 +194,7 @@ void Controller::addWaypoint(QPointF *point) {
 }
 
 // ============ BACK END CONTROLS ============
-
-void Controller::execute() {
-    // TODO(Miki): pass model to optimization solver
-    qDebug() << "hello world 2";
-
+void Controller::compute() {
     prob pr;
     double a0[2];
     double b0[2];
@@ -222,6 +220,12 @@ void Controller::execute() {
     pr.print_Abc();
     pr.print_probStats();
     qDebug() << x.get(0,0);
+}
+
+void Controller::execute() {
+    // TODO(Miki): pass model to optimization solver
+    qDebug() << "hello world 2";
+
 }
 
 void Controller::setPorts() {
@@ -498,6 +502,8 @@ void Controller::saveFile() {
 
 void Controller::loadPoint(PointModelItem *item_model) {
     PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
+    this->previousPoint_ = item_graphic;
+
     this->canvas_->addItem(item_graphic);
     this->model_->addPoint(item_model);
     this->canvas_->bringToFront(item_graphic);

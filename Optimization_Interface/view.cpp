@@ -166,6 +166,12 @@ void View::mousePressEvent(QMouseEvent *event) {
     QPointF pos = this->mapToScene(event->pos());
 
     switch (this->state_) {
+        case POINT: {
+            this->controller_->updatePoint(new QPointF(pos));
+            compute();
+            this->controller_->addWaypoint(new QPointF(2*pos));
+            break;
+        }
         case ELLIPSE: {
             this->controller_->addEllipse(new QPointF(pos));
             break;
@@ -280,6 +286,10 @@ void View::setState(STATE button_type) {
             button->setFrameShadow(QFrame::Raised);
         }
     }
+}
+
+void View::compute() {
+    this->controller_->compute();
 }
 
 void View::execute() {

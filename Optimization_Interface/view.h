@@ -43,6 +43,7 @@ class View : public QGraphicsView {
     void setPorts();
     void startServers();
     void closeServers();
+    void compute();
     void execute();
 
  private:

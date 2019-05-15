@@ -15,6 +15,7 @@
 #include "path_graphics_item.h"
 #include "drone_graphics_item.h"
 #include "waypoints_graphics_item.h"
+#include "point_graphics_item.h"
 #include "port_dialog.h"
 #include "item_server.h"
 #include "cprs.h"
@@ -29,7 +30,7 @@ class Controller {
 
     void setCanvas(Canvas *canvas);
 
-    void addPoint(QPointF *point);
+    void updatePoint(QPointF *point);
     void addEllipse(QPointF *point);
     void addPolygon(QVector<QPointF *> *points);
     void addPlane(QPointF *p1, QPointF *p2);
@@ -46,6 +47,7 @@ class Controller {
     void setPorts();
     void startServers();
     void closeServers();
+    void compute();
     void execute();
 
     void clearWaypointsGraphic();
@@ -61,6 +63,8 @@ class Controller {
     PortDialog *port_dialog_;
     QNetworkSession *network_session_;
     QVector<ItemServer *> *servers_;
+
+    PointGraphicsItem *previousPoint_;
 
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);

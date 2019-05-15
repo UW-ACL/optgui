@@ -93,7 +93,7 @@ void MenuPanel::initialize() {
 }
 
 void MenuPanel::initializePointButton() {
-    MenuButton *point_button = new MenuButton(ELLIPSE, this->menu_);
+    MenuButton *point_button = new MenuButton(POINT, this->menu_);
     QPixmap pix(50, 50);
     pix.fill(Qt::transparent);
     QPainter painter(&pix);

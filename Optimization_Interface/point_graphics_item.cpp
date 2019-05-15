@@ -23,7 +23,7 @@ PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
 
 void PointGraphicsItem::initialize() {
     // Set pen
-    QColor fill = Qt::gray;
+    QColor fill = Qt::red;
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 

@@ -14,7 +14,7 @@
 
 namespace interface {
 
-const double DEFAULT_RAD2 = 50;
+const double DEFAULT_RAD2 = 5;
 
 class PointModelItem : public DataModel {
  public:
