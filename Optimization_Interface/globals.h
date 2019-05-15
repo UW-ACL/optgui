@@ -15,6 +15,7 @@ namespace interface {
         IDLE,
         ERASER,
         FLIP,
+        POINT,
         ELLIPSE,
         POLYGON,
         PLANE,
@@ -28,6 +29,7 @@ namespace interface {
         PLANE_GRAPHIC = QGraphicsItem::UserType + 3,
         WAYPOINTS_GRAPHIC = QGraphicsItem::UserType + 4,
         HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
+        POINT_GRAPHIC = QGraphicsItem::UserType + 6
     };
 
     enum DATA_STREAM_VERSION {

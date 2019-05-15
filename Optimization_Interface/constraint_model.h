@@ -12,6 +12,7 @@
 #include <QVector>
 #include <QPointF>
 
+#include "point_model_item.h"
 #include "ellipse_model_item.h"
 #include "polygon_model_item.h"
 #include "plane_model_item.h"
@@ -24,6 +25,9 @@ class ConstraintModel {
  public:
     ConstraintModel();
     ~ConstraintModel();
+
+    void addPoint(PointModelItem *item);
+    void removePoint(PointModelItem *item);
 
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
@@ -40,6 +44,7 @@ class ConstraintModel {
     void addPathPoint(QPointF *item);
     void clearPath();
 
+    QSet<PointModelItem *> *points_;
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;

@@ -34,6 +34,7 @@ class MenuPanel : public QFrame {
     void initializeEraserButton();
     void initializePlaneButton();
     void initializePolygonButton();
+    void initializePointButton();
     void initializeEllipseButton();
     void initializeFlipButton();
     void initializeExecButton();

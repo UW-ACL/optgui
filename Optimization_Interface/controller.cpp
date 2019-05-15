@@ -11,15 +11,20 @@
 #include <QSettings>
 #include <QTranslator>
 
+#include "point_graphics_item.h"
 #include "ellipse_graphics_item.h"
 #include "polygon_graphics_item.h"
 #include "plane_graphics_item.h"
 #include "drone_server.h"
 #include "path_server.h"
+#include "point_server.h"
 #include "ellipse_server.h"
 #include "polygon_server.h"
 #include "plane_server.h"
 #include "globals.h"
+
+
+using namespace cprs;
 
 namespace interface {
 
@@ -77,6 +82,17 @@ Controller::~Controller() {
 
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
+        case POINT_GRAPHIC: {
+
+            PointGraphicsItem *point = qgraphicsitem_cast<
+                    PointGraphicsItem *>(item);
+            PointModelItem *model = point->model_;
+            this->canvas_->removeItem(point);
+            delete point;
+            this->model_->removePoint(model);
+            delete model;
+            break;
+        }
         case ELLIPSE_GRAPHIC: {
             EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                     EllipseGraphicsItem *>(item);
@@ -150,6 +166,11 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
+void Controller::addPoint(QPointF *point) {
+    PointModelItem *item_model = new PointModelItem(point);
+    this->loadPoint(item_model);
+}
+
 void Controller::addEllipse(QPointF *point) {
     EllipseModelItem *item_model = new EllipseModelItem(point);
     this->loadEllipse(item_model);
@@ -174,6 +195,33 @@ void Controller::addWaypoint(QPointF *point) {
 
 void Controller::execute() {
     // TODO(Miki): pass model to optimization solver
+    qDebug() << "hello world 2";
+
+    prob pr;
+    double a0[2];
+    double b0[2];
+
+    a0[0] = 1;
+    a0[1] = 0;
+
+    b0[0] = 0;
+    b0[1] = 1;
+
+    par a(pr,1,2,"a",a0);
+    par b(pr,1,2,"b",b0);
+    var x(pr,2,1,"x",var::REAL);
+
+    a*x >= 3;
+    b*x >= 4;
+
+    minimize(norm(x));
+
+    pr.solve();
+
+    x.dispData();
+    pr.print_Abc();
+    pr.print_probStats();
+    qDebug() << x.get(0,0);
 }
 
 void Controller::setPorts() {
@@ -281,6 +329,12 @@ void Controller::startServers() {
         this->servers_->append(new PathServer(this->model_->path_));
     }
 
+    // Create servers for point constraints
+    for (PointModelItem *model : *this->model_->points_) {
+        if (model->port_ != 0) {
+            this->servers_->append(new PointServer(model));
+        }
+    }
     // Create servers for ellipse constraints
     for (EllipseModelItem *model : *this->model_->ellipses_) {
         if (model->port_ != 0) {
@@ -323,6 +377,13 @@ void Controller::closeServers() {
 }
 
 // ============ SAVE CONTROLS ============
+
+void Controller::writePoint(PointModelItem *model, QDataStream *out) {
+    *out << (bool)model->direction_;
+    *out << *model->pos_;
+    *out << (double)model->radius_;
+    *out << (quint16)model->port_;
+}
 
 void Controller::writeEllipse(EllipseModelItem *model, QDataStream *out) {
     *out << (bool)model->direction_;
@@ -390,6 +451,13 @@ void Controller::saveFile() {
         QDataStream *out = new QDataStream(file);
         out->setVersion(VERSION_5_11);
 
+        // Write points
+        quint32 num_points = this->model_->points_->size();
+        *out << num_points;
+        for (PointModelItem *model : *this->model_->points_) {
+            this->writePoint(model, out);
+        }
+
         // Write ellipses
         quint32 num_ellipses = this->model_->ellipses_->size();
         *out << num_ellipses;
@@ -428,6 +496,13 @@ void Controller::saveFile() {
 
 // ============ LOAD CONTROLS ============
 
+void Controller::loadPoint(PointModelItem *item_model) {
+    PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
+    this->canvas_->addItem(item_graphic);
+    this->model_->addPoint(item_model);
+    this->canvas_->bringToFront(item_graphic);
+    item_graphic->expandScene();
+}
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic = new EllipseGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
@@ -452,6 +527,23 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     item_graphic->expandScene();
 }
 
+PointModelItem *Controller::readPoint(QDataStream *in) {
+    bool direction;
+    *in >> direction;
+    QPointF pos;
+    *in >> pos;
+    double radius;
+    *in >> radius;
+    quint16 port;
+    *in >> port;
+
+    PointModelItem *model = new PointModelItem(new QPointF(pos));
+    model->direction_ = direction;
+    model->radius_ = radius;
+    model->port_ = port;
+
+    return model;
+}
 EllipseModelItem *Controller::readEllipse(QDataStream *in) {
     bool direction;
     *in >> direction;

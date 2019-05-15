@@ -23,6 +23,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+INCLUDEPATH += $$PWD/../../cprs/headers/ \
+               $$PWD/../../csocp/
+
+LIBS += -L$$PWD/../../cprs/build -lCPRS \
+        -L$$PWD/../../csocp -lCSOCP
 
 SOURCES += \
         main.cpp \
@@ -48,7 +53,9 @@ SOURCES += \
     path_server.cpp \
     ellipse_server.cpp \
     polygon_server.cpp \
-    plane_server.cpp
+    plane_server.cpp \
+    point_graphics_item.cpp \
+    point_server.cpp
 
 HEADERS += \
         main_window.h \
@@ -80,7 +87,10 @@ HEADERS += \
     path_server.h \
     ellipse_server.h \
     polygon_server.h \
-    plane_server.h
+    plane_server.h \
+    point_server.h \
+    point_model_item.h \
+    point_graphics_item.h
 
 RESOURCES += \
     resources.qrc

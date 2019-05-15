@@ -70,6 +70,7 @@ void MenuPanel::initialize() {
 
     // Create menu buttons
     this->menu_buttons_ = new QVector<MenuButton*>();
+    this->initializePointButton();
     this->initializeEllipseButton();
     this->initializePolygonButton();
     this->initializePlaneButton();
@@ -89,6 +90,22 @@ void MenuPanel::initialize() {
 
     // Create zoom slider
     this->initializeZoomSlider();
+}
+
+void MenuPanel::initializePointButton() {
+    MenuButton *point_button = new MenuButton(ELLIPSE, this->menu_);
+    QPixmap pix(50, 50);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(Qt::red);
+    pen.setWidth(2);
+    painter.setPen(pen);
+    painter.setBrush(Qt::red);
+    painter.drawEllipse(15, 15, 20, 20);
+    point_button->setPixmap(pix);
+    point_button->setToolTip(tr("Add point"));
+    this->menu_buttons_->append(point_button);
 }
 
 void MenuPanel::initializeEllipseButton() {

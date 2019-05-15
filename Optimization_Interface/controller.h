@@ -17,6 +17,8 @@
 #include "waypoints_graphics_item.h"
 #include "port_dialog.h"
 #include "item_server.h"
+#include "cprs.h"
+
 
 namespace interface {
 
@@ -27,6 +29,7 @@ class Controller {
 
     void setCanvas(Canvas *canvas);
 
+    void addPoint(QPointF *point);
     void addEllipse(QPointF *point);
     void addPolygon(QVector<QPointF *> *points);
     void addPlane(QPointF *p1, QPointF *p2);
@@ -59,10 +62,12 @@ class Controller {
     QNetworkSession *network_session_;
     QVector<ItemServer *> *servers_;
 
+    void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
 
+    void writePoint(PointModelItem *model, QDataStream *out);
     void writeEllipse(EllipseModelItem *model, QDataStream *out);
     void writePolygon(PolygonModelItem *model, QDataStream *out);
     void writePlane(PlaneModelItem *model, QDataStream *out);
@@ -70,6 +75,7 @@ class Controller {
     void writePath(PathModelItem *model, QDataStream *out);
     void writeDrone(DroneModelItem *model, QDataStream *out);
 
+    PointModelItem *readPoint(QDataStream *in);
     EllipseModelItem *readEllipse(QDataStream *in);
     PolygonModelItem *readPolygon(QDataStream *in);
     PlaneModelItem *readPlane(QDataStream *in);

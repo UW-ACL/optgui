@@ -75,7 +75,7 @@ void PortDialog::setModel(ConstraintModel *model) {
     quint16 count = 1;
     for (EllipseModelItem *model : *this->model_->ellipses_) {
         this->table_->setItem(row, 0,
-                new QTableWidgetItem(tr("Ellipse ") + QString::number(count)));
+                new QTableWidgetItem(tr("Ellipsey ") + QString::number(count)));
         this->table_->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
         this->table_->setCellWidget(row, 1,

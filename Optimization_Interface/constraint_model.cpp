@@ -13,6 +13,7 @@ ConstraintModel::ConstraintModel() {
 
 void ConstraintModel::initialize() {
     // Set model containers
+    this->points_ = new QSet<PointModelItem *>();
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
@@ -22,6 +23,11 @@ void ConstraintModel::initialize() {
 }
 
 ConstraintModel::~ConstraintModel() {
+    // Delete points
+    for (PointModelItem *point : *this->points_) {
+        delete point;
+    }
+    delete this->ellipses_;
     // Delete ellipses
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         delete ellipse;
@@ -50,8 +56,16 @@ ConstraintModel::~ConstraintModel() {
     delete this->drone_;
 }
 
+void ConstraintModel::addPoint(PointModelItem *item) {
+    this->points_->insert(item);
+}
+
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
+}
+
+void ConstraintModel::removePoint(PointModelItem *item) {
+    this->points_->remove(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
