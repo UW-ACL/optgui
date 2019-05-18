@@ -24,10 +24,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 INCLUDEPATH += $$PWD/../../cprs/headers/ \
-               $$PWD/../../csocp/
+               $$PWD/../../csocp/ \
+               $$PWD/../../algorithm
 
 LIBS += -L$$PWD/../../cprs/build -lCPRS \
-        -L$$PWD/../../csocp -lCSOCP
+        -L$$PWD/../../csocp -lCSOCP \
+        -L$$PWD/../../algorithm -lalgorithm
+
 
 SOURCES += \
         main.cpp \

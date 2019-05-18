@@ -23,6 +23,7 @@
 #include "plane_server.h"
 #include "globals.h"
 
+#include "algorithm.h"
 
 using namespace cprs;
 
@@ -194,32 +195,154 @@ void Controller::addWaypoint(QPointF *point) {
 }
 
 // ============ BACK END CONTROLS ============
-void Controller::compute() {
-    prob pr;
-    double a0[2];
-    double b0[2];
 
-    a0[0] = 1;
-    a0[1] = 0;
 
-    b0[0] = 0;
-    b0[1] = 1;
+void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
+    // Initialize constant values
+    uint32_t N  = 100; // Number of waypoint steps
+    uint32_t const n = 3; // Number of states
+    prob pr; // initializing the optimization problem
+    double dt = 0.05; // time discretiziation
+    double uConstraint = 100;
 
-    par a(pr,1,2,"a",a0);
-    par b(pr,1,2,"b",b0);
-    var x(pr,2,1,"x",var::REAL);
+    // Initializing waypoints
+    double rI0[3] = { 0 }; //initial position
+    double rF0[3] = { posFinal->x(), posFinal->y(), 0 }; //final position
+    double vI0[3] = { 0 }; //initial velocity
+    double vF0[3] = { 0 }; //final velocity
 
-    a*x >= 3;
-    b*x >= 4;
+    //Parameters - setting up constraints (cprs)
+    par rI(pr, n, 1, "rI", rI0); //initial position parameter
+    par rF(pr, n, 1, "rF", rF0); //final position parameter
+    par vI(pr, n, 1, "vI", vI0); //initial velocity parameter
+    par vF(pr, n, 1, "vF", vF0); //final velocity parameter
+    // par mass(pr,1,1,"m",mass0); //mass
 
-    minimize(norm(x));
+    //Variables - setting up for solver (cprs)
+    var r(pr, n, N, "r", var::REAL); //position
+    var v(pr, n, N, "v", var::REAL); //velocity
+    var a(pr, n, N, "a", var::REAL); //acceleration
+    var u(pr, n, N, "u", var::REAL); //control input
+    var obj(pr, N, 1, "obj", var::REAL); //cumulative objective function
+
+    //Set up constraints (cprs)
+    r.col(0)   == rI; //set variable r equal to initial condition
+    r.col(N-1) == rF; //set final value of variable r to final waypoint
+    v.col(0)   == vI; // " for velocity
+    v.col(N-1) == vF; // " for velocity
+
+    //integration dynamic constraints
+    for(uint32_t i=0; i<N-1; i++) {
+        a.col(i)   == u.col(i);
+        r.col(i+1) == r.col(i) + dt*v.col(i) + (1/2)*dt*dt*a.col(i);
+        v.col(i+1) == v.col(i) + dt*a.col(i);
+
+        for(uint32_t j=0; j<n; j++) {
+            u(j, i) <= uConstraint;
+            u(j, i) >= -uConstraint;
+        }
+    }
+
+    for(uint32_t i=0; i<N; i++) {
+        obj(i) == norm(u.col(i));
+    }
+
+    minimize(sum(obj));
 
     pr.solve();
 
-    x.dispData();
+    obj.dispData();
+    r.dispData();
+
     pr.print_Abc();
     pr.print_probStats();
-    qDebug() << x.get(0,0);
+
+//    for(uint32_t i=0; i<N; i++) {
+//        qDebug() << r.get(0,i) << ", " << r.get(1,i);
+//        trajectory->append(new QPointF(r.get(0,i), r.get(1,i)));
+//    }
+
+
+    // Parameters.
+    params P;
+    memset(&P,0,sizeof(P));
+
+    P.n_recalcs = 14;
+    P.K = KK;
+    P.dK = 1;
+    P.tf = 2.75;
+    P.dt = P.tf/static_cast<double>(KK-1);
+    P.g[0] = -9.81;
+    P.g[1] = 0.0;
+    P.g[2] = 0.0;
+    P.a_min = 1.0/0.3;
+    P.a_max = 4.0/0.3;
+    P.theta_max = 40.0*DEG2RAD;
+    P.q_max = 0.0;
+
+    P.max_iter = 10;
+    P.Delta_i = 100.0;
+    P.lambda = 1e2;
+    P.alpha = 2.0;
+    P.dL_tol = 1e-0;
+    P.rho_0 = -1e-1;
+    P.rho_1 = 0.25;
+    P.rho_2 = 0.90;
+
+    P.obs.n = 3;
+    P.obs.c_e = 1.0;
+    P.obs.c_n = 1.0;
+    P.obs.phi = 90.0*DEG2RAD;
+    P.obs.R_orb = .5;
+    //  for (uint32_t k=0; k<10; ++k) {
+    //  for (uint32_t k=0; k<5; ++k) {
+    for (uint32_t k=0; k<KK; ++k) {
+    P.obs.V_orb[k] = 1.0;
+    }
+    P.obs.R[0] = 0;
+    P.obs.R[1] = -.5;
+    P.obs.R[2] = -.5;
+
+    // Inputs.
+    inputs I;
+    memset(&I,0,sizeof(I));
+
+    I.r_i[0] =  0.0;
+    I.r_i[1] =  0.0;
+    I.r_i[2] =  0.0;
+    I.v_i[0] =  0.0;
+    I.v_i[1] =  0.0;
+    I.v_i[2] =  0.0;
+    I.a_i[0] = -P.g[0];
+    I.a_i[1] = -P.g[1];
+    I.a_i[2] = -P.g[2];
+    I.r_f[0] =  0.0;
+    I.r_f[1] =  posFinal->x()/100;
+    I.r_f[2] =  posFinal->y()/100;
+    I.v_f[0] =  0.0;
+    I.v_f[1] =  0.0;
+    I.v_f[2] =  0.0;
+    I.a_f[0] = -P.g[0];
+    I.a_f[1] = -P.g[1];
+    I.a_f[2] = -P.g[2];
+
+    // Outputs.
+    outputs O;
+    memset(&O,0,sizeof(O));
+
+
+    // Initialize.
+    initialize(P,I,O);
+
+    // SCvx.
+    SCvx(P,I,O);
+
+    for(uint32_t i=0; i<KK; i++) {
+        qDebug() << O.r[1][i] << ", " << O.r[2][i];
+        trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
+    }
+    // Set up next solution.
+    reset(P,I,O);
 }
 
 void Controller::execute() {

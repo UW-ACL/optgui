@@ -39,6 +39,8 @@ class Controller {
     void clearPathPoints();
     void updateDronePos(QPointF pos);
 
+    void removeAllWaypoints();
+
     void removeItem(QGraphicsItem *item);
     void flipDirection(QGraphicsItem *item);
 
@@ -47,7 +49,7 @@ class Controller {
     void setPorts();
     void startServers();
     void closeServers();
-    void compute();
+    void compute(QPointF *posFinal, QVector<QPointF* > *trajectory);
     void execute();
 
     void clearWaypointsGraphic();
