@@ -33,8 +33,8 @@ LIBS += -L$$PWD/../../cprs/build -lCPRS \
 
 
 SOURCES += \
-        main.cpp \
-        main_window.cpp \
+    main.cpp \
+    main_window.cpp \
     canvas.cpp \
     view.cpp \
     menu_panel.cpp \
@@ -61,7 +61,7 @@ SOURCES += \
     point_server.cpp
 
 HEADERS += \
-        main_window.h \
+    main_window.h \
     canvas.h \
     view.h \
     menu_panel.h \

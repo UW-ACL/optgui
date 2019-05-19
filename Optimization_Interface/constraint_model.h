@@ -11,6 +11,7 @@
 #include <QSet>
 #include <QVector>
 #include <QPointF>
+#include <QSetIterator>
 
 #include "point_model_item.h"
 #include "ellipse_model_item.h"
@@ -43,6 +44,8 @@ class ConstraintModel {
 
     void addPathPoint(QPointF *item);
     void clearPath();
+
+    uint32_t loadEllipse(double* R, double* c_e, double* c_n);
 
     QSet<PointModelItem *> *points_;
     QSet<EllipseModelItem *> *ellipses_;

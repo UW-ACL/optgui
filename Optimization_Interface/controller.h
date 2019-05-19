@@ -51,6 +51,7 @@ class Controller {
     void closeServers();
     void compute(QPointF *posFinal, QVector<QPointF* > *trajectory);
     void execute();
+    void updatePath();
 
     void clearWaypointsGraphic();
     void clearPathGraphic();

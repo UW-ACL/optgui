@@ -10,6 +10,8 @@
 #include <QNetworkConfigurationManager>
 #include <QSettings>
 #include <QTranslator>
+#include <QSet>
+
 
 #include "point_graphics_item.h"
 #include "ellipse_graphics_item.h"
@@ -24,6 +26,7 @@
 #include "globals.h"
 
 #include "algorithm.h"
+
 
 using namespace cprs;
 
@@ -53,7 +56,9 @@ Controller::Controller(Canvas *canvas) {
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
 
+    // TODO(ben): Remove this hack and incorporate it into ConstraintModel
     this->previousPoint_ = nullptr;
+
 }
 
 Controller::~Controller() {
@@ -196,73 +201,12 @@ void Controller::addWaypoint(QPointF *point) {
 
 // ============ BACK END CONTROLS ============
 
+void Controller::updatePath() {
+    qDebug() << "Tick";
+}
 
 void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     // Initialize constant values
-    uint32_t N  = 100; // Number of waypoint steps
-    uint32_t const n = 3; // Number of states
-    prob pr; // initializing the optimization problem
-    double dt = 0.05; // time discretiziation
-    double uConstraint = 100;
-
-    // Initializing waypoints
-    double rI0[3] = { 0 }; //initial position
-    double rF0[3] = { posFinal->x(), posFinal->y(), 0 }; //final position
-    double vI0[3] = { 0 }; //initial velocity
-    double vF0[3] = { 0 }; //final velocity
-
-    //Parameters - setting up constraints (cprs)
-    par rI(pr, n, 1, "rI", rI0); //initial position parameter
-    par rF(pr, n, 1, "rF", rF0); //final position parameter
-    par vI(pr, n, 1, "vI", vI0); //initial velocity parameter
-    par vF(pr, n, 1, "vF", vF0); //final velocity parameter
-    // par mass(pr,1,1,"m",mass0); //mass
-
-    //Variables - setting up for solver (cprs)
-    var r(pr, n, N, "r", var::REAL); //position
-    var v(pr, n, N, "v", var::REAL); //velocity
-    var a(pr, n, N, "a", var::REAL); //acceleration
-    var u(pr, n, N, "u", var::REAL); //control input
-    var obj(pr, N, 1, "obj", var::REAL); //cumulative objective function
-
-    //Set up constraints (cprs)
-    r.col(0)   == rI; //set variable r equal to initial condition
-    r.col(N-1) == rF; //set final value of variable r to final waypoint
-    v.col(0)   == vI; // " for velocity
-    v.col(N-1) == vF; // " for velocity
-
-    //integration dynamic constraints
-    for(uint32_t i=0; i<N-1; i++) {
-        a.col(i)   == u.col(i);
-        r.col(i+1) == r.col(i) + dt*v.col(i) + (1/2)*dt*dt*a.col(i);
-        v.col(i+1) == v.col(i) + dt*a.col(i);
-
-        for(uint32_t j=0; j<n; j++) {
-            u(j, i) <= uConstraint;
-            u(j, i) >= -uConstraint;
-        }
-    }
-
-    for(uint32_t i=0; i<N; i++) {
-        obj(i) == norm(u.col(i));
-    }
-
-    minimize(sum(obj));
-
-    pr.solve();
-
-    obj.dispData();
-    r.dispData();
-
-    pr.print_Abc();
-    pr.print_probStats();
-
-//    for(uint32_t i=0; i<N; i++) {
-//        qDebug() << r.get(0,i) << ", " << r.get(1,i);
-//        trajectory->append(new QPointF(r.get(0,i), r.get(1,i)));
-//    }
-
-
     // Parameters.
     params P;
     memset(&P,0,sizeof(P));
@@ -289,20 +233,7 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     P.rho_1 = 0.25;
     P.rho_2 = 0.90;
 
-    P.obs.n = 3;
-    P.obs.c_e = 1.0;
-    P.obs.c_n = 1.0;
-    P.obs.phi = 90.0*DEG2RAD;
-    P.obs.R_orb = .5;
-    //  for (uint32_t k=0; k<10; ++k) {
-    //  for (uint32_t k=0; k<5; ++k) {
-    for (uint32_t k=0; k<KK; ++k) {
-    P.obs.V_orb[k] = 1.0;
-    }
-    P.obs.R[0] = 0;
-    P.obs.R[1] = -.5;
-    P.obs.R[2] = -.5;
-
+    P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
     // Inputs.
     inputs I;
     memset(&I,0,sizeof(I));
@@ -340,6 +271,10 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     for(uint32_t i=0; i<KK; i++) {
         qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
+    }
+
+    for(uint32_t i=0; i<P.obs.n; i++) {
+        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
     }
     // Set up next solution.
     reset(P,I,O);

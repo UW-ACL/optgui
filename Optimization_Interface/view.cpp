@@ -6,6 +6,7 @@
 #include "view.h"
 
 #include <QHBoxLayout>
+#include <QTimer>
 
 namespace interface {
 
@@ -157,6 +158,10 @@ void View::initialize() {
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
 
+//    QTimer *timer = new QTimer(this);
+//    connect(timer, SIGNAL(timeout()), this, SLOT(updatePath()));
+//    timer->start(100);
+
     // Expand view to fill screen
     this->expandView();
 }
@@ -296,8 +301,8 @@ void View::setState(STATE button_type) {
     }
 }
 
-void View::compute() {
-//    this->controller_->compute();
+void View::updatePath() {
+    this->controller_->updatePath();
 }
 
 void View::execute() {

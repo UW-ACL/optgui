@@ -4,6 +4,7 @@
 // LICENSE: Copyright 2018, All Rights Reserved
 
 #include "constraint_model.h"
+#include <QString>
 
 namespace interface {
 
@@ -20,6 +21,8 @@ void ConstraintModel::initialize() {
     this->waypoints_ = new PathModelItem();
     this->path_ = new PathModelItem();
     this->drone_ = new DroneModelItem();
+    QSet<EllipseModelItem * > set;
+    QSetIterator<EllipseModelItem *> i(set);
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -104,4 +107,21 @@ void ConstraintModel::clearPath() {
     this->path_->points_->clear();
 }
 
+uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
+    uint32_t j = 0;
+    QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
+    while(iter.hasNext()) {
+        if (j > 255) break;
+
+        EllipseModelItem* ellipse = iter.next();
+        R[j] = ellipse->radius_/100;
+        c_e[j] = ellipse->pos_->x()/100;
+        c_n[j] = ellipse->pos_->y()/100;
+//        qDebug() << "Ellipse";// << R[j] << c_e[j] << c_n[j];
+        ++j;
+    }
+    return j;
+}
 }  // namespace interface
+
+
