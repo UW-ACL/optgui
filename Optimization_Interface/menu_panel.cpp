@@ -25,6 +25,7 @@ MenuPanel::~MenuPanel() {
     }
     delete this->menu_buttons_;
     delete this->exec_button_;
+    delete this->sim_button_;
     delete this->zoom_slider_;
     delete this->menu_->layout();
 
@@ -84,6 +85,9 @@ void MenuPanel::initialize() {
         this->menu_->layout()->setAlignment(button,
                                             Qt::AlignTop|Qt::AlignCenter);
     }
+
+    // Create simulate button
+    this->initializeSimButton();
 
     // Create execute button
     this->initializeExecButton();
@@ -234,6 +238,12 @@ void MenuPanel::initializeExecButton() {
     this->menu_->layout()->setAlignment(this->exec_button_, Qt::AlignBottom);
 }
 
+void MenuPanel::initializeSimButton() {
+    this->sim_button_ = new QPushButton("Sim", this->menu_);
+    this->sim_button_->setToolTip(tr("Simulate the optimization with constraints"));
+    this->menu_->layout()->addWidget(this->sim_button_);
+    this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
+}
 void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);
     this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,

@@ -158,9 +158,13 @@ void View::initialize() {
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
 
-//    QTimer *timer = new QTimer(this);
-//    connect(timer, SIGNAL(timeout()), this, SLOT(updatePath()));
-//    timer->start(100);
+    // Connect simulate button
+    connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
+            this, SLOT(toggleSim()));
+
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(stepSim()));
+             timer->start(100);
 
     // Expand view to fill screen
     this->expandView();
@@ -309,6 +313,22 @@ void View::execute() {
     this->clearMarkers();
 
     this->controller_->execute();
+}
+
+void View::stepSim() {
+    if(this->simulating_ != -1) {
+        this->controller_->simDrone(this->simulating_);
+        ++this->simulating_;
+        qDebug() << "Sim " << this->simulating_;
+    }
+}
+
+void View::toggleSim() {
+    if(this->simulating_ != -1) {
+        this->simulating_ = -1;
+    } else {
+        this->simulating_ = 0;
+   }
 }
 
 void View::clearMarkers() {

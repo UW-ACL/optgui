@@ -25,7 +25,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += $$PWD/../../cprs/headers/ \
                $$PWD/../../csocp/ \
-               $$PWD/../../algorithm
+               $$PWD/../../algorithm/ \
+               $$PWD/../../mikipilot/
 
 LIBS += -L$$PWD/../../cprs/build -lCPRS \
         -L$$PWD/../../csocp -lCSOCP \
@@ -58,7 +59,8 @@ SOURCES += \
     polygon_server.cpp \
     plane_server.cpp \
     point_graphics_item.cpp \
-    point_server.cpp
+    point_server.cpp \
+#    ../../mikipilot/gcs/comm.cpp
 
 HEADERS += \
     main_window.h \
@@ -93,7 +95,8 @@ HEADERS += \
     plane_server.h \
     point_server.h \
     point_model_item.h \
-    point_graphics_item.h
+    point_graphics_item.h \
+#    ../../mikipilot/gcs/comm.h
 
 RESOURCES += \
     resources.qrc

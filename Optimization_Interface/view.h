@@ -46,6 +46,8 @@ class View : public QGraphicsView {
 //    void compute();
     void execute();
     void updatePath();
+    void stepSim();
+    void toggleSim();
 
  private:
     void initialize();
@@ -59,6 +61,8 @@ class View : public QGraphicsView {
     QVector<QGraphicsItem*> *temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
+    uint64_t simulating_ = -1;
+
 };
 
 }  // namespace interface

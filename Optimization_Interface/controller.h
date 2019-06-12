@@ -20,7 +20,6 @@
 #include "item_server.h"
 #include "cprs.h"
 
-
 namespace interface {
 
 class Controller {
@@ -51,11 +50,14 @@ class Controller {
     void closeServers();
     void compute(QPointF *posFinal, QVector<QPointF* > *trajectory);
     void execute();
+
     void updatePath();
 
     void clearWaypointsGraphic();
     void clearPathGraphic();
     void clearDroneGraphic();
+
+    void simDrone(uint64_t tick);
 
  private:
     Canvas *canvas_;
@@ -67,7 +69,9 @@ class Controller {
     QNetworkSession *network_session_;
     QVector<ItemServer *> *servers_;
 
+    // TODO: remove these terrible null pointer......
     PointGraphicsItem *previousPoint_;
+    QVector<QPointF *>* trajectory_;
 
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
@@ -81,6 +85,7 @@ class Controller {
     void writeWaypoints(PathModelItem *model, QDataStream *out);
     void writePath(PathModelItem *model, QDataStream *out);
     void writeDrone(DroneModelItem *model, QDataStream *out);
+
 
     PointModelItem *readPoint(QDataStream *in);
     EllipseModelItem *readEllipse(QDataStream *in);

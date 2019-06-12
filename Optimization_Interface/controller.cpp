@@ -12,6 +12,9 @@
 #include <QTranslator>
 #include <QSet>
 
+#include <QFile>
+#include <QTextStream>
+#include <QDateTime>
 
 #include "point_graphics_item.h"
 #include "ellipse_graphics_item.h"
@@ -257,10 +260,10 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     I.a_f[1] = -P.g[1];
     I.a_f[2] = -P.g[2];
 
-    // Outputs.
+//    I.i = 0;
+
     outputs O;
     memset(&O,0,sizeof(O));
-
 
     // Initialize.
     initialize(P,I,O);
@@ -278,11 +281,41 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     }
     // Set up next solution.
     reset(P,I,O);
+
+    // TODO: this is terrible
+//    memcpy(trajectory_, trajectory, trajectory.;
+    this->trajectory_ = trajectory;
 }
 
 void Controller::execute() {
     // TODO(Miki): pass model to optimization solver
-    qDebug() << "hello world 2";
+    QDateTime current = QDateTime::currentDateTime();
+    QString filename = "/Users/ben/code/gui/trajectories/traj-" + current.toString("yyyy-MM-dd-hh-mm-ss.zzz") + ".csv";
+    qDebug() << "Creating file " << filename;
+
+    QFile file(filename);
+    if (file.open(QIODevice::ReadWrite)) {
+        QTextStream stream(&file);
+
+        for (QPointF *point : *model_->path_->points_) {
+            stream << point->x() << "," << point->y() << endl;
+        }
+
+    }
+    file.close();
+
+}
+
+void Controller::simDrone(uint64_t tick) {
+    uint32_t i = tick % 10; // this->model_->path_->
+
+//    this->model_->setSimDronePos(i);
+//    double x =
+//    double y = i/100.0;
+//    QPointF pos(x, y);
+    QPointF *point = new QPointF(0, i);//#this->trajectory_->operator[](i);
+    this->updateDronePos(*point);
+    delete point;
 
 }
 
@@ -318,6 +351,7 @@ void Controller::clearPathPoints() {
 }
 
 void Controller::updateDronePos(QPointF pos) {
+    qDebug() << "update drone pos" << pos.x() << pos.y();
     this->model_->drone_->point_->setX(pos.x());
     this->model_->drone_->point_->setY(pos.y());
     this->canvas_->update();

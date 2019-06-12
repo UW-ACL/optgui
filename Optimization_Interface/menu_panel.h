@@ -26,6 +26,7 @@ class MenuPanel : public QFrame {
     QWidget *menu_;
     QSlider *zoom_slider_;
     QPushButton *exec_button_;
+    QPushButton *sim_button_;
     QVector<MenuButton*> *menu_buttons_;
  private:
     void initialize();
@@ -38,6 +39,7 @@ class MenuPanel : public QFrame {
     void initializeEllipseButton();
     void initializeFlipButton();
     void initializeExecButton();
+    void initializeSimButton();
 };
 
 }  // namespace interface
