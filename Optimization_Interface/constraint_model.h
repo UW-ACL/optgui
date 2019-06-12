@@ -55,6 +55,9 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
 
+    double clearance_ = 0.2;
+    uint32_t numTimeSteps_ = 20;
+
  private:
     void initialize();
 };

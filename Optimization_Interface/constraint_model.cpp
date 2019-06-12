@@ -114,7 +114,7 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
         if (j > 255) break;
 
         EllipseModelItem* ellipse = iter.next();
-        R[j] = ellipse->radius_/100;
+        R[j] = ellipse->radius_/100 + this->clearance_;
         c_e[j] = ellipse->pos_->x()/100;
         c_n[j] = ellipse->pos_->y()/100;
 //        qDebug() << "Ellipse";// << R[j] << c_e[j] << c_n[j];

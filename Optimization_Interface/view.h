@@ -61,7 +61,7 @@ class View : public QGraphicsView {
     QVector<QGraphicsItem*> *temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
-    uint64_t simulating_ = -1;
+    uint64_t simulating_ = 0;
 
 };
 

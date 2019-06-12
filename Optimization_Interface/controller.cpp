@@ -62,6 +62,8 @@ Controller::Controller(Canvas *canvas) {
     // TODO(ben): Remove this hack and incorporate it into ConstraintModel
     this->previousPoint_ = nullptr;
 
+    this->trajectory_ = new QVector<QPointF *>;
+
 }
 
 Controller::~Controller() {
@@ -271,9 +273,11 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     // SCvx.
     SCvx(P,I,O);
 
+    this->trajectory_->clear();
     for(uint32_t i=0; i<KK; i++) {
         qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
+        this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
     }
 
     for(uint32_t i=0; i<P.obs.n; i++) {
@@ -282,9 +286,6 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     // Set up next solution.
     reset(P,I,O);
 
-    // TODO: this is terrible
-//    memcpy(trajectory_, trajectory, trajectory.;
-    this->trajectory_ = trajectory;
 }
 
 void Controller::execute() {
@@ -307,16 +308,9 @@ void Controller::execute() {
 }
 
 void Controller::simDrone(uint64_t tick) {
-    uint32_t i = tick % 10; // this->model_->path_->
+    uint32_t i = tick % this->model_->numTimeSteps_;
 
-//    this->model_->setSimDronePos(i);
-//    double x =
-//    double y = i/100.0;
-//    QPointF pos(x, y);
-    QPointF *point = new QPointF(0, i);//#this->trajectory_->operator[](i);
-    this->updateDronePos(*point);
-    delete point;
-
+    this->updateDronePos(*this->trajectory_->value(i));
 }
 
 void Controller::setPorts() {

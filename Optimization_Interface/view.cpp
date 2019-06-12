@@ -316,18 +316,21 @@ void View::execute() {
 }
 
 void View::stepSim() {
-    if(this->simulating_ != -1) {
-        this->controller_->simDrone(this->simulating_);
+    if(this->simulating_) {
+        this->controller_->simDrone(this->simulating_ - 1);
         ++this->simulating_;
         qDebug() << "Sim " << this->simulating_;
+        if (this->simulating_ -1 >= 20) {
+            this->simulating_ = 0;
+        }
     }
 }
 
 void View::toggleSim() {
-    if(this->simulating_ != -1) {
-        this->simulating_ = -1;
-    } else {
+    if(this->simulating_) {
         this->simulating_ = 0;
+    } else {
+        this->simulating_ = 1;
    }
 }
 
