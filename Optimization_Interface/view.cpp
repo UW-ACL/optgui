@@ -154,6 +154,19 @@ void View::initialize() {
     connect(this->menu_panel_->zoom_slider_, SIGNAL(valueChanged(int)),
             this, SLOT(setZoom(int)));
 
+    connect(this->menu_panel_->opt_horizon_slider_, SIGNAL(valueChanged(int)),
+            this, SLOT(setHorizon(int)));
+
+    connect(this->menu_panel_->opt_finaltime_slider_, SIGNAL(valueChanged(int)),
+            this, SLOT(setFinaltime(int)));
+
+//    connect(this->menu_panel_->opt_horizon_slider_, SIGNAL(valueChanged(int)),
+//            this->menu_panel_->opt_horizon_label_, SLOT(setText()));
+    // Connect opt sidebar
+//    connect(this->menu_panel_->opt_horizon_plus, SIGNAL(clicked())),
+//            this, [this]{setOpt(0, 1);});
+
+
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
@@ -180,12 +193,12 @@ void View::mousePressEvent(QMouseEvent *event) {
             this->controller_->clearPathPoints();
 
             QVector<QPointF *> result;
-            this->controller_->compute(&pos, &result);
+            this->controller_->setFinalPosition(&pos);
 
-            QVectorIterator<QPointF *> it(result);
-            while(it.hasNext()) {
-                this->controller_->addPathPoint(it.next());
-            }
+//            QVectorIterator<QPointF *> it(result);
+//            while(it.hasNext()) {
+//                this->controller_->addPathPoint(it.next());
+//            }
 
             break;
         }
@@ -258,6 +271,8 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
+//    this->controller_->compute();
+
 }
 
 void View::closeMenu() {
@@ -332,6 +347,18 @@ void View::toggleSim() {
     } else {
         this->simulating_ = 1;
    }
+}
+
+void View::setFinaltime(int _finaltime) {
+    float finaltime = _finaltime/10.0f;
+    this->controller_->setFinaltime(finaltime);
+//    this->menu_panel_->opt_finaltime_label_->setText("T=" + QString::number(finaltime));
+}
+
+void View::setHorizon(int horizon) {
+    this->controller_->setHorizonLength(horizon);
+//    this->menu_panel_->opt_horizon_label_->setText("N=" + QString::number(horizon));
+
 }
 
 void View::clearMarkers() {

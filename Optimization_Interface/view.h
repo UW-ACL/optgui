@@ -48,6 +48,8 @@ class View : public QGraphicsView {
     void updatePath();
     void stepSim();
     void toggleSim();
+    void setHorizon(int);
+    void setFinaltime(int);
 
  private:
     void initialize();

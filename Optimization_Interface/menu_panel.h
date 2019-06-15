@@ -13,6 +13,7 @@
 #include <QSlider>
 #include <QVector>
 #include <QPushButton>
+#include <QGroupBox>
 
 #include "menu_button.h"
 
@@ -28,6 +29,18 @@ class MenuPanel : public QFrame {
     QPushButton *exec_button_;
     QPushButton *sim_button_;
     QVector<MenuButton*> *menu_buttons_;
+
+//    QGroupBox *opt_layout;
+    QLabel *opt_finaltime_label_;
+    QLabel *opt_horizon_label_;
+//    QPushButton *opt_horizon_minus;
+//    QPushButton *opt_horizon_plus;
+//    QPushButton *opt_finaltime_minus;
+//    QPushButton *opt_finaltime_plus;
+
+    QSlider *opt_finaltime_slider_;
+    QSlider *opt_horizon_slider_;
+
  private:
     void initialize();
     void initializeZoomSlider();
@@ -40,6 +53,8 @@ class MenuPanel : public QFrame {
     void initializeFlipButton();
     void initializeExecButton();
     void initializeSimButton();
+    void initializeFinaltimeSlider();
+    void initializeHorizonSlider();
 };
 
 }  // namespace interface

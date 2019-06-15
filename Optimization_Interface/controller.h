@@ -48,8 +48,13 @@ class Controller {
     void setPorts();
     void startServers();
     void closeServers();
-    void compute(QPointF *posFinal, QVector<QPointF* > *trajectory);
+    void compute();
+    void compute(QVector<QPointF* > *trajectory);
     void execute();
+
+    void setFinaltime(double_t);
+    void setHorizonLength(uint32_t);
+    void setFinalPosition(QPointF *);
 
     void updatePath();
 
@@ -58,6 +63,7 @@ class Controller {
     void clearDroneGraphic();
 
     void simDrone(uint64_t tick);
+
 
  private:
     Canvas *canvas_;
@@ -72,6 +78,12 @@ class Controller {
     // TODO: remove these terrible null pointer......
     PointGraphicsItem *previousPoint_;
     QVector<QPointF *>* trajectory_;
+
+    // TODO: make a proper class for these parameters
+    uint32_t horizon_length_ = 20;
+    double_t finaltime_ = 2.7;
+    QPointF *pos_final_;
+
 
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);

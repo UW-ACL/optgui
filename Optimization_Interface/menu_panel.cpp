@@ -79,12 +79,16 @@ void MenuPanel::initialize() {
     this->initializeEraserButton();
     this->initializeFlipButton();
 
+
     // Show menu buttons
     for (MenuButton *button : *this->menu_buttons_) {
         this->menu_->layout()->addWidget(button);
         this->menu_->layout()->setAlignment(button,
                                             Qt::AlignTop|Qt::AlignCenter);
     }
+
+    this->initializeHorizonSlider();
+    this->initializeFinaltimeSlider();
 
     // Create simulate button
     this->initializeSimButton();
@@ -94,6 +98,7 @@ void MenuPanel::initialize() {
 
     // Create zoom slider
     this->initializeZoomSlider();
+
 }
 
 void MenuPanel::initializePointButton() {
@@ -231,6 +236,64 @@ void MenuPanel::initializeFlipButton() {
     this->menu_buttons_->append(flip_button);
 }
 
+//void MenuPanel::initializeOptSidebar() {
+//    this->opt_layout = new QGroupBox();
+//    this->opt_horizon_minus = new QPushButton("-", this->menu_);
+//    this->opt_horizon_text = new QLabel("NA", this->menu_);
+//    this->opt_horizon_plus = new QPushButton("+", this->menu_);
+
+//    this->opt_finaltime_minus = new QPushButton("-", this->menu_);
+//    this->opt_finaltime_text = new QLabel("NA", this->menu_);
+//    this->opt_finaltime_plus = new QPushButton("+", this->menu_);
+
+//    QGridLayout *layout = new QGridLayout;
+//    layout->addWidget(this->opt_horizon_text, 1, 0);
+//    layout->addWidget(this->opt_horizon_minus, 2, 0);
+//    layout->addWidget(this->opt_horizon_plus, 2, 1);
+//    layout->addWidget(this->opt_finaltime_text, 3, 1);
+//    layout->addWidget(this->opt_finaltime_minus, 4, 0);
+//    layout->addWidget(this->opt_finaltime_plus, 4, 1);
+
+//    this->opt_layout->setLayout(layout);
+//    this->menu_->layout()->addWidget(this->opt_layout);
+//}
+
+void MenuPanel::initializeHorizonSlider() {
+    this->opt_horizon_slider_ = new QSlider(Qt::Vertical, this->menu_);
+    this->opt_horizon_slider_->setSizePolicy(QSizePolicy::Expanding,
+                                      QSizePolicy::Minimum);
+    this->opt_horizon_slider_->setTickInterval(1);
+    this->opt_horizon_slider_->setTickPosition(QSlider::TicksAbove);
+    this->opt_horizon_slider_->setMinimum(5);
+    this->opt_horizon_slider_->setMaximum(50);
+    this->opt_horizon_slider_->setValue(20);
+    this->opt_horizon_slider_->setToolTip(tr("Set horizon length"));
+//    this->menu_->layout()->addWidget(this->opt_horizon_label_);
+    this->menu_->layout()->addWidget(this->opt_horizon_slider_);
+    this->menu_->layout()->setAlignment(this->opt_horizon_slider_, Qt::AlignBottom);
+}
+
+void MenuPanel::initializeFinaltimeSlider() {
+//    QHBoxLayout *layout = new QHBoxLayout;
+//    QWidget *frame = new QWidget;
+
+    this->opt_finaltime_slider_ = new QSlider(Qt::Vertical, this->menu_);
+    this->opt_finaltime_slider_->setSizePolicy(QSizePolicy::Expanding,
+                                      QSizePolicy::Minimum);
+    this->opt_finaltime_slider_->setTickInterval(1);
+    this->opt_finaltime_slider_->setTickPosition(QSlider::TicksAbove);
+    this->opt_finaltime_slider_->setMinimum(1);
+    this->opt_finaltime_slider_->setMaximum(100);
+    this->opt_finaltime_slider_->setValue(1);
+    this->opt_finaltime_slider_->setToolTip(tr("Set final time"));
+
+//    layout->addWidget(this->opt_finaltime_slider_);
+//    layout->addWidget(this->opt_finaltime_label_);
+//    frame->setLayout(layout);
+//    this->menu_->layout()->addWidget(this->opt_finaltime_label_);
+    this->menu_->layout()->addWidget(this->opt_finaltime_slider_);
+    this->menu_->layout()->setAlignment(this->opt_finaltime_slider_, Qt::AlignBottom);
+}
 void MenuPanel::initializeExecButton() {
     this->exec_button_ = new QPushButton("Exec", this->menu_);
     this->exec_button_->setToolTip(tr("Execute optimization with constraints"));
@@ -244,6 +307,7 @@ void MenuPanel::initializeSimButton() {
     this->menu_->layout()->addWidget(this->sim_button_);
     this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
 }
+
 void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);
     this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,
