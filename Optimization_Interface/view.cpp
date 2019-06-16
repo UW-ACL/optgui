@@ -160,13 +160,6 @@ void View::initialize() {
     connect(this->menu_panel_->opt_finaltime_slider_, SIGNAL(valueChanged(int)),
             this, SLOT(setFinaltime(int)));
 
-//    connect(this->menu_panel_->opt_horizon_slider_, SIGNAL(valueChanged(int)),
-//            this->menu_panel_->opt_horizon_label_, SLOT(setText()));
-    // Connect opt sidebar
-//    connect(this->menu_panel_->opt_horizon_plus, SIGNAL(clicked())),
-//            this, [this]{setOpt(0, 1);});
-
-
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
@@ -175,9 +168,9 @@ void View::initialize() {
     connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
             this, SLOT(toggleSim()));
 
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(stepSim()));
-             timer->start(100);
+    timer_sim_ = new QTimer(this);
+    connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
+//    timer_sim_->start(10);
 
     // Expand view to fill screen
     this->expandView();
@@ -271,7 +264,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
-//    this->controller_->compute();
+    this->controller_->compute();
 
 }
 
@@ -334,18 +327,22 @@ void View::stepSim() {
     if(this->simulating_) {
         this->controller_->simDrone(this->simulating_ - 1);
         ++this->simulating_;
-        qDebug() << "Sim " << this->simulating_;
-        if (this->simulating_ -1 >= 20) {
+        if (this->simulating_ -1 >= this->controller_->horizon_length_) {
             this->simulating_ = 0;
+        } else {
+            QTimer::singleShot(this->controller_->getTimeInterval()*1000, this,
+                               SLOT(stepSim()));
         }
     }
 }
+
 
 void View::toggleSim() {
     if(this->simulating_) {
         this->simulating_ = 0;
     } else {
         this->simulating_ = 1;
+        stepSim();
    }
 }
 
@@ -358,7 +355,6 @@ void View::setFinaltime(int _finaltime) {
 void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
 //    this->menu_panel_->opt_horizon_label_->setText("N=" + QString::number(horizon));
-
 }
 
 void View::clearMarkers() {

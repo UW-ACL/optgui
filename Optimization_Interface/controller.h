@@ -55,6 +55,7 @@ class Controller {
     void setFinaltime(double_t);
     void setHorizonLength(uint32_t);
     void setFinalPosition(QPointF *);
+    double_t getTimeInterval();
 
     void updatePath();
 
@@ -64,6 +65,10 @@ class Controller {
 
     void simDrone(uint64_t tick);
 
+    // TODO: make a proper class for these parameters
+    uint32_t horizon_length_ = 20;
+    double_t finaltime_ = 2.7;
+    QPointF *pos_final_;
 
  private:
     Canvas *canvas_;
@@ -79,10 +84,6 @@ class Controller {
     PointGraphicsItem *previousPoint_;
     QVector<QPointF *>* trajectory_;
 
-    // TODO: make a proper class for these parameters
-    uint32_t horizon_length_ = 20;
-    double_t finaltime_ = 2.7;
-    QPointF *pos_final_;
 
 
     void loadPoint(PointModelItem *model);

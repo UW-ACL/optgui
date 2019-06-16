@@ -64,6 +64,7 @@ class View : public QGraphicsView {
     QPen dot_pen_;
     QBrush dot_brush_;
     uint64_t simulating_ = 0;
+    QTimer *timer_sim_;
 
 };
 

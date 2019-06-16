@@ -15,6 +15,7 @@ ConstraintModel::ConstraintModel() {
 void ConstraintModel::initialize() {
     // Set model containers
     this->points_ = new QSet<PointModelItem *>();
+    this->final_pos_ = new PointModelItem();
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
@@ -63,6 +64,12 @@ void ConstraintModel::addPoint(PointModelItem *item) {
     this->points_->insert(item);
 }
 
+void ConstraintModel::updateInitialPoint(QPointF *item) {
+    // TODO:
+}
+void ConstraintModel::updateFinalPoint(QPointF *item) {
+    // TODO:
+}
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
 }

@@ -63,6 +63,7 @@ Controller::Controller(Canvas *canvas) {
     this->previousPoint_ = nullptr;
 
     this->trajectory_ = new QVector<QPointF *>;
+    pos_final_ = new QPointF;
 
 }
 
@@ -180,7 +181,8 @@ void Controller::flipDirection(QGraphicsItem *item) {
 
 void Controller::updatePoint(QPointF *point) {
     PointModelItem *item_model = new PointModelItem(point);
-    if(this->previousPoint_) this->removeItem(this->previousPoint_);
+
+//    if(this->previousPoint_) this->removeItem(this->previousPoint_);
     this->loadPoint(item_model);
 }
 
@@ -210,17 +212,48 @@ void Controller::updatePath() {
     qDebug() << "Tick";
 }
 
-void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
+void Controller::setFinaltime(double_t finaltime) {
+    this->finaltime_ = finaltime;
+    qDebug() << "Final time: " << finaltime;
+    this->compute();
+}
+
+void Controller::setHorizonLength(uint32_t horizon) {
+    this->horizon_length_ = horizon;
+    qDebug() << "Horizon length: " << horizon;
+    this->compute();
+}
+
+double_t Controller::getTimeInterval() {
+    return this->finaltime_/this->horizon_length_;
+}
+void Controller::setFinalPosition(QPointF *pos_final) {
+    delete this->pos_final_;
+    this->pos_final_ = new QPointF(*pos_final/100);
+}
+
+void Controller::compute() {
+    QVector<QPointF*> trajectory;
+    this->clearPathPoints();
+
+    this->compute(&trajectory);
+    QVectorIterator<QPointF *> it(trajectory);
+    while(it.hasNext()) {
+                this->addPathPoint(it.next());
+            }
+}
+void Controller::compute(QVector<QPointF *> *trajectory) {
     // Initialize constant values
     // Parameters.
     params P;
     memset(&P,0,sizeof(P));
+    P.K = MIN(this->horizon_length_, KK);
+    P.tf = this->finaltime_;
+    P.dt = P.tf/static_cast<double>(P.K-1);
+    P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
 
-    P.n_recalcs = 14;
-    P.K = KK;
     P.dK = 1;
-    P.tf = 2.75;
-    P.dt = P.tf/static_cast<double>(KK-1);
+    P.n_recalcs = 14;
     P.g[0] = -9.81;
     P.g[1] = 0.0;
     P.g[2] = 0.0;
@@ -229,7 +262,7 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     P.theta_max = 40.0*DEG2RAD;
     P.q_max = 0.0;
 
-    P.max_iter = 10;
+    P.max_iter = 20;
     P.Delta_i = 100.0;
     P.lambda = 1e2;
     P.alpha = 2.0;
@@ -238,7 +271,6 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     P.rho_1 = 0.25;
     P.rho_2 = 0.90;
 
-    P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
     // Inputs.
     inputs I;
     memset(&I,0,sizeof(I));
@@ -253,8 +285,8 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     I.a_i[1] = -P.g[1];
     I.a_i[2] = -P.g[2];
     I.r_f[0] =  0.0;
-    I.r_f[1] =  posFinal->x()/100;
-    I.r_f[2] =  posFinal->y()/100;
+    I.r_f[1] =  this->pos_final_->x();
+    I.r_f[2] =  this->pos_final_->y();
     I.v_f[0] =  0.0;
     I.v_f[1] =  0.0;
     I.v_f[2] =  0.0;
@@ -274,14 +306,14 @@ void Controller::compute(QPointF *posFinal, QVector<QPointF *> *trajectory) {
     SCvx(P,I,O);
 
     this->trajectory_->clear();
-    for(uint32_t i=0; i<KK; i++) {
-        qDebug() << O.r[1][i] << ", " << O.r[2][i];
+    for(uint32_t i=0; i<this->horizon_length_; i++) {
+//        qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
         this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
     }
 
     for(uint32_t i=0; i<P.obs.n; i++) {
-        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
+//        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
     }
     // Set up next solution.
     reset(P,I,O);
@@ -308,9 +340,7 @@ void Controller::execute() {
 }
 
 void Controller::simDrone(uint64_t tick) {
-    uint32_t i = tick % this->model_->numTimeSteps_;
-
-    this->updateDronePos(*this->trajectory_->value(i));
+    this->updateDronePos(*this->trajectory_->value(tick));
 }
 
 void Controller::setPorts() {
@@ -471,7 +501,7 @@ void Controller::closeServers() {
 void Controller::writePoint(PointModelItem *model, QDataStream *out) {
     *out << (bool)model->direction_;
     *out << *model->pos_;
-    *out << (double)model->radius_;
+//    *out << (double)model->radius_;
     *out << (quint16)model->port_;
 }
 
@@ -587,6 +617,7 @@ void Controller::saveFile() {
 // ============ LOAD CONTROLS ============
 
 void Controller::loadPoint(PointModelItem *item_model) {
+//    PointGraphicsItem *test = new PointGraphicsItem();
     PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
     this->previousPoint_ = item_graphic;
 
@@ -595,6 +626,7 @@ void Controller::loadPoint(PointModelItem *item_model) {
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
 }
+
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic = new EllipseGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
@@ -624,14 +656,14 @@ PointModelItem *Controller::readPoint(QDataStream *in) {
     *in >> direction;
     QPointF pos;
     *in >> pos;
-    double radius;
-    *in >> radius;
+//    double radius;
+//    *in >> radius;
     quint16 port;
     *in >> port;
 
     PointModelItem *model = new PointModelItem(new QPointF(pos));
     model->direction_ = direction;
-    model->radius_ = radius;
+//    model->radius_ = radius;
     model->port_ = port;
 
     return model;

@@ -45,6 +45,10 @@ class ConstraintModel {
     void addPathPoint(QPointF *item);
     void clearPath();
 
+    void updateInitialPoint(QPointF *item);
+    void updateFinalPoint(QPointF *item);
+
+
     uint32_t loadEllipse(double* R, double* c_e, double* c_n);
 
     QSet<PointModelItem *> *points_;
@@ -54,6 +58,7 @@ class ConstraintModel {
     PathModelItem *waypoints_;
     PathModelItem *path_;
     DroneModelItem *drone_;
+    PointModelItem *final_pos_;
 
     double clearance_ = 0.2;
     uint32_t numTimeSteps_ = 20;
