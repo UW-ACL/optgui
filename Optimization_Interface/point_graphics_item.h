@@ -16,6 +16,7 @@
 namespace interface {
 
 const qreal POINT_BORDER = 20;
+const qreal POINT_RADIUS = 0.05;
 
 class PointGraphicsItem : public QGraphicsItem {
  public:
@@ -30,7 +31,6 @@ class PointGraphicsItem : public QGraphicsItem {
     int type() const override;
 
     void expandScene();
-    void flipDirection();
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,

@@ -49,7 +49,7 @@ PointGraphicsItem::~PointGraphicsItem() {
 }
 
 QRectF PointGraphicsItem::boundingRect() const {
-    double rad = this->model_->radius_;
+    double rad = POINT_RADIUS;
     // Add exterior border if not direction
     if (!this->model_->direction_) {
         rad += POINT_BORDER;
@@ -77,7 +77,8 @@ void PointGraphicsItem::paint(QPainter *painter,
 
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
-    double rad = this->model_->radius_;
+//    double rad = this->model_->radius_;
+    double rad = POINT_RADIUS;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
@@ -97,7 +98,7 @@ QPainterPath PointGraphicsItem::shape() const {
     path.addEllipse(this->boundingRect());
     // Add exterior border if not direction
     if (!this->model_->direction_) {
-        double rad = this->model_->radius_;
+        double rad = 0.03;
         path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
     }
     return path;
@@ -120,10 +121,6 @@ void PointGraphicsItem::expandScene() {
     }
 }
 
-void PointGraphicsItem::flipDirection() {
-    this->model_->direction_ = !this->model_->direction_;
-    this->expandScene();
-}
 
 QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
                                          const QVariant &value) {
