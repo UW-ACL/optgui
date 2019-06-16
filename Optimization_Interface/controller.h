@@ -54,7 +54,7 @@ class Controller {
 
     void setFinaltime(double_t);
     void setHorizonLength(uint32_t);
-    void setFinalPosition(QPointF *);
+    void updateFinalPosition(QPointF *);
     double_t getTimeInterval();
 
     void updatePath();
@@ -68,7 +68,7 @@ class Controller {
     // TODO: make a proper class for these parameters
     uint32_t horizon_length_ = 20;
     double_t finaltime_ = 2.7;
-    QPointF *pos_final_;
+//    QPointF *pos_final_;
 
  private:
     Canvas *canvas_;
@@ -80,8 +80,10 @@ class Controller {
     QNetworkSession *network_session_;
     QVector<ItemServer *> *servers_;
 
+    PointGraphicsItem *final_pos_graphic_;
+
     // TODO: remove these terrible null pointer......
-    PointGraphicsItem *previousPoint_;
+//    PointGraphicsItem *previousPoint_;
     QVector<QPointF *>* trajectory_;
 
 

@@ -182,17 +182,8 @@ void View::mousePressEvent(QMouseEvent *event) {
 
     switch (this->state_) {
         case POINT: {
-//            this->controller_->updatePoint(new QPointF(pos));
-//            this->controller_->clearPathPoints();
-
-//            QVector<QPointF *> result;
-            this->controller_->setFinalPosition(&pos);
-
-//            QVectorIterator<QPointF *> it(result);
-//            while(it.hasNext()) {
-//                this->controller_->addPathPoint(it.next());
-//            }
-
+            QPointF pos2 = pos*100;
+            this->controller_->updateFinalPosition(&pos2);
             break;
         }
         case ELLIPSE: {

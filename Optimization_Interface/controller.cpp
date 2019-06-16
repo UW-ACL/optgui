@@ -56,14 +56,17 @@ Controller::Controller(Canvas *canvas) {
     this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
     this->canvas_->addItem(this->drone_graphic_);
 
+    // initialize final point graphic
+    this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_);
+    this->canvas_->addItem(this->final_pos_graphic_);
+
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
 
     // TODO(ben): Remove this hack and incorporate it into ConstraintModel
-    this->previousPoint_ = nullptr;
 
     this->trajectory_ = new QVector<QPointF *>;
-    pos_final_ = new QPointF;
+//    pos_final_ = new QPointF;
 
 }
 
@@ -180,10 +183,10 @@ void Controller::flipDirection(QGraphicsItem *item) {
 }
 
 void Controller::updatePoint(QPointF *point) {
-    PointModelItem *item_model = new PointModelItem(point);
+//    PointModelItem *item_model = new PointModelItem(point);
 
 //    if(this->previousPoint_) this->removeItem(this->previousPoint_);
-    this->loadPoint(item_model);
+//    this->loadPoint(item_model);
 }
 
 void Controller::addEllipse(QPointF *point) {
@@ -227,9 +230,11 @@ void Controller::setHorizonLength(uint32_t horizon) {
 double_t Controller::getTimeInterval() {
     return this->finaltime_/this->horizon_length_;
 }
-void Controller::setFinalPosition(QPointF *pos_final) {
-    delete this->pos_final_;
-    this->pos_final_ = new QPointF(*pos_final/100);
+void Controller::updateFinalPosition(QPointF *pos_final) {
+//    this->pos_final_ = new QPointF(*pos_final/100);
+    this->model_->final_pos_->pos_->setX(pos_final->x()/100);
+    this->model_->final_pos_->pos_->setY(pos_final->y()/100);
+    this->canvas_->update();
 }
 
 void Controller::compute() {
@@ -296,8 +301,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     I.a_i[1] = -P.g[1];
     I.a_i[2] = -P.g[2];
     I.r_f[0] =  0.0;
-    I.r_f[1] =  this->pos_final_->x();
-    I.r_f[2] =  this->pos_final_->y();
+    I.r_f[1] =  this->model_->final_pos_->pos_->x();//pos_final_->x();
+    I.r_f[2] =  this->model_->final_pos_->pos_->y();
     I.v_f[0] =  0.0;
     I.v_f[1] =  0.0;
     I.v_f[2] =  0.0;
@@ -406,6 +411,7 @@ void Controller::updateDronePos(QPointF pos) {
     this->model_->drone_->point_->setY(pos.y());
     this->canvas_->update();
 }
+
 
 // ============ NETWORK CONTROLS ============
 
@@ -645,7 +651,6 @@ void Controller::saveFile() {
 void Controller::loadPoint(PointModelItem *item_model) {
 //    PointGraphicsItem *test = new PointGraphicsItem();
     PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
-    this->previousPoint_ = item_graphic;
 
     this->canvas_->addItem(item_graphic);
     this->model_->addPoint(item_model);

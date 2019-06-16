@@ -15,8 +15,8 @@
 
 namespace interface {
 
-const qreal POINT_BORDER = 20;
-const qreal POINT_RADIUS = 0.01;
+const qreal POINT_BORDER = 3;
+const qreal POINT_RADIUS = 2;
 
 class PointGraphicsItem : public QGraphicsItem {
  public:
