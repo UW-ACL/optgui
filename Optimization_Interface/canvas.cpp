@@ -25,6 +25,9 @@ void Canvas::initialize() {
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
+    this->background_image_ = new QImage("/Users/ben/code/gui/image.png");
+//    this->background_image_.
+
     // Set foreground pen
     QColor foreground_color = Qt::gray;
     // foreground_color.setAlpha(250);
@@ -109,6 +112,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     // Draw label
     painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
                       QString::number(qreal(segment_size) / 100) + UNIT);
+
 }
 
 qint64 Canvas::roundUpPast(qint64 n, qint64 m) {
@@ -150,6 +154,10 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
+    double width = 1000;
+    double height = 1000;
+    QRectF bbox(-width/2., -height/2., width, height);
+    painter->drawImage(bbox, *this->background_image_);
     // Draw vertical grid lines
     for (qint32 i = 0; i <= right_bound; i += segment_size) {
         painter->drawLine(i, top_bound, i, bot_bound);

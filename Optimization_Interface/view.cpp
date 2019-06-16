@@ -264,6 +264,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
+    this->simulating_ = 0;
     this->controller_->compute();
 
 }

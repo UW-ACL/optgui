@@ -36,6 +36,7 @@ class Canvas : public QGraphicsScene {
     qint64 roundUpPast(qint64 n, qint64 m);
     qint64 roundDownPast(qint64 n, qint64 m);
     QFont font_;
+    QImage *background_image_;
 };
 
 }  // namespace interface

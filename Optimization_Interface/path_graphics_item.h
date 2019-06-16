@@ -23,6 +23,9 @@ class PathGraphicsItem : public QGraphicsItem {
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
     void expandScene();
+
+    void setColor(QColor);
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
