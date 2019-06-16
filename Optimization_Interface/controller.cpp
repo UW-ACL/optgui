@@ -306,7 +306,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     SCvx(P,I,O);
 
     this->trajectory_->clear();
-    for(uint32_t i=0; i<this->horizon_length_; i++) {
+    for(uint32_t i=0; i<P.K; i++) {
 //        qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
         this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
@@ -315,6 +315,16 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     for(uint32_t i=0; i<P.obs.n; i++) {
 //        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
     }
+
+    qDebug() << "i= " << I.i
+             << "| Del = " << O.Delta
+             << "| L = " << O.L
+             << "| J = " << O.J
+             << "| dL = " << O.dL
+             << "| dJ = " << O.dJ
+             << "| I.J_0 = " << I.J_0
+             << "| O.J = " << O.J
+             << "| r = " << O.ratio;
     // Set up next solution.
     reset(P,I,O);
 
@@ -339,8 +349,13 @@ void Controller::execute() {
 
 }
 
-void Controller::simDrone(uint64_t tick) {
-    this->updateDronePos(*this->trajectory_->value(tick));
+bool Controller::simDrone(uint64_t tick) {
+    if(tick >= this->trajectory_->length())
+        return false;
+    else {
+        this->updateDronePos(*this->trajectory_->value(tick));
+    }
+    return true;
 }
 
 void Controller::setPorts() {

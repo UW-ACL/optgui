@@ -63,7 +63,7 @@ class Controller {
     void clearPathGraphic();
     void clearDroneGraphic();
 
-    void simDrone(uint64_t tick);
+    bool simDrone(uint64_t tick);
 
     // TODO: make a proper class for these parameters
     uint32_t horizon_length_ = 20;

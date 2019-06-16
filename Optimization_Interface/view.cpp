@@ -324,26 +324,17 @@ void View::execute() {
 }
 
 void View::stepSim() {
-    if(this->simulating_) {
-        this->controller_->simDrone(this->simulating_ - 1);
+    if(this->controller_->simDrone(this->simulating_)) {
         ++this->simulating_;
-        if (this->simulating_ -1 >= this->controller_->horizon_length_) {
-            this->simulating_ = 0;
-        } else {
-            QTimer::singleShot(this->controller_->getTimeInterval()*1000, this,
-                               SLOT(stepSim()));
-        }
+        QTimer::singleShot(this->controller_->getTimeInterval()*1000, this,
+                           SLOT(stepSim()));
     }
 }
 
 
 void View::toggleSim() {
-    if(this->simulating_) {
-        this->simulating_ = 0;
-    } else {
-        this->simulating_ = 1;
-        stepSim();
-   }
+    this->simulating_ = 0;
+    stepSim();
 }
 
 void View::setFinaltime(int _finaltime) {
