@@ -341,12 +341,12 @@ void View::toggleSim() {
 void View::setFinaltime(int _finaltime) {
     float finaltime = _finaltime/10.0f;
     this->controller_->setFinaltime(finaltime);
-//    this->menu_panel_->opt_finaltime_label_->setText("T=" + QString::number(finaltime));
+    this->menu_panel_->opt_finaltime_label_->setText("T=" + QString::number(finaltime));
 }
 
 void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
-//    this->menu_panel_->opt_horizon_label_->setText("N=" + QString::number(horizon));
+    this->menu_panel_->opt_horizon_label_->setText("N=" + QString::number(horizon));
 }
 
 void View::clearMarkers() {

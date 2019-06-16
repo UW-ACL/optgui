@@ -252,6 +252,17 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.dt = P.tf/static_cast<double>(P.K-1);
     P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
 
+    if(P.obs.n == 0) {
+        qDebug() << "Cannot have no obstacles!";
+        return;
+    }
+//    if(P.obs.n == 0) {
+//        P.obs.n = 1;
+//        P.obs.R[0] = 0.01;
+//        P.obs.c_e[0] = 10000;
+//        P.obs.c_n[0] = 10000;
+//    }
+
     P.dK = 1;
     P.n_recalcs = 14;
     P.g[0] = -9.81;
@@ -276,11 +287,11 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     memset(&I,0,sizeof(I));
 
     I.r_i[0] =  0.0;
-    I.r_i[1] =  0.0;
-    I.r_i[2] =  0.0;
+    I.r_i[1] =  this->model_->drone_->point_->x();
+    I.r_i[2] =  this->model_->drone_->point_->x();
     I.v_i[0] =  0.0;
-    I.v_i[1] =  0.0;
-    I.v_i[2] =  0.0;
+    I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
+    I.v_i[2] =  0.0; //this->model_->drone_->vel_->x();
     I.a_i[0] = -P.g[0];
     I.a_i[1] = -P.g[1];
     I.a_i[2] = -P.g[2];

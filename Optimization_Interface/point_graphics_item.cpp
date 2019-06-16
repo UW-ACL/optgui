@@ -38,14 +38,9 @@ void PointGraphicsItem::initialize() {
 
     // Set position
     this->setPos(*this->model_->pos_);
-
-    // Set resize handle
-//    this->resize_handle_ = new PointResizeHandle(this->model_, this);
-//    this->resize_handle_->hide();
 }
 
 PointGraphicsItem::~PointGraphicsItem() {
-//    delete this->resize_handle_;
 }
 
 QRectF PointGraphicsItem::boundingRect() const {

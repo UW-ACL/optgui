@@ -24,6 +24,7 @@ MenuPanel::~MenuPanel() {
         delete button;
     }
     delete this->menu_buttons_;
+    delete this->sim_button_;
     delete this->exec_button_;
     delete this->sim_button_;
     delete this->zoom_slider_;
@@ -268,14 +269,17 @@ void MenuPanel::initializeHorizonSlider() {
     this->opt_horizon_slider_->setMaximum(50);
     this->opt_horizon_slider_->setValue(20);
     this->opt_horizon_slider_->setToolTip(tr("Set horizon length"));
-//    this->menu_->layout()->addWidget(this->opt_horizon_label_);
+
+    this->opt_horizon_label_ = new QLabel();
+    this->menu_->layout()->addWidget(this->opt_horizon_label_);
     this->menu_->layout()->addWidget(this->opt_horizon_slider_);
     this->menu_->layout()->setAlignment(this->opt_horizon_slider_, Qt::AlignBottom);
 }
 
 void MenuPanel::initializeFinaltimeSlider() {
-//    QHBoxLayout *layout = new QHBoxLayout;
-//    QWidget *frame = new QWidget;
+    QWidget *wid = new QWidget(this->menu_);
+    wid->setLayout(new QHBoxLayout(wid));
+    wid->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
     this->opt_finaltime_slider_ = new QSlider(Qt::Vertical, this->menu_);
     this->opt_finaltime_slider_->setSizePolicy(QSizePolicy::Expanding,
@@ -287,12 +291,14 @@ void MenuPanel::initializeFinaltimeSlider() {
     this->opt_finaltime_slider_->setValue(1);
     this->opt_finaltime_slider_->setToolTip(tr("Set final time"));
 
-//    layout->addWidget(this->opt_finaltime_slider_);
-//    layout->addWidget(this->opt_finaltime_label_);
-//    frame->setLayout(layout);
-//    this->menu_->layout()->addWidget(this->opt_finaltime_label_);
+    this->opt_finaltime_label_ = new QLabel();
+    wid->layout()->addWidget(this->opt_finaltime_slider_);
+    wid->layout()->addWidget(this->opt_finaltime_label_);
+//    this->menu_->layout()->addWidget(wid);
+
+    this->menu_->layout()->addWidget(this->opt_finaltime_label_);
     this->menu_->layout()->addWidget(this->opt_finaltime_slider_);
-    this->menu_->layout()->setAlignment(this->opt_finaltime_slider_, Qt::AlignBottom);
+    this->menu_->layout()->setAlignment(wid, Qt::AlignBottom); //this->opt_finaltime_slider_, Qt::AlignBottom);
 }
 void MenuPanel::initializeExecButton() {
     this->exec_button_ = new QPushButton("Exec", this->menu_);
@@ -321,5 +327,6 @@ void MenuPanel::initializeZoomSlider() {
     this->menu_->layout()->addWidget(this->zoom_slider_);
     this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
 }
+
 
 }  // namespace interface
