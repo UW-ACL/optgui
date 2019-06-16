@@ -25,7 +25,7 @@ void Canvas::initialize() {
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
-    this->background_image_ = new QImage("/Users/ben/code/gui/image.png");
+    this->background_image_ = new QImage("../image.png");
 //    this->background_image_.
 
     // Set foreground pen

@@ -182,10 +182,10 @@ void View::mousePressEvent(QMouseEvent *event) {
 
     switch (this->state_) {
         case POINT: {
-            this->controller_->updatePoint(new QPointF(pos));
-            this->controller_->clearPathPoints();
+//            this->controller_->updatePoint(new QPointF(pos));
+//            this->controller_->clearPathPoints();
 
-            QVector<QPointF *> result;
+//            QVector<QPointF *> result;
             this->controller_->setFinalPosition(&pos);
 
 //            QVectorIterator<QPointF *> it(result);

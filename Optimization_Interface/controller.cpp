@@ -214,7 +214,7 @@ void Controller::updatePath() {
 
 void Controller::setFinaltime(double_t finaltime) {
     this->finaltime_ = finaltime;
-    qDebug() << "Final time: " << finaltime;
+//    qDebug() << "Final time: " << finaltime;
     this->compute();
 }
 
