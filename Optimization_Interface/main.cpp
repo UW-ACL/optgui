@@ -13,6 +13,7 @@ using interface::MainWindow;
 
 int main(int argc, char *argv[]) {
     // Initialize application
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication app(argc, argv);
 
     // Create main window
