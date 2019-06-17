@@ -26,7 +26,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 INCLUDEPATH +=s $$PWD/../../algorithm/ \
                $$PWD/../../cprs/headers/ \
                $$PWD/../../csocp/ \
-#               $$PWD/../../mikipilot/
+               $$PWD/../../mikipilot
 
 LIBS += -L$$PWD/../../algorithm -lalgorithm \
         -L$$PWD/../../cprs/build -lCPRS \

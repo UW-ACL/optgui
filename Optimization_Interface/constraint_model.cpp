@@ -8,6 +8,12 @@
 
 namespace interface {
 
+ConstraintModel::ConstraintModel(uint32_t maxEllipse, uint32_t maxHalfspace) {
+    this->maxEllipse = maxEllipse;
+    this->maxHalfspace = maxHalfspace;
+    this->initialize();
+}
+
 ConstraintModel::ConstraintModel() {
     this->initialize();
 }
@@ -118,7 +124,7 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
     uint32_t j = 0;
     QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
     while(iter.hasNext()) {
-        if (j > 255) break;
+        if (j >= this->maxEllipse) break;
 
         EllipseModelItem* ellipse = iter.next();
         R[j] = ellipse->radius_/100 + this->clearance_;

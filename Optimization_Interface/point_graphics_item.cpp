@@ -37,7 +37,7 @@ void PointGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set position
-    this->setPos(*this->model_->pos_);
+    this->setPos(this->mapFromScene(*this->model_->pos_));
 }
 
 PointGraphicsItem::~PointGraphicsItem() {
@@ -57,8 +57,10 @@ void PointGraphicsItem::paint(QPainter *painter,
                                 QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-
+    // TODO: fix this, use mapfromscene
+//    QPointF pos2 = *this->model_->pos_;
     this->setPos(*this->model_->pos_);
+
     // Show handles if selected
     if (this->isSelected()) {
 //        this->resize_handle_->setPos(-this->model_->radius_, 0);

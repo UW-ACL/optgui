@@ -25,6 +25,8 @@ namespace interface {
 class ConstraintModel {
  public:
     ConstraintModel();
+    ConstraintModel(uint32_t maxEllipse, uint32_t maxAffine);
+
     ~ConstraintModel();
 
     void addPoint(PointModelItem *item);
@@ -48,7 +50,6 @@ class ConstraintModel {
     void updateInitialPoint(QPointF *item);
     void updateFinalPoint(QPointF *item);
 
-
     uint32_t loadEllipse(double* R, double* c_e, double* c_n);
 
     QSet<PointModelItem *> *points_;
@@ -59,6 +60,9 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
+
+    uint32_t maxEllipse;
+    uint32_t maxHalfspace;
 
     double clearance_ = 0.2;
     uint32_t numTimeSteps_ = 20;

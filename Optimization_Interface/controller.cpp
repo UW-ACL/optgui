@@ -37,7 +37,7 @@ namespace interface {
 
 Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
-    this->model_ = new ConstraintModel();
+    this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 
     this->network_session_ = nullptr;
     this->servers_ = new QVector<ItemServer *>();
@@ -64,7 +64,6 @@ Controller::Controller(Canvas *canvas) {
     this->port_dialog_ = new PortDialog();
 
     // TODO(ben): Remove this hack and incorporate it into ConstraintModel
-
     this->trajectory_ = new QVector<QPointF *>;
 //    pos_final_ = new QPointF;
 
@@ -182,13 +181,6 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
-void Controller::updatePoint(QPointF *point) {
-//    PointModelItem *item_model = new PointModelItem(point);
-
-//    if(this->previousPoint_) this->removeItem(this->previousPoint_);
-//    this->loadPoint(item_model);
-}
-
 void Controller::addEllipse(QPointF *point) {
     EllipseModelItem *item_model = new EllipseModelItem(point);
     this->loadEllipse(item_model);
@@ -231,9 +223,8 @@ double_t Controller::getTimeInterval() {
     return this->finaltime_/this->horizon_length_;
 }
 void Controller::updateFinalPosition(QPointF *pos_final) {
-//    this->pos_final_ = new QPointF(*pos_final/100);
-    this->model_->final_pos_->pos_->setX(pos_final->x()/100);
-    this->model_->final_pos_->pos_->setY(pos_final->y()/100);
+    this->model_->final_pos_->pos_->setX(pos_final->x());
+    this->model_->final_pos_->pos_->setY(pos_final->y());
     this->canvas_->update();
 }
 
@@ -253,14 +244,17 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     params P;
     memset(&P,0,sizeof(P));
     P.K = MIN(this->horizon_length_, KK);
-    P.tf = this->finaltime_;
+    P.K = KK;
+    P.tf = 2.75;//this->finaltime_;
     P.dt = P.tf/static_cast<double>(P.K-1);
     P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
+    P.cpos.n = 0;
 
     if(P.obs.n == 0) {
         qDebug() << "Cannot have no obstacles!";
         return;
     }
+
 //    if(P.obs.n == 0) {
 //        P.obs.n = 1;
 //        P.obs.R[0] = 0.01;
@@ -278,7 +272,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.theta_max = 40.0*DEG2RAD;
     P.q_max = 0.0;
 
-    P.max_iter = 20;
+    P.max_iter = 10;
     P.Delta_i = 100.0;
     P.lambda = 1e2;
     P.alpha = 2.0;
@@ -292,8 +286,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     memset(&I,0,sizeof(I));
 
     I.r_i[0] =  0.0;
-    I.r_i[1] =  this->model_->drone_->point_->x();
-    I.r_i[2] =  this->model_->drone_->point_->x();
+    I.r_i[1] =  0.0; //this->model_->drone_->point_->x();
+    I.r_i[2] =  0.0; //this->model_->drone_->point_->x();
     I.v_i[0] =  0.0;
     I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
     I.v_i[2] =  0.0; //this->model_->drone_->vel_->x();
@@ -301,7 +295,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     I.a_i[1] = -P.g[1];
     I.a_i[2] = -P.g[2];
     I.r_f[0] =  0.0;
-    I.r_f[1] =  this->model_->final_pos_->pos_->x();//pos_final_->x();
+    I.r_f[1] =  this->model_->final_pos_->pos_->x();
     I.r_f[2] =  this->model_->final_pos_->pos_->y();
     I.v_f[0] =  0.0;
     I.v_f[1] =  0.0;
@@ -310,6 +304,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     I.a_f[1] = -P.g[1];
     I.a_f[2] = -P.g[2];
 
+    qDebug() << "FINAL POS X" << this->model_->final_pos_->pos_->x();
+//    qDebug() <<
 //    I.i = 0;
 
     outputs O;
@@ -323,13 +319,13 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     this->trajectory_->clear();
     for(uint32_t i=0; i<P.K; i++) {
-//        qDebug() << O.r[1][i] << ", " << O.r[2][i];
+        qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
         this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
     }
 
     for(uint32_t i=0; i<P.obs.n; i++) {
-//        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
+        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
     }
 
     qDebug() << "i= " << I.i

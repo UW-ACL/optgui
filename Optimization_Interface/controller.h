@@ -29,7 +29,6 @@ class Controller {
 
     void setCanvas(Canvas *canvas);
 
-    void updatePoint(QPointF *point);
     void addEllipse(QPointF *point);
     void addPolygon(QVector<QPointF *> *points);
     void addPlane(QPointF *p1, QPointF *p2);
