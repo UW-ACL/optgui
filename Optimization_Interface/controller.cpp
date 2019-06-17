@@ -248,7 +248,13 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.tf = 2.75;//this->finaltime_;
     P.dt = P.tf/static_cast<double>(P.K-1);
     P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
-    P.cpos.n = 0;
+    P.cpos.n = model_->loadPosConstraint(P.cpos.A, P.cpos.b);
+
+    for(uint32_t i=1; i<=P.cpos.n; ++i) {
+        qDebug() << "A[" << 2*(i-1) << "]=" << P.cpos.A[2*(i-1)];
+        qDebug() << "A[" << 2*(i-1)+1 << "]=" << P.cpos.A[2*(i-1)+1];
+        qDebug() << "b[" << i-1 << "]=" << P.cpos.b[i-1];
+    }
 
     if(P.obs.n == 0) {
         qDebug() << "Cannot have no obstacles!";

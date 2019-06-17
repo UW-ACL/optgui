@@ -51,6 +51,7 @@ class ConstraintModel {
     void updateFinalPoint(QPointF *item);
 
     uint32_t loadEllipse(double* R, double* c_e, double* c_n);
+    uint32_t loadPosConstraint(double* A, double* b);
 
     QSet<PointModelItem *> *points_;
     QSet<EllipseModelItem *> *ellipses_;

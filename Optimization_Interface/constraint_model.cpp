@@ -135,6 +135,41 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
     }
     return j;
 }
+
+uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
+    uint32_t num = 0;
+
+//    for (PolygonModelItem *polygon : *this->polygons_) {
+//        for (qint32 i = 1; i < polygon->points_->length(); i++) {
+//            QPointF *p = polygon->points_->at(i-1);
+//            QPointF *q = polygon->points_->at(i);
+
+//            A[2*(i-1)] = p->y() - q->y();
+//            A[2*(i-1)+1] = q->x() - p->x();
+//            b[i-1] =  p->y()*(1 + q->x() - p->x()) - q->y();
+//            num++;
+//        }
+//        break;
+//    }
+//    return num;
+
+    for (PlaneModelItem *plane : *this->planes_) {
+        uint32_t i = 1;
+        QPointF *p = plane->p1_;
+        QPointF *q = plane->p2_;
+
+        A[2*(i-1)] = (p->y() - q->y())/100;
+        A[2*(i-1)+1] = (q->x() - p->x())/100;
+        b[i-1] =  (plane->direction_?1:-1) * (p->y()/100*(1 + q->x()/100 - p->x()/100) - q->y()/100);
+
+
+        break;
+
+    }
+    return 1;
+
+}
+
 }  // namespace interface
 
 
