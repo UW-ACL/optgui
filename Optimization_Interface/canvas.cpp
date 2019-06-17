@@ -25,7 +25,7 @@ void Canvas::initialize() {
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
-    this->background_image_ = new QImage("../image.png");
+    this->background_image_ = new QImage("/Users/ben/aclsrv/optgui/maps/lab_6,-6_-6,6.png");
 //    this->background_image_.
 
     // Set foreground pen
@@ -154,10 +154,11 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
-    double width = 1000;
-    double height = 1000;
+    double width = 600;
+    double height = 600;
     QRectF bbox(-width/2., -height/2., width, height);
     painter->drawImage(bbox, *this->background_image_);
+
     // Draw vertical grid lines
     for (qint32 i = 0; i <= right_bound; i += segment_size) {
         painter->drawLine(i, top_bound, i, bot_bound);

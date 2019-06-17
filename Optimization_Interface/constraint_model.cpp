@@ -139,35 +139,45 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
 uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
     uint32_t num = 0;
 
-//    for (PolygonModelItem *polygon : *this->polygons_) {
-//        for (qint32 i = 1; i < polygon->points_->length(); i++) {
-//            QPointF *p = polygon->points_->at(i-1);
-//            QPointF *q = polygon->points_->at(i);
+    for (PolygonModelItem *polygon : *this->polygons_) {
+        for (qint32 i = 1; i < polygon->points_->length(); i++) {
+            QPointF *p = polygon->points_->at(i-1);
+            QPointF *q = polygon->points_->at(i);
+            int32_t flip = (polygon->direction_?1:-1);
 
-//            A[2*(i-1)] = p->y() - q->y();
-//            A[2*(i-1)+1] = q->x() - p->x();
-//            b[i-1] =  p->y()*(1 + q->x() - p->x()) - q->y();
-//            num++;
-//        }
-//        break;
-//    }
-//    return num;
+            double px = p->x()/100;
+            double py = p->y()/100;
+            double qx = q->x()/100;
+            double qy = q->y()/100;
+            double c = (py*qx-px*qy);
 
-    for (PlaneModelItem *plane : *this->planes_) {
-        uint32_t i = 1;
-        QPointF *p = plane->p1_;
-        QPointF *q = plane->p2_;
-
-        A[2*(i-1)] = (p->y() - q->y())/100;
-        A[2*(i-1)+1] = (q->x() - p->x())/100;
-        b[i-1] =  (plane->direction_?1:-1) * (p->y()/100*(1 + q->x()/100 - p->x()/100) - q->y()/100);
-
-
-        break;
+            A[2*(i-1)] = flip*(py-qy)/c;
+            A[2*(i-1)+1] = flip*(qx-px)/c;
+            b[i-1] = flip;
+            num++;
+        }
 
     }
-    return 1;
 
+    for (PlaneModelItem *plane : *this->planes_) {
+        uint32_t i = num;
+        QPointF *p = plane->p1_;
+        QPointF *q = plane->p2_;
+        int32_t flip = (plane->direction_?1:-1);
+
+        double px = p->x()/100;
+        double py = p->y()/100;
+        double qx = q->x()/100;
+        double qy = q->y()/100;
+        double c = (py*qx-px*qy);
+
+        A[2*(i-1)] = flip*(py-qy)/c;
+        A[2*(i-1)+1] = flip*(qx-px)/c;
+        b[i-1] = flip;
+        num++;
+
+    }
+    return num;
 }
 
 }  // namespace interface
