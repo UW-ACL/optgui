@@ -267,7 +267,7 @@ void MenuPanel::initializeHorizonSlider() {
     this->opt_horizon_slider_->setTickPosition(QSlider::TicksAbove);
     this->opt_horizon_slider_->setMinimum(16);
     this->opt_horizon_slider_->setMaximum(32);
-    this->opt_horizon_slider_->setValue(20);
+    this->opt_horizon_slider_->setValue(32);
     this->opt_horizon_slider_->setToolTip(tr("Set horizon length"));
 
     this->opt_horizon_label_ = new QLabel();

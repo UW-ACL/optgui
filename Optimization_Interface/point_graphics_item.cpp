@@ -58,8 +58,8 @@ void PointGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
     // TODO: fix this, use mapfromscene
-//    QPointF pos2 = *this->model_->pos_;
-    this->setPos(*this->model_->pos_);
+//    QPointF pos2 = (*this->model_->pos_);
+    this->setPos(*this->model_->pos_);//this->mapFromScene(*this->model_->pos_));
 
     // Show handles if selected
     if (this->isSelected()) {

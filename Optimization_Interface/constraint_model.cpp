@@ -120,6 +120,11 @@ void ConstraintModel::clearPath() {
     this->path_->points_->clear();
 }
 
+void ConstraintModel::loadFinalPos(double* r_f) {
+    r_f[1] = this->final_pos_->pos_->x()/this->scale_;
+    r_f[2] = this->final_pos_->pos_->y()/this->scale_;
+}
+
 uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
     uint32_t j = 0;
     QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
@@ -127,10 +132,9 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
         if (j >= this->maxEllipse) break;
 
         EllipseModelItem* ellipse = iter.next();
-        R[j] = ellipse->radius_/100 + this->clearance_;
-        c_e[j] = ellipse->pos_->x()/100;
-        c_n[j] = ellipse->pos_->y()/100;
-//        qDebug() << "Ellipse";// << R[j] << c_e[j] << c_n[j];
+        R[j] = ellipse->radius_/this->scale_ + ellipse->clearance_/this->scale_;
+        c_e[j] = ellipse->pos_->x()/this->scale_;
+        c_n[j] = ellipse->pos_->y()/this->scale_;
         ++j;
     }
     return j;
@@ -140,15 +144,15 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
     uint32_t num = 0;
 
     for (PolygonModelItem *polygon : *this->polygons_) {
-        for (qint32 i = 1; i < polygon->points_->length(); i++) {
+        for (qint32 i = 1; i < polygon->points_->length()+1; i++) {
             QPointF *p = polygon->points_->at(i-1);
-            QPointF *q = polygon->points_->at(i);
+            QPointF *q = polygon->points_->at(i % polygon->points_->length());
             int32_t flip = (polygon->direction_?1:-1);
 
-            double px = p->x()/100;
-            double py = p->y()/100;
-            double qx = q->x()/100;
-            double qy = q->y()/100;
+            double px = p->x()/this->scale_;
+            double py = p->y()/this->scale_;
+            double qx = q->x()/this->scale_;
+            double qy = q->y()/this->scale_;
             double c = (py*qx-px*qy);
 
             A[2*(i-1)] = flip*(py-qy)/c;
@@ -156,19 +160,18 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
             b[i-1] = flip;
             num++;
         }
-
     }
 
     for (PlaneModelItem *plane : *this->planes_) {
-        uint32_t i = num;
+        uint32_t i = num+1;
         QPointF *p = plane->p1_;
         QPointF *q = plane->p2_;
         int32_t flip = (plane->direction_?1:-1);
 
-        double px = p->x()/100;
-        double py = p->y()/100;
-        double qx = q->x()/100;
-        double qy = q->y()/100;
+        double px = p->x()/this->scale_;
+        double py = p->y()/this->scale_;
+        double qx = q->x()/this->scale_;
+        double qy = q->y()/this->scale_;
         double c = (py*qx-px*qy);
 
         A[2*(i-1)] = flip*(py-qy)/c;

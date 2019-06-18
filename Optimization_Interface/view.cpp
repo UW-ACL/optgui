@@ -182,9 +182,7 @@ void View::mousePressEvent(QMouseEvent *event) {
 
     switch (this->state_) {
         case POINT: {
-            // WHY: does this need to be divided by 100??
-            QPointF pos2 = pos/100;
-            this->controller_->updateFinalPosition(&pos2);
+            this->controller_->updateFinalPosition(&pos);
             break;
         }
         case ELLIPSE: {

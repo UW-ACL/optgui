@@ -25,8 +25,7 @@ void Canvas::initialize() {
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
-    this->background_image_ = new QImage("/Users/ben/aclsrv/optgui/maps/lab_6,-6_-6,6.png");
-//    this->background_image_.
+    this->background_image_ = new QImage("../../maps/lab_6,-6_-6,6.png");
 
     // Set foreground pen
     QColor foreground_color = Qt::gray;

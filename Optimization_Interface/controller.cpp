@@ -30,6 +30,8 @@
 
 #include "algorithm.h"
 
+#include "autogen/deserializable/bc_traj.h"
+
 
 using namespace cprs;
 
@@ -243,30 +245,11 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // Parameters.
     params P;
     memset(&P,0,sizeof(P));
-    P.K = MIN(this->horizon_length_, KK);
-    P.K = KK;
-    P.tf = 2.75;//this->finaltime_;
+    P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
+    P.tf = this->finaltime_;
     P.dt = P.tf/static_cast<double>(P.K-1);
     P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
     P.cpos.n = model_->loadPosConstraint(P.cpos.A, P.cpos.b);
-
-    for(uint32_t i=1; i<=P.cpos.n; ++i) {
-        qDebug() << "A[" << 2*(i-1) << "]=" << P.cpos.A[2*(i-1)];
-        qDebug() << "A[" << 2*(i-1)+1 << "]=" << P.cpos.A[2*(i-1)+1];
-        qDebug() << "b[" << i-1 << "]=" << P.cpos.b[i-1];
-    }
-
-    if(P.obs.n == 0) {
-        qDebug() << "Cannot have no obstacles!";
-        return;
-    }
-
-//    if(P.obs.n == 0) {
-//        P.obs.n = 1;
-//        P.obs.R[0] = 0.01;
-//        P.obs.c_e[0] = 10000;
-//        P.obs.c_n[0] = 10000;
-//    }
 
     P.dK = 1;
     P.n_recalcs = 14;
@@ -282,10 +265,11 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.Delta_i = 100.0;
     P.lambda = 1e2;
     P.alpha = 2.0;
-    P.dL_tol = 1e-0;
+    P.dL_tol = 1e-1;
     P.rho_0 = -1e-1;
     P.rho_1 = 0.25;
     P.rho_2 = 0.90;
+    P.rirelax = 100;
 
     // Inputs.
     inputs I;
@@ -301,18 +285,15 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     I.a_i[1] = -P.g[1];
     I.a_i[2] = -P.g[2];
     I.r_f[0] =  0.0;
-    I.r_f[1] =  this->model_->final_pos_->pos_->x();
-    I.r_f[2] =  this->model_->final_pos_->pos_->y();
+    this->model_->loadFinalPos(I.r_f);
+//    I.r_f[1] =  this->model_->final_pos_x(); final_pos_->pos_->x()/100;
+//    I.r_f[2] =  this->model_->final_final_pos_->pos_->y()/100;
     I.v_f[0] =  0.0;
     I.v_f[1] =  0.0;
     I.v_f[2] =  0.0;
     I.a_f[0] = -P.g[0];
     I.a_f[1] = -P.g[1];
     I.a_f[2] = -P.g[2];
-
-    qDebug() << "FINAL POS X" << this->model_->final_pos_->pos_->x();
-//    qDebug() <<
-//    I.i = 0;
 
     outputs O;
     memset(&O,0,sizeof(O));
@@ -325,13 +306,13 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     this->trajectory_->clear();
     for(uint32_t i=0; i<P.K; i++) {
-        qDebug() << O.r[1][i] << ", " << O.r[2][i];
+//        qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
         this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
     }
 
     for(uint32_t i=0; i<P.obs.n; i++) {
-        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
+//        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
     }
 
     qDebug() << "i= " << I.i
@@ -343,6 +324,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
              << "| I.J_0 = " << I.J_0
              << "| O.J = " << O.J
              << "| r = " << O.ratio;
+    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
     // Set up next solution.
     reset(P,I,O);
 
@@ -364,6 +346,8 @@ void Controller::execute() {
 
     }
     file.close();
+
+//    autogen::deserializable::bc_traj();
 
 }
 

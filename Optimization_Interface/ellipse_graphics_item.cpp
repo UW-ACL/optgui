@@ -79,6 +79,9 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     painter->fillPath(this->shape(), this->brush_);
     double rad = this->model_->radius_;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
+    rad += this->model_->clearance_;
+    painter->fillPath(this->shape(), this->brush_);
+    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
     if (this->model_->port_ != 0) {

@@ -50,6 +50,7 @@ class ConstraintModel {
     void updateInitialPoint(QPointF *item);
     void updateFinalPoint(QPointF *item);
 
+    void loadFinalPos(double*);
     uint32_t loadEllipse(double* R, double* c_e, double* c_n);
     uint32_t loadPosConstraint(double* A, double* b);
 
@@ -65,8 +66,8 @@ class ConstraintModel {
     uint32_t maxEllipse;
     uint32_t maxHalfspace;
 
-    double clearance_ = 0.2;
-    uint32_t numTimeSteps_ = 20;
+    // TODO: fix magic number.. use mapfromscene?
+    double scale_ = 100;
 
  private:
     void initialize();
