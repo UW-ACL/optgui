@@ -23,15 +23,41 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-INCLUDEPATH +=s $$PWD/../../algorithm/ \
-               $$PWD/../../cprs/headers/ \
-               $$PWD/../../csocp/ \
-               $$PWD/../../../mikipilot
+#MIKIPILOT = $$PWD/../../../mikipilot
 
-LIBS += -L$$PWD/../../algorithm -lalgorithm \
-        -L$$PWD/../../cprs/build -lCPRS \
-        -L$$PWD/../../csocp -lCSOCP
 
+INCLUDEPATH += $$PWD/../../algorithm/
+INCLUDEPATH += $$PWD/../../cprs/headers/
+INCLUDEPATH += $$PWD/../../csocp/
+INCLUDEPATH += $$PWD/../../../mikipilot
+
+LIBS += -L$$PWD/../../algorithm -lalgorithm
+LIBS += -L$$PWD/../../cprs/build -lCPRS
+LIBS += -L$$PWD/../../csocp -lCSOCP
+
+
+## Add libraries.
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/utilities/globals.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/utilities/ifile.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/utilities/object.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/utilities/ofile.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/utilities/timer.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/utilities/tob.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/network/deserializable.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/network/packet.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/network/parameter.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/network/serializable.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/network/state.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/network/timestamped.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/gnc/dcm.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/gnc/globals.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/objects/gnc/quat.o
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/release/lib_autogen_globals.a
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/release/lib_autogen_packet.a
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/release/lib_autogen_state.a
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/release/lib_autogen_parameter.a
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/release/lib_autogen_timestamped.a
+#LIBS += $${PWD}/../../../mikipilot/build/gcs/executable/release/lib_autogen_bus.a
 
 SOURCES += \
     main.cpp \
