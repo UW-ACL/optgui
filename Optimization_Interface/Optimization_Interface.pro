@@ -61,6 +61,7 @@ SOURCES += \
     point_graphics_item.cpp \
     point_server.cpp \
 #    ../../mikipilot/gcs/comm.cpp
+    comm.cpp
 
 HEADERS += \
     main_window.h \
@@ -97,6 +98,7 @@ HEADERS += \
     point_model_item.h \
     point_graphics_item.h \
 #    ../../mikipilot/gcs/comm.h
+    comm.h
 
 RESOURCES += \
     resources.qrc

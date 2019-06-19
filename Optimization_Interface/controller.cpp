@@ -30,7 +30,7 @@
 
 #include "algorithm.h"
 
-#include "autogen/deserializable/bc_traj.h"
+//#include "autogen/deserializable/bc_traj.h"
 
 
 using namespace cprs;
