@@ -19,6 +19,7 @@
 #include "port_dialog.h"
 #include "item_server.h"
 #include "cprs.h"
+#include "comm.h"
 
 namespace interface {
 
@@ -67,7 +68,11 @@ class Controller {
     // TODO: make a proper class for these parameters
     uint32_t horizon_length_ = 20;
     double_t finaltime_ = 2.7;
-//    QPointF *pos_final_;
+    uint32_t drone_port_ = 8000;
+    uint32_t puck_port_ = 8001;
+
+    comm *drone_comm_;
+    comm *puck_comm_;
 
  private:
     Canvas *canvas_;
@@ -82,7 +87,6 @@ class Controller {
     PointGraphicsItem *final_pos_graphic_;
 
     // TODO: remove these terrible null pointer......
-//    PointGraphicsItem *previousPoint_;
     QVector<QPointF *>* trajectory_;
 
 

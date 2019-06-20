@@ -17,7 +17,7 @@ namespace interface {
 class DroneModelItem : public DataModel {
  public:
     explicit DroneModelItem()
-            { this->point_ = new QPointF(0, 0); port_ = 0; }
+            { this->point_ = new QPointF(0, 0); port_ = 8000; }
     ~DroneModelItem() { delete this->point_; }
     QPointF *point_;
     QPointF *pos_;

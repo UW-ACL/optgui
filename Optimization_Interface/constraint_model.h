@@ -51,6 +51,8 @@ class ConstraintModel {
     void updateFinalPoint(QPointF *item);
 
     void loadFinalPos(double*);
+    void loadInitialPos(double*);
+
     uint32_t loadEllipse(double* R, double* c_e, double* c_n);
     uint32_t loadPosConstraint(double* A, double* b);
 

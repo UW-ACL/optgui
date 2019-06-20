@@ -51,6 +51,9 @@ class View : public QGraphicsView {
     void setHorizon(int);
     void setFinaltime(int);
 
+    void updateViewDronePos(float,float,float);
+    void updateViewPuckPos(float,float,float);
+
  private:
     void initialize();
     void clearMarkers();
@@ -65,6 +68,7 @@ class View : public QGraphicsView {
     QBrush dot_brush_;
     uint64_t simulating_ = 0;
     QTimer *timer_sim_;
+    uint64_t view_tick_ = 0;
 
 };
 

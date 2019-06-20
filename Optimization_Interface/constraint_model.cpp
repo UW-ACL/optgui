@@ -125,6 +125,11 @@ void ConstraintModel::loadFinalPos(double* r_f) {
     r_f[2] = this->final_pos_->pos_->y()/this->scale_;
 }
 
+void ConstraintModel::loadInitialPos(double* r_i) {
+    r_i[1] = this->drone_->point_->x()/this->scale_;
+    r_i[2] = this->drone_->point_->y()/this->scale_;
+}
+
 uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
     uint32_t j = 0;
     QSetIterator<EllipseModelItem *> iter(*this->ellipses_);

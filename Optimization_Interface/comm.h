@@ -28,9 +28,8 @@ using namespace autogen;
 //      void rx_keyboard_data(const packet::rcontrol_cmd& rcontrol_cmd);
 //      void rx_heartbeat(const packet::heartbeat& heartbeat);
     signals:
-      void tx_data(const packet::telemetry& telemetry);
+      void tx_pos(float n, float e, float d);
   };
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif

@@ -153,8 +153,8 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
-    double width = 600;
-    double height = 600;
+    double width = 1200;
+    double height = 1200;
     QRectF bbox(-width/2., -height/2., width, height);
     painter->drawImage(bbox, *this->background_image_);
 

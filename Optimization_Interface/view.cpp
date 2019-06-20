@@ -16,6 +16,8 @@ View::View(QWidget * parent)
     this->canvas_ = new Canvas(this);
     this->setScene(this->canvas_);
 
+//    this->startServers();
+
     // Create Controller
     this->controller_ = new Controller(this->canvas_);
 
@@ -168,12 +170,35 @@ void View::initialize() {
     connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
             this, SLOT(toggleSim()));
 
+    // Connect to network
+    connect(this->controller_->drone_comm_, SIGNAL(tx_pos(float,float,float)),
+            this, SLOT(updateViewDronePos(float,float,float)));
+
+    connect(this->controller_->puck_comm_, SIGNAL(tx_pos(float,float,float)),
+            this, SLOT(updateViewPuckPos(float, float, float)));
+
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
 //    timer_sim_->start(10);
 
     // Expand view to fill screen
     this->expandView();
+
+    this->view_tick_ = 0;
+}
+
+void View::updateViewDronePos(float n, float e, float d) {
+    this->view_tick_ += 1;
+    if (this->view_tick_ % 10) return;
+    qDebug() << "Update View Drone Pos";
+    QPointF pos(e*100,-n*100);
+    this->controller_->updateDronePos(pos);
+    if (this->view_tick_ % 100) return;
+    this->controller_->compute();
+}
+
+void View::updateViewPuckPos(float n, float e, float d) {
+    qDebug() << "Update View Puck Pos";
 }
 
 void View::mousePressEvent(QMouseEvent *event) {

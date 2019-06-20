@@ -1,12 +1,14 @@
 #include "comm.h"
 
-comm::comm(const std::string& ip_address, uint16 port) : mc_ip_address(ip_address),mc_port(6000) {
+comm::comm(const std::string& ip_address, uint16 port) : mc_ip_address(ip_address),mc_port(port) {
   // Instantiate UDP socket.
   mp_udp = new QUdpSocket(this);
   mp_udp->bind(QHostAddress::AnyIPv4,port);
 
   // Connect signals/slots.
   connect(mp_udp,SIGNAL(readyRead()),this,SLOT(readPendingDatagrams()));
+
+  std::cout << "Init comm" << std::endl;
 }
 comm::~comm() {
   // Disconnect signals/slots.
@@ -23,21 +25,35 @@ void comm::readPendingDatagrams() {
     quint16 port;
     int64 bytes_read = mp_udp->readDatagram(buff,4000,&address,&port);
 
-    if ((bytes_read > 0) and (port != 1508)) {
+    if ((bytes_read > 0)) {
       uint8 buffer[4000]={0,};
       memcpy(buffer,buff,4000);
       const uint8* ptr = NULL;
 
-      // Deserialize telemetry.
+      // Deserialize mocap data.
       ptr = buffer;
-      deserializable::telemetry<topic::telemetry::UNDEFINED> telemetry;
-      const uint8* ptr_telemetry = telemetry.deserialize(ptr);
-      if (ptr_telemetry not_eq ptr) {
-        emit tx_data(telemetry);
+      deserializable::mocap_data<topic::mocap_data::UNDEFINED> mocap_data;
+      const uint8* ptr_mocap_data = mocap_data.deserialize(ptr);
+      std::cout << "Received bytes" << std::endl;
+      if (ptr_mocap_data not_eq ptr) {
+          std::cout << "Read mocap " << this->mc_port << ":" \
+                    << mocap_data.pos_ned(0) << "," \
+                    << mocap_data.pos_ned(1) << "," \
+                    << mocap_data.pos_ned(2) << std::endl;
+          emit tx_pos(mocap_data.pos_ned(0), mocap_data.pos_ned(1), mocap_data.pos_ned(2));
       }
+
+//      // Deserialize telemetry.
+//      ptr = buffer;
+//      deserializable::telemetry<topic::telemetry::UNDEFINED> telemetry;
+//      const uint8* ptr_telemetry = telemetry.deserialize(ptr);
+//      if (ptr_telemetry not_eq ptr) {
+//        emit tx_data(telemetry);
+//      }
     }
   }
 }
+
 //void comm::rx_keyboard_data(const packet::qcontrol_cmd& qcontrol_cmd) {
 //  serializable::qcontrol_cmd<topic::qcontrol_cmd::UNDEFINED> ser_qcontrol_cmd;
 //  ser_qcontrol_cmd = qcontrol_cmd;

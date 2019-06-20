@@ -69,6 +69,8 @@ Controller::Controller(Canvas *canvas) {
     this->trajectory_ = new QVector<QPointF *>;
 //    pos_final_ = new QPointF;
 
+    this->drone_comm_ = new comm("", this->drone_port_);
+    this->puck_comm_ = new comm("", this->puck_port_);
 }
 
 Controller::~Controller() {
@@ -245,7 +247,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // Parameters.
     params P;
     memset(&P,0,sizeof(P));
-    P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
+    //P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
+    P.K = MAX_HORIZON;
     P.tf = this->finaltime_;
     P.dt = P.tf/static_cast<double>(P.K-1);
     P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
@@ -276,8 +279,9 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     memset(&I,0,sizeof(I));
 
     I.r_i[0] =  0.0;
-    I.r_i[1] =  0.0; //this->model_->drone_->point_->x();
-    I.r_i[2] =  0.0; //this->model_->drone_->point_->x();
+//    I.r_i[1] =  this->model_->drone_->point_->x();
+//    I.r_i[2] =  this->model_->drone_->point_->x();
+    this->model_->loadInitialPos(I.r_i);
     I.v_i[0] =  0.0;
     I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
     I.v_i[2] =  0.0; //this->model_->drone_->vel_->x();
