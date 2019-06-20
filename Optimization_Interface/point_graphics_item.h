@@ -31,6 +31,7 @@ class PointGraphicsItem : public QGraphicsItem {
     int type() const override;
 
     void expandScene();
+    void setMarker(uint32_t);
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
@@ -39,6 +40,7 @@ class PointGraphicsItem : public QGraphicsItem {
     void initialize();
     QPen pen_;
     QBrush brush_;
+    uint32_t marker_;
 };
 
 }  // namespace interface

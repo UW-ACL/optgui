@@ -21,7 +21,7 @@ Canvas::Canvas(QObject *parent)
 
 void Canvas::initialize() {
     // Set background pen
-    QColor background_color = Qt::gray;
+    QColor background_color = Qt::black;
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 

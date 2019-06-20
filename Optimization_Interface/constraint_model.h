@@ -64,6 +64,7 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
+    QVector<PointModelItem *> *puck_pos_;
 
     uint32_t maxEllipse;
     uint32_t maxHalfspace;

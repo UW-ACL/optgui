@@ -34,9 +34,9 @@ void comm::readPendingDatagrams() {
       ptr = buffer;
       deserializable::mocap_data<topic::mocap_data::UNDEFINED> mocap_data;
       const uint8* ptr_mocap_data = mocap_data.deserialize(ptr);
-      std::cout << "Received bytes" << std::endl;
+//      std::cout << "Received bytes" << std::endl;
       if (ptr_mocap_data not_eq ptr) {
-          std::cout << "Read mocap " << this->mc_port << ":" \
+//          std::cout << "Read mocap " << this->mc_port << ":" \
                     << mocap_data.pos_ned(0) << "," \
                     << mocap_data.pos_ned(1) << "," \
                     << mocap_data.pos_ned(2) << std::endl;

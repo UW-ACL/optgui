@@ -15,6 +15,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
+#include <QElapsedTimer>
 
 #include "point_graphics_item.h"
 #include "ellipse_graphics_item.h"
@@ -57,6 +58,10 @@ Controller::Controller(Canvas *canvas) {
     // initialize drone graphic
     this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
     this->canvas_->addItem(this->drone_graphic_);
+
+    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0));
+    this->puck_graphic_->setMarker(1);
+    this->canvas_->addItem(this->puck_graphic_);
 
     // initialize final point graphic
     this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_);
@@ -243,6 +248,8 @@ void Controller::compute() {
             }
 }
 void Controller::compute(QVector<QPointF *> *trajectory) {
+    QElapsedTimer timer;
+    timer.start();
     // Initialize constant values
     // Parameters.
     params P;
@@ -278,9 +285,6 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     inputs I;
     memset(&I,0,sizeof(I));
 
-    I.r_i[0] =  0.0;
-//    I.r_i[1] =  this->model_->drone_->point_->x();
-//    I.r_i[2] =  this->model_->drone_->point_->x();
     this->model_->loadInitialPos(I.r_i);
     I.v_i[0] =  0.0;
     I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
@@ -288,10 +292,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     I.a_i[0] = -P.g[0];
     I.a_i[1] = -P.g[1];
     I.a_i[2] = -P.g[2];
-    I.r_f[0] =  0.0;
     this->model_->loadFinalPos(I.r_f);
-//    I.r_f[1] =  this->model_->final_pos_x(); final_pos_->pos_->x()/100;
-//    I.r_f[2] =  this->model_->final_final_pos_->pos_->y()/100;
     I.v_f[0] =  0.0;
     I.v_f[1] =  0.0;
     I.v_f[2] =  0.0;
@@ -310,28 +311,43 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     this->trajectory_->clear();
     for(uint32_t i=0; i<P.K; i++) {
-//        qDebug() << O.r[1][i] << ", " << O.r[2][i];
         trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
         this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
     }
 
-    for(uint32_t i=0; i<P.obs.n; i++) {
-//        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
+    // how feasible is the solution?
+    double accum = 0;
+    for(uint32_t i=0; i<P.K; i++) {
+        accum += abs( pow(O.a[0][i],2) + pow(O.a[1][i],2) + pow(O.a[2][i],2) \
+                - pow(O.s[i],2) )/P.K;
+    }
+    accum += pow(O.r_i_relax[0],2) + pow(O.r_i_relax[1],2) + pow(O.r_i_relax[2],2) \
+           + pow(O.r_f_relax[0],2) + pow(O.r_f_relax[1],2) + pow(O.r_f_relax[2],2);
+
+    if(accum > this->feasible_tol_) {
+        this->path_graphic_->setColor(QColor(Qt::red));
+    } else {
+        this->path_graphic_->setColor(QColor(Qt::green));
     }
 
-    qDebug() << "i= " << I.i
-             << "| Del = " << O.Delta
-             << "| L = " << O.L
-             << "| J = " << O.J
-             << "| dL = " << O.dL
-             << "| dJ = " << O.dJ
-             << "| I.J_0 = " << I.J_0
-             << "| O.J = " << O.J
-             << "| r = " << O.ratio;
-    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
+//    for(uint32_t i=0; i<P.obs.n; i++) {
+//        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
+//    }
+
+//    qDebug() << "i= " << I.i
+//             << "| Del = " << O.Delta
+//             << "| L = " << O.L
+//             << "| J = " << O.J
+//             << "| dL = " << O.dL
+//             << "| dJ = " << O.dJ
+//             << "| I.J_0 = " << I.J_0
+//             << "| O.J = " << O.J
+//             << "| r = " << O.ratio;
+//    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
     // Set up next solution.
     reset(P,I,O);
-
+    qDebug() << "Solver took " << timer.elapsed() << "ms";
+    this->solver_difficulty_ = timer.elapsed();
 }
 
 void Controller::execute() {
@@ -396,12 +412,15 @@ void Controller::clearPathPoints() {
 }
 
 void Controller::updateDronePos(QPointF pos) {
-    qDebug() << "update drone pos" << pos.x() << pos.y();
     this->model_->drone_->point_->setX(pos.x());
     this->model_->drone_->point_->setY(pos.y());
     this->canvas_->update();
 }
 
+void Controller::updatePuckPos(uint32_t idx, QPointF pos) {
+    this->model_->puck_pos_->at(idx)->pos_->setX(pos.x());
+    this->model_->puck_pos_->at(idx)->pos_->setY(pos.y());
+}
 
 // ============ NETWORK CONTROLS ============
 

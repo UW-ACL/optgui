@@ -20,6 +20,7 @@ namespace interface {
         POLYGON,
         PLANE,
         WAYPOINT,
+        FREEZE,
         EXEC
     };
 

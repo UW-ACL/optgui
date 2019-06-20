@@ -22,6 +22,8 @@ void ConstraintModel::initialize() {
     // Set model containers
     this->points_ = new QSet<PointModelItem *>();
     this->final_pos_ = new PointModelItem();
+    this->puck_pos_ = new QVector<PointModelItem *>();
+    this->puck_pos_->append(new PointModelItem());
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
@@ -30,6 +32,7 @@ void ConstraintModel::initialize() {
     this->drone_ = new DroneModelItem();
     QSet<EllipseModelItem * > set;
     QSetIterator<EllipseModelItem *> i(set);
+
 }
 
 ConstraintModel::~ConstraintModel() {

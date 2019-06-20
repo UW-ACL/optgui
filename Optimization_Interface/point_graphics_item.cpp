@@ -38,6 +38,8 @@ void PointGraphicsItem::initialize() {
 
     // Set position
     this->setPos(this->mapFromScene(*this->model_->pos_));
+
+    this->marker_ = false;
 }
 
 PointGraphicsItem::~PointGraphicsItem() {
@@ -58,16 +60,12 @@ void PointGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
     // TODO: fix this, use mapfromscene
-//    QPointF pos2 = (*this->model_->pos_);
     this->setPos(*this->model_->pos_);//this->mapFromScene(*this->model_->pos_));
 
     // Show handles if selected
     if (this->isSelected()) {
-//        this->resize_handle_->setPos(-this->model_->radius_, 0);
-//        this->resize_handle_->show();
         this->pen_.setWidth(3);
     } else {
-//        this->resize_handle_->hide();
         this->pen_.setWidth(1);
     }
 
@@ -75,9 +73,18 @@ void PointGraphicsItem::paint(QPainter *painter,
 
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
-//    double rad = this->model_->radius_;
+
     double rad = POINT_RADIUS;
-    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
+    switch (this->marker_) {
+    case 0:
+        painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
+        break;
+    case 1:
+        painter->setPen(QColor(Qt::gray));
+        painter->drawLine(-rad*5,-rad*5,rad*5,rad*5);
+        painter->drawLine(rad*5,-rad*5,-rad*5,rad*5);
+        break;
+    }
 
     // Label with port
     if (this->model_->port_ != 0) {
@@ -85,6 +92,10 @@ void PointGraphicsItem::paint(QPainter *painter,
         painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
                           QString::number(this->model_->port_));
     }
+}
+
+void PointGraphicsItem::setMarker(uint32_t type) {
+    this->marker_ = type;
 }
 
 int PointGraphicsItem::type() const {

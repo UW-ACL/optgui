@@ -37,6 +37,7 @@ class Controller {
     void addPathPoint(QPointF *point);
     void clearPathPoints();
     void updateDronePos(QPointF pos);
+    void updatePuckPos(uint32_t idx, QPointF pos);
 
     void removeAllWaypoints();
 
@@ -74,6 +75,9 @@ class Controller {
     comm *drone_comm_;
     comm *puck_comm_;
 
+    uint32_t marker_; // 0: final point, 1: puck
+    double solver_difficulty_ = 100;
+
  private:
     Canvas *canvas_;
     ConstraintModel *model_;
@@ -85,11 +89,11 @@ class Controller {
     QVector<ItemServer *> *servers_;
 
     PointGraphicsItem *final_pos_graphic_;
+    PointGraphicsItem *puck_graphic_;
 
     // TODO: remove these terrible null pointer......
     QVector<QPointF *>* trajectory_;
-
-
+    double feasible_tol_ = pow(0.5,2);
 
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);

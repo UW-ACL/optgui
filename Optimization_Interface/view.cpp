@@ -189,16 +189,16 @@ void View::initialize() {
 
 void View::updateViewDronePos(float n, float e, float d) {
     this->view_tick_ += 1;
-    if (this->view_tick_ % 10) return;
-    qDebug() << "Update View Drone Pos";
-    QPointF pos(e*100,-n*100);
+    if (this->view_tick_ % 5) return;
+    QPointF pos(e*this->scale_,-n*this->scale_);
     this->controller_->updateDronePos(pos);
-    if (this->view_tick_ % 100) return;
+    if (this->view_tick_ % (uint32_t)this->controller_->solver_difficulty_) return;
     this->controller_->compute();
 }
 
 void View::updateViewPuckPos(float n, float e, float d) {
-    qDebug() << "Update View Puck Pos";
+    QPointF pos(e*this->scale_, -n*this->scale_);
+    this->controller_->updatePuckPos(0, pos);
 }
 
 void View::mousePressEvent(QMouseEvent *event) {
@@ -273,6 +273,9 @@ void View::mousePressEvent(QMouseEvent *event) {
             if (itemAt(event->pos())) {
                 this->controller_->flipDirection(itemAt(event->pos()));
             }
+            break;
+        }
+        case FREEZE: {
             break;
         }
         default: {
