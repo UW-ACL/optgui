@@ -91,6 +91,9 @@ void MenuPanel::initialize() {
     this->initializeHorizonSlider();
     this->initializeFinaltimeSlider();
 
+    // Create freeze button
+    this->initializeFreezeButton();
+
     // Create simulate button
     this->initializeSimButton();
 
@@ -314,13 +317,24 @@ void MenuPanel::initializeSimButton() {
     this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
 }
 
+void MenuPanel::initializeFreezeButton() {
+
+    this->freeze_button_ = new MenuButton(FREEZE, this->menu_);
+    this->freeze_button_->setText("Freeze");
+    this->freeze_button_->setToolTip(tr("Freeze optimization"));
+    this->menu_->layout()->addWidget(this->freeze_button_);
+    this->menu_->layout()->setAlignment(this->freeze_button_, Qt::AlignBottom);
+//    this->freeze_button_->setCheckable(true);
+    this->menu_buttons_->append(this->freeze_button_);
+}
+
 void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);
     this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
     this->zoom_slider_->setTickInterval(1);
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
-    this->zoom_slider_->setMinimum(2);
+    this->zoom_slider_->setMinimum(1);
     this->zoom_slider_->setMaximum(8);
     this->zoom_slider_->setValue(5);
     this->zoom_slider_->setToolTip(tr("Set zoom level"));

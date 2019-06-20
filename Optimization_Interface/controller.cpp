@@ -231,13 +231,24 @@ void Controller::setHorizonLength(uint32_t horizon) {
 double_t Controller::getTimeInterval() {
     return this->finaltime_/this->horizon_length_;
 }
+
 void Controller::updateFinalPosition(QPointF *pos_final) {
     this->model_->final_pos_->pos_->setX(pos_final->x());
     this->model_->final_pos_->pos_->setY(pos_final->y());
     this->canvas_->update();
 }
 
+bool Controller::toggleFreeze (bool freeze) {
+    if (this->freeze_ && this->timer_exec_.elapsed() <= this->finaltime_*2 && this->timer_exec_.elapsed()!=0) {
+        qDebug() << "Cannot unfreeze when executing..";
+        return this->freeze_;
+    }
+    this->freeze_ = freeze;
+    return this->freeze_;
+}
+
 void Controller::compute() {
+    if (this->freeze_) return;
     QVector<QPointF*> trajectory;
     this->clearPathPoints();
 
@@ -247,9 +258,10 @@ void Controller::compute() {
                 this->addPathPoint(it.next());
             }
 }
+
 void Controller::compute(QVector<QPointF *> *trajectory) {
-    QElapsedTimer timer;
-    timer.start();
+    if (this->freeze_) return;
+    this->timer_compute_.restart();
     // Initialize constant values
     // Parameters.
     params P;
@@ -346,11 +358,13 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 //    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
     // Set up next solution.
     reset(P,I,O);
-    qDebug() << "Solver took " << timer.elapsed() << "ms";
-    this->solver_difficulty_ = timer.elapsed();
+    qDebug() << "Solver took " << this->timer_compute_.elapsed() << "ms";
+    this->solver_difficulty_ = this->timer_compute_.elapsed();
 }
 
 void Controller::execute() {
+    timer_exec_.restart();
+
     // TODO(Miki): pass model to optimization solver
     QDateTime current = QDateTime::currentDateTime();
     QString filename = "/Users/ben/code/gui/trajectories/traj-" + current.toString("yyyy-MM-dd-hh-mm-ss.zzz") + ".csv";

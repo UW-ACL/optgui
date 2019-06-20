@@ -43,13 +43,13 @@ class View : public QGraphicsView {
     void setPorts();
     void startServers();
     void closeServers();
-//    void compute();
     void execute();
     void updatePath();
     void stepSim();
     void toggleSim();
     void setHorizon(int);
     void setFinaltime(int);
+    void toggleFreeze(bool);
 
     void updateViewDronePos(float,float,float);
     void updateViewPuckPos(float,float,float);

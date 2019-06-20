@@ -7,6 +7,7 @@
 
 #include <QHBoxLayout>
 #include <QTimer>
+#include <QScrollBar>
 
 namespace interface {
 
@@ -110,9 +111,13 @@ void View::initialize() {
 
     // Set scroll preferences
     this->setDragMode(QGraphicsView::ScrollHandDrag);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+//    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    this->horizontalScrollBar()->setEnabled(true);
+    this->horizontalScrollBar()->setVisible(true);
+    this->horizontalScrollBar()->setRange(1,10);
+//    this->verticalScrollBar()->setEnabled(true);
+//    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // Set rendering preference
     this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -179,7 +184,6 @@ void View::initialize() {
 
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
-//    timer_sim_->start(10);
 
     // Expand view to fill screen
     this->expandView();
@@ -187,7 +191,13 @@ void View::initialize() {
     this->view_tick_ = 0;
 }
 
+void View::toggleFreeze(bool freeze) {
+    bool result = this->controller_->toggleFreeze(freeze);
+    if (result != freeze) qDebug() << "Could not toggle freeze";
+}
+
 void View::updateViewDronePos(float n, float e, float d) {
+    // TODO: make an actual timer
     this->view_tick_ += 1;
     if (this->view_tick_ % 5) return;
     QPointF pos(e*this->scale_,-n*this->scale_);
@@ -206,6 +216,10 @@ void View::mousePressEvent(QMouseEvent *event) {
     QPointF pos = this->mapToScene(event->pos());
 
     switch (this->state_) {
+        case FREEZE: {
+            // do nothing
+            break;
+        }
         case POINT: {
             this->controller_->updateFinalPosition(&pos);
             break;
@@ -275,9 +289,6 @@ void View::mousePressEvent(QMouseEvent *event) {
             }
             break;
         }
-        case FREEZE: {
-            break;
-        }
         default: {
             QGraphicsView::mousePressEvent(event);
         }
@@ -309,6 +320,11 @@ void View::setZoom(int value) {
 }
 
 void View::setState(STATE button_type) {
+    if (button_type == FREEZE) {
+        this->toggleFreeze(true);
+    } else {
+        this->toggleFreeze(false);
+    }
     // Clear all temporary markers
     this->clearMarkers();
 
@@ -349,7 +365,6 @@ void View::stepSim() {
                            SLOT(stepSim()));
     }
 }
-
 
 void View::toggleSim() {
     this->simulating_ = 0;

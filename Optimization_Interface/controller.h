@@ -9,6 +9,7 @@
 #define CONTROLLER_H_
 
 #include <QNetworkSession>
+#include <QElapsedTimer>
 
 #include "canvas.h"
 #include "constraint_model.h"
@@ -53,6 +54,8 @@ class Controller {
     void compute(QVector<QPointF* > *trajectory);
     void execute();
 
+    bool toggleFreeze(bool);
+
     void setFinaltime(double_t);
     void setHorizonLength(uint32_t);
     void updateFinalPosition(QPointF *);
@@ -77,6 +80,8 @@ class Controller {
 
     uint32_t marker_; // 0: final point, 1: puck
     double solver_difficulty_ = 100;
+
+    bool freeze_ = false;
 
  private:
     Canvas *canvas_;
@@ -116,6 +121,10 @@ class Controller {
     void readWaypoints(QDataStream *in);
     void readPath(QDataStream *in);
     void readDrone(QDataStream *in);
+
+    QElapsedTimer timer_exec_;
+    QElapsedTimer timer_compute_;
+
 };
 
 }  // namespace interface

@@ -4,7 +4,7 @@
 // LICENSE: Copyright 2018, All Rights Reserved
 
 #include "canvas.h"
-
+#include <QDebug>
 #include <QPainter>
 #include <QGraphicsView>
 #include <QGraphicsItem>
@@ -20,12 +20,37 @@ Canvas::Canvas(QObject *parent)
 }
 
 void Canvas::initialize() {
+    this->setBackgroundBrush(Qt::black);
     // Set background pen
-    QColor background_color = Qt::black;
+    QColor background_color = Qt::gray;
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
-    this->background_image_ = new QImage("../../maps/lab_6,-6_-6,6.png");
+     QString filename = "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810";
+//    QString filename = "lab_indoor_-6_-6_6_6";
+    QStringList list = filename.split('_');
+    if (list.length() != 6) {
+//        qDebug() << "Image filename not formatted correctly";
+    }
+
+    if(list[1] == "outdoor") {
+        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:" << list[3].toFloat()
+                 << "width:" <<list[4].toFloat() << "height:" << list[5].toFloat();
+        this->background_bottomleft_x_ = 0;
+        this->background_bottomleft_y_ = 0;//list[5].toFloat();
+        this->background_topright_x_ = list[4].toFloat();
+        this->background_topright_y_ = list[5].toFloat();
+
+    } else if (list[1] == "indoor") {
+        this->background_bottomleft_x_ = list[2].toFloat();
+        this->background_bottomleft_y_ = list[3].toFloat();
+        this->background_topright_x_ = list[4].toFloat();
+        this->background_topright_y_ = list[5].toFloat();
+        qDebug() << "Indoor mode:" << "bottom left" << this->background_bottomleft_x_ << this->background_bottomleft_y_
+                 << "top right:" << this->background_topright_x_ << this->background_topright_y_;
+    }
+
+    this->background_image_ = new QImage("../../maps/" + filename + ".png");
 
     // Set foreground pen
     QColor foreground_color = Qt::gray;
@@ -153,9 +178,14 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
-    double width = 1200;
-    double height = 1200;
-    QRectF bbox(-width/2., -height/2., width, height);
+    double width  = this->background_topright_y_ - this->background_bottomleft_y_;
+    double height = this->background_topright_x_ - this->background_bottomleft_x_;
+
+    QRectF bbox(this->background_bottomleft_y_*this->scale_,
+                -this->background_topright_x_*this->scale_,
+                width*this->scale_,
+                height*this->scale_);
+
     painter->drawImage(bbox, *this->background_image_);
 
     // Draw vertical grid lines
