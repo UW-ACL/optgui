@@ -38,36 +38,36 @@ void comm::readPendingDatagrams() {
     }
   }
 }
-void comm::rx_keyboard_data(const packet::qcontrol_cmd& qcontrol_cmd) {
-  serializable::qcontrol_cmd<topic::qcontrol_cmd::UNDEFINED> ser_qcontrol_cmd;
-  ser_qcontrol_cmd = qcontrol_cmd;
+//void comm::rx_keyboard_data(const packet::qcontrol_cmd& qcontrol_cmd) {
+//  serializable::qcontrol_cmd<topic::qcontrol_cmd::UNDEFINED> ser_qcontrol_cmd;
+//  ser_qcontrol_cmd = qcontrol_cmd;
 
-  uint8 buffer[1028]={0,};
-  char* buff = (char*)buffer;
+//  uint8 buffer[1028]={0,};
+//  char* buff = (char*)buffer;
 
-  // Serialize qcontrol_cmd (fm_trans_cmd + quad control mode + inputs).
-  ser_qcontrol_cmd.serialize(buffer);
-  mp_udp->writeDatagram(buff,ser_qcontrol_cmd.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
-}
-void comm::rx_keyboard_data(const packet::rcontrol_cmd& rcontrol_cmd) {
-  serializable::rcontrol_cmd<topic::rcontrol_cmd::UNDEFINED> ser_rcontrol_cmd;
-  ser_rcontrol_cmd = rcontrol_cmd;
+//  // Serialize qcontrol_cmd (fm_trans_cmd + quad control mode + inputs).
+//  ser_qcontrol_cmd.serialize(buffer);
+//  mp_udp->writeDatagram(buff,ser_qcontrol_cmd.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
+//}
+//void comm::rx_keyboard_data(const packet::rcontrol_cmd& rcontrol_cmd) {
+//  serializable::rcontrol_cmd<topic::rcontrol_cmd::UNDEFINED> ser_rcontrol_cmd;
+//  ser_rcontrol_cmd = rcontrol_cmd;
 
-  uint8 buffer[1028]={0,};
-  char* buff = (char*)buffer;
+//  uint8 buffer[1028]={0,};
+//  char* buff = (char*)buffer;
 
-  // Serialize rcontrol_cmd (fm_trans_cmd + rover control mode + inputs).
-  ser_rcontrol_cmd.serialize(buffer);
-  mp_udp->writeDatagram(buff,ser_rcontrol_cmd.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
-}
-void comm::rx_heartbeat(const packet::heartbeat& heartbeat) {
-  serializable::heartbeat<topic::heartbeat::UNDEFINED> ser_heartbeat;
-  ser_heartbeat = heartbeat;
+//  // Serialize rcontrol_cmd (fm_trans_cmd + rover control mode + inputs).
+//  ser_rcontrol_cmd.serialize(buffer);
+//  mp_udp->writeDatagram(buff,ser_rcontrol_cmd.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
+//}
+//void comm::rx_heartbeat(const packet::heartbeat& heartbeat) {
+//  serializable::heartbeat<topic::heartbeat::UNDEFINED> ser_heartbeat;
+//  ser_heartbeat = heartbeat;
 
-  uint8 buffer[1028]={0,};
-    char* buff = (char*)buffer;
-    ser_heartbeat.serialize(buffer);
-    mp_udp->writeDatagram(buff,ser_heartbeat.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
-}
+//  uint8 buffer[1028]={0,};
+//    char* buff = (char*)buffer;
+//    ser_heartbeat.serialize(buffer);
+//    mp_udp->writeDatagram(buff,ser_heartbeat.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
+//}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
