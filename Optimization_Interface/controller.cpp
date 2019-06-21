@@ -40,6 +40,7 @@ namespace interface {
 
 Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
+    this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 
     this->network_session_ = nullptr;
@@ -56,7 +57,8 @@ Controller::Controller(Canvas *canvas) {
     this->canvas_->addItem(this->path_graphic_);
 
     // initialize drone graphic
-    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
+    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_,
+                                                 nullptr,this->indoor_?16:64);
     this->canvas_->addItem(this->drone_graphic_);
 
     this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0));
@@ -244,10 +246,6 @@ void Controller::updateFinalPosition(QPointF *pos_final) {
 }
 
 bool Controller::toggleFreeze (bool freeze) {
-    if (this->freeze_ && this->timer_exec_.elapsed() <= this->finaltime_*2 && this->timer_exec_.elapsed()!=0) {
-        qDebug() << "Cannot unfreeze when executing..";
-        return this->freeze_;
-    }
     this->freeze_ = freeze;
     return this->freeze_;
 }
@@ -267,6 +265,7 @@ void Controller::compute() {
 void Controller::compute(QVector<QPointF *> *trajectory) {
     if (this->freeze_) return;
     this->timer_compute_.restart();
+
     // Initialize constant values
     // Parameters.
     params P;
@@ -343,9 +342,11 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     if(accum > this->feasible_tol_) {
         this->valid_path_ = false;
+        this->path_graphic_->pen_.setWidth(10);
         this->path_graphic_->setColor(QColor(Qt::red));
     } else {
         this->valid_path_ = true;
+        this->path_graphic_->pen_.setWidth(10);
         this->path_graphic_->setColor(QColor(Qt::green));
     }
 
@@ -372,7 +373,6 @@ void Controller::execute() {
         return;
     }
     timer_exec_.restart();
-    timer_exec_.start();
 
     // TODO(Miki): pass model to optimization solver
     QDateTime current = QDateTime::currentDateTime();

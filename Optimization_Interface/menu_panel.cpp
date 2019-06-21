@@ -80,6 +80,8 @@ void MenuPanel::initialize() {
     this->initializeEraserButton();
     this->initializeFlipButton();
 
+    // Create freeze button
+    this->initializeFreezeButton();
 
     // Show menu buttons
     for (MenuButton *button : *this->menu_buttons_) {
@@ -90,9 +92,6 @@ void MenuPanel::initialize() {
 
     this->initializeHorizonSlider();
     this->initializeFinaltimeSlider();
-
-    // Create freeze button
-    this->initializeFreezeButton();
 
     // Create simulate button
     this->initializeSimButton();

@@ -70,6 +70,8 @@ class View : public QGraphicsView {
     QTimer *timer_sim_;
     uint64_t view_tick_ = 0;
 
+    QElapsedTimer compute_timer_;
+
     // TODO: fix this!
     float scale_ = 100;
 

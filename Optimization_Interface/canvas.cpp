@@ -58,6 +58,7 @@ void Canvas::setBackgroundImage(QString filename) {
         this->background_bottomleft_y_ = 0;//list[5].toFloat();
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
+        this->indoor_ = false;
 
     } else if (list[1] == "indoor") {
         this->background_bottomleft_x_ = list[2].toFloat();
@@ -66,6 +67,7 @@ void Canvas::setBackgroundImage(QString filename) {
         this->background_topright_y_ = list[5].toFloat();
         qDebug() << "Indoor mode:" << "bottom left" << this->background_bottomleft_x_ << this->background_bottomleft_y_
                  << "top right:" << this->background_topright_x_ << this->background_topright_y_;
+        this->indoor_ = true;
     }
 
     this->background_image_ = new QImage("../../maps/" + filename + ".png");

@@ -131,6 +131,8 @@ class Controller {
     QElapsedTimer timer_exec_;
     QElapsedTimer timer_compute_;
 
+    bool indoor_ = true;
+
 };
 
 }  // namespace interface

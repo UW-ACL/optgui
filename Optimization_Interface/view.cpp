@@ -20,7 +20,7 @@ View::View(QWidget * parent)
                                      "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
 
     QString background_image = QInputDialog::getItem(this, tr("Select scene"),
-                                      tr("mode"), background_images);
+                                      tr("mode"), background_images, 0, false);
 
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
@@ -41,6 +41,7 @@ View::View(QWidget * parent)
     this->temp_markers_ = new QVector<QGraphicsItem*>();
 
     this->initialize();
+    this->compute_timer_.start();
 }
 
 View::~View() {
@@ -201,13 +202,13 @@ void View::toggleFreeze(bool freeze) {
 }
 
 void View::updateViewDronePos(float n, float e, float d) {
-    // TODO: make an actual timer
-    this->view_tick_ += 1;
-    if (this->view_tick_ % 5) return;
     QPointF pos(e*this->scale_,-n*this->scale_);
     this->controller_->updateDronePos(pos);
-    if (this->view_tick_ % (uint32_t)this->controller_->solver_difficulty_) return;
-    this->controller_->compute();
+
+    if(compute_timer_.elapsed() >= this->controller_->solver_difficulty_*5) {
+        this->controller_->compute();
+        compute_timer_.restart();
+    }
 }
 
 void View::updateViewPuckPos(float n, float e, float d) {

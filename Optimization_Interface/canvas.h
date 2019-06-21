@@ -25,6 +25,8 @@ class Canvas : public QGraphicsScene {
     void expandScene();
     QPointF* getBottomLeft();
     QPointF* getTopRight();
+    bool indoor_ = true;
+
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;

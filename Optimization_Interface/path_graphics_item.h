@@ -25,6 +25,7 @@ class PathGraphicsItem : public QGraphicsItem {
     void expandScene();
 
     void setColor(QColor);
+    QPen pen_;
 
  protected:
     QPainterPath shape() const override;
@@ -32,7 +33,6 @@ class PathGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
  private:
     void initialize();
-    QPen pen_;
     PathModelItem *model_;
 };
 

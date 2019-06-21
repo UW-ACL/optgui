@@ -11,11 +11,13 @@
 namespace interface {
 
 DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
-                                     QGraphicsItem *parent)
+                                     QGraphicsItem *parent,
+                                     qint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->initialize();
+    this->size_ = size;
 }
 
 void DroneGraphicsItem::initialize() {
@@ -77,11 +79,12 @@ void DroneGraphicsItem::expandScene() {
 QPainterPath DroneGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    poly << QPoint(0, 16);
-    poly << QPoint(16, 0);
-    poly << QPoint(0, -16);
-    poly << QPoint(-16, 0);
-    poly << QPoint(0, 16);
+    qint32 s = this->size_;
+    poly << QPoint(0, s);
+    poly << QPoint(s, 0);
+    poly << QPoint(0, -s);
+    poly << QPoint(-s, 0);
+    poly << QPoint(0, s);
     path.addPolygon(poly);
     return path;
 }

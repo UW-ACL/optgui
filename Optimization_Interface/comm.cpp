@@ -32,15 +32,15 @@ void comm::readPendingDatagrams() {
 
       // Deserialize mocap data.
       ptr = buffer;
-      deserializable::mocap_data<topic::mocap_data::UNDEFINED> mocap_data;
-      const uint8* ptr_mocap_data = mocap_data.deserialize(ptr);
+      deserializable::telemetry<topic::telemetry::UNDEFINED> telemetry_data;
+      const uint8* ptr_telemetry_data = telemetry_data.deserialize(ptr);
 //      std::cout << "Received bytes" << std::endl;
-      if (ptr_mocap_data not_eq ptr) {
+      if (ptr_telemetry_data not_eq ptr) {
 //          std::cout << "Read mocap " << this->mc_port << ":" \
                     << mocap_data.pos_ned(0) << "," \
                     << mocap_data.pos_ned(1) << "," \
                     << mocap_data.pos_ned(2) << std::endl;
-          emit tx_pos(mocap_data.pos_ned(0), mocap_data.pos_ned(1), mocap_data.pos_ned(2));
+          emit tx_pos(telemetry_data.pos_ned(0), telemetry_data.pos_ned(1), telemetry_data.pos_ned(2));
       }
 
 //      // Deserialize telemetry.

@@ -21,7 +21,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
 void PathGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::red);
-    this->pen_.setWidth(10);
+//    this->pen_.setWidth(10);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);

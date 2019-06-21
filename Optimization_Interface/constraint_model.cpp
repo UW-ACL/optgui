@@ -155,7 +155,7 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
         for (qint32 i = 1; i < polygon->points_->length()+1; i++) {
             QPointF *p = polygon->points_->at(i-1);
             QPointF *q = polygon->points_->at(i % polygon->points_->length());
-            int32_t flip = (polygon->direction_?1:-1);
+            int32_t flip = (polygon->direction_?-1:1);
 
             double px = p->x()/this->scale_;
             double py = p->y()/this->scale_;
