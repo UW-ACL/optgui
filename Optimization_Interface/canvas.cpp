@@ -13,10 +13,11 @@
 
 namespace interface {
 
-Canvas::Canvas(QObject *parent)
+Canvas::Canvas(QObject *parent, QString background_file)
     : QGraphicsScene(parent) {
     this->initialize();
     this->front_depth_ = 0;
+    this->setBackgroundImage(background_file);
 }
 
 void Canvas::initialize() {
@@ -26,8 +27,25 @@ void Canvas::initialize() {
     background_color.setAlpha(150);
     this->background_pen_ = QPen(background_color);
 
-     QString filename = "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810";
-//    QString filename = "lab_indoor_-6_-6_6_6";
+    // Set foreground pen
+    QColor foreground_color = Qt::gray;
+    // foreground_color.setAlpha(250);
+    this->foreground_pen_ = QPen(foreground_color);
+
+    // Set text font
+    this->font_ = QFont("SansSerif");
+
+    // Set flags
+    this->setItemIndexMethod(QGraphicsScene::ItemIndexMethod::NoIndex);
+
+    // Connect slots
+    connect(this, SIGNAL(selectionChanged()), this,
+            SLOT(bringSelectedToFront()));
+}
+
+void Canvas::setBackgroundImage(QString filename) {
+//     QString filename = ";
+//    QString filename = ;
     QStringList list = filename.split('_');
     if (list.length() != 6) {
         qDebug() << "Image filename not formatted correctly";
@@ -51,21 +69,6 @@ void Canvas::initialize() {
     }
 
     this->background_image_ = new QImage("../../maps/" + filename + ".png");
-
-    // Set foreground pen
-    QColor foreground_color = Qt::gray;
-    // foreground_color.setAlpha(250);
-    this->foreground_pen_ = QPen(foreground_color);
-
-    // Set text font
-    this->font_ = QFont("SansSerif");
-
-    // Set flags
-    this->setItemIndexMethod(QGraphicsScene::ItemIndexMethod::NoIndex);
-
-    // Connect slots
-    connect(this, SIGNAL(selectionChanged()), this,
-            SLOT(bringSelectedToFront()));
 }
 
 QPointF* Canvas::getBottomLeft() {

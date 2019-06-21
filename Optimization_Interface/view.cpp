@@ -8,13 +8,21 @@
 #include <QHBoxLayout>
 #include <QTimer>
 #include <QScrollBar>
+#include <QInputDialog>
 
 namespace interface {
 
 View::View(QWidget * parent)
     : QGraphicsView(parent) {
     // Create Canvas
-    this->canvas_ = new Canvas(this);
+    QStringList background_images = {"lab_indoor_-6_-6_6_6",
+                                     "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810",
+                                     "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
+
+    QString background_image = QInputDialog::getItem(this, tr("Select scene"),
+                                      tr("mode"), background_images);
+
+    this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
 
 //    this->startServers();

@@ -20,7 +20,7 @@ class Canvas : public QGraphicsScene {
     Q_OBJECT
 
  public:
-    explicit Canvas(QObject *parent = nullptr);
+    explicit Canvas(QObject *parent = nullptr, QString background_file = "");
     void bringToFront(QGraphicsItem *item);
     void expandScene();
     QPointF* getBottomLeft();
@@ -32,6 +32,7 @@ class Canvas : public QGraphicsScene {
     void bringSelectedToFront();
  private:
     void initialize();
+    void setBackgroundImage(QString filename);
     QPen background_pen_;
     QPen foreground_pen_;
     qreal front_depth_;
