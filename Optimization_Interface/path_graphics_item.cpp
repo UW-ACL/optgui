@@ -21,14 +21,14 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
 void PathGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::red);
-//    this->pen_.setWidth(10);
+    this->pen_.setWidth(40);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
 }
 
 void PathGraphicsItem::setColor(QColor color) {
-    this->pen_ = QPen(color);
+    this->pen_.setColor(color);
 }
 QRectF PathGraphicsItem::boundingRect() const {
     return this->shape().boundingRect();

@@ -342,11 +342,9 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     if(accum > this->feasible_tol_) {
         this->valid_path_ = false;
-        this->path_graphic_->pen_.setWidth(10);
         this->path_graphic_->setColor(QColor(Qt::red));
     } else {
         this->valid_path_ = true;
-        this->path_graphic_->pen_.setWidth(10);
         this->path_graphic_->setColor(QColor(Qt::green));
     }
 
