@@ -83,6 +83,9 @@ class Controller {
 
     bool freeze_ = false;
 
+    bool valid_path_ = false;
+
+
  private:
     Canvas *canvas_;
     ConstraintModel *model_;

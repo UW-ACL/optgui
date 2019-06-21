@@ -342,14 +342,12 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
            + pow(O.r_f_relax[0],2) + pow(O.r_f_relax[1],2) + pow(O.r_f_relax[2],2);
 
     if(accum > this->feasible_tol_) {
+        this->valid_path_ = false;
         this->path_graphic_->setColor(QColor(Qt::red));
     } else {
+        this->valid_path_ = true;
         this->path_graphic_->setColor(QColor(Qt::green));
     }
-
-//    for(uint32_t i=0; i<P.obs.n; i++) {
-//        qDebug() << "Obstacle" << i << ":" << P.obs.R[i] << P.obs.c_e[i] << P.obs.c_n[i];
-//    }
 
 //    qDebug() << "i= " << I.i
 //             << "| Del = " << O.Delta
@@ -361,6 +359,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 //             << "| O.J = " << O.J
 //             << "| r = " << O.ratio;
 //    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
+
     // Set up next solution.
     reset(P,I,O);
     qDebug() << "Solver took " << this->timer_compute_.elapsed() << "ms";
@@ -368,7 +367,12 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 }
 
 void Controller::execute() {
+    if (!this->valid_path_) {
+        std::cout << "Execution disabled, no valid trajectory.";
+        return;
+    }
     timer_exec_.restart();
+    timer_exec_.start();
 
     // TODO(Miki): pass model to optimization solver
     QDateTime current = QDateTime::currentDateTime();
@@ -386,12 +390,10 @@ void Controller::execute() {
     }
     file.close();
 
-//    autogen::deserializable::bc_traj();
-
 }
 
 bool Controller::simDrone(uint64_t tick) {
-    if(tick >= this->trajectory_->length())
+    if(tick >= (uint64_t)this->trajectory_->length())
         return false;
     else {
         this->updateDronePos(*this->trajectory_->value(tick));

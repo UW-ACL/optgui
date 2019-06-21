@@ -297,8 +297,8 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
-    this->simulating_ = 0;
-    this->controller_->compute();
+    if(this->simulating_ == 0)
+        this->controller_->compute();
 
 }
 
@@ -367,6 +367,8 @@ void View::stepSim() {
         ++this->simulating_;
         QTimer::singleShot(this->controller_->getTimeInterval()*1000, this,
                            SLOT(stepSim()));
+    } else {
+        this->simulating_ = 0;
     }
 }
 
