@@ -96,6 +96,9 @@ class Controller {
     PointGraphicsItem *final_pos_graphic_;
     PointGraphicsItem *puck_graphic_;
 
+    PointGraphicsItem *bottom_left_;
+    PointGraphicsItem *top_right_;
+
     // TODO: remove these terrible null pointer......
     QVector<QPointF *>* trajectory_;
     double feasible_tol_ = pow(0.5,2);

@@ -30,7 +30,7 @@ void Canvas::initialize() {
 //    QString filename = "lab_indoor_-6_-6_6_6";
     QStringList list = filename.split('_');
     if (list.length() != 6) {
-//        qDebug() << "Image filename not formatted correctly";
+        qDebug() << "Image filename not formatted correctly";
     }
 
     if(list[1] == "outdoor") {
@@ -66,6 +66,17 @@ void Canvas::initialize() {
     // Connect slots
     connect(this, SIGNAL(selectionChanged()), this,
             SLOT(bringSelectedToFront()));
+}
+
+QPointF* Canvas::getBottomLeft() {
+    return new QPointF(this->background_bottomleft_y_*this->scale_,
+                      -this->background_bottomleft_x_*this->scale_);
+
+}
+
+QPointF* Canvas::getTopRight() {
+   return new QPointF(this->background_topright_y_*this->scale_,
+         -this->background_topright_x_*this->scale_);
 }
 
 void Canvas::bringSelectedToFront() {

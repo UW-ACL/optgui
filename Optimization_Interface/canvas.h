@@ -23,6 +23,8 @@ class Canvas : public QGraphicsScene {
     explicit Canvas(QObject *parent = nullptr);
     void bringToFront(QGraphicsItem *item);
     void expandScene();
+    QPointF* getBottomLeft();
+    QPointF* getTopRight();
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
@@ -37,11 +39,11 @@ class Canvas : public QGraphicsScene {
     qint64 roundDownPast(qint64 n, qint64 m);
     QFont font_;
     QImage *background_image_;
+
     double background_bottomleft_x_ = 0;
     double background_bottomleft_y_ = 0;
     double background_topright_x_ = 1;
     double background_topright_y_ = 1;
-
     // TODO: fix this...
     double scale_ = 100;
 };

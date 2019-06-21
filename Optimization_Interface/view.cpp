@@ -111,13 +111,9 @@ void View::initialize() {
 
     // Set scroll preferences
     this->setDragMode(QGraphicsView::ScrollHandDrag);
-//    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    this->horizontalScrollBar()->setEnabled(true);
-    this->horizontalScrollBar()->setVisible(true);
-    this->horizontalScrollBar()->setRange(1,10);
-//    this->verticalScrollBar()->setEnabled(true);
-//    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
 
     // Set rendering preference
     this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -314,7 +310,7 @@ void View::openMenu() {
 }
 
 void View::setZoom(int value) {
-    qreal scaleFactor = qreal(value) / (10 - value);
+    qreal scaleFactor = qreal(value) / (100 - value);
     this->resetMatrix();
     this->scale(scaleFactor, scaleFactor);
 }

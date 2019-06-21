@@ -240,28 +240,6 @@ void MenuPanel::initializeFlipButton() {
     this->menu_buttons_->append(flip_button);
 }
 
-//void MenuPanel::initializeOptSidebar() {
-//    this->opt_layout = new QGroupBox();
-//    this->opt_horizon_minus = new QPushButton("-", this->menu_);
-//    this->opt_horizon_text = new QLabel("NA", this->menu_);
-//    this->opt_horizon_plus = new QPushButton("+", this->menu_);
-
-//    this->opt_finaltime_minus = new QPushButton("-", this->menu_);
-//    this->opt_finaltime_text = new QLabel("NA", this->menu_);
-//    this->opt_finaltime_plus = new QPushButton("+", this->menu_);
-
-//    QGridLayout *layout = new QGridLayout;
-//    layout->addWidget(this->opt_horizon_text, 1, 0);
-//    layout->addWidget(this->opt_horizon_minus, 2, 0);
-//    layout->addWidget(this->opt_horizon_plus, 2, 1);
-//    layout->addWidget(this->opt_finaltime_text, 3, 1);
-//    layout->addWidget(this->opt_finaltime_minus, 4, 0);
-//    layout->addWidget(this->opt_finaltime_plus, 4, 1);
-
-//    this->opt_layout->setLayout(layout);
-//    this->menu_->layout()->addWidget(this->opt_layout);
-//}
-
 void MenuPanel::initializeHorizonSlider() {
     this->opt_horizon_slider_ = new QSlider(Qt::Vertical, this->menu_);
     this->opt_horizon_slider_->setSizePolicy(QSizePolicy::Expanding,
@@ -335,7 +313,7 @@ void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_->setTickInterval(1);
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
     this->zoom_slider_->setMinimum(1);
-    this->zoom_slider_->setMaximum(8);
+    this->zoom_slider_->setMaximum(49);
     this->zoom_slider_->setValue(5);
     this->zoom_slider_->setToolTip(tr("Set zoom level"));
     this->menu_->layout()->addWidget(this->zoom_slider_);

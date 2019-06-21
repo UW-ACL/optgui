@@ -72,8 +72,13 @@ Controller::Controller(Canvas *canvas) {
 
     // TODO(ben): Remove this hack and incorporate it into ConstraintModel
     this->trajectory_ = new QVector<QPointF *>;
-//    pos_final_ = new QPointF;
 
+    // Hack: to add something on the four corners of the map
+    this->bottom_left_ = new PointGraphicsItem(new PointModelItem(this->canvas_->getBottomLeft()));
+    this->top_right_ = new PointGraphicsItem(new PointModelItem(this->canvas_->getTopRight()));
+
+    this->canvas_->addItem(this->bottom_left_);
+    this->canvas_->addItem(this->top_right_);
     this->drone_comm_ = new comm("", this->drone_port_);
     this->puck_comm_ = new comm("", this->puck_port_);
 }
