@@ -13,20 +13,16 @@ using namespace autogen;
 
   class comm : public QObject {
     Q_OBJECT
-
     private:
       const std::string mc_ip_address;
       const uint16 mc_port;
       QUdpSocket* mp_udp;
-
     public:
       comm(const std::string& ip_address, uint16 port);
       ~comm();
     public slots:
       void readPendingDatagrams();
-//      void rx_keyboard_data(const packet::qcontrol_cmd& qcontrol_cmd);
-//      void rx_keyboard_data(const packet::rcontrol_cmd& rcontrol_cmd);
-//      void rx_heartbeat(const packet::heartbeat& heartbeat);
+      void rx_trajectory(const packet::traj3dof* data);
     signals:
       void tx_pos(float n, float e, float d);
   };

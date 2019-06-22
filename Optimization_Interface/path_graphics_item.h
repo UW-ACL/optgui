@@ -18,7 +18,8 @@ namespace interface {
 class PathGraphicsItem : public QGraphicsItem {
  public:
     explicit PathGraphicsItem(PathModelItem *model,
-                                QGraphicsItem *parent = nullptr);
+                                QGraphicsItem *parent = nullptr,
+                              quint32 size = 4);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
@@ -33,6 +34,7 @@ class PathGraphicsItem : public QGraphicsItem {
     void initialize();
     PathModelItem *model_;
     QPen pen_;
+    quint32 width_;
 };
 
 }  // namespace interface

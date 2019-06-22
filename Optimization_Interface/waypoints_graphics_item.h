@@ -21,7 +21,8 @@ namespace interface {
 class WaypointsGraphicsItem : public QGraphicsItem {
  public:
     explicit WaypointsGraphicsItem(PathModelItem *model,
-                              QGraphicsItem *parent = nullptr);
+                              QGraphicsItem *parent = nullptr,
+                                   quint32 size = 16);
     ~WaypointsGraphicsItem();
 
     QRectF boundingRect() const override;
@@ -41,6 +42,8 @@ class WaypointsGraphicsItem : public QGraphicsItem {
     QBrush brush_;
     PathModelItem *model_;
     QVector<PolygonResizeHandle *> *resize_handles_;
+
+    quint32 size_;
 };
 
 }  // namespace interface

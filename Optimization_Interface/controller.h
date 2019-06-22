@@ -20,11 +20,13 @@
 #include "port_dialog.h"
 #include "item_server.h"
 #include "cprs.h"
+#include "algorithm.h"
 #include "comm.h"
 
 namespace interface {
 
-class Controller {
+class Controller : public QObject {
+    Q_OBJECT
  public:
     explicit Controller(Canvas *canvas);
     ~Controller();
@@ -54,8 +56,6 @@ class Controller {
     void compute(QVector<QPointF* > *trajectory);
     void execute();
 
-    bool toggleFreeze(bool);
-
     void setFinaltime(double_t);
     void setHorizonLength(uint32_t);
     void updateFinalPosition(QPointF *);
@@ -68,10 +68,11 @@ class Controller {
     void clearDroneGraphic();
 
     bool simDrone(uint64_t tick);
+    bool isFrozen();
 
     // TODO: make a proper class for these parameters
-    uint32_t horizon_length_ = 20;
-    double_t finaltime_ = 2.7;
+    uint32_t horizon_length_ = MAX_HORIZON;
+    double_t finaltime_ = 5;
     uint32_t drone_port_ = 8000;
     uint32_t puck_port_ = 8001;
 
@@ -81,10 +82,11 @@ class Controller {
     uint32_t marker_; // 0: final point, 1: puck
     double solver_difficulty_ = 100;
 
-    bool freeze_ = false;
-
     bool valid_path_ = false;
+    bool indoor_ = true;
 
+signals:
+    void trajectoryExecuted(const packet::traj3dof* data);
 
  private:
     Canvas *canvas_;
@@ -131,7 +133,9 @@ class Controller {
     QElapsedTimer timer_exec_;
     QElapsedTimer timer_compute_;
 
-    bool indoor_ = true;
+    bool exec_once_ = false;
+
+    packet::traj3dof drone_traj3dof_data_;
 
 };
 

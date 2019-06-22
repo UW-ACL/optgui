@@ -34,56 +34,40 @@ void comm::readPendingDatagrams() {
       ptr = buffer;
       deserializable::telemetry<topic::telemetry::UNDEFINED> telemetry_data;
       const uint8* ptr_telemetry_data = telemetry_data.deserialize(ptr);
-//      std::cout << "Received bytes" << std::endl;
       if (ptr_telemetry_data not_eq ptr) {
-//          std::cout << "Read mocap " << this->mc_port << ":" \
-                    << mocap_data.pos_ned(0) << "," \
-                    << mocap_data.pos_ned(1) << "," \
-                    << mocap_data.pos_ned(2) << std::endl;
           emit tx_pos(telemetry_data.pos_ned(0), telemetry_data.pos_ned(1), telemetry_data.pos_ned(2));
       }
-
-//      // Deserialize telemetry.
-//      ptr = buffer;
-//      deserializable::telemetry<topic::telemetry::UNDEFINED> telemetry;
-//      const uint8* ptr_telemetry = telemetry.deserialize(ptr);
-//      if (ptr_telemetry not_eq ptr) {
-//        emit tx_data(telemetry);
-//      }
     }
   }
 }
 
-//void comm::rx_keyboard_data(const packet::qcontrol_cmd& qcontrol_cmd) {
-//  serializable::qcontrol_cmd<topic::qcontrol_cmd::UNDEFINED> ser_qcontrol_cmd;
-//  ser_qcontrol_cmd = qcontrol_cmd;
+void comm::rx_trajectory(const packet::traj3dof* data) {
+    qDebug() << "rx_trajectory";
+    serializable::traj3dof<topic::traj3dof::UNDEFINED> ser_data;
+    ser_data = *data;
+    uint8 buffer[4096]={0,};
+    ser_data.serialize(buffer);
 
-//  uint8 buffer[1028]={0,};
-//  char* buff = (char*)buffer;
+    char* buff = (char*)buffer;
 
-//  // Serialize qcontrol_cmd (fm_trans_cmd + quad control mode + inputs).
-//  ser_qcontrol_cmd.serialize(buffer);
-//  mp_udp->writeDatagram(buff,ser_qcontrol_cmd.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
-//}
-//void comm::rx_keyboard_data(const packet::rcontrol_cmd& rcontrol_cmd) {
-//  serializable::rcontrol_cmd<topic::rcontrol_cmd::UNDEFINED> ser_rcontrol_cmd;
-//  ser_rcontrol_cmd = rcontrol_cmd;
+//    packet::traj6dof* ser_data = new packet::traj6dof;
 
-//  uint8 buffer[1028]={0,};
-//  char* buff = (char*)buffer;
+//    qDebug() << "sanity";
+//    uint8* buffer = (uint8*)malloc(10000);
+//    ser_data->serialize_content(buffer);//->serialize(buffer);
+//    free(buffer);
+//    buffer = nullptr;
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.101"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.102"),6000);
+    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.103"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.104"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.105"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.106"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.107"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.108"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.109"),6000);
 
-//  // Serialize rcontrol_cmd (fm_trans_cmd + rover control mode + inputs).
-//  ser_rcontrol_cmd.serialize(buffer);
-//  mp_udp->writeDatagram(buff,ser_rcontrol_cmd.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
-//}
-//void comm::rx_heartbeat(const packet::heartbeat& heartbeat) {
-//  serializable::heartbeat<topic::heartbeat::UNDEFINED> ser_heartbeat;
-//  ser_heartbeat = heartbeat;
+}
 
-//  uint8 buffer[1028]={0,};
-//    char* buff = (char*)buffer;
-//    ser_heartbeat.serialize(buffer);
-//    mp_udp->writeDatagram(buff,ser_heartbeat.size(),QHostAddress(mc_ip_address.c_str()),mc_port);
-//}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

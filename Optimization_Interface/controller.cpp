@@ -15,6 +15,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDateTime>
+#include <QTimer>
 #include <QElapsedTimer>
 
 #include "point_graphics_item.h"
@@ -28,10 +29,6 @@
 #include "polygon_server.h"
 #include "plane_server.h"
 #include "globals.h"
-
-#include "algorithm.h"
-
-//#include "autogen/deserializable/bc_traj.h"
 
 
 using namespace cprs;
@@ -52,21 +49,27 @@ Controller::Controller(Canvas *canvas) {
     this->canvas_->addItem(this->waypoints_graphic_);
 
     // initialize course graphic
-    this->path_graphic_ = new PathGraphicsItem(
-                this->model_->path_);
+    this->path_graphic_ = new PathGraphicsItem(this->model_->path_,
+                                               nullptr,
+                                               this->indoor_?4:16);
     this->canvas_->addItem(this->path_graphic_);
 
     // initialize drone graphic
     this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_,
-                                                 nullptr,this->indoor_?16:64);
+                                                 nullptr,
+                                                 this->indoor_?16:128);
     this->canvas_->addItem(this->drone_graphic_);
 
-    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0));
+    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0),
+                                                nullptr,
+                                                this->indoor_?4:16);
     this->puck_graphic_->setMarker(1);
     this->canvas_->addItem(this->puck_graphic_);
 
     // initialize final point graphic
-    this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_);
+    this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_,
+                                                     nullptr,
+                                                     this->indoor_?4:16);
     this->canvas_->addItem(this->final_pos_graphic_);
 
     // initialize port dialog
@@ -81,8 +84,16 @@ Controller::Controller(Canvas *canvas) {
 
     this->canvas_->addItem(this->bottom_left_);
     this->canvas_->addItem(this->top_right_);
+
     this->drone_comm_ = new comm("", this->drone_port_);
     this->puck_comm_ = new comm("", this->puck_port_);
+
+    connect(this, SIGNAL(trajectoryExecuted(const packet::traj3dof*)),
+            this->drone_comm_, SLOT(rx_trajectory(const packet::traj3dof*)));
+//    connect(this, SIGNAL(trajectoryExecuted2(const packet::traj3dof*)),
+//            this->drone_comm_, SLOT(rx_trajectory2(const packet::traj3dof*)));
+//    connect(this, SIGNAL(trajectoryExecuted2(float)),
+//            this->drone_comm_, SLOT(rx_trajectory2(float)));
 }
 
 Controller::~Controller() {
@@ -245,13 +256,8 @@ void Controller::updateFinalPosition(QPointF *pos_final) {
     this->canvas_->update();
 }
 
-bool Controller::toggleFreeze (bool freeze) {
-    this->freeze_ = freeze;
-    return this->freeze_;
-}
-
 void Controller::compute() {
-    if (this->freeze_) return;
+    if (this->isFrozen()) return;
     QVector<QPointF*> trajectory;
     this->clearPathPoints();
 
@@ -263,17 +269,16 @@ void Controller::compute() {
 }
 
 void Controller::compute(QVector<QPointF *> *trajectory) {
-    if (this->freeze_) return;
+    if (this->isFrozen()) return;
     this->timer_compute_.restart();
 
     // Initialize constant values
     // Parameters.
     params P;
     memset(&P,0,sizeof(P));
-    //P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
-    P.K = MAX_HORIZON;
+    P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
     P.tf = this->finaltime_;
-    P.dt = P.tf/static_cast<double>(P.K-1);
+    P.dt = P.tf/(P.K-1.);
     P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
     P.cpos.n = model_->loadPosConstraint(P.cpos.A, P.cpos.b);
 
@@ -359,35 +364,48 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 //             << "| r = " << O.ratio;
 //    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
 
+    this->drone_traj3dof_data_.K = P.K;
+    for(quint32 k=0; k<P.K; k++) {
+        for(quint32 i=0; i<3; i++) {
+            this->drone_traj3dof_data_.time(k) = k*P.dt;
+            this->drone_traj3dof_data_.pos_ned(i,k) = O.r[i][k];
+            this->drone_traj3dof_data_.vel_ned(i,k) = O.v[i][k];
+            this->drone_traj3dof_data_.accl_ned(i,k) = O.a[i][k];
+        }
+    }
+
     // Set up next solution.
     reset(P,I,O);
-    qDebug() << "Solver took " << this->timer_compute_.elapsed() << "ms";
+    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
     this->solver_difficulty_ = this->timer_compute_.elapsed();
+}
+
+bool Controller::isFrozen() {
+    bool frozen = exec_once_ && timer_exec_.elapsed()/1000 <= this->finaltime_*1.2;
+    if(frozen) {
+        qInfo() << "Frozen!";
+    }
+    return frozen;
 }
 
 void Controller::execute() {
     if (!this->valid_path_) {
-        std::cout << "Execution disabled, no valid trajectory.";
+        qInfo() << "Execution disabled, no valid trajectory.";
         return;
     }
+    if (this->isFrozen()) {
+        std::cout << "Execution disabled, frozen mode.";
+        return;
+    }
+    std::cout << "Executing trajectory!";
+    qDebug() << "Executing trajectory..";
+    this->exec_once_ = true;
     timer_exec_.restart();
 
-    // TODO(Miki): pass model to optimization solver
-    QDateTime current = QDateTime::currentDateTime();
-    QString filename = "/Users/ben/code/gui/trajectories/traj-" + current.toString("yyyy-MM-dd-hh-mm-ss.zzz") + ".csv";
-    qDebug() << "Creating file " << filename;
-
-    QFile file(filename);
-    if (file.open(QIODevice::ReadWrite)) {
-        QTextStream stream(&file);
-
-        for (QPointF *point : *model_->path_->points_) {
-            stream << point->x() << "," << point->y() << endl;
-        }
-
-    }
-    file.close();
-
+    packet::traj3dof dummy;
+    qDebug() << "before";
+    emit trajectoryExecuted(&this->drone_traj3dof_data_);
+    qDebug() << "after";
 }
 
 bool Controller::simDrone(uint64_t tick) {
@@ -676,6 +694,7 @@ void Controller::saveFile() {
 
 // ============ LOAD CONTROLS ============
 
+// NOT being used
 void Controller::loadPoint(PointModelItem *item_model) {
 //    PointGraphicsItem *test = new PointGraphicsItem();
     PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
@@ -687,7 +706,9 @@ void Controller::loadPoint(PointModelItem *item_model) {
 }
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
-    EllipseGraphicsItem *item_graphic = new EllipseGraphicsItem(item_model);
+    EllipseGraphicsItem *item_graphic = new EllipseGraphicsItem(item_model,
+                                                                nullptr,
+                                                                this->indoor_?16:128);
     this->canvas_->addItem(item_graphic);
     this->model_->addEllipse(item_model);
     this->canvas_->bringToFront(item_graphic);
@@ -695,7 +716,9 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
 }
 
 void Controller::loadPolygon(PolygonModelItem *item_model) {
-    PolygonGraphicsItem *item_graphic = new PolygonGraphicsItem(item_model);
+    PolygonGraphicsItem *item_graphic = new PolygonGraphicsItem(item_model,
+                                                                nullptr,
+                                                                this->indoor_?16:128);
     this->canvas_->addItem(item_graphic);
     this->model_->addPolygon(item_model);
     this->canvas_->bringToFront(item_graphic);
@@ -703,7 +726,9 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
 }
 
 void Controller::loadPlane(PlaneModelItem *item_model) {
-    PlaneGraphicsItem *item_graphic = new PlaneGraphicsItem(item_model);
+    PlaneGraphicsItem *item_graphic = new PlaneGraphicsItem(item_model,
+                                                            nullptr,
+                                                            this->indoor_?16:128);
     this->canvas_->addItem(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);

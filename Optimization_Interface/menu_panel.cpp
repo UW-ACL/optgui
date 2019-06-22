@@ -80,9 +80,6 @@ void MenuPanel::initialize() {
     this->initializeEraserButton();
     this->initializeFlipButton();
 
-    // Create freeze button
-    this->initializeFreezeButton();
-
     // Show menu buttons
     for (MenuButton *button : *this->menu_buttons_) {
         this->menu_->layout()->addWidget(button);
@@ -266,9 +263,9 @@ void MenuPanel::initializeFinaltimeSlider() {
                                       QSizePolicy::Minimum);
     this->opt_finaltime_slider_->setTickInterval(1);
     this->opt_finaltime_slider_->setTickPosition(QSlider::TicksAbove);
-    this->opt_finaltime_slider_->setMinimum(1);
-    this->opt_finaltime_slider_->setMaximum(100);
-    this->opt_finaltime_slider_->setValue(1);
+    this->opt_finaltime_slider_->setMinimum(40);
+    this->opt_finaltime_slider_->setMaximum(200);
+    this->opt_finaltime_slider_->setValue(50);
     this->opt_finaltime_slider_->setToolTip(tr("Set final time"));
 
     this->opt_finaltime_label_ = new QLabel();
@@ -294,16 +291,15 @@ void MenuPanel::initializeSimButton() {
     this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
 }
 
-void MenuPanel::initializeFreezeButton() {
-
-    this->freeze_button_ = new MenuButton(FREEZE, this->menu_);
-    this->freeze_button_->setText("Freeze");
-    this->freeze_button_->setToolTip(tr("Freeze optimization"));
-    this->menu_->layout()->addWidget(this->freeze_button_);
-    this->menu_->layout()->setAlignment(this->freeze_button_, Qt::AlignBottom);
+//void MenuPanel::initializeFreezeButton() {
+//    this->freeze_button_ = new MenuButton(FREEZE, this->menu_);
+//    this->freeze_button_->setText("Freeze");
+//    this->freeze_button_->setToolTip(tr("Freeze optimization"));
+//    this->menu_->layout()->addWidget(this->freeze_button_);
+//    this->menu_->layout()->setAlignment(this->freeze_button_, Qt::AlignBottom);
 //    this->freeze_button_->setCheckable(true);
-    this->menu_buttons_->append(this->freeze_button_);
-}
+//    this->menu_buttons_->append(this->freeze_button_);
+//}
 
 void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);

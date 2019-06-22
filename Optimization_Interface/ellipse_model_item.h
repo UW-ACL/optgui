@@ -14,7 +14,7 @@
 
 namespace interface {
 
-const double DEFAULT_RAD = 50;
+const double DEFAULT_RAD = 150;
 
 class EllipseModelItem : public DataModel {
  public:

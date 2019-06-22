@@ -14,10 +14,13 @@
 namespace interface {
 
 EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
-                                         QGraphicsItem *parent)
+                                         QGraphicsItem *parent,
+                                         quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->size_ = size;
+    this->model_->radius_ = size*2;
     this->initialize();
 }
 
@@ -40,7 +43,7 @@ void EllipseGraphicsItem::initialize() {
     this->setPos(*this->model_->pos_);
 
     // Set resize handle
-    this->resize_handle_ = new EllipseResizeHandle(this->model_, this);
+    this->resize_handle_ = new EllipseResizeHandle(this->model_, this, this->size_);
     this->resize_handle_->hide();
 }
 

@@ -14,10 +14,12 @@
 namespace interface {
 
 PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
-                                         QGraphicsItem *parent)
+                                         QGraphicsItem *parent,
+                                         quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->size_ = size;
     this->initialize();
 }
 
@@ -39,7 +41,7 @@ void PolygonGraphicsItem::initialize() {
     // Set resize handles
     this->resize_handles_ = new QVector<PolygonResizeHandle *>();
     for (QPointF *point : *this->model_->points_) {
-        PolygonResizeHandle *handle = new PolygonResizeHandle(point, this);
+        PolygonResizeHandle *handle = new PolygonResizeHandle(point, this, this->size_);
         this->resize_handles_->append(handle);
         handle->hide();
     }

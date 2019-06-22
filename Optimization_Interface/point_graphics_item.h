@@ -16,12 +16,12 @@
 namespace interface {
 
 const qreal POINT_BORDER = 3;
-const qreal POINT_RADIUS = 2;
 
 class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
-                                 QGraphicsItem *parent = nullptr);
+                               QGraphicsItem *parent = nullptr,
+                               quint32 size = 4);
     ~PointGraphicsItem();
     PointModelItem *model_;
 
@@ -41,6 +41,7 @@ class PointGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     uint32_t marker_;
+    quint32 radius_;
 };
 
 }  // namespace interface

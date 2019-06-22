@@ -14,10 +14,12 @@
 namespace interface {
 
 WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
-                                   QGraphicsItem *parent)
+                                             QGraphicsItem *parent,
+                                             quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->size_ = size;
     this->initialize();
 }
 
@@ -56,7 +58,7 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
         for (qint32 i = this->resize_handles_->size();
              i < this->model_->points_->size(); i++) {
             PolygonResizeHandle *handle =
-                    new PolygonResizeHandle(this->model_->points_->at(i), this);
+                    new PolygonResizeHandle(this->model_->points_->at(i), this, this->size_);
             this->resize_handles_->append(handle);
             handle->show();
         }

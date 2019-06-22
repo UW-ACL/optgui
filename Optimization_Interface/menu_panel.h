@@ -28,7 +28,7 @@ class MenuPanel : public QFrame {
     QSlider *zoom_slider_;
     QPushButton *exec_button_;
     QPushButton *sim_button_;
-    MenuButton *freeze_button_;
+//    MenuButton *freeze_button_;
     QVector<MenuButton*> *menu_buttons_;
 
 //    QGroupBox *opt_layout;
@@ -53,7 +53,6 @@ class MenuPanel : public QFrame {
     void initializeEllipseButton();
     void initializeFlipButton();
     void initializeExecButton();
-    void initializeFreezeButton();
     void initializeSimButton();
     void initializeFinaltimeSlider();
     void initializeHorizonSlider();

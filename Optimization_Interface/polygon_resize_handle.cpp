@@ -14,14 +14,15 @@
 
 namespace interface {
 
-PolygonResizeHandle::PolygonResizeHandle(QPointF *point, QGraphicsItem *parent)
+PolygonResizeHandle::PolygonResizeHandle(QPointF *point, QGraphicsItem *parent, quint32 size)
     : QGraphicsEllipseItem(parent) {
     this->point_ = point;
     this->resize_ = false;
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
-    this->setRect(-HANDLE_SIZE / 2, -HANDLE_SIZE / 2,
-                  HANDLE_SIZE, HANDLE_SIZE);
+    this->size_ = size;
+    this->setRect(-this->size_ / 2, -this->size_ / 2,
+                  this->size_, this->size_);
 }
 
 void PolygonResizeHandle::setColor(const QColor color) {

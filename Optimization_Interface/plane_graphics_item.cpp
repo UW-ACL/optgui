@@ -14,10 +14,12 @@
 namespace interface {
 
 PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
-                                     QGraphicsItem *parent)
+                                     QGraphicsItem *parent,
+                                     quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->size_ = size;
     this->initialize();
 }
 
@@ -37,8 +39,8 @@ void PlaneGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set resize handles
-    this->p1_handle_ = new PolygonResizeHandle(this->model_->p1_, this);
-    this->p2_handle_ = new PolygonResizeHandle(this->model_->p2_, this);
+    this->p1_handle_ = new PolygonResizeHandle(this->model_->p1_, this, this->size_);
+    this->p2_handle_ = new PolygonResizeHandle(this->model_->p2_, this, this->size_);
     this->p1_handle_->hide();
     this->p2_handle_->hide();
 }

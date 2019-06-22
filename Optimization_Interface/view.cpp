@@ -25,8 +25,6 @@ View::View(QWidget * parent)
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
 
-//    this->startServers();
-
     // Create Controller
     this->controller_ = new Controller(this->canvas_);
 
@@ -180,10 +178,9 @@ void View::initialize() {
     connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
             this, SLOT(toggleSim()));
 
-    // Connect to network
+    // Connect comms to the
     connect(this->controller_->drone_comm_, SIGNAL(tx_pos(float,float,float)),
             this, SLOT(updateViewDronePos(float,float,float)));
-
     connect(this->controller_->puck_comm_, SIGNAL(tx_pos(float,float,float)),
             this, SLOT(updateViewPuckPos(float, float, float)));
 
@@ -194,11 +191,6 @@ void View::initialize() {
     this->expandView();
 
     this->view_tick_ = 0;
-}
-
-void View::toggleFreeze(bool freeze) {
-    bool result = this->controller_->toggleFreeze(freeze);
-    if (result != freeze) qDebug() << "Could not toggle freeze";
 }
 
 void View::updateViewDronePos(float n, float e, float d) {
@@ -218,6 +210,10 @@ void View::updateViewPuckPos(float n, float e, float d) {
 
 void View::mousePressEvent(QMouseEvent *event) {
     // Grab event position in scene coordinates
+    if(this->controller_->isFrozen()) {
+        qDebug() << "Frozen! Cannot take mouse event";
+
+    }
     QPointF pos = this->mapToScene(event->pos());
 
     switch (this->state_) {
@@ -249,9 +245,10 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
+                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*4;
                 QGraphicsItem *dot =
-                        this->scene()->addEllipse(-DOT_SIZE / 2, -DOT_SIZE / 2,
-                                                  DOT_SIZE, DOT_SIZE,
+                        this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
+                                                  dotSize, dotSize,
                                                   dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
@@ -267,9 +264,10 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
+                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*4;
                 QGraphicsItem *dot =
-                        this->scene()->addEllipse(-DOT_SIZE / 2, -DOT_SIZE / 2,
-                                                  DOT_SIZE, DOT_SIZE,
+                        this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
+                                                  dotSize, dotSize,
                                                   dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
@@ -325,11 +323,6 @@ void View::setZoom(int value) {
 }
 
 void View::setState(STATE button_type) {
-    if (button_type == FREEZE) {
-        this->toggleFreeze(true);
-    } else {
-        this->toggleFreeze(false);
-    }
     // Clear all temporary markers
     this->clearMarkers();
 

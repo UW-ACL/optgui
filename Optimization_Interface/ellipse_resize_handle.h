@@ -20,7 +20,8 @@ const qreal ELLIPSE_HANDLE_SIZE = 16;
 class EllipseResizeHandle : public QGraphicsEllipseItem {
  public:
     explicit EllipseResizeHandle(EllipseModelItem *model,
-                                 QGraphicsItem *parent);
+                                 QGraphicsItem *parent,
+                                 quint32 size);
  protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -29,6 +30,7 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
     void expandScene();
     EllipseModelItem *model_;
     bool resize_;
+    qreal size_;
 };
 
 }  // namespace interface

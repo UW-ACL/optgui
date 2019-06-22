@@ -13,14 +13,16 @@
 namespace interface {
 
 EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
-                                         QGraphicsItem *parent)
+                                         QGraphicsItem *parent,
+                                         quint32 size)
     : QGraphicsEllipseItem(parent) {
     this->model_ = model;
     this->resize_ = false;
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
-    this->setRect(-ELLIPSE_HANDLE_SIZE / 2, -ELLIPSE_HANDLE_SIZE / 2,
-                  ELLIPSE_HANDLE_SIZE, ELLIPSE_HANDLE_SIZE);
+    this->size_ = (qreal) size;
+    this->setRect(-this->size_, -this->size_,
+                  this->size_*2, this->size_*2);
 }
 
 void EllipseResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {

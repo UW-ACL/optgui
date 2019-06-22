@@ -11,17 +11,19 @@
 namespace interface {
 
 PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
-                                       QGraphicsItem *parent)
+                                   QGraphicsItem *parent,
+                                   quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->width_ = size;
     this->initialize();
 }
 
 void PathGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::red);
-    this->pen_.setWidth(40);
+    this->pen_.setWidth(this->width_);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);

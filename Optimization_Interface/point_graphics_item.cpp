@@ -14,10 +14,12 @@
 namespace interface {
 
 PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
-                                         QGraphicsItem *parent)
+                                     QGraphicsItem *parent,
+                                     quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->radius_ = size;
     this->initialize();
 }
 
@@ -46,7 +48,7 @@ PointGraphicsItem::~PointGraphicsItem() {
 }
 
 QRectF PointGraphicsItem::boundingRect() const {
-    double rad = POINT_RADIUS;
+    double rad = this->radius_;
     // Add exterior border if not direction
     if (!this->model_->direction_) {
         rad += POINT_BORDER;
@@ -74,7 +76,7 @@ void PointGraphicsItem::paint(QPainter *painter,
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
 
-    double rad = POINT_RADIUS;
+    double rad = this->radius_;
     switch (this->marker_) {
     case 0:
         painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));

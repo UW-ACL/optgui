@@ -13,12 +13,12 @@
 
 namespace interface {
 
-const qreal HANDLE_SIZE = 16;
 
 class PolygonResizeHandle : public QGraphicsEllipseItem {
  public:
     explicit PolygonResizeHandle(QPointF *point,
-                                 QGraphicsItem *parent);
+                                 QGraphicsItem *parent,
+                                 quint32 size);
     void updatePos();
     void updateModel(QPointF diff);
     int type() const override;
@@ -32,6 +32,8 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
     void expandScene();
     QPointF *point_;
     bool resize_;
+
+    qreal size_;
 };
 
 }  // namespace interface
