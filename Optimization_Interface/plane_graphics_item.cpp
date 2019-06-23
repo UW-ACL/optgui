@@ -72,7 +72,7 @@ void PlaneGraphicsItem::paint(QPainter *painter,
         this->p1_handle_->hide();
         this->p2_handle_->hide();
 
-        this->pen_.setWidth(1);
+        this->pen_.setWidth(this->size_*16);
     }
 
     // Draw shape

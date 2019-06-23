@@ -245,7 +245,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*4;
+                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
                                                   dotSize, dotSize,
@@ -264,7 +264,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*4;
+                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
                                                   dotSize, dotSize,
