@@ -31,7 +31,7 @@ void PolygonGraphicsItem::initialize() {
 
     // Set brush
     this->pen_ = QPen(Qt::black);
-    this->pen_.setWidth(3);
+    this->pen_.setWidth(this->size_*4);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemIsMovable |
@@ -81,16 +81,17 @@ void PolygonGraphicsItem::paint(QPainter *painter,
             handle->updatePos();
             handle->show();
         }
-        this->pen_.setWidth(3);
+        this->pen_.setWidth(8); //3
     } else {
         for (PolygonResizeHandle *handle : *this->resize_handles_) {
             handle->hide();
         }
-        this->pen_.setWidth(1);
+        this->pen_.setWidth(4); //1
     }
 
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
+
 
     // Fill shading
     painter->fillPath(this->shape(), this->brush_);

@@ -82,7 +82,7 @@ void PointGraphicsItem::paint(QPainter *painter,
         painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
         break;
     case 1:
-        painter->setPen(QColor(Qt::gray));
+        painter->setPen(QPen(Qt::green, this->radius_*2));
         painter->drawLine(-rad*5,-rad*5,rad*5,rad*5);
         painter->drawLine(rad*5,-rad*5,-rad*5,rad*5);
         break;

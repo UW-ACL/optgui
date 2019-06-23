@@ -20,9 +20,9 @@ PolygonResizeHandle::PolygonResizeHandle(QPointF *point, QGraphicsItem *parent, 
     this->resize_ = false;
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
-    this->size_ = size;
-    this->setRect(-this->size_ / 2, -this->size_ / 2,
-                  this->size_, this->size_);
+    this->size_ = size*2;
+    this->setRect(-this->size_, -this->size_,
+                  this->size_*2, this->size_*2);
 }
 
 void PolygonResizeHandle::setColor(const QColor color) {
