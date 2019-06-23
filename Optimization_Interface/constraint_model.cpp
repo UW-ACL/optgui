@@ -124,13 +124,13 @@ void ConstraintModel::clearPath() {
 }
 
 void ConstraintModel::loadFinalPos(double* r_f) {
-    r_f[1] = this->final_pos_->pos_->x()/this->scale_;
-    r_f[2] = this->final_pos_->pos_->y()/this->scale_;
+    r_f[1] = -this->final_pos_->pos_->y()/this->scale_;
+    r_f[2] = this->final_pos_->pos_->x()/this->scale_;
 }
 
 void ConstraintModel::loadInitialPos(double* r_i) {
-    r_i[1] = this->drone_->point_->x()/this->scale_;
-    r_i[2] = this->drone_->point_->y()/this->scale_;
+    r_i[1] = -this->drone_->point_->y()/this->scale_;
+    r_i[2] = this->drone_->point_->x()/this->scale_;
 }
 
 uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
@@ -141,8 +141,8 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
 
         EllipseModelItem* ellipse = iter.next();
         R[j] = ellipse->radius_/this->scale_ + ellipse->clearance_/this->scale_;
-        c_e[j] = ellipse->pos_->x()/this->scale_;
-        c_n[j] = ellipse->pos_->y()/this->scale_;
+        c_e[j] = -ellipse->pos_->y()/this->scale_;
+        c_n[j] = ellipse->pos_->x()/this->scale_;
         ++j;
     }
     return j;
@@ -157,10 +157,10 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
             QPointF *q = polygon->points_->at(i % polygon->points_->length());
             int32_t flip = (polygon->direction_?-1:1);
 
-            double px = p->x()/this->scale_;
-            double py = p->y()/this->scale_;
-            double qx = q->x()/this->scale_;
-            double qy = q->y()/this->scale_;
+            double px = -p->y()/this->scale_;
+            double py = p->x()/this->scale_;
+            double qx = -q->y()/this->scale_;
+            double qy = q->x()/this->scale_;
             double c = (py*qx-px*qy);
 
             A[2*(i-1)] = flip*(py-qy)/c;
@@ -176,10 +176,10 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
         QPointF *q = plane->p2_;
         int32_t flip = (plane->direction_?1:-1);
 
-        double px = p->x()/this->scale_;
-        double py = p->y()/this->scale_;
-        double qx = q->x()/this->scale_;
-        double qy = q->y()/this->scale_;
+        double px = -p->y()/this->scale_;
+        double py = p->x()/this->scale_;
+        double qx = -q->y()/this->scale_;
+        double qy = q->x()/this->scale_;
         double c = (py*qx-px*qy);
 
         A[2*(i-1)] = flip*(py-qy)/c;

@@ -64,7 +64,7 @@ void comm::rx_trajectory(const packet::traj3dof* data) {
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.105"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.106"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.107"),6000);
-//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.108"),6000);
+    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.108"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.109"),6000);
 
 }

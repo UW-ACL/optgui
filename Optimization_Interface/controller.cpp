@@ -287,9 +287,9 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.g[0] = -9.81;
     P.g[1] = 0.0;
     P.g[2] = 0.0;
-    P.a_min = 1.0/0.3;
-    P.a_max = 4.0/0.3;
-    P.theta_max = 40.0*DEG2RAD;
+    P.a_min = 5.0;
+    P.a_max = 15.0;
+    P.theta_max = 25.0*DEG2RAD;
     P.q_max = 0.0;
 
     P.max_iter = 10;
@@ -332,8 +332,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     this->trajectory_->clear();
     for(uint32_t i=0; i<P.K; i++) {
-        trajectory->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
-        this->trajectory_->append(new QPointF(O.r[1][i]*100, O.r[2][i]*100));
+        trajectory->append(new QPointF(O.r[2][i]*100, -O.r[1][i]*100));
+        this->trajectory_->append(new QPointF(O.r[2][i]*100, -O.r[1][i]*100));
     }
 
     // how feasible is the solution?
@@ -364,15 +364,25 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 //             << "| r = " << O.ratio;
 //    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
 
+
     this->drone_traj3dof_data_.K = P.K;
     for(quint32 k=0; k<P.K; k++) {
-        for(quint32 i=0; i<3; i++) {
-            this->drone_traj3dof_data_.time(k) = k*P.dt;
-            this->drone_traj3dof_data_.pos_ned(i,k) = O.r[i][k];
-            this->drone_traj3dof_data_.vel_ned(i,k) = O.v[i][k];
-            this->drone_traj3dof_data_.accl_ned(i,k) = O.a[i][k];
-        }
+//        this->drone_traj3dof_data_.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
+
+        this->drone_traj3dof_data_.time(k) = k*P.dt;
+        this->drone_traj3dof_data_.pos_ned(0,k) = O.r[1][k];
+        this->drone_traj3dof_data_.pos_ned(1,k) = O.r[2][k];
+        this->drone_traj3dof_data_.pos_ned(2,k) = O.r[0][k];
+
+        this->drone_traj3dof_data_.vel_ned(0,k) = O.v[1][k];
+        this->drone_traj3dof_data_.vel_ned(1,k) = O.v[2][k];
+        this->drone_traj3dof_data_.vel_ned(2,k) = O.v[0][k];
+
+        this->drone_traj3dof_data_.accl_ned(0,k) = O.a[1][k];
+        this->drone_traj3dof_data_.accl_ned(1,k) = O.a[2][k];
+        this->drone_traj3dof_data_.accl_ned(2,k) = O.a[0][k] - 9.81;
     }
+//    this->drone_traj3dof_data_.
 
     // Set up next solution.
     reset(P,I,O);
@@ -402,7 +412,11 @@ void Controller::execute() {
     this->exec_once_ = true;
     timer_exec_.restart();
 
-    packet::traj3dof dummy;
+    std::cout << "pos:" << this->drone_traj3dof_data_.pos_ned.transpose() << std::endl;
+    std::cout << "vel:" << this->drone_traj3dof_data_.vel_ned.transpose() << std::endl;
+    std::cout << "accl:" << this->drone_traj3dof_data_.accl_ned.transpose() << std::endl;
+
+
     qDebug() << "before";
     emit trajectoryExecuted(&this->drone_traj3dof_data_);
     qDebug() << "after";
