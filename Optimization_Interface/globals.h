@@ -34,7 +34,7 @@ namespace interface {
     };
 
     enum DATA_STREAM_VERSION {
-        VERSION_5_11 = QDataStream::Qt_5_11,
+        VERSION_5_8 = QDataStream::Qt_5_8,
     };
 }  // namespace interface
 

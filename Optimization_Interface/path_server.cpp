@@ -20,7 +20,7 @@ PathServer::PathServer(PathModelItem *model)
 void PathServer::interact() {
         QByteArray block;
         QDataStream in(&block, QIODevice::ReadOnly);
-        in.setVersion(VERSION_5_11);
+        in.setVersion(VERSION_5_8);
 
         QTcpSocket *client_connection = this->nextPendingConnection();
         connect(client_connection, SIGNAL(disconnected()),
