@@ -70,7 +70,7 @@ class ConstraintModel {
     uint32_t maxHalfspace;
 
     // TODO: fix magic number.. use mapfromscene?
-    double scale_ = 100;
+    qreal scale_ = 100.0;
 
  private:
     void initialize();

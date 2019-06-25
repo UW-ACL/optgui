@@ -157,15 +157,15 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
             QPointF *q = polygon->points_->at(i % polygon->points_->length());
             int32_t flip = (polygon->direction_?-1:1);
 
-            double px = -p->y()/this->scale_;
-            double py = p->x()/this->scale_;
-            double qx = -q->y()/this->scale_;
-            double qy = q->x()/this->scale_;
-            double c = (py*qx-px*qy);
+            qreal px = -p->y()/this->scale_;
+            qreal py = p->x()/this->scale_;
+            qreal qx = -q->y()/this->scale_;
+            qreal qy = q->x()/this->scale_;
+            qreal c = (py*qx-px*qy);
 
-            A[2*(i-1)] = flip*(py-qy)/c;
-            A[2*(i-1)+1] = flip*(qx-px)/c;
-            b[i-1] = flip;
+            A[2*(i-1)] = (double)flip*(py-qy)/c;
+            A[2*(i-1)+1] = (double)flip*(qx-px)/c;
+            b[i-1] = (double)flip;
             num++;
         }
     }
@@ -176,11 +176,11 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
         QPointF *q = plane->p2_;
         int32_t flip = (plane->direction_?1:-1);
 
-        double px = -p->y()/this->scale_;
-        double py = p->x()/this->scale_;
-        double qx = -q->y()/this->scale_;
-        double qy = q->x()/this->scale_;
-        double c = (py*qx-px*qy);
+        qreal px = -p->y()/this->scale_;
+        qreal py = p->x()/this->scale_;
+        qreal qx = -q->y()/this->scale_;
+        qreal qy = q->x()/this->scale_;
+        qreal c = (py*qx-px*qy);
 
         A[2*(i-1)] = flip*(py-qy)/c;
         A[2*(i-1)+1] = flip*(qx-px)/c;
