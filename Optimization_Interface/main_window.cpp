@@ -13,7 +13,7 @@ namespace interface {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent, Qt::Window) {
     // Set title
-    this->setWindowTitle("Optimiztion Interface");
+    this->setWindowTitle("Optimization Interface");
 
     // Set default size
     this->setMinimumSize(1024, 576);

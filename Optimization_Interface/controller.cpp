@@ -289,7 +289,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.g[2] = 0.0;
     P.a_min = 5.0;
     P.a_max = 15.0;
-    P.theta_max = 25.0*DEG2RAD;
+    P.theta_max = 40.0*DEG2RAD;
     P.q_max = 0.0;
 
     P.max_iter = 10;

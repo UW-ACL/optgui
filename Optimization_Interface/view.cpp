@@ -184,6 +184,7 @@ void View::initialize() {
     connect(this->controller_->puck_comm_, SIGNAL(tx_pos(float,float,float)),
             this, SLOT(updateViewPuckPos(float, float, float)));
 
+    // TODO: remove sim from TODO
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
 
@@ -245,6 +246,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
+                // TODO: dot size should be dynamic depending on the zoom level
                 qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
@@ -264,6 +266,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
+                // TODO: dot size should be dynamic depending on the zoom level
                 qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
@@ -356,6 +359,7 @@ void View::execute() {
     this->controller_->execute();
 }
 
+// TODO: does this belong in view? probably not..
 void View::stepSim() {
     if(this->controller_->simDrone(this->simulating_)) {
         ++this->simulating_;
@@ -370,6 +374,7 @@ void View::toggleSim() {
     this->simulating_ = 0;
     stepSim();
 }
+
 
 void View::setFinaltime(int _finaltime) {
     float finaltime = _finaltime/10.0f;
