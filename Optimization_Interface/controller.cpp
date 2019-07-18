@@ -69,7 +69,7 @@ Controller::Controller(Canvas *canvas) {
     // initialize final point graphic
     this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_,
                                                      nullptr,
-                                                     this->indoor_?4:16);
+                                                     this->indoor_?4:128);
     this->canvas_->addItem(this->final_pos_graphic_);
 
     // initialize port dialog
@@ -661,7 +661,7 @@ void Controller::saveFile() {
         }
 
         QDataStream *out = new QDataStream(file);
-        out->setVersion(VERSION_5_11);
+        out->setVersion(VERSION_5_8);
 
         // Write points
         quint32 num_points = this->model_->points_->size();
@@ -879,7 +879,7 @@ void Controller::loadFile() {
         }
 
         QDataStream *in = new QDataStream(file);
-        in->setVersion(VERSION_5_11);
+        in->setVersion(VERSION_5_8);
 
         // Reset model
         delete this->model_;

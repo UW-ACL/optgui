@@ -67,12 +67,12 @@ void PlaneGraphicsItem::paint(QPainter *painter,
         this->p1_handle_->show();
         this->p2_handle_->show();
 
-        this->pen_.setWidth(3);
+        this->pen_.setWidth(this->size_/2);
     } else {
         this->p1_handle_->hide();
         this->p2_handle_->hide();
 
-        this->pen_.setWidth(this->size_*16);
+        this->pen_.setWidth(this->size_/2);
     }
 
     // Draw shape
@@ -109,8 +109,8 @@ QPainterPath PlaneGraphicsItem::shape() const {
     poly << line.p1();
     poly << line.p2();
     poly << line.normalVector().translated(
-                line.dx(), line.dy()).pointAt(PLANE_BORDER / line.length());
-    poly << line.normalVector().pointAt(PLANE_BORDER / line.length());
+                line.dx(), line.dy()).pointAt(this->size_ / line.length());
+    poly << line.normalVector().pointAt(this->size_ / line.length());
     path.addPolygon(poly);
 
     return path;

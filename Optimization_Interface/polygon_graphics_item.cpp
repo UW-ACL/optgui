@@ -81,12 +81,12 @@ void PolygonGraphicsItem::paint(QPainter *painter,
             handle->updatePos();
             handle->show();
         }
-        this->pen_.setWidth(8); //3
+        this->pen_.setWidth(this->size_/4); //3
     } else {
         for (PolygonResizeHandle *handle : *this->resize_handles_) {
             handle->hide();
         }
-        this->pen_.setWidth(4); //1
+        this->pen_.setWidth(this->size_/4); //1
     }
 
     painter->setPen(this->pen_);
@@ -134,8 +134,8 @@ QPainterPath PolygonGraphicsItem::shape() const {
         poly << line.p2();
         poly << line.normalVector().translated(
                     line.dx(),
-                    line.dy()).pointAt(POLYGON_BORDER /line.length());
-        poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
+                    line.dy()).pointAt(this->size_ /line.length());
+        poly << line.normalVector().pointAt(this->size_ / line.length());
         path.addPolygon(poly);
     }
     QLineF line(mapFromScene(*this->model_->points_->last()),
@@ -148,8 +148,8 @@ QPainterPath PolygonGraphicsItem::shape() const {
     poly << line.p1();
     poly << line.p2();
     poly << line.normalVector().translated(
-                line.dx(), line.dy()).pointAt(POLYGON_BORDER / line.length());
-    poly << line.normalVector().pointAt(POLYGON_BORDER / line.length());
+                line.dx(), line.dy()).pointAt(this->size_ / line.length());
+    poly << line.normalVector().pointAt(this->size_ / line.length());
     path.addPolygon(poly);
 
     // Return shape
