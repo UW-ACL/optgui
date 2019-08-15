@@ -16,6 +16,25 @@
 #include <QGroupBox>
 
 #include "menu_button.h"
+#include "math.h"
+
+
+/*
+#include <QNetworkSession>
+#include <QElapsedTimer>
+
+#include "canvas.h"
+#include "constraint_model.h"
+#include "path_graphics_item.h"
+#include "drone_graphics_item.h"
+#include "waypoints_graphics_item.h"
+#include "point_graphics_item.h"
+#include "port_dialog.h"
+#include "item_server.h"
+#include "cprs.h"
+#include "algorithm.h"
+#include "comm.h"
+ */
 
 namespace interface {
 
@@ -34,6 +53,7 @@ class MenuPanel : public QFrame {
 //    QGroupBox *opt_layout;
     QLabel *opt_finaltime_label_;
     QLabel *opt_horizon_label_;
+    double_t finaltime_init_ = 5; //include the right header for double_t??
 //    QPushButton *opt_horizon_minus;
 //    QPushButton *opt_horizon_plus;
 //    QPushButton *opt_finaltime_minus;

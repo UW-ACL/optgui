@@ -29,14 +29,16 @@
 #include "polygon_server.h"
 #include "plane_server.h"
 #include "globals.h"
+#include "menu_panel.h"
 
 
 using namespace cprs;
 
 namespace interface {
 
-Controller::Controller(Canvas *canvas) {
+Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
+    this->finaltime_ = menupanel->finaltime_init_; //initialized ctrller final time to that set by menupanel
     this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 

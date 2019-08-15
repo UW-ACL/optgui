@@ -8,6 +8,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+
 #include <QNetworkSession>
 #include <QElapsedTimer>
 
@@ -22,13 +23,14 @@
 #include "cprs.h"
 #include "algorithm.h"
 #include "comm.h"
+#include "menu_panel.h"
 
 namespace interface {
 
 class Controller : public QObject {
     Q_OBJECT
  public:
-    explicit Controller(Canvas *canvas);
+    explicit Controller(Canvas *canvas, MenuPanel *menupanel);
     ~Controller();
 
     void setCanvas(Canvas *canvas);
@@ -71,8 +73,8 @@ class Controller : public QObject {
     bool isFrozen();
 
     // TODO: make a proper class for these parameters
+    double_t finaltime_; //->finaltime_init_; //= 5; //find out how to link to menupanel
     uint32_t horizon_length_ = MAX_HORIZON;
-    double_t finaltime_ = 5;
     uint32_t drone_port_ = 8000;
     uint32_t puck_port_ = 8001;
 

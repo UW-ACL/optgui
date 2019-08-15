@@ -265,8 +265,7 @@ void MenuPanel::initializeFinaltimeSlider() {
     this->opt_finaltime_slider_->setTickPosition(QSlider::TicksAbove);
     this->opt_finaltime_slider_->setMinimum(20);
     this->opt_finaltime_slider_->setMaximum(200);
-    this->opt_finaltime_slider_->setValue(50
-                                          );
+    this->opt_finaltime_slider_->setValue(this->finaltime_init_); //make sure this points to the right member
     this->opt_finaltime_slider_->setToolTip(tr("Set final time"));
 
     this->opt_finaltime_label_ = new QLabel();

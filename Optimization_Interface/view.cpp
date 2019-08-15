@@ -25,8 +25,11 @@ View::View(QWidget * parent)
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
 
+    // Create MenuPanel (This was moved from initialize())
+    this->menu_panel_ = new MenuPanel(this);
+
     // Create Controller
-    this->controller_ = new Controller(this->canvas_);
+    this->controller_ = new Controller(this->canvas_,this->menu_panel_); //added menu panel to construction
 
     // Set State
     this->state_ = IDLE;
@@ -134,8 +137,8 @@ void View::initialize() {
     this->layout()->addWidget(this->menu_button_);
     this->layout()->setAlignment(this->menu_button_, Qt::AlignRight);
 
-    // Create menu panel
-    this->menu_panel_ = new MenuPanel(this);
+    // Configure menu panel parameters
+        //TODO - Might want to move this to the constructor where menu_panel_ is initialized?
     this->menu_panel_->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->menu_panel_->setFixedWidth(100);
