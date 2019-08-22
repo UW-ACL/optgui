@@ -277,6 +277,22 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // Initialize constant values
     // Parameters.
     //SKYENET// this should be moved to skyenet repo
+    //
+    /*
+
+      SkyeAlg alg(this->horizon_length_);
+      alg.setFinalTime(this->final_time_);
+
+      alg.cpos.n = model_->loadEllipse(alg.P.obs.R, alg.P.obs.c_e, alg.obs.c_n);
+      alg.cpos.n = model_->loadPosConstraint(alg.P.cpos.A, alg.P.cpos.b);
+
+
+
+    */
+    qDebug() << "Before skyefly";
+    SkyeFly fly();
+    qDebug() << "Before getHorizonLength";
+
     params P;
     memset(&P,0,sizeof(P));
     P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
