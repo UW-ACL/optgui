@@ -31,9 +31,9 @@ INCLUDEPATH += $$PWD/../../skyenet/cprs/headers/
 INCLUDEPATH += $$PWD/../../skyenet/csocp/
 INCLUDEPATH += $$PWD/../../mikipilot
 
-LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm
-LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS
-LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP
+LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # //SKYENET// looks for libalgorithm.a file
+LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS     # looks for libCPRS.a
+LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP         # looks for libCSOCP.a
 
 
 ## Add libraries.

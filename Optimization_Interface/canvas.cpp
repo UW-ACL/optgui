@@ -70,7 +70,7 @@ void Canvas::setBackgroundImage(QString filename) {
         this->indoor_ = true;
     }
 
-    this->background_image_ = new QImage("../../maps/" + filename + ".png");
+    this->background_image_ = new QImage("../../skyenet/maps/" + filename + ".png");
 }
 
 QPointF* Canvas::getBottomLeft() {

@@ -276,6 +276,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     // Initialize constant values
     // Parameters.
+    //SKYENET// this should be moved to skyenet repo
     params P;
     memset(&P,0,sizeof(P));
     P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
