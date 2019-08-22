@@ -19,7 +19,7 @@ const double DEFAULT_RAD = 150;
 class EllipseModelItem : public DataModel {
  public:
     explicit EllipseModelItem(QPointF *pos) : radius_(DEFAULT_RAD),
-        direction_(true) { pos_ = pos; port_ = 0; clearance_ = 20;}
+        direction_(true) { pos_ = pos; port_ = 0; clearance_ = 0;}
     ~EllipseModelItem() { delete pos_; }
     double radius_;
     QPointF *pos_;
