@@ -286,15 +286,20 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
       alg.cpos.n = model_->loadPosConstraint(alg.P.cpos.A, alg.P.cpos.b);
     */
 
-    int t_final = 10;
     double test = 5;
     qDebug() << "Before skyefly";
     SkyeFly fly;
-    qDebug() << "Before setting pub_member";
-    fly.pub_member = test;
-    qDebug() << "Before setting horizonLength";
-    fly.setTimeHorizon(t_final); //fly.time_horizon = 5;
+    //qDebug() << "Before setting time_horizon";
+    //fly.time_horizon = test;
+    qDebug() << "Before setting time_horizon";
+    fly.setTimeHorizon(test); //fly.time_horizon = 5;
     qDebug() << "After setting horizonLength";
+    qDebug() << "Before printing time_horizon";
+    fly.printTimeHorizon();
+    qDebug() << "After printing time_horizon";
+
+    //SKYEFLY// fly.P = ......
+
 
     params P;
     memset(&P,0,sizeof(P));
@@ -324,6 +329,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.rho_2 = 0.90;
     P.rirelax = 100;
 
+
+    //SKYEFLY// fly.I = ....
     // Inputs.
     inputs I;
     memset(&I,0,sizeof(I));
@@ -347,9 +354,13 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     memset(&O,0,sizeof(O));
 
     // Initialize.
+    //SKYEFLY// fly.init();
+    fly.init();
     initialize(P,I,O);
 
     // SCvx.
+    //SKYEFLY// fly.SCvx();
+    fly.run();
     SCvx(P,I,O);
 
     this->trajectory_->clear();
