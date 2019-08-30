@@ -73,7 +73,7 @@ class Controller : public QObject {
     bool isFrozen();
 
     // TODO: make a proper class for these parameters
-    double_t finaltime_; //->finaltime_init_; //= 5; //find out how to link to menupanel
+    double_t finaltime_;
     uint32_t horizon_length_ = MAX_HORIZON;
     uint32_t drone_port_ = 8000;
     uint32_t puck_port_ = 8001;

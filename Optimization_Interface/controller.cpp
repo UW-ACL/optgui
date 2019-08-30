@@ -31,7 +31,6 @@
 #include "globals.h"
 #include "menu_panel.h"
 
-
 using namespace cprs;
 
 namespace interface {
@@ -285,13 +284,17 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
       alg.cpos.n = model_->loadEllipse(alg.P.obs.R, alg.P.obs.c_e, alg.obs.c_n);
       alg.cpos.n = model_->loadPosConstraint(alg.P.cpos.A, alg.P.cpos.b);
-
-
-
     */
+
+    int t_final = 10;
+    double test = 5;
     qDebug() << "Before skyefly";
-    SkyeFly fly();
-    qDebug() << "Before getHorizonLength";
+    SkyeFly fly;
+    qDebug() << "Before setting pub_member";
+    fly.pub_member = test;
+    qDebug() << "Before setting horizonLength";
+    fly.setTimeHorizon(t_final); //fly.time_horizon = 5;
+    qDebug() << "After setting horizonLength";
 
     params P;
     memset(&P,0,sizeof(P));
@@ -402,7 +405,6 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
         this->drone_traj3dof_data_.accl_ned(2,k) = O.a[0][k] - 9.81;
     }
 //    this->drone_traj3dof_data_.
-
     // Set up next solution.
     reset(P,I,O);
     qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
