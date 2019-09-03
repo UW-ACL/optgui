@@ -86,13 +86,13 @@ class Controller : public QObject {
 
     bool valid_path_ = false;
     bool indoor_ = true;
+    ConstraintModel *model_;
 
 signals:
     void trajectoryExecuted(const packet::traj3dof* data);
 
  private:
     Canvas *canvas_;
-    ConstraintModel *model_;
     WaypointsGraphicsItem *waypoints_graphic_;
     PathGraphicsItem *path_graphic_;
     DroneGraphicsItem *drone_graphic_;

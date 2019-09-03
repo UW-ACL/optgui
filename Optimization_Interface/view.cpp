@@ -230,7 +230,12 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case ELLIPSE: {
-            this->controller_->addEllipse(new QPointF(pos));
+            // TODO: disallow user from adding ellipse if it overlaps?
+            if (!this->controller_->model_->isEllipseOverlap(new QPointF(pos))) {
+                this->controller_->addEllipse(new QPointF(pos));
+            } else {
+               qDebug() << "Cannot add overlapping ellipse";
+            }
             break;
         }
         case POLYGON: {

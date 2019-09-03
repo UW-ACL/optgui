@@ -5,6 +5,7 @@
 
 #include "constraint_model.h"
 #include <QString>
+#include <QDebug>
 
 namespace interface {
 
@@ -146,6 +147,26 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
         ++j;
     }
     return j;
+}
+
+bool ConstraintModel::isEllipseOverlap(QPointF * pos) {
+
+    QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
+    while(iter.hasNext()) {
+        EllipseModelItem* ellipse = iter.next();
+        double r = ellipse->radius_/this->scale_;
+        double dist = pow(pos->x() - ellipse->pos_->x(), 2)
+                    + pow(pos->y() - ellipse->pos_->y(), 2);
+        dist /= pow(this->scale_, 2);
+        double dist_other = pow(r + 0.32, 2); //DEBUG// fix this hardcoded costant...
+        qDebug() << "Distance" << dist << "<=" << dist_other;
+        qDebug() << "r" << r << ", default rad" << DEFAULT_RAD;
+        if (dist <= dist_other) {
+            return true;
+        }
+
+    }
+    return false;
 }
 
 uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {

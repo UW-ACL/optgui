@@ -287,16 +287,16 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     */
 
     double test = 5;
-    qDebug() << "Before skyefly";
+//    qDebug() << "Before skyefly";
     SkyeFly fly;
     //qDebug() << "Before setting time_horizon";
     //fly.time_horizon = test;
-    qDebug() << "Before setting time_horizon";
+//    qDebug() << "Before setting time_horizon";
     fly.setTimeHorizon(test); //fly.time_horizon = 5;
-    qDebug() << "After setting horizonLength";
-    qDebug() << "Before printing time_horizon";
+//    qDebug() << "After setting horizonLength";
+//    qDebug() << "Before printing time_horizon";
     fly.printTimeHorizon();
-    qDebug() << "After printing time_horizon";
+//    qDebug() << "After printing time_horizon";
 
     //SKYEFLY// fly.P = ......
 
@@ -355,12 +355,12 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     // Initialize.
     //SKYEFLY// fly.init();
-    fly.init();
+//    fly.init();
     initialize(P,I,O);
 
     // SCvx.
     //SKYEFLY// fly.SCvx();
-    fly.run();
+//    fly.run();
     SCvx(P,I,O);
 
     this->trajectory_->clear();
@@ -370,17 +370,21 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     }
 
     // how feasible is the solution?
+    // OUTPUT VIOLATIONS: constraint violation
     double accum = 0;
     for(uint32_t i=0; i<P.K; i++) {
         accum += abs( pow(O.a[0][i],2) + pow(O.a[1][i],2) + pow(O.a[2][i],2) \
                 - pow(O.s[i],2) )/P.K;
     }
-    accum += pow(O.r_i_relax[0],2) + pow(O.r_i_relax[1],2) + pow(O.r_i_relax[2],2) \
-           + pow(O.r_f_relax[0],2) + pow(O.r_f_relax[1],2) + pow(O.r_f_relax[2],2);
+
+    // OUTPUT VIOLATIONS: initial and final pos violation
+    accum = pow(O.r_f_relax[0],2) + pow(O.r_f_relax[1],2) + pow(O.r_f_relax[2],2);
 
     if(accum > this->feasible_tol_) {
         this->valid_path_ = false;
         this->path_graphic_->setColor(QColor(Qt::red));
+        qDebug() << "Increase final time!";
+
     } else {
         this->valid_path_ = true;
         this->path_graphic_->setColor(QColor(Qt::green));
