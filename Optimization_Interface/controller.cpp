@@ -327,7 +327,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.rho_0 = -1e-1;
     P.rho_1 = 0.25;
     P.rho_2 = 0.90;
-    P.rirelax = 100;
+    P.rirelax = 1000;
+    P.rfrelax = 1000;
 
 
     //SKYEFLY// fly.I = ....
