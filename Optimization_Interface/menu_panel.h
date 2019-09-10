@@ -64,8 +64,9 @@ class MenuPanel : public QFrame {
 
     //Initialization
     //TODO: add initializations for other sliders
-    double_t finaltime_init_ = 5;       //initializes final time
-    double_t horizonlength_init_ = 32;  //initializes horizon length
+    uint32_t finaltime_init_ = 5;       //initializes final time
+    uint32_t horizonlength_init_ = 32;  //initializes horizon length
+    uint32_t zoom_init_ = 39;
 
     //Message box for user feedback
     QMessageBox message_box_;           //sends feedback to user about feasibility

@@ -163,7 +163,8 @@ void View::initialize() {
                 this, SLOT(setState(STATE)));
     }
 
-    // Connect zoom
+    // Connect sliders and zoom
+    this->setZoom(this->menu_panel_->zoom_init_);
     connect(this->menu_panel_->zoom_slider_, SIGNAL(valueChanged(int)),
             this, SLOT(setZoom(int)));
 

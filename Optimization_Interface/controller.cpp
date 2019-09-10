@@ -290,16 +290,9 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     */
 
     double test = 5;
-//    qDebug() << "Before skyefly";
     SkyeFly fly;
-    //qDebug() << "Before setting time_horizon";
-    //fly.time_horizon = test;
-//    qDebug() << "Before setting time_horizon";
     fly.setTimeHorizon(test); //fly.time_horizon = 5;
-//    qDebug() << "After setting horizonLength";
-//    qDebug() << "Before printing time_horizon";
     fly.printTimeHorizon();
-//    qDebug() << "After printing time_horizon";
 
     //SKYEFLY// fly.P = ......
 
@@ -318,8 +311,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.g[1] = 0.0;
     P.g[2] = 0.0;
     P.a_min = 5.0;
-    P.a_max = 15.0;
-    P.theta_max = 40.0*DEG2RAD;
+    P.a_max = 13.0; //15
+    P.theta_max = 50.0*DEG2RAD;
     P.q_max = 0.0;
 
     P.max_iter = 10;
@@ -331,7 +324,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     P.rho_1 = 0.25;
     P.rho_2 = 0.90;
     P.rirelax = 1000;
-    P.rfrelax = 1000;
+    P.rfrelax = 10;
 
 
     //SKYEFLY// fly.I = ....
@@ -392,6 +385,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     } else {
         this->valid_path_ = true;
         this->path_graphic_->setColor(QColor(Qt::green));
+        this->menu_panel_->user_msg_label_->setText("Trajectory remains feasible!");
     }
 
 //    qDebug() << "i= " << I.i

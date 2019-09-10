@@ -271,6 +271,7 @@ void MenuPanel::initializeHorizonSlider() {
     this->opt_horizon_slider_->setToolTip(tr("Set horizon length"));
 
     this->opt_horizon_label_ = new QLabel();
+    this->opt_horizon_label_->setText("T=" + QString::number(horizonlength_init_));
 
     this->menu_->layout()->addWidget(this->opt_horizon_label_);
     this->menu_->layout()->addWidget(this->opt_horizon_slider_);
@@ -290,17 +291,18 @@ void MenuPanel::initializeFinaltimeSlider() {
     this->opt_finaltime_slider_->setTickPosition(QSlider::TicksAbove);
     this->opt_finaltime_slider_->setMinimum(20);
     this->opt_finaltime_slider_->setMaximum(200);
-    this->opt_finaltime_slider_->setValue(this->finaltime_init_); //make sure this points to the right member
+    this->opt_finaltime_slider_->setValue(this->finaltime_init_*10); //make sure this points to the right member
     this->opt_finaltime_slider_->setToolTip(tr("Set final time"));
 
     this->opt_finaltime_label_ = new QLabel();
+    this->opt_finaltime_label_->setText("T=" + QString::number(finaltime_init_));
     wid->layout()->addWidget(this->opt_finaltime_slider_);
     wid->layout()->addWidget(this->opt_finaltime_label_);
-//    this->menu_->layout()->addWidget(wid);
+
 
     this->menu_->layout()->addWidget(this->opt_finaltime_label_);
     this->menu_->layout()->addWidget(this->opt_finaltime_slider_);
-    this->menu_->layout()->setAlignment(wid, Qt::AlignBottom); //this->opt_finaltime_slider_, Qt::AlignBottom);
+    this->menu_->layout()->setAlignment(wid, Qt::AlignBottom);
 }
 
 //initializes button for executing traj to vehicle
@@ -340,7 +342,7 @@ void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
     this->zoom_slider_->setMinimum(1);
     this->zoom_slider_->setMaximum(49);
-    this->zoom_slider_->setValue(5);
+    this->zoom_slider_->setValue(this->zoom_init_);
     this->zoom_slider_->setToolTip(tr("Set zoom level"));
     this->menu_->layout()->addWidget(this->zoom_slider_);
     this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
