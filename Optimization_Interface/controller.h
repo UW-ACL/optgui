@@ -33,60 +33,65 @@ class Controller : public QObject {
     explicit Controller(Canvas *canvas, MenuPanel *menupanel);
     ~Controller();
 
-    void setCanvas(Canvas *canvas);
+    void setCanvas(Canvas *canvas);     //sets up canvas for drawing graphics
 
-    void addEllipse(QPointF *point);
-    void addPolygon(QVector<QPointF *> *points);
-    void addPlane(QPointF *p1, QPointF *p2);
-    void addWaypoint(QPointF *point);
-    void addPathPoint(QPointF *point);
-    void clearPathPoints();
-    void updateDronePos(QPointF pos);
-    void updatePuckPos(uint32_t idx, QPointF pos);
-
-    void removeAllWaypoints();
-
-    void removeItem(QGraphicsItem *item);
-    void flipDirection(QGraphicsItem *item);
-
-    void loadFile();
-    void saveFile();
-    void setPorts();
-    void startServers();
-    void closeServers();
-    void compute();
-    void compute(QVector<QPointF* > *trajectory);
-    void execute();
-
-    void setFinaltime(double_t);
-    void setHorizonLength(uint32_t);
-    void updateFinalPosition(QPointF *);
-    double_t getTimeInterval();
-
-    void updatePath();
-
-    void clearWaypointsGraphic();
-    void clearPathGraphic();
-    void clearDroneGraphic();
-
-    bool simDrone(uint64_t tick);
-    bool isFrozen();
-
+    //Controller parameters
     // TODO: make a proper class for these parameters
-    double_t finaltime_;
+    float_t finaltime_;
     uint32_t horizon_length_ = MAX_HORIZON;
-    uint32_t drone_port_ = 8000;
-    uint32_t puck_port_ = 8001;
 
     comm *drone_comm_;
+    uint32_t drone_port_ = 8000;
     comm *puck_comm_;
+    uint32_t puck_port_ = 8001;
 
+    //TODO: update puck to marker with feedback
     uint32_t marker_; // 0: final point, 1: puck
     double solver_difficulty_ = 100;
 
     bool valid_path_ = false;
     bool indoor_ = true;
     ConstraintModel *model_;
+
+    //functions to add constraints
+    void addEllipse(QPointF *point);            //adds elliptical constraint
+    void addPolygon(QVector<QPointF *> *points);//adds polygon constraint
+    void addPlane(QPointF *p1, QPointF *p2);    //adds affine constraint
+    void flipDirection(QGraphicsItem *item);    //flips direction of affine constraint
+
+    //functions to add points for vehicle, obstacle, and waypoint locations
+    void addWaypoint(QPointF *point);
+    void addPathPoint(QPointF *point);
+    void clearPathPoints();
+    void clearPathGraphic();
+    void removeAllWaypoints();
+    void clearWaypointsGraphic();
+    void removeItem(QGraphicsItem *item);
+    void updateDronePos(QPointF pos);
+    void clearDroneGraphic();
+    void updatePuckPos(uint32_t idx, QPointF pos);
+    //TODO: Add function to clear puck graphic
+
+    //functions for loading and saving files
+    void loadFile();
+    void saveFile();
+    void setPorts();
+    void startServers();
+    void closeServers();
+
+    //functions for setting optimization problem constraints
+    void setFinaltime(double_t);
+    void setHorizonLength(uint32_t);
+    void updateFinalPosition(QPointF *);
+    double_t getTimeInterval();
+
+    //functions for computing, simulating and executing trajectories
+    void compute();
+    void compute(QVector<QPointF* > *trajectory);
+    void execute();
+    void updatePath();
+    bool simDrone(uint64_t tick);
+    bool isFrozen();
 
 signals:
     void trajectoryExecuted(const packet::traj3dof* data);

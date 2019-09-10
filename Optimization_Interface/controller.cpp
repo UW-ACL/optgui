@@ -39,7 +39,7 @@ namespace interface {
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->menu_panel_ = menupanel;
-    this->finaltime_ = menupanel->finaltime_init_; //initialized ctrller final time to that set by menupanel
+    this->finaltime_ = menupanel->finaltime_init_;
     this->horizon_length_ = menupanel->horizonlength_init_;
     this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
@@ -235,7 +235,7 @@ void Controller::addWaypoint(QPointF *point) {
 // ============ BACK END CONTROLS ============
 
 void Controller::updatePath() {
-    qDebug() << "Tick";
+    //qDebug() << "Tick";
 }
 
 void Controller::setFinaltime(double_t finaltime) {
@@ -294,88 +294,73 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     fly.setTimeHorizon(test); //fly.time_horizon = 5;
     fly.printTimeHorizon();
 
-    //SKYEFLY// fly.P = ......
+    //Parameters
+    fly.P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
+    fly.P.tf = this->finaltime_;
+    fly.P.dt = fly.P.tf/(fly.P.K-1.);
+    fly.P.obs.n = model_->loadEllipse(fly.P.obs.R, fly.P.obs.c_e, fly.P.obs.c_n);
+    fly.P.cpos.n = model_->loadPosConstraint(fly.P.cpos.A, fly.P.cpos.b);
 
+    fly.P.dK = 1;
+    fly.P.n_recalcs = 14;
+    fly.P.g[0] = -9.81;
+    fly.P.g[1] = 0.0;
+    fly.P.g[2] = 0.0;
+    fly.P.a_min = 5.0;
+    fly.P.a_max = 13.0; //15
+    fly.P.theta_max = 50.0*DEG2RAD;
+    fly.P.q_max = 0.0;
 
-    params P;
-    memset(&P,0,sizeof(P));
-    P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
-    P.tf = this->finaltime_;
-    P.dt = P.tf/(P.K-1.);
-    P.obs.n = model_->loadEllipse(P.obs.R, P.obs.c_e, P.obs.c_n);
-    P.cpos.n = model_->loadPosConstraint(P.cpos.A, P.cpos.b);
+    fly.P.max_iter = 10;
+    fly.P.Delta_i = 100.0;
+    fly.P.lambda = 1e2;
+    fly.P.alpha = 2.0;
+    fly.P.dL_tol = 1e-1;
+    fly.P.rho_0 = -1e-1;
+    fly.P.rho_1 = 0.25;
+    fly.P.rho_2 = 0.90;
+    fly.P.rirelax = 1000;
+    fly.P.rfrelax = 10;
 
-    P.dK = 1;
-    P.n_recalcs = 14;
-    P.g[0] = -9.81;
-    P.g[1] = 0.0;
-    P.g[2] = 0.0;
-    P.a_min = 5.0;
-    P.a_max = 13.0; //15
-    P.theta_max = 50.0*DEG2RAD;
-    P.q_max = 0.0;
-
-    P.max_iter = 10;
-    P.Delta_i = 100.0;
-    P.lambda = 1e2;
-    P.alpha = 2.0;
-    P.dL_tol = 1e-1;
-    P.rho_0 = -1e-1;
-    P.rho_1 = 0.25;
-    P.rho_2 = 0.90;
-    P.rirelax = 1000;
-    P.rfrelax = 10;
-
-
-    //SKYEFLY// fly.I = ....
     // Inputs.
-    inputs I;
-    memset(&I,0,sizeof(I));
+    this->model_->loadInitialPos(fly.I.r_i);
+    fly.I.v_i[0] =  0.0;
+    fly.I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
+    fly.I.v_i[2] =  0.0; //this->model_->drone_->vel_->x();
+    fly.I.a_i[0] = -fly.P.g[0];
+    fly.I.a_i[1] = -fly.P.g[1];
+    fly.I.a_i[2] = -fly.P.g[2];
+    this->model_->loadFinalPos(fly.I.r_f);
+    fly.I.v_f[0] =  0.0;
+    fly.I.v_f[1] =  0.0;
+    fly.I.v_f[2] =  0.0;
+    fly.I.a_f[0] = -fly.P.g[0];
+    fly.I.a_f[1] = -fly.P.g[1];
+    fly.I.a_f[2] = -fly.P.g[2];
 
-    this->model_->loadInitialPos(I.r_i);
-    I.v_i[0] =  0.0;
-    I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
-    I.v_i[2] =  0.0; //this->model_->drone_->vel_->x();
-    I.a_i[0] = -P.g[0];
-    I.a_i[1] = -P.g[1];
-    I.a_i[2] = -P.g[2];
-    this->model_->loadFinalPos(I.r_f);
-    I.v_f[0] =  0.0;
-    I.v_f[1] =  0.0;
-    I.v_f[2] =  0.0;
-    I.a_f[0] = -P.g[0];
-    I.a_f[1] = -P.g[1];
-    I.a_f[2] = -P.g[2];
-
-    outputs O;
-    memset(&O,0,sizeof(O));
 
     // Initialize.
-    //SKYEFLY// fly.init();
-//    fly.init();
-    initialize(P,I,O);
+    fly.init();
 
-    // SCvx.
-    //SKYEFLY// fly.SCvx();
-//    fly.run();
-    SCvx(P,I,O);
+    // Run SCvx algorithm
+    fly.run();
 
     this->trajectory_->clear();
-    for(uint32_t i=0; i<P.K; i++) {
-        trajectory->append(new QPointF(O.r[2][i]*100, -O.r[1][i]*100));
-        this->trajectory_->append(new QPointF(O.r[2][i]*100, -O.r[1][i]*100));
+    for(uint32_t i=0; i<fly.P.K; i++) {
+        trajectory->append(new QPointF(fly.O.r[2][i]*100, -fly.O.r[1][i]*100));
+        this->trajectory_->append(new QPointF(fly.O.r[2][i]*100, -fly.O.r[1][i]*100));
     }
 
     // how feasible is the solution?
     // OUTPUT VIOLATIONS: constraint violation
     double accum = 0;
-    for(uint32_t i=0; i<P.K; i++) {
-        accum += abs( pow(O.a[0][i],2) + pow(O.a[1][i],2) + pow(O.a[2][i],2) \
-                - pow(O.s[i],2) )/P.K;
+    for(uint32_t i=0; i<fly.P.K; i++) {
+        accum += abs( pow(fly.O.a[0][i],2) + pow(fly.O.a[1][i],2) + pow(fly.O.a[2][i],2) \
+                - pow(fly.O.s[i],2) )/fly.P.K;
     }
 
     // OUTPUT VIOLATIONS: initial and final pos violation
-    accum = pow(O.r_f_relax[0],2) + pow(O.r_f_relax[1],2) + pow(O.r_f_relax[2],2);
+    accum = pow(fly.O.r_f_relax[0],2) + pow(fly.O.r_f_relax[1],2) + pow(fly.O.r_f_relax[2],2);
 
     if(accum > this->feasible_tol_) {
         this->valid_path_ = false;
@@ -388,38 +373,41 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
         this->menu_panel_->user_msg_label_->setText("Trajectory remains feasible!");
     }
 
-//    qDebug() << "i= " << I.i
-//             << "| Del = " << O.Delta
-//             << "| L = " << O.L
-//             << "| J = " << O.J
-//             << "| dL = " << O.dL
-//             << "| dJ = " << O.dJ
-//             << "| I.J_0 = " << I.J_0
-//             << "| O.J = " << O.J
-//             << "| r = " << O.ratio;
-//    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
+/* Debugging outputs
+    qDebug() << "i= " << I.i
+             << "| Del = " << O.Delta
+             << "| L = " << O.L
+             << "| J = " << O.J
+             << "| dL = " << O.dL
+             << "| dJ = " << O.dJ
+             << "| I.J_0 = " << I.J_0
+             << "| O.J = " << O.J
+             << "| r = " << O.ratio;
+    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
+*/
 
 
-    this->drone_traj3dof_data_.K = P.K;
-    for(quint32 k=0; k<P.K; k++) {
+    this->drone_traj3dof_data_.K = fly.P.K;
+    for(quint32 k=0; k<fly.P.K; k++) {
 //        this->drone_traj3dof_data_.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
 
-        this->drone_traj3dof_data_.time(k) = k*P.dt;
-        this->drone_traj3dof_data_.pos_ned(0,k) = O.r[1][k];
-        this->drone_traj3dof_data_.pos_ned(1,k) = O.r[2][k];
-        this->drone_traj3dof_data_.pos_ned(2,k) = O.r[0][k];
+        this->drone_traj3dof_data_.time(k) = k*fly.P.dt;
+        this->drone_traj3dof_data_.pos_ned(0,k) = fly.O.r[1][k];
+        this->drone_traj3dof_data_.pos_ned(1,k) = fly.O.r[2][k];
+        this->drone_traj3dof_data_.pos_ned(2,k) = fly.O.r[0][k];
 
-        this->drone_traj3dof_data_.vel_ned(0,k) = O.v[1][k];
-        this->drone_traj3dof_data_.vel_ned(1,k) = O.v[2][k];
-        this->drone_traj3dof_data_.vel_ned(2,k) = O.v[0][k];
+        this->drone_traj3dof_data_.vel_ned(0,k) = fly.O.v[1][k];
+        this->drone_traj3dof_data_.vel_ned(1,k) = fly.O.v[2][k];
+        this->drone_traj3dof_data_.vel_ned(2,k) = fly.O.v[0][k];
 
-        this->drone_traj3dof_data_.accl_ned(0,k) = O.a[1][k];
-        this->drone_traj3dof_data_.accl_ned(1,k) = O.a[2][k];
-        this->drone_traj3dof_data_.accl_ned(2,k) = O.a[0][k] - 9.81;
+        this->drone_traj3dof_data_.accl_ned(0,k) = fly.O.a[1][k];
+        this->drone_traj3dof_data_.accl_ned(1,k) = fly.O.a[2][k];
+        this->drone_traj3dof_data_.accl_ned(2,k) = fly.O.a[0][k] - 9.81;
     }
 //    this->drone_traj3dof_data_.
     // Set up next solution.
-    reset(P,I,O);
+    //SKYEFLY// fly.reset
+    reset(fly.P,fly.I,fly.O);
     qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
     this->solver_difficulty_ = this->timer_compute_.elapsed();
 }
