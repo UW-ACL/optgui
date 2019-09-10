@@ -93,6 +93,7 @@ signals:
 
  private:
     Canvas *canvas_;
+    MenuPanel *menu_panel_;
     WaypointsGraphicsItem *waypoints_graphic_;
     PathGraphicsItem *path_graphic_;
     DroneGraphicsItem *drone_graphic_;

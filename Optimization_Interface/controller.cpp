@@ -35,9 +35,12 @@ using namespace cprs;
 
 namespace interface {
 
+//constructor
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
+    this->menu_panel_ = menupanel;
     this->finaltime_ = menupanel->finaltime_init_; //initialized ctrller final time to that set by menupanel
+    this->horizon_length_ = menupanel->horizonlength_init_;
     this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 
@@ -384,7 +387,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     if(accum > this->feasible_tol_) {
         this->valid_path_ = false;
         this->path_graphic_->setColor(QColor(Qt::red));
-        qDebug() << "Increase final time!";
+        this->menu_panel_->user_msg_label_->setText("Increase final time to regain feasibility!");
 
     } else {
         this->valid_path_ = true;

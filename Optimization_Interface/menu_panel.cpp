@@ -13,11 +13,13 @@
 
 namespace interface {
 
+//constructor
 MenuPanel::MenuPanel(QWidget *parent, Qt::WindowFlags flags)
     : QFrame(parent, flags) {
     this->initialize();
 }
 
+//destructor
 MenuPanel::~MenuPanel() {
     // delete menu controls
     for (MenuButton *button : *this->menu_buttons_) {
@@ -36,6 +38,7 @@ MenuPanel::~MenuPanel() {
     delete this->layout();
 }
 
+//initializes values
 void MenuPanel::initialize() {
     // Set color
     this->setAutoFillBackground(true);
@@ -90,6 +93,18 @@ void MenuPanel::initialize() {
     this->initializeHorizonSlider();
     this->initializeFinaltimeSlider();
 
+    //Add stretch between sliders and dialogue box
+    this->menu_->layout()->addItem(new QSpacerItem(2,10));
+
+
+    //Create dialogue box for the user
+    this->user_msg_label_ = new QLabel();
+    this->user_msg_label_->setText("User dialogue box output.");
+    this->user_msg_label_->setWordWrap(true);
+    this->user_msg_label_->setMargin(2);
+    this->user_msg_label_->setStyleSheet("QLabel { background-color : black; color : white; }");
+    this->menu_->layout()->addWidget(this->user_msg_label_);
+
     // Create simulate button
     this->initializeSimButton();
 
@@ -101,6 +116,7 @@ void MenuPanel::initialize() {
 
 }
 
+//initializes point button
 void MenuPanel::initializePointButton() {
     MenuButton *point_button = new MenuButton(POINT, this->menu_);
     QPixmap pix(50, 50);
@@ -117,6 +133,7 @@ void MenuPanel::initializePointButton() {
     this->menu_buttons_->append(point_button);
 }
 
+//initializes ellipse button
 void MenuPanel::initializeEllipseButton() {
     MenuButton *ellipse_button = new MenuButton(ELLIPSE, this->menu_);
     QPixmap pix(50, 50);
@@ -133,6 +150,7 @@ void MenuPanel::initializeEllipseButton() {
     this->menu_buttons_->append(ellipse_button);
 }
 
+//initializes polygon button
 void MenuPanel::initializePolygonButton() {
     MenuButton *polygon_button = new MenuButton(POLYGON, this->menu_);
     QPixmap pix(50, 50);
@@ -157,6 +175,7 @@ void MenuPanel::initializePolygonButton() {
     this->menu_buttons_->append(polygon_button);
 }
 
+//initializes plane button
 void MenuPanel::initializePlaneButton() {
     MenuButton *plane_button = new MenuButton(PLANE, this->menu_);
     QPixmap pix(50, 50);
@@ -174,6 +193,7 @@ void MenuPanel::initializePlaneButton() {
     this->menu_buttons_->append(plane_button);
 }
 
+//initializes eraser button
 void MenuPanel::initializeEraserButton() {
     MenuButton *eraser_button = new MenuButton(ERASER, this->menu_);
     QPixmap pix(":/images/erasericon.png");
@@ -183,6 +203,7 @@ void MenuPanel::initializeEraserButton() {
     this->menu_buttons_->append(eraser_button);
 }
 
+//initializes waypoint button
 void MenuPanel::initializeWaypointButton() {
     MenuButton *waypoint_button = new MenuButton(WAYPOINT, this->menu_);
     QPixmap pix(50, 50);
@@ -206,6 +227,7 @@ void MenuPanel::initializeWaypointButton() {
     this->menu_buttons_->append(waypoint_button);
 }
 
+//initializes constraint flipping button
 void MenuPanel::initializeFlipButton() {
     MenuButton *flip_button = new MenuButton(FLIP, this->menu_);
     QPixmap pix(50, 50);
@@ -236,6 +258,7 @@ void MenuPanel::initializeFlipButton() {
     this->menu_buttons_->append(flip_button);
 }
 
+//initializes slider for number of iterations allowed (horizon length)
 void MenuPanel::initializeHorizonSlider() {
     this->opt_horizon_slider_ = new QSlider(Qt::Vertical, this->menu_);
     this->opt_horizon_slider_->setSizePolicy(QSizePolicy::Expanding,
@@ -244,15 +267,17 @@ void MenuPanel::initializeHorizonSlider() {
     this->opt_horizon_slider_->setTickPosition(QSlider::TicksAbove);
     this->opt_horizon_slider_->setMinimum(16);
     this->opt_horizon_slider_->setMaximum(32);
-    this->opt_horizon_slider_->setValue(32);
+    this->opt_horizon_slider_->setValue(this->horizonlength_init_);
     this->opt_horizon_slider_->setToolTip(tr("Set horizon length"));
 
     this->opt_horizon_label_ = new QLabel();
+
     this->menu_->layout()->addWidget(this->opt_horizon_label_);
     this->menu_->layout()->addWidget(this->opt_horizon_slider_);
     this->menu_->layout()->setAlignment(this->opt_horizon_slider_, Qt::AlignBottom);
 }
 
+//initializes slider for final time constraints
 void MenuPanel::initializeFinaltimeSlider() {
     QWidget *wid = new QWidget(this->menu_);
     wid->setLayout(new QHBoxLayout(wid));
@@ -277,6 +302,8 @@ void MenuPanel::initializeFinaltimeSlider() {
     this->menu_->layout()->addWidget(this->opt_finaltime_slider_);
     this->menu_->layout()->setAlignment(wid, Qt::AlignBottom); //this->opt_finaltime_slider_, Qt::AlignBottom);
 }
+
+//initializes button for executing traj to vehicle
 void MenuPanel::initializeExecButton() {
     this->exec_button_ = new QPushButton("Exec", this->menu_);
     this->exec_button_->setToolTip(tr("Execute optimization with constraints"));
@@ -284,6 +311,7 @@ void MenuPanel::initializeExecButton() {
     this->menu_->layout()->setAlignment(this->exec_button_, Qt::AlignBottom);
 }
 
+//initializes button for simulating traj on tablet
 void MenuPanel::initializeSimButton() {
     this->sim_button_ = new QPushButton("Sim", this->menu_);
     this->sim_button_->setToolTip(tr("Simulate the optimization with constraints"));
@@ -291,16 +319,19 @@ void MenuPanel::initializeSimButton() {
     this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
 }
 
-//void MenuPanel::initializeFreezeButton() {
-//    this->freeze_button_ = new MenuButton(FREEZE, this->menu_);
-//    this->freeze_button_->setText("Freeze");
-//    this->freeze_button_->setToolTip(tr("Freeze optimization"));
-//    this->menu_->layout()->addWidget(this->freeze_button_);
-//    this->menu_->layout()->setAlignment(this->freeze_button_, Qt::AlignBottom);
-//    this->freeze_button_->setCheckable(true);
-//    this->menu_buttons_->append(this->freeze_button_);
-//}
+/* Initializes button for freezing vehicle (TODO: not yet used)
+void MenuPanel::initializeFreezeButton() {
+    this->freeze_button_ = new MenuButton(FREEZE, this->menu_);
+    this->freeze_button_->setText("Freeze");
+    this->freeze_button_->setToolTip(tr("Freeze optimization"));
+    this->menu_->layout()->addWidget(this->freeze_button_);
+    this->menu_->layout()->setAlignment(this->freeze_button_, Qt::AlignBottom);
+    this->freeze_button_->setCheckable(true);
+    this->menu_buttons_->append(this->freeze_button_);
+}
+*/
 
+//initializes slider for map scaling (TODO: link to controller at init)
 void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);
     this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,
@@ -314,6 +345,5 @@ void MenuPanel::initializeZoomSlider() {
     this->menu_->layout()->addWidget(this->zoom_slider_);
     this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
 }
-
 
 }  // namespace interface
