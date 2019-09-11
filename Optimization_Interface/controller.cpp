@@ -287,12 +287,15 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
       alg.cpos.n = model_->loadEllipse(alg.P.obs.R, alg.P.obs.c_e, alg.obs.c_n);
       alg.cpos.n = model_->loadPosConstraint(alg.P.cpos.A, alg.P.cpos.b);
-    */
 
     double test = 5;
     SkyeFly fly;
     fly.setTimeHorizon(test); //fly.time_horizon = 5;
     fly.printTimeHorizon();
+    */
+
+    //Create flight trajectory object
+    SkyeFly fly;
 
     //Parameters
     fly.P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
@@ -307,8 +310,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     fly.P.g[1] = 0.0;
     fly.P.g[2] = 0.0;
     fly.P.a_min = 5.0;
-    fly.P.a_max = 13.0; //15
-    fly.P.theta_max = 50.0*DEG2RAD;
+    fly.P.a_max = 12.0; //15
+    fly.P.theta_max = 45.0*DEG2RAD;
     fly.P.q_max = 0.0;
 
     fly.P.max_iter = 10;

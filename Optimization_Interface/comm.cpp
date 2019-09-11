@@ -41,6 +41,7 @@ void comm::readPendingDatagrams() {
   }
 }
 
+//this transmits a trajectory to the drones IP and port
 void comm::rx_trajectory(const packet::traj3dof* data) {
     qDebug() << "rx_trajectory";
     serializable::traj3dof<topic::traj3dof::UNDEFINED> ser_data;
@@ -57,14 +58,14 @@ void comm::rx_trajectory(const packet::traj3dof* data) {
 //    ser_data->serialize_content(buffer);//->serialize(buffer);
 //    free(buffer);
 //    buffer = nullptr;
-//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.101"),6000);
+    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.101"),6000); //this is the IP/port of drone
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.102"),6000);
-    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.103"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.103"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.104"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.105"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.106"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.107"),6000);
-    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.108"),6000);
+//    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.108"),6000);
 //    mp_udp->writeDatagram(buff,ser_data.size(),QHostAddress("192.168.1.109"),6000);
 
 }
