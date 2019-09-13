@@ -187,7 +187,8 @@ void View::initialize() {
     connect(this->controller_->drone_comm_, SIGNAL(tx_pos(float,float,float)),
             this, SLOT(updateViewDronePos(float,float,float)));
     connect(this->controller_->puck_comm_, SIGNAL(tx_pos(float,float,float)),
-            this, SLOT(updateViewPuckPos(float, float, float)));
+            this, SLOT(updateViewPuckPos(float, float, float))); //TODO: add argument to updateViewPuckPos()
+                                                                    //that indicates which puck to update
 
     // TODO: remove sim from TODO
     timer_sim_ = new QTimer(this);
@@ -211,7 +212,7 @@ void View::updateViewDronePos(float n, float e, float d) {
 
 void View::updateViewPuckPos(float n, float e, float d) {
     QPointF pos(e*this->scale_, -n*this->scale_);
-    this->controller_->updatePuckPos(0, pos);
+    this->controller_->updatePuckPos(0, pos); //TODO: Change from 0 to index i for multiple obstacle ellipses
 }
 
 void View::mousePressEvent(QMouseEvent *event) {

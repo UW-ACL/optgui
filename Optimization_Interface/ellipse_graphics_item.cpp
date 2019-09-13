@@ -20,7 +20,7 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
     // Set model
     this->model_ = model;
     this->size_ = size;
-    this->model_->radius_ = size*2;
+    this->model_->radius_ = size*4;
     this->initialize();
 }
 

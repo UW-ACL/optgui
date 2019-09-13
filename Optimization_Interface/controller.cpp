@@ -64,6 +64,7 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
                                                  this->indoor_?16:128);
     this->canvas_->addItem(this->drone_graphic_);
 
+    this->loadEllipse(this->model_->puck_ellipse_pos_->at(0)); //TODO: make ellipse upate with puck symbol
     this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0),
                                                 nullptr,
                                                 this->indoor_?4:16);
@@ -496,6 +497,8 @@ void Controller::updateDronePos(QPointF pos) {
 void Controller::updatePuckPos(uint32_t idx, QPointF pos) {
     this->model_->puck_pos_->at(idx)->pos_->setX(pos.x());
     this->model_->puck_pos_->at(idx)->pos_->setY(pos.y());
+    this->model_->puck_ellipse_pos_->at(idx)->pos_->setX(pos.x());
+    this->model_->puck_ellipse_pos_->at(idx)->pos_->setY(pos.y());
 }
 
 // ============ NETWORK CONTROLS ============

@@ -25,6 +25,8 @@ void ConstraintModel::initialize() {
     this->final_pos_ = new PointModelItem();
     this->puck_pos_ = new QVector<PointModelItem *>();
     this->puck_pos_->append(new PointModelItem(new QPointF(-600,-600)));
+    this->puck_ellipse_pos_ = new QVector<EllipseModelItem *>();
+    this->puck_ellipse_pos_->append(new EllipseModelItem(new QPointF(-600,-600)));
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
