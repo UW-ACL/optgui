@@ -51,6 +51,7 @@ class View : public QGraphicsView {
     void setFinaltime(int);
     void updateViewDronePos(float,float,float);
     void updateViewPuckPos(float,float,float);
+    void addEllipse();
 
  private:
     void initialize();

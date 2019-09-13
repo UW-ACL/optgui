@@ -89,7 +89,7 @@ void MenuPanel::initialize() {
         this->menu_->layout()->setAlignment(button,
                                             Qt::AlignTop|Qt::AlignCenter);
     }
-
+    this->initializeAddEllipseButton();
     this->initializeHorizonSlider();
     this->initializeFinaltimeSlider();
 
@@ -319,6 +319,13 @@ void MenuPanel::initializeSimButton() {
     this->sim_button_->setToolTip(tr("Simulate the optimization with constraints"));
     this->menu_->layout()->addWidget(this->sim_button_);
     this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
+}
+
+void MenuPanel::initializeAddEllipseButton() {
+    this->add_ellipse_button_ = new QPushButton("Add ellipse", this->menu_);
+    this->add_ellipse_button_->setToolTip(tr("Add ellipse"));
+    this->menu_->layout()->addWidget(this->add_ellipse_button_);
+    this->menu_->layout()->setAlignment(this->add_ellipse_button_, Qt::AlignBottom);
 }
 
 /* Initializes button for freezing vehicle (TODO: not yet used)
