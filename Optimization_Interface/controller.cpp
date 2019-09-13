@@ -499,6 +499,7 @@ void Controller::updatePuckPos(uint32_t idx, QPointF pos) {
     this->model_->puck_pos_->at(idx)->pos_->setY(pos.y());
     this->model_->puck_ellipse_pos_->at(idx)->pos_->setX(pos.x());
     this->model_->puck_ellipse_pos_->at(idx)->pos_->setY(pos.y());
+    this->canvas_->update();
 }
 
 // ============ NETWORK CONTROLS ============
