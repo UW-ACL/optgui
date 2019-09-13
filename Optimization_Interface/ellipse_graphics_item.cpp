@@ -66,6 +66,7 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    this->setPos(*this->model_->pos_);
     // Show handles if selected
     if (this->isSelected()) {
         this->resize_handle_->setPos(-this->model_->radius_, 0);
