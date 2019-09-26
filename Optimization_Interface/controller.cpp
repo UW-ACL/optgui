@@ -299,19 +299,19 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     SkyeFly fly;
 
     //Parameters
-    fly.P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
-    fly.P.tf = this->finaltime_;
-    fly.P.dt = fly.P.tf/(fly.P.K-1.);
-    fly.P.obs.n = model_->loadEllipse(fly.P.obs.R, fly.P.obs.c_e, fly.P.obs.c_n);
-    fly.P.cpos.n = model_->loadPosConstraint(fly.P.cpos.A, fly.P.cpos.b);
+    fly.P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5); // Number of points on the trajectory (resolution)
+    fly.P.tf = this->finaltime_;   // duration of flight
+    fly.P.dt = fly.P.tf/(fly.P.K-1.); // 'resolution'
+    fly.P.obs.n = model_->loadEllipse(fly.P.obs.R, fly.P.obs.c_e, fly.P.obs.c_n); // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the circle and R is the radius (H some linear transform)
+    fly.P.cpos.n = model_->loadPosConstraint(fly.P.cpos.A, fly.P.cpos.b);  // Affine constraints Ax \leq b
 
     fly.P.dK = 1;
     fly.P.n_recalcs = 14;
     fly.P.g[0] = -9.81;
     fly.P.g[1] = 0.0;
     fly.P.g[2] = 0.0;
-    fly.P.a_min = 5.0;
-    fly.P.a_max = 12.0; //15
+    fly.P.a_min = 5.0;   // Minimum accel.
+    fly.P.a_max = 12.0; //  Maximum accel.
     fly.P.theta_max = 45.0*DEG2RAD;
     fly.P.q_max = 0.0;
 
@@ -349,6 +349,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // Run SCvx algorithm
     fly.run();
 
+
+    // outputs
     this->trajectory_->clear();
     for(uint32_t i=0; i<fly.P.K; i++) {
         trajectory->append(new QPointF(fly.O.r[2][i]*100, -fly.O.r[1][i]*100));
