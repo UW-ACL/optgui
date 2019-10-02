@@ -4,3 +4,7 @@ build*
 Optimization_Interface/Optimization_Interface.pro.user.*
 *.pro.user
 trajectories
+Optimization_Interface/debug/*
+Optimization_Interface/Makefile*
+Optimization_Interface/object_script*
+Optimization_Interface/.qmake.stash

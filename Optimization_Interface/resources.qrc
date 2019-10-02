@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/images">
-        <file>erasericon.png</file>
+    <qresource prefix="/">
+        <file>assets/erasericon.png</file>
     </qresource>
 </RCC>
