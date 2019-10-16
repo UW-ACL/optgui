@@ -12,8 +12,8 @@
 using interface::MainWindow;
 
 int main(int argc, char *argv[]) {
-    qRegisterMetaType<packet::traj3dof>("packet::traj3dof");
-    qRegisterMetaType<packet::telemetry>("packet::telemetry");
+    qRegisterMetaType<autogen::packet::traj3dof>("autogen::packet::traj3dof");
+    qRegisterMetaType<autogen::packet::telemetry>("autogen::packet::telemetry");
 
     // Initialize application
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

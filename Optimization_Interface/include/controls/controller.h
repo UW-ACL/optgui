@@ -94,7 +94,7 @@ class Controller : public QObject {
     bool isFrozen();
 
 signals:
-    void trajectoryExecuted(const packet::traj3dof* data);
+    void trajectoryExecuted(const autogen::packet::traj3dof* data);
 
  private:
     Canvas *canvas_;
@@ -143,7 +143,7 @@ signals:
 
     bool exec_once_ = false;
 
-    packet::traj3dof drone_traj3dof_data_;
+    autogen::packet::traj3dof drone_traj3dof_data_;
 
 };
 

@@ -37,7 +37,7 @@ void comm::readPendingDatagrams() {
 
       // Deserialize mocap data.
       ptr = buffer;
-      deserializable::telemetry<topic::telemetry::UNDEFINED> telemetry_data;
+      autogen::deserializable::telemetry<autogen::topic::telemetry::UNDEFINED> telemetry_data;
       const uint8* ptr_telemetry_data = telemetry_data.deserialize(ptr);
       if (ptr_telemetry_data not_eq ptr) {
           emit tx_pos(telemetry_data.pos_ned(0), telemetry_data.pos_ned(1), telemetry_data.pos_ned(2));
@@ -47,16 +47,16 @@ void comm::readPendingDatagrams() {
 }
 
 //this transmits a trajectory to the drones IP and port
-void comm::rx_trajectory(const packet::traj3dof* data) {
+void comm::rx_trajectory(const autogen::packet::traj3dof* data) {
     qDebug() << "rx_trajectory";
-    serializable::traj3dof<topic::traj3dof::UNDEFINED> ser_data;
+    autogen::serializable::traj3dof<autogen::topic::traj3dof::UNDEFINED> ser_data;
     ser_data = *data;
     uint8 buffer[4096]={0,};
     ser_data.serialize(buffer);
 
     char* buff = (char*)buffer;
 
-//    packet::traj6dof* ser_data = new packet::traj6dof;
+//    autogen::packet::traj6dof* ser_data = new autogen::packet::traj6dof;
 
 //    qDebug() << "sanity";
 //    uint8* buffer = (uint8*)malloc(10000);

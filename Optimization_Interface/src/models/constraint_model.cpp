@@ -43,7 +43,8 @@ ConstraintModel::~ConstraintModel() {
     for (PointModelItem *point : *this->points_) {
         delete point;
     }
-    delete this->ellipses_;
+    delete this->points_;
+
     // Delete ellipses
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         delete ellipse;

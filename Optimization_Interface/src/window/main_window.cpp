@@ -27,6 +27,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Initialize menu items
     this->initializeMenu();
+
+    // Only need if malloc main window
+    // Close properly on quit
+    // this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 MainWindow::~MainWindow() {
@@ -41,6 +45,7 @@ MainWindow::~MainWindow() {
     delete this->file_menu_;
 
     // Delete view
+    // TODO(dtsullivan): automatically deleted my parent?
     delete this->view_;
 }
 

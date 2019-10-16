@@ -26,7 +26,6 @@ MenuPanel::~MenuPanel() {
     delete this->menu_buttons_;
     delete this->sim_button_;
     delete this->exec_button_;
-    delete this->sim_button_;
     delete this->zoom_slider_;
     delete this->menu_->layout();
 

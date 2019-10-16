@@ -31,7 +31,6 @@
 #include "../../include/globals.h"
 #include "../../include/window/menu_panel.h"
 
-using namespace cprs;
 
 namespace interface {
 
@@ -93,10 +92,10 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->drone_comm_ = new comm("", this->drone_port_);
     this->puck_comm_ = new comm("", this->puck_port_);
 
-    connect(this, SIGNAL(trajectoryExecuted(const packet::traj3dof*)),
-            this->drone_comm_, SLOT(rx_trajectory(const packet::traj3dof*)));
-//    connect(this, SIGNAL(trajectoryExecuted2(const packet::traj3dof*)),
-//            this->drone_comm_, SLOT(rx_trajectory2(const packet::traj3dof*)));
+    connect(this, SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof*)),
+            this->drone_comm_, SLOT(rx_trajectory(const autogen::packet::traj3dof*)));
+//    connect(this, SIGNAL(trajectoryExecuted2(const autogen::packet::traj3dof*)),
+//            this->drone_comm_, SLOT(rx_trajectory2(const autogen::packet::traj3dof*)));
 //    connect(this, SIGNAL(trajectoryExecuted2(float)),
 //            this->drone_comm_, SLOT(rx_trajectory2(float)));
 }

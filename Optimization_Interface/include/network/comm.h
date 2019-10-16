@@ -14,8 +14,6 @@
 #include <QThread>
 #include <QUdpSocket>
 
-using namespace autogen;
-
   class comm : public QObject {
     Q_OBJECT
     private:
@@ -27,7 +25,7 @@ using namespace autogen;
       ~comm();
     public slots:
       void readPendingDatagrams();
-      void rx_trajectory(const packet::traj3dof* data);
+      void rx_trajectory(const autogen::packet::traj3dof* data);
     signals:
       void tx_pos(float n, float e, float d);
   };
