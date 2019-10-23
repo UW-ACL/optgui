@@ -19,8 +19,10 @@ class PolygonServer : public ItemServer {
 
  public:
     explicit PolygonServer(PolygonModelItem *model);
+
  private slots:
     void interact() override;
+
  private:
     PolygonModelItem *polygon_model_;
 };

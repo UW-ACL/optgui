@@ -49,8 +49,8 @@ class View : public QGraphicsView {
     void toggleSim();
     void setHorizon(int);
     void setFinaltime(int);
-    void updateViewDronePos(float,float,float);
-    void updateViewPuckPos(float,float,float);
+    void updateViewDronePos(float, float, float);
+    void updateViewPuckPos(float, float, float);
     void addEllipse();
 
  private:
@@ -71,9 +71,8 @@ class View : public QGraphicsView {
 
     QElapsedTimer compute_timer_;
 
-    // TODO: fix this!
+    // TODO(bchasnov): fix this!
     float scale_ = 100;
-
 };
 
 }  // namespace interface

@@ -32,10 +32,12 @@ class PointGraphicsItem : public QGraphicsItem {
 
     void expandScene();
     void setMarker(uint32_t);
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;

@@ -41,7 +41,8 @@ void PolygonGraphicsItem::initialize() {
     // Set resize handles
     this->resize_handles_ = new QVector<PolygonResizeHandle *>();
     for (QPointF *point : *this->model_->points_) {
-        PolygonResizeHandle *handle = new PolygonResizeHandle(point, this, this->size_);
+        PolygonResizeHandle *handle =
+                new PolygonResizeHandle(point, this, this->size_);
         this->resize_handles_->append(handle);
         handle->hide();
     }
@@ -81,12 +82,12 @@ void PolygonGraphicsItem::paint(QPainter *painter,
             handle->updatePos();
             handle->show();
         }
-        this->pen_.setWidth(this->size_/4); //3
+        this->pen_.setWidth(this->size_/4);  // 3
     } else {
         for (PolygonResizeHandle *handle : *this->resize_handles_) {
             handle->hide();
         }
-        this->pen_.setWidth(this->size_/4); //1
+        this->pen_.setWidth(this->size_/4);  // 1
     }
 
     painter->setPen(this->pen_);

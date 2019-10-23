@@ -30,8 +30,10 @@ class Canvas : public QGraphicsScene {
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
+
  private slots:
     void bringSelectedToFront();
+
  private:
     void initialize();
     void setBackgroundImage(QString filename);
@@ -47,7 +49,7 @@ class Canvas : public QGraphicsScene {
     double background_bottomleft_y_ = 0;
     double background_topright_x_ = 1;
     double background_topright_y_ = 1;
-    // TODO: fix this...
+    // TODO(bchasnov): fix this...
     double scale_ = 100;
 };
 

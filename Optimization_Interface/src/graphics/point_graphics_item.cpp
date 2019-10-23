@@ -61,8 +61,9 @@ void PointGraphicsItem::paint(QPainter *painter,
                                 QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    // TODO: fix this, use mapfromscene
-    this->setPos(*this->model_->pos_);//this->mapFromScene(*this->model_->pos_));
+    // TODO(bchasnov): fix this, use mapfromscene
+    // this->mapFromScene(*this->model_->pos_));
+    this->setPos(*this->model_->pos_);
 
     // Show handles if selected
     if (this->isSelected()) {
@@ -83,8 +84,8 @@ void PointGraphicsItem::paint(QPainter *painter,
         break;
     case 1:
         painter->setPen(QPen(Qt::green, this->radius_*2));
-        painter->drawLine(-rad*5,-rad*5,rad*5,rad*5);
-        painter->drawLine(rad*5,-rad*5,-rad*5,rad*5);
+        painter->drawLine(-rad * 5, -rad * 5, rad * 5, rad * 5);
+        painter->drawLine(rad * 5, -rad * 5, -rad * 5, rad * 5);
         break;
     }
 

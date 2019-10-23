@@ -26,7 +26,7 @@ void PathServer::interact() {
         connect(client_connection, SIGNAL(disconnected()),
                 client_connection, SLOT(deleteLater()));
 
-        // TODO: interact with path model over network
+        // TODO(dtsull): interact with path model over network
 
         client_connection->disconnectFromHost();
 }

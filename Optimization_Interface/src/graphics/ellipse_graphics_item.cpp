@@ -43,7 +43,8 @@ void EllipseGraphicsItem::initialize() {
     this->setPos(*this->model_->pos_);
 
     // Set resize handle
-    this->resize_handle_ = new EllipseResizeHandle(this->model_, this, this->size_);
+    this->resize_handle_ =
+            new EllipseResizeHandle(this->model_, this, this->size_);
     this->resize_handle_->hide();
 }
 

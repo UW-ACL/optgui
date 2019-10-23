@@ -14,7 +14,9 @@
 
 namespace interface {
 
-PolygonResizeHandle::PolygonResizeHandle(QPointF *point, QGraphicsItem *parent, quint32 size)
+PolygonResizeHandle::PolygonResizeHandle(QPointF *point,
+                                         QGraphicsItem *parent,
+                                         quint32 size)
     : QGraphicsEllipseItem(parent) {
     this->point_ = point;
     this->resize_ = false;

@@ -19,8 +19,10 @@ class PathServer : public ItemServer {
 
  public:
     explicit PathServer(PathModelItem *model);
+
  private slots:
     void interact() override;
+
  private:
     PathModelItem *path_model_;
 };

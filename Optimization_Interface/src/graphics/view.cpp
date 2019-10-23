@@ -16,8 +16,8 @@ View::View(QWidget * parent)
     : QGraphicsView(parent) {
     // Create Canvas
     QStringList background_images = {"lab_indoor_-6_-6_6_6",
-                                     "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810",
-                                     "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
+            "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810",
+            "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
 
     QString background_image = QInputDialog::getItem(this, tr("Select scene"),
                                       tr("mode"), background_images, 0, false);
@@ -29,7 +29,8 @@ View::View(QWidget * parent)
     this->menu_panel_ = new MenuPanel(this);
 
     // Create Controller
-    this->controller_ = new Controller(this->canvas_,this->menu_panel_); //added menu panel to construction
+    // added menu panel to construction
+    this->controller_ = new Controller(this->canvas_, this->menu_panel_);
 
     // Set State
     this->state_ = IDLE;
@@ -138,7 +139,8 @@ void View::initialize() {
     this->layout()->setAlignment(this->menu_button_, Qt::AlignRight);
 
     // Configure menu panel parameters
-        //TODO - Might want to move this to the constructor where menu_panel_ is initialized?
+    // TODO(bchasnov): Might want to move this to the constructor
+    // where menu_panel_ is initialized?
     this->menu_panel_->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->menu_panel_->setFixedWidth(100);
@@ -187,13 +189,16 @@ void View::initialize() {
             this, SLOT(addEllipse()));
 
     // Connect comms to the
-    connect(this->controller_->drone_comm_, SIGNAL(tx_pos(float,float,float)),
-            this, SLOT(updateViewDronePos(float,float,float)));
-    connect(this->controller_->puck_comm_, SIGNAL(tx_pos(float,float,float)),
-            this, SLOT(updateViewPuckPos(float, float, float))); //TODO: add argument to updateViewPuckPos()
-                                                                    //that indicates which puck to update
+    connect(this->controller_->drone_comm_,
+            SIGNAL(tx_pos(float, float, float)),
+            this, SLOT(updateViewDronePos(float, float, float)));
+    connect(this->controller_->puck_comm_,
+            SIGNAL(tx_pos(float, float, float)),
+            this, SLOT(updateViewPuckPos(float, float, float)));
+    // TODO(bchasnov): add argument to updateViewPuckPos()
+    // that indicates which puck to update
 
-    // TODO: remove sim from TODO
+    // TODO(bchasnov): remove sim from TODO
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
 
@@ -204,25 +209,25 @@ void View::initialize() {
 }
 
 void View::updateViewDronePos(float n, float e, float d) {
-    QPointF pos(e*this->scale_,-n*this->scale_);
+    QPointF pos(e * this->scale_, -n * this->scale_);
     this->controller_->updateDronePos(pos);
 
-    if(compute_timer_.elapsed() >= this->controller_->solver_difficulty_*5) {
+    if (compute_timer_.elapsed() >= this->controller_->solver_difficulty_ * 5) {
         this->controller_->compute();
         compute_timer_.restart();
     }
 }
 
 void View::updateViewPuckPos(float n, float e, float d) {
-    QPointF pos(e*this->scale_, -n*this->scale_);
-    this->controller_->updatePuckPos(0, pos); //TODO: Change from 0 to index i for multiple obstacle ellipses
+    QPointF pos(e * this->scale_, -n * this->scale_);
+    // TODO(bchasnov): Change from 0 to index i for multiple obstacle ellipses
+    this->controller_->updatePuckPos(0, pos);
 }
 
 void View::mousePressEvent(QMouseEvent *event) {
     // Grab event position in scene coordinates
-    if(this->controller_->isFrozen()) {
+    if (this->controller_->isFrozen()) {
         qDebug() << "Frozen! Cannot take mouse event";
-
     }
     QPointF pos = this->mapToScene(event->pos());
 
@@ -236,8 +241,10 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case ELLIPSE: {
-            // TODO: disallow user from adding ellipse if it overlaps?
-            if (!this->controller_->model_->isEllipseOverlap(new QPointF(pos))) {
+            // TODO(bchasnov): disallow user from adding
+            // ellipse if it overlaps?
+            if (!this->controller_->model_->
+                    isEllipseOverlap(new QPointF(pos))) {
                 this->controller_->addEllipse(new QPointF(pos));
             } else {
                qDebug() << "Cannot add overlapping ellipse";
@@ -260,7 +267,8 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                // TODO: dot size should be dynamic depending on the zoom level
+                // TODO(bchasnov): dot size should be dynamic
+                // depending on the zoom level
                 qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
@@ -280,7 +288,8 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                // TODO: dot size should be dynamic depending on the zoom level
+                // TODO(bchasnov): dot size should be dynamic
+                // depending on the zoom level
                 qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
@@ -313,9 +322,10 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
-    if(this->simulating_ == 0)
-        this->controller_->compute();
 
+    if (this->simulating_ == 0) {
+        this->controller_->compute();
+    }
 }
 
 void View::closeMenu() {
@@ -373,11 +383,11 @@ void View::execute() {
     this->controller_->execute();
 }
 
-// TODO: does this belong in view? probably not..
+// TODO(bchasnov): does this belong in view? probably not..
 void View::stepSim() {
-    if(this->controller_->simDrone(this->simulating_)) {
+    if (this->controller_->simDrone(this->simulating_)) {
         ++this->simulating_;
-        QTimer::singleShot(this->controller_->getTimeInterval()*1000, this,
+        QTimer::singleShot(this->controller_->getTimeInterval() * 1000, this,
                            SLOT(stepSim()));
     } else {
         this->simulating_ = 0;
@@ -393,16 +403,19 @@ void View::toggleSim() {
 void View::setFinaltime(int _finaltime) {
     float finaltime = _finaltime/10.0f;
     this->controller_->setFinaltime(finaltime);
-    this->menu_panel_->opt_finaltime_label_->setText("T=" + QString::number(finaltime));
+    this->menu_panel_->opt_finaltime_label_->
+            setText("T=" + QString::number(finaltime));
 }
 
 void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
-    this->menu_panel_->opt_horizon_label_->setText("N=" + QString::number(horizon));
+    this->menu_panel_->opt_horizon_label_->
+            setText("N=" + QString::number(horizon));
 }
 
 void View::addEllipse() {
-    this->controller_->addEllipse(new QPointF(*this->controller_->model_->puck_ellipse_pos_->at(0)->pos_));
+    this->controller_->addEllipse(new QPointF(
+            *this->controller_->model_->puck_ellipse_pos_->at(0)->pos_));
 }
 
 void View::clearMarkers() {

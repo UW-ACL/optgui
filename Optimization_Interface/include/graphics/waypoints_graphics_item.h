@@ -32,10 +32,12 @@ class WaypointsGraphicsItem : public QGraphicsItem {
     void expandScene();
     void removeHandle(PolygonResizeHandle *handle);
     int type() const override;
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;

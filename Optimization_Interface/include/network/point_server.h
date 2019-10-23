@@ -19,8 +19,10 @@ class PointServer : public ItemServer {
 
  public:
     explicit PointServer(PointModelItem *model);
+
  private slots:
     void interact() override;
+
  private:
     PointModelItem *point_model_;
 };

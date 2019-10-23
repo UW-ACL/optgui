@@ -17,7 +17,7 @@ namespace interface {
 
 class PathModelItem : public DataModel {
  public:
-    explicit PathModelItem()
+    PathModelItem()
         { this->points_ = new QVector<QPointF *>(); port_ = 0; }
     ~PathModelItem() {
         for (QPointF *point : *this->points_) {

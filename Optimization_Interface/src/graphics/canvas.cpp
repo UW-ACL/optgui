@@ -51,11 +51,12 @@ void Canvas::setBackgroundImage(QString filename) {
         qDebug() << "Image filename not formatted correctly";
     }
 
-    if(list[1] == "outdoor") {
-        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:" << list[3].toFloat()
-                 << "width:" <<list[4].toFloat() << "height:" << list[5].toFloat();
+    if (list[1] == "outdoor") {
+        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:"
+                 << list[3].toFloat() << "width:" << list[4].toFloat()
+                 << "height:" << list[5].toFloat();
         this->background_bottomleft_x_ = 0;
-        this->background_bottomleft_y_ = 0;//list[5].toFloat();
+        this->background_bottomleft_y_ = 0;  // list[5].toFloat();
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
         this->indoor_ = false;
@@ -65,23 +66,26 @@ void Canvas::setBackgroundImage(QString filename) {
         this->background_bottomleft_y_ = list[3].toFloat();
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
-        qDebug() << "Indoor mode:" << "bottom left" << this->background_bottomleft_x_ << this->background_bottomleft_y_
-                 << "top right:" << this->background_topright_x_ << this->background_topright_y_;
+        qDebug() << "Indoor mode:" << "bottom left"
+                 << this->background_bottomleft_x_
+                 << this->background_bottomleft_y_
+                 << "top right:" << this->background_topright_x_
+                 << this->background_topright_y_;
         this->indoor_ = true;
     }
 
-    this->background_image_ = new QImage("../../skyenet/maps/" + filename + ".png");
+    this->background_image_ =
+            new QImage("../../skyenet/maps/" + filename + ".png");
 }
 
 QPointF* Canvas::getBottomLeft() {
     return new QPointF(this->background_bottomleft_y_*this->scale_,
-                      -this->background_bottomleft_x_*this->scale_);
-
+                       -this->background_bottomleft_x_*this->scale_);
 }
 
 QPointF* Canvas::getTopRight() {
-   return new QPointF(this->background_topright_y_*this->scale_,
-         -this->background_topright_x_*this->scale_);
+    return new QPointF(this->background_topright_y_*this->scale_,
+                       -this->background_topright_x_*this->scale_);
 }
 
 void Canvas::bringSelectedToFront() {
@@ -152,7 +156,6 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     // Draw label
     painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
                       QString::number(qreal(segment_size) / 100) + UNIT);
-
 }
 
 qint64 Canvas::roundUpPast(qint64 n, qint64 m) {
@@ -194,8 +197,10 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
-    double width  = this->background_topright_y_ - this->background_bottomleft_y_;
-    double height = this->background_topright_x_ - this->background_bottomleft_x_;
+    double width  = this->background_topright_y_
+            - this->background_bottomleft_y_;
+    double height = this->background_topright_x_
+            - this->background_bottomleft_x_;
 
     QRectF bbox(this->background_bottomleft_y_*this->scale_,
                 -this->background_topright_x_*this->scale_,

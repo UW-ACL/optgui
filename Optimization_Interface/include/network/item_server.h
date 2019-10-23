@@ -19,10 +19,12 @@ class ItemServer : public QTcpServer {
     Q_OBJECT
 
  public:
-    ItemServer(DataModel *model, QObject *parent = nullptr);
+    explicit ItemServer(DataModel *model, QObject *parent = nullptr);
     virtual bool startServer();
+
  private slots:
     virtual void interact() = 0;
+
  private:
     DataModel *model_;
 };

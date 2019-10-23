@@ -72,7 +72,7 @@ class ConstraintModel {
     uint32_t maxEllipse;
     uint32_t maxHalfspace;
 
-    // TODO: fix magic number.. use mapfromscene?
+    // TODO(bchasnov): fix magic number.. use mapfromscene?
     qreal scale_ = 100.0;
 
  private:

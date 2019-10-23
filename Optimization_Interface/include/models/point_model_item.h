@@ -18,7 +18,7 @@ const double DEFAULT_RAD2 = 5;
 
 class PointModelItem : public DataModel {
  public:
-    explicit PointModelItem() { pos_ = new QPointF(0, 0); port_ = 0; }
+    PointModelItem() { pos_ = new QPointF(0, 0); port_ = 0; }
     explicit PointModelItem(QPointF *pos) { pos_ = pos; port_ = 0;}
     ~PointModelItem() { delete pos_; }
     QPointF *pos_;

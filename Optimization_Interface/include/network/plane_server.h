@@ -19,8 +19,10 @@ class PlaneServer : public ItemServer {
 
  public:
     explicit PlaneServer(PlaneModelItem *model);
+
  private slots:
     void interact() override;
+
  private:
     PlaneModelItem *plane_model_;
 };

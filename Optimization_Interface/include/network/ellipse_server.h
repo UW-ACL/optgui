@@ -19,8 +19,10 @@ class EllipseServer : public ItemServer {
 
  public:
     explicit EllipseServer(EllipseModelItem *model);
+
  private slots:
     void interact() override;
+
  private:
     EllipseModelItem *ellipse_model_;
 };

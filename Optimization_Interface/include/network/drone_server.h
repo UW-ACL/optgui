@@ -18,8 +18,10 @@ class DroneServer : public ItemServer {
 
  public:
     explicit DroneServer(DroneModelItem *model);
+
  private slots:
     void interact() override;
+
  private:
     DroneModelItem *drone_model_;
 };

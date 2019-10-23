@@ -19,11 +19,12 @@ class DroneGraphicsItem : public QGraphicsItem {
  public:
     explicit DroneGraphicsItem(DroneModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qint32 size=16);
+                               qint32 size = 16);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;
     void expandScene();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,

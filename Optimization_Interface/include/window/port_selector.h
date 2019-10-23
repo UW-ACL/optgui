@@ -21,10 +21,13 @@ class PortSelector : public QLineEdit {
  public:
     explicit PortSelector(QSet<quint16> *ports,
                           DataModel *model, QWidget *parent);
+
  protected:
     void focusInEvent(QFocusEvent *event) override;
+
  private slots:
     void updatePort();
+
  private:
     QSet<quint16> *ports_;
     DataModel *model_;

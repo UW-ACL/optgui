@@ -58,7 +58,8 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
         for (qint32 i = this->resize_handles_->size();
              i < this->model_->points_->size(); i++) {
             PolygonResizeHandle *handle =
-                    new PolygonResizeHandle(this->model_->points_->at(i), this, this->size_);
+                    new PolygonResizeHandle(
+                        this->model_->points_->at(i), this, this->size_);
             this->resize_handles_->append(handle);
             handle->show();
         }

@@ -33,10 +33,12 @@ class PlaneGraphicsItem : public QGraphicsItem {
 
     void expandScene();
     void flipDirection();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;
