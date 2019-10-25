@@ -8,6 +8,9 @@
 #ifndef CONSTRAINT_MODEL_H_
 #define CONSTRAINT_MODEL_H_
 
+#include <cprs.h>
+#include <algorithm.h>
+
 #include <QSet>
 #include <QVector>
 #include <QPointF>
@@ -28,6 +31,8 @@ class ConstraintModel {
     ConstraintModel(uint32_t maxEllipse, uint32_t maxAffine);
 
     ~ConstraintModel();
+
+    void initializeFly();
 
     void addPoint(PointModelItem *item);
     void removePoint(PointModelItem *item);
@@ -68,6 +73,8 @@ class ConstraintModel {
     PointModelItem *final_pos_;
     QVector<PointModelItem *> *puck_pos_;
     QVector<EllipseModelItem *> *puck_ellipse_pos_;
+
+    SkyeFly *fly_;
 
     uint32_t maxEllipse;
     uint32_t maxHalfspace;

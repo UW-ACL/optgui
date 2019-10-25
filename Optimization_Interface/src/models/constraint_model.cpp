@@ -34,7 +34,8 @@ void ConstraintModel::initialize() {
     this->waypoints_ = new PathModelItem();
     this->path_ = new PathModelItem();
     this->drone_ = new DroneModelItem();
-    // TODO(dtsull): these seem unnecessart
+    this->initializeFly();
+    // TODO(dtsull): these seem unnecessary
     QSet<EllipseModelItem *> set;
     QSetIterator<EllipseModelItem *> i(set);
 }
@@ -72,6 +73,36 @@ ConstraintModel::~ConstraintModel() {
 
     // Delete drone
     delete this->drone_;
+
+    // Delete SkyeFly
+    delete this->fly_;
+}
+
+
+void ConstraintModel::initializeFly() {
+    this->fly_ = new SkyeFly();
+
+    // Relaxation variables
+    this->fly_->P.dK = 1;
+    this->fly_->P.n_recalcs = 14;
+    this->fly_->P.g[0] = -9.81;
+    this->fly_->P.g[1] = 0.0;
+    this->fly_->P.g[2] = 0.0;
+    this->fly_->P.a_min = 5.0;   // Minimum accel.
+    this->fly_->P.a_max = 12.0;  // Maximum accel.
+    this->fly_->P.theta_max = 45.0 * DEG2RAD;
+    this->fly_->P.q_max = 0.0;
+
+    this->fly_->P.max_iter = 10;
+    this->fly_->P.Delta_i = 100.0;
+    this->fly_->P.lambda = 1e2;
+    this->fly_->P.alpha = 2.0;
+    this->fly_->P.dL_tol = 1e-1;
+    this->fly_->P.rho_0 = -1e-1;
+    this->fly_->P.rho_1 = 0.25;
+    this->fly_->P.rho_2 = 0.90;
+    this->fly_->P.rirelax = 1000;
+    this->fly_->P.rfrelax = 10;
 }
 
 void ConstraintModel::addPoint(PointModelItem *item) {
@@ -81,9 +112,11 @@ void ConstraintModel::addPoint(PointModelItem *item) {
 void ConstraintModel::updateInitialPoint(QPointF *item) {
     // TODO(dtsull): implement
 }
+
 void ConstraintModel::updateFinalPoint(QPointF *item) {
     // TODO(dtsull): implement
 }
+
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
 }

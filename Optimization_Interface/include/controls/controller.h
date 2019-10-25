@@ -8,6 +8,8 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include <cprs.h>
+#include <algorithm.h>
 
 #include <QNetworkSession>
 #include <QElapsedTimer>
@@ -22,9 +24,6 @@
 #include "../network/item_server.h"
 #include "../network/comm.h"
 #include "../window/menu_panel.h"
-
-#include <cprs.h>
-#include <algorithm.h>
 
 namespace interface {
 
@@ -130,7 +129,6 @@ class Controller : public QObject {
     void writeWaypoints(PathModelItem *model, QDataStream *out);
     void writePath(PathModelItem *model, QDataStream *out);
     void writeDrone(DroneModelItem *model, QDataStream *out);
-
 
     PointModelItem *readPoint(QDataStream *in);
     EllipseModelItem *readEllipse(QDataStream *in);
