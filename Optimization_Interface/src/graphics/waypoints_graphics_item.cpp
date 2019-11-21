@@ -15,18 +15,19 @@ namespace interface {
 
 WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
                                              QGraphicsItem *parent,
-                                             quint32 size)
+                                             qreal size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->size_ = size;
+    this->line_width_ = 4;
     this->initialize();
 }
 
 void WaypointsGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::blue);
-    this->pen_.setWidth(1);
+    this->pen_.setWidthF(this->line_width_);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
@@ -65,6 +66,13 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
         }
         this->expandScene();
     }
+
+    // scale line width with view
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    this->pen_.setWidthF(this->line_width_ / scaling_factor);
 
     // Draw connecting path
     painter->setPen(this->pen_);

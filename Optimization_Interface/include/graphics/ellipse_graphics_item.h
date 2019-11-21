@@ -16,13 +16,12 @@
 
 namespace interface {
 
-const qreal ELLIPSE_BORDER = 15;
+qreal const ELLIPSE_BORDER = 15;
 
 class EllipseGraphicsItem : public QGraphicsItem {
  public:
     explicit EllipseGraphicsItem(EllipseModelItem *model,
-                                 QGraphicsItem *parent = nullptr,
-                                 quint32 size = 16);
+                                 QGraphicsItem *parent = nullptr);
     ~EllipseGraphicsItem();
     EllipseModelItem *model_;
 
@@ -44,7 +43,6 @@ class EllipseGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     EllipseResizeHandle *resize_handle_;
-    quint32 size_;
 };
 
 }  // namespace interface

@@ -221,8 +221,8 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
-void Controller::addEllipse(QPointF *point) {
-    EllipseModelItem *item_model = new EllipseModelItem(point);
+void Controller::addEllipse(QPointF *point, qreal radius) {
+    EllipseModelItem *item_model = new EllipseModelItem(point, radius);
     this->loadEllipse(item_model);
 }
 
@@ -769,7 +769,7 @@ void Controller::loadPoint(PointModelItem *item_model) {
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic =
-            new EllipseGraphicsItem(item_model, nullptr, this->indoor_?16:128);
+            new EllipseGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
     this->model_->addEllipse(item_model);
     this->canvas_->bringToFront(item_graphic);
@@ -778,7 +778,7 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
 
 void Controller::loadPolygon(PolygonModelItem *item_model) {
     PolygonGraphicsItem *item_graphic =
-            new PolygonGraphicsItem(item_model, nullptr, this->indoor_?16:128);
+            new PolygonGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
     this->model_->addPolygon(item_model);
     this->canvas_->bringToFront(item_graphic);
@@ -787,7 +787,7 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
 
 void Controller::loadPlane(PlaneModelItem *item_model) {
     PlaneGraphicsItem *item_graphic =
-            new PlaneGraphicsItem(item_model, nullptr, this->indoor_?16:128);
+            new PlaneGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);

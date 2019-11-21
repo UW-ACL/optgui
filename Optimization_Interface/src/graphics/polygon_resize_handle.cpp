@@ -16,15 +16,15 @@ namespace interface {
 
 PolygonResizeHandle::PolygonResizeHandle(QPointF *point,
                                          QGraphicsItem *parent,
-                                         quint32 size)
+                                         qreal size)
     : QGraphicsEllipseItem(parent) {
     this->point_ = point;
     this->resize_ = false;
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
-    this->size_ = size*2;
+    this->size_ = size;
     this->setRect(-this->size_, -this->size_,
-                  this->size_*2, this->size_*2);
+                  this->size_ * 2, this->size_ * 2);
 }
 
 void PolygonResizeHandle::setColor(const QColor color) {
@@ -45,6 +45,24 @@ void PolygonResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         this->resize_ = true;
     }
+}
+
+void PolygonResizeHandle::paint(QPainter *painter,
+                                const QStyleOptionGraphicsItem *option,
+                                QWidget *widget) {
+    // scale with view
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    qreal size = this->size_ / scaling_factor;
+    QPen pen = this->pen();
+    pen.setWidthF(1.0 / scaling_factor);
+    this->setPen(pen);
+    this->setRect(-size, -size, size * 2, size * 2);
+
+    // paint
+    QGraphicsEllipseItem::paint(painter, option, widget);
 }
 
 void PolygonResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

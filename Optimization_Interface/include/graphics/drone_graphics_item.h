@@ -15,11 +15,13 @@
 
 namespace interface {
 
+qreal const DRONE_SIZE = 20;
+
 class DroneGraphicsItem : public QGraphicsItem {
  public:
     explicit DroneGraphicsItem(DroneModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qint32 size = 16);
+                               qreal size = DRONE_SIZE);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;
@@ -34,7 +36,7 @@ class DroneGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     DroneModelItem *model_;
-    qint32 size_ = 32;
+    qreal size_;
 };
 
 }  // namespace interface

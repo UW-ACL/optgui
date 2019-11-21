@@ -15,13 +15,15 @@
 
 namespace interface {
 
-const qreal ELLIPSE_HANDLE_SIZE = 16;
+qreal const ELLIPSE_HANDLE_SIZE = 16;
 
 class EllipseResizeHandle : public QGraphicsEllipseItem {
  public:
     explicit EllipseResizeHandle(EllipseModelItem *model,
                                  QGraphicsItem *parent,
-                                 quint32 size);
+                                 qreal size = ELLIPSE_HANDLE_SIZE);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
  protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;

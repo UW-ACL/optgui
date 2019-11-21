@@ -14,13 +14,10 @@
 namespace interface {
 
 EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
-                                         QGraphicsItem *parent,
-                                         quint32 size)
+                                         QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->size_ = size;
-    this->model_->radius_ = size*4;
     this->initialize();
 }
 
@@ -44,7 +41,7 @@ void EllipseGraphicsItem::initialize() {
 
     // Set resize handle
     this->resize_handle_ =
-            new EllipseResizeHandle(this->model_, this, this->size_);
+            new EllipseResizeHandle(this->model_, this);
     this->resize_handle_->hide();
 }
 
@@ -53,10 +50,15 @@ EllipseGraphicsItem::~EllipseGraphicsItem() {
 }
 
 QRectF EllipseGraphicsItem::boundingRect() const {
-    double rad = this->model_->radius_;
+    qreal rad = this->model_->radius_;
     // Add exterior border if not direction
     if (!this->model_->direction_) {
-        rad += ELLIPSE_BORDER;
+        // scale with view
+        qreal scaling_factor = 1;
+        if (this->scene() && !this->scene()->views().isEmpty()) {
+            scaling_factor = this->scene()->views().first()->matrix().m11();
+        }
+        rad += ELLIPSE_BORDER / scaling_factor;
     }
     return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
@@ -67,15 +69,23 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+
     this->setPos(*this->model_->pos_);
+
     // Show handles if selected
     if (this->isSelected()) {
         this->resize_handle_->setPos(-this->model_->radius_, 0);
         this->resize_handle_->show();
-        this->pen_.setWidth(3);
+
+        this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
         this->resize_handle_->hide();
-        this->pen_.setWidth(1);
+
+        this->pen_.setWidthF(1.0 / scaling_factor);
     }
 
     painter->setPen(this->pen_);
@@ -83,9 +93,6 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
     double rad = this->model_->radius_;
-    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-    rad += this->model_->clearance_;
-    painter->fillPath(this->shape(), this->brush_);
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
@@ -103,7 +110,7 @@ int EllipseGraphicsItem::type() const {
 QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
     path.addEllipse(this->boundingRect());
-    // Add exterior border if not direction
+    // Add interior border if not direction
     if (!this->model_->direction_) {
         double rad = this->model_->radius_;
         path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));

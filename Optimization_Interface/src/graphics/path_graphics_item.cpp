@@ -32,6 +32,7 @@ void PathGraphicsItem::initialize() {
 void PathGraphicsItem::setColor(QColor color) {
     this->pen_.setColor(color);
 }
+
 QRectF PathGraphicsItem::boundingRect() const {
     return this->shape().boundingRect();
 }
@@ -43,6 +44,11 @@ void PathGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Draw current course
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    this->pen_.setWidthF(this->width_ / scaling_factor);
     painter->setPen(this->pen_);
     for (qint32 i = 1; i < this->model_->points_->length(); i++) {
         QLineF line(mapFromScene(*this->model_->points_->at(i-1)),

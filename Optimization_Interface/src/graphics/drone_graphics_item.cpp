@@ -12,7 +12,7 @@ namespace interface {
 
 DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
                                      QGraphicsItem *parent,
-                                     qint32 size)
+                                     qreal size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
@@ -44,6 +44,13 @@ void DroneGraphicsItem::paint(QPainter *painter,
 
     // Update pos
     this->setPos(*this->model_->point_);
+
+    // scale with view zoom level
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    this->pen_.setWidthF(1.0 / scaling_factor);
 
     // Draw current course
     painter->setPen(this->pen_);
@@ -79,12 +86,16 @@ void DroneGraphicsItem::expandScene() {
 QPainterPath DroneGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    qint32 s = this->size_;
-    poly << QPoint(0, s);
-    poly << QPoint(s, 0);
-    poly << QPoint(0, -s);
-    poly << QPoint(-s, 0);
-    poly << QPoint(0, s);
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    qreal s = this->size_ / scaling_factor;
+    poly << QPointF(0, s);
+    poly << QPointF(s, 0);
+    poly << QPointF(0, -s);
+    poly << QPointF(-s, 0);
+    poly << QPointF(0, s);
     path.addPolygon(poly);
     return path;
 }

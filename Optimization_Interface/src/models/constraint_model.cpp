@@ -179,7 +179,7 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
         if (j >= this->maxEllipse) break;
 
         EllipseModelItem* ellipse = iter.next();
-        R[j] = ellipse->radius_/this->scale_ + ellipse->clearance_/this->scale_;
+        R[j] = ellipse->radius_/this->scale_;
         c_e[j] = -ellipse->pos_->y()/this->scale_;
         c_n[j] = ellipse->pos_->x()/this->scale_;
         ++j;

@@ -65,11 +65,17 @@ void PointGraphicsItem::paint(QPainter *painter,
     // this->mapFromScene(*this->model_->pos_));
     this->setPos(*this->model_->pos_);
 
+    // scale with view
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+
     // Show handles if selected
     if (this->isSelected()) {
-        this->pen_.setWidth(3);
+        this->pen_.setWidth(3.0 / scaling_factor);
     } else {
-        this->pen_.setWidth(1);
+        this->pen_.setWidth(1.0 / scaling_factor);
     }
 
     painter->setPen(this->pen_);

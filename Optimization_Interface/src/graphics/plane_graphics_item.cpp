@@ -14,12 +14,10 @@
 namespace interface {
 
 PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
-                                     QGraphicsItem *parent,
-                                     quint32 size)
+                                     QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->size_ = size;
     this->initialize();
 }
 
@@ -40,9 +38,9 @@ void PlaneGraphicsItem::initialize() {
 
     // Set resize handles
     this->p1_handle_ =
-            new PolygonResizeHandle(this->model_->p1_, this, this->size_);
+            new PolygonResizeHandle(this->model_->p1_, this);
     this->p2_handle_ =
-            new PolygonResizeHandle(this->model_->p2_, this, this->size_);
+            new PolygonResizeHandle(this->model_->p2_, this);
     this->p1_handle_->hide();
     this->p2_handle_->hide();
 }
@@ -62,6 +60,12 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    // scale with view
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+
     // Show handles if selected
     if (this->isSelected()) {
         this->p1_handle_->updatePos();
@@ -69,12 +73,12 @@ void PlaneGraphicsItem::paint(QPainter *painter,
         this->p1_handle_->show();
         this->p2_handle_->show();
 
-        this->pen_.setWidth(this->size_/2);
+        this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
         this->p1_handle_->hide();
         this->p2_handle_->hide();
 
-        this->pen_.setWidth(this->size_/2);
+        this->pen_.setWidthF(1.0 / scaling_factor);
     }
 
     // Draw shape
@@ -107,12 +111,19 @@ QPainterPath PlaneGraphicsItem::shape() const {
         line = QLineF(line.p2(), line.p1());
     }
 
+    // scale border with view
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    qreal border = PLANE_BORDER / scaling_factor;
+
     QPolygonF poly;
     poly << line.p1();
     poly << line.p2();
     poly << line.normalVector().translated(
-                line.dx(), line.dy()).pointAt(this->size_ / line.length());
-    poly << line.normalVector().pointAt(this->size_ / line.length());
+                line.dx(), line.dy()).pointAt(border / line.length());
+    poly << line.normalVector().pointAt(border / line.length());
     path.addPolygon(poly);
 
     return path;

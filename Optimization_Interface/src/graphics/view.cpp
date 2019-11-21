@@ -10,6 +10,8 @@
 #include <QScrollBar>
 #include <QInputDialog>
 
+#include <QDebug>
+
 namespace interface {
 
 View::View(QWidget * parent)
@@ -243,12 +245,9 @@ void View::mousePressEvent(QMouseEvent *event) {
         case ELLIPSE: {
             // TODO(bchasnov): disallow user from adding
             // ellipse if it overlaps?
-            if (!this->controller_->model_->
-                    isEllipseOverlap(new QPointF(pos))) {
-                this->controller_->addEllipse(new QPointF(pos));
-            } else {
-               qDebug() << "Cannot add overlapping ellipse";
-            }
+            qreal scaling_factor = this->matrix().m11();
+            this->controller_->addEllipse(new QPointF(pos),
+                                          DEFAULT_RAD / scaling_factor);
             break;
         }
         case POLYGON: {
@@ -267,9 +266,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                // TODO(bchasnov): dot size should be dynamic
-                // depending on the zoom level
-                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
+                qreal dotSize = DOT_SIZE / this->matrix().m11();
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
                                                   dotSize, dotSize,
@@ -288,9 +285,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                // TODO(bchasnov): dot size should be dynamic
-                // depending on the zoom level
-                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
+                qreal dotSize = DOT_SIZE / this->matrix().m11();
                 QGraphicsItem *dot =
                         this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
                                                   dotSize, dotSize,

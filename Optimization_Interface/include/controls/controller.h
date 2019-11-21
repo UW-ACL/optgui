@@ -55,7 +55,7 @@ class Controller : public QObject {
     ConstraintModel *model_;
 
     // functions to add constraints
-    void addEllipse(QPointF *point);            // adds elliptical constraint
+    void addEllipse(QPointF *point, qreal radius = 120);            // adds elliptical constraint
     void addPolygon(QVector<QPointF *> *points);  // adds polygon constraint
     void addPlane(QPointF *p1, QPointF *p2);    // adds affine constraint
     void flipDirection(QGraphicsItem *item);    // flip direction of constraint
@@ -100,9 +100,12 @@ class Controller : public QObject {
  private:
     Canvas *canvas_;
     MenuPanel *menu_panel_;
+
+    // TODO(dtsull): move these graphics to the canvas
     WaypointsGraphicsItem *waypoints_graphic_;
     PathGraphicsItem *path_graphic_;
     DroneGraphicsItem *drone_graphic_;
+
     PortDialog *port_dialog_;
     QNetworkSession *network_session_;
     QVector<ItemServer *> *servers_;

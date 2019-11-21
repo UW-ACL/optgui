@@ -16,13 +16,12 @@
 
 namespace interface {
 
-const qreal POLYGON_BORDER = 15;
+qreal const POLYGON_BORDER = 15;
 
 class PolygonGraphicsItem : public QGraphicsItem {
  public:
     explicit PolygonGraphicsItem(PolygonModelItem *model,
-                                 QGraphicsItem *parent = nullptr,
-                                 quint32 size = 16);
+                                 QGraphicsItem *parent = nullptr);
     ~PolygonGraphicsItem();
     PolygonModelItem *model_;
 
@@ -45,8 +44,6 @@ class PolygonGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     QVector<PolygonResizeHandle *> *resize_handles_;
-
-    quint32 size_;
 };
 
 }  // namespace interface

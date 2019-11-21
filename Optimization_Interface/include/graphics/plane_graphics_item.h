@@ -16,13 +16,12 @@
 
 namespace interface {
 
-const qreal PLANE_BORDER = 15;
+qreal const PLANE_BORDER = 15;
 
 class PlaneGraphicsItem : public QGraphicsItem {
  public:
     explicit PlaneGraphicsItem(PlaneModelItem *model,
-                               QGraphicsItem *parent = nullptr,
-                               quint32 size = 16);
+                               QGraphicsItem *parent = nullptr);
     ~PlaneGraphicsItem();
     PlaneModelItem *model_;
 
@@ -45,7 +44,6 @@ class PlaneGraphicsItem : public QGraphicsItem {
     QBrush brush_;
     PolygonResizeHandle *p1_handle_;
     PolygonResizeHandle *p2_handle_;
-    quint32 size_;
 };
 
 }  // namespace interface
