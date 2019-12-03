@@ -68,11 +68,7 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     }
 
     // scale line width with view
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
-    this->pen_.setWidthF(this->line_width_ / scaling_factor);
+    this->pen_.setWidthF(this->line_width_ / this->getScalingFactor());
 
     // Draw connecting path
     painter->setPen(this->pen_);
@@ -158,6 +154,14 @@ QVariant WaypointsGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal WaypointsGraphicsItem::getScalingFactor() {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

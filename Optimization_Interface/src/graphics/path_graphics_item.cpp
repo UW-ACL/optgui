@@ -44,11 +44,7 @@ void PathGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Draw current course
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
-    this->pen_.setWidthF(this->width_ / scaling_factor);
+    this->pen_.setWidthF(this->width_ / this->getScalingFactor());
     painter->setPen(this->pen_);
     for (qint32 i = 1; i < this->model_->points_->length(); i++) {
         QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
@@ -99,6 +95,14 @@ QVariant PathGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal PathGraphicsItem::getScalingFactor() {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

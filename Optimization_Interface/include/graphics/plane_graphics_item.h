@@ -44,6 +44,7 @@ class PlaneGraphicsItem : public QGraphicsItem {
     QBrush brush_;
     PolygonResizeHandle *p1_handle_;
     PolygonResizeHandle *p2_handle_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

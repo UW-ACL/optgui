@@ -46,11 +46,7 @@ void DroneGraphicsItem::paint(QPainter *painter,
     this->setPos(*this->model_->point_);
 
     // scale with view zoom level
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
-    this->pen_.setWidthF(1.0 / scaling_factor);
+    this->pen_.setWidthF(1.0 / this->getScalingFactor());
 
     // Draw current course
     painter->setPen(this->pen_);
@@ -86,11 +82,7 @@ void DroneGraphicsItem::expandScene() {
 QPainterPath DroneGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
-    qreal s = this->size_ / scaling_factor;
+    qreal s = this->size_ / this->getScalingFactor();
     poly << QPointF(0, s);
     poly << QPointF(s, 0);
     poly << QPointF(0, -s);
@@ -107,6 +99,14 @@ QVariant DroneGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal DroneGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

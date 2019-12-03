@@ -44,6 +44,7 @@ class PointGraphicsItem : public QGraphicsItem {
     QBrush brush_;
     uint32_t marker_;
     quint32 radius_;
+    qreal getScalingFactor();
 };
 
 }  // namespace interface

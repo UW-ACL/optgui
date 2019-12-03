@@ -31,12 +31,14 @@ class DroneGraphicsItem : public QGraphicsItem {
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                        const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;
     QBrush brush_;
     DroneModelItem *model_;
     qreal size_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

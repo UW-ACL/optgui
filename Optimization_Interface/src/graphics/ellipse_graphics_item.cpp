@@ -54,11 +54,7 @@ QRectF EllipseGraphicsItem::boundingRect() const {
     // Add exterior border if not direction
     if (!this->model_->direction_) {
         // scale with view
-        qreal scaling_factor = 1;
-        if (this->scene() && !this->scene()->views().isEmpty()) {
-            scaling_factor = this->scene()->views().first()->matrix().m11();
-        }
-        rad += ELLIPSE_BORDER / scaling_factor;
+        rad += ELLIPSE_BORDER / this->getScalingFactor();
     }
     return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
@@ -69,10 +65,7 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
+    qreal scaling_factor = this->getScalingFactor();
 
     this->setPos(*this->model_->pos_);
 
@@ -153,6 +146,14 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal EllipseGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

@@ -44,6 +44,7 @@ class PolygonGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     QVector<PolygonResizeHandle *> *resize_handles_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

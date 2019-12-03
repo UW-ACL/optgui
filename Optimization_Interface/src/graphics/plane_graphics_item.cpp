@@ -61,10 +61,7 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // scale with view
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
+    qreal scaling_factor = this->getScalingFactor();
 
     // Show handles if selected
     if (this->isSelected()) {
@@ -112,11 +109,7 @@ QPainterPath PlaneGraphicsItem::shape() const {
     }
 
     // scale border with view
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
-    qreal border = PLANE_BORDER / scaling_factor;
+    qreal border = PLANE_BORDER / this->getScalingFactor();
 
     QPolygonF poly;
     poly << line.p1();
@@ -166,6 +159,14 @@ QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal PlaneGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

@@ -66,10 +66,7 @@ void PointGraphicsItem::paint(QPainter *painter,
     this->setPos(*this->model_->pos_);
 
     // scale with view
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
+    qreal scaling_factor = this->getScalingFactor();
 
     // Show handles if selected
     if (this->isSelected()) {
@@ -153,6 +150,14 @@ QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal PointGraphicsItem::getScalingFactor() {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

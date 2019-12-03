@@ -49,10 +49,7 @@ void EllipseResizeHandle::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
     // scale with view
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
+    qreal scaling_factor = this->getScalingFactor();
     qreal size = this->size_ / scaling_factor;
     QPen pen = this->pen();
     pen.setWidthF(1.0 / scaling_factor);
@@ -78,6 +75,14 @@ void EllipseResizeHandle::expandScene() {
         }
         this->scene()->update();
     }
+}
+
+qreal EllipseResizeHandle::getScalingFactor() {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

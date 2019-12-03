@@ -55,10 +55,10 @@ class Controller : public QObject {
     ConstraintModel *model_;
 
     // functions to add constraints
-    void addEllipse(QPointF *point, qreal radius = 120);            // adds elliptical constraint
-    void addPolygon(QVector<QPointF *> *points);  // adds polygon constraint
-    void addPlane(QPointF *p1, QPointF *p2);    // adds affine constraint
-    void flipDirection(QGraphicsItem *item);    // flip direction of constraint
+    void addEllipse(QPointF *point, qreal radius = 120);
+    void addPolygon(QVector<QPointF *> *points);
+    void addPlane(QPointF *p1, QPointF *p2);
+    void flipDirection(QGraphicsItem *item);
 
     // functions to add points for vehicle, obstacle, and waypoint locations
     void addWaypoint(QPointF *point);

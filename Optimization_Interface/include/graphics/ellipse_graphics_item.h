@@ -43,6 +43,7 @@ class EllipseGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     EllipseResizeHandle *resize_handle_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

@@ -128,11 +128,7 @@ QPainterPath PolygonGraphicsItem::shape() const {
     QPainterPath path;
 
     // scale border with view
-    qreal scaling_factor = 1;
-    if (this->scene() && !this->scene()->views().isEmpty()) {
-        scaling_factor = this->scene()->views().first()->matrix().m11();
-    }
-    qreal border = POLYGON_BORDER / scaling_factor;
+    qreal border = POLYGON_BORDER / this->getScalingFactor();
 
     // Define exterior shadings
     for (qint32 i = 1; i < this->model_->points_->length(); i++) {
@@ -234,6 +230,14 @@ bool PolygonGraphicsItem::isConvex() const {
         }
     }
     return true;
+}
+
+qreal PolygonGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

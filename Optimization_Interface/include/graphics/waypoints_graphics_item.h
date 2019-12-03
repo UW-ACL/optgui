@@ -46,6 +46,7 @@ class WaypointsGraphicsItem : public QGraphicsItem {
     QVector<PolygonResizeHandle *> *resize_handles_;
     qreal line_width_;
     qreal size_;
+    qreal getScalingFactor();
 };
 
 }  // namespace interface
