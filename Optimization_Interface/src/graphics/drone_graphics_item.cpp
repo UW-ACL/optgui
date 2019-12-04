@@ -46,7 +46,8 @@ void DroneGraphicsItem::paint(QPainter *painter,
     this->setPos(*this->model_->point_);
 
     // scale with view zoom level
-    this->pen_.setWidthF(1.0 / this->getScalingFactor());
+    qreal scaling_factor = this->getScalingFactor();
+    this->pen_.setWidthF(1.0 / scaling_factor);
 
     // Draw current course
     painter->setPen(this->pen_);
@@ -82,12 +83,12 @@ void DroneGraphicsItem::expandScene() {
 QPainterPath DroneGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    qreal s = this->size_ / this->getScalingFactor();
-    poly << QPointF(0, s);
-    poly << QPointF(s, 0);
-    poly << QPointF(0, -s);
-    poly << QPointF(-s, 0);
-    poly << QPointF(0, s);
+    qreal size = this->size_ / this->getScalingFactor();
+    poly << QPointF(0, size);
+    poly << QPointF(size, 0);
+    poly << QPointF(0, -size);
+    poly << QPointF(-size, 0);
+    poly << QPointF(0, size);
     path.addPolygon(poly);
     return path;
 }

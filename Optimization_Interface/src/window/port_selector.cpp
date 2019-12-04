@@ -5,7 +5,6 @@
 
 #include "../../include/window/port_selector.h"
 
-#include <QDebug>
 #include <QTimer>
 
 namespace interface {

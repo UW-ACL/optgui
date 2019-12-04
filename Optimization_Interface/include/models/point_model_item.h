@@ -22,7 +22,6 @@ class PointModelItem : public DataModel {
     explicit PointModelItem(QPointF *pos) { pos_ = pos; port_ = 0;}
     ~PointModelItem() { delete pos_; }
     QPointF *pos_;
-    bool direction_;
 };
 
 }  // namespace interface

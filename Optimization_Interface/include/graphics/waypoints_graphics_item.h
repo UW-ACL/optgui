@@ -35,13 +35,11 @@ class WaypointsGraphicsItem : public QGraphicsItem {
 
  protected:
     QPainterPath shape() const override;
-    QVariant itemChange(GraphicsItemChange change,
-                        const QVariant &value) override;
+//    QVariant itemChange(GraphicsItemChange change,
+//                        const QVariant &value) override;
 
  private:
     void initialize();
-    QPen pen_;
-    QBrush brush_;
     PathModelItem *model_;
     QVector<PolygonResizeHandle *> *resize_handles_;
     qreal line_width_;

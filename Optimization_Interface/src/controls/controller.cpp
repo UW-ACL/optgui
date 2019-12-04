@@ -52,30 +52,21 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_->addItem(this->waypoints_graphic_);
 
     // initialize course graphic
-    this->path_graphic_ = new PathGraphicsItem(this->model_->path_,
-                                               nullptr,
-                                               this->indoor_?4:16);
+    this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
     this->canvas_->addItem(this->path_graphic_);
 
     // initialize drone graphic
-    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_,
-                                                 nullptr,
-                                                 this->indoor_?16:128);
+    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
     this->canvas_->addItem(this->drone_graphic_);
 
     // TODO(bchasnov): make ellipse upate with puck symbol
     this->loadEllipse(this->model_->puck_ellipse_pos_->at(0));
-    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0),
-                                                nullptr,
-                                                this->indoor_?4:16);
-    this->puck_graphic_->setMarker(1);
+    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0));
     this->canvas_->addItem(this->puck_graphic_);
 
     // initialize final point graphic
-    this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_,
-                                                     nullptr,
-                                                     this->indoor_?4:128);
-    this->canvas_->addItem(this->final_pos_graphic_);
+    this->final_point_ = new PointGraphicsItem(this->model_->final_pos_);
+    this->canvas_->addItem(this->final_point_);
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
@@ -138,16 +129,6 @@ Controller::~Controller() {
 
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
-        case POINT_GRAPHIC: {
-            PointGraphicsItem *point = qgraphicsitem_cast<
-                    PointGraphicsItem *>(item);
-            PointModelItem *model = point->model_;
-            this->canvas_->removeItem(point);
-            delete point;
-            this->model_->removePoint(model);
-            delete model;
-            break;
-        }
         case ELLIPSE_GRAPHIC: {
             EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                     EllipseGraphicsItem *>(item);
@@ -260,13 +241,13 @@ void Controller::setHorizonLength(uint32_t horizon) {
 }
 
 double_t Controller::getTimeInterval() {
-    return this->finaltime_/this->horizon_length_;
+    return this->finaltime_ / this->horizon_length_;
 }
 
-void Controller::updateFinalPosition(QPointF *pos_final) {
-    this->model_->final_pos_->pos_->setX(pos_final->x());
-    this->model_->final_pos_->pos_->setY(pos_final->y());
-    this->canvas_->update();
+void Controller::updateFinalPosition(QPointF const &pos) {
+    this->model_->final_pos_->pos_->setX(pos.x());
+    this->model_->final_pos_->pos_->setY(pos.y());
+    this->final_point_->setPos(*this->model_->final_pos_->pos_);
 }
 
 void Controller::compute() {
@@ -428,7 +409,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // SKYEFLY //
     // TODO(mceowen): No namespace in algorithm.h to specify reset function
     reset(this->model_->fly_->P, this->model_->fly_->I, this->model_->fly_->O);
-    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
+//    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
     this->solver_difficulty_ = this->timer_compute_.elapsed();
 }
 
@@ -640,7 +621,7 @@ void Controller::closeServers() {
 // ============ SAVE CONTROLS ============
 
 void Controller::writePoint(PointModelItem *model, QDataStream *out) {
-    *out << static_cast<bool>(model->direction_);
+    // *out << static_cast<bool>(model->direction_);
     *out << *model->pos_;
 //    *out << (double)model->radius_;
     *out << (quint16)model->port_;
@@ -805,12 +786,13 @@ PointModelItem *Controller::readPoint(QDataStream *in) {
     *in >> port;
 
     PointModelItem *model = new PointModelItem(new QPointF(pos));
-    model->direction_ = direction;
+    // model->direction_ = direction;
 //    model->radius_ = radius;
     model->port_ = port;
 
     return model;
 }
+
 EllipseModelItem *Controller::readEllipse(QDataStream *in) {
     bool direction;
     *in >> direction;

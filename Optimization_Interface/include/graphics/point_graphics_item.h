@@ -8,43 +8,36 @@
 #ifndef POINT_GRAPHICS_ITEM_H_
 #define POINT_GRAPHICS_ITEM_H_
 
-#include <QGraphicsItem>
-#include <QPainter>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsSceneMouseEvent>
 
 #include "../models/point_model_item.h"
 
 namespace interface {
 
-const qreal POINT_BORDER = 3;
+qreal const POINT_SIZE = 14;
 
-class PointGraphicsItem : public QGraphicsItem {
+class PointGraphicsItem : public QGraphicsEllipseItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               quint32 size = 4);
-    ~PointGraphicsItem();
+                               qreal size = POINT_SIZE);
     PointModelItem *model_;
 
-    QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
     int type() const override;
-
     void expandScene();
-    void setMarker(uint32_t);
 
  protected:
-    QPainterPath shape() const override;
-    QVariant itemChange(GraphicsItemChange change,
-                        const QVariant &value) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
-    void initialize();
-    QPen pen_;
-    QBrush brush_;
-    uint32_t marker_;
-    quint32 radius_;
-    qreal getScalingFactor();
+    bool resize_;
+    qreal radius_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

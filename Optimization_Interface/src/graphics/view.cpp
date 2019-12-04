@@ -10,8 +10,6 @@
 #include <QScrollBar>
 #include <QInputDialog>
 
-#include <QDebug>
-
 namespace interface {
 
 View::View(QWidget * parent)
@@ -239,7 +237,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case POINT: {
-            this->controller_->updateFinalPosition(&pos);
+            this->controller_->updateFinalPosition(pos);
             break;
         }
         case ELLIPSE: {
@@ -268,8 +266,8 @@ void View::mousePressEvent(QMouseEvent *event) {
                 // Add temporary marker
                 qreal dotSize = DOT_SIZE / this->matrix().m11();
                 QGraphicsItem *dot =
-                        this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
-                                                  dotSize, dotSize,
+                        this->scene()->addEllipse(-dotSize, -dotSize,
+                                                  dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
@@ -287,8 +285,8 @@ void View::mousePressEvent(QMouseEvent *event) {
                 // Add temporary marker
                 qreal dotSize = DOT_SIZE / this->matrix().m11();
                 QGraphicsItem *dot =
-                        this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
-                                                  dotSize, dotSize,
+                        this->scene()->addEllipse(-dotSize, -dotSize,
+                                                  dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);

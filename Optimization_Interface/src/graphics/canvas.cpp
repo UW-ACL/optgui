@@ -4,10 +4,11 @@
 // LICENSE: Copyright 2018, All Rights Reserved
 
 #include "../../include/graphics/canvas.h"
-#include <QDebug>
+
 #include <QPainter>
 #include <QGraphicsView>
 #include <QGraphicsItem>
+
 #include <cmath>
 #include <limits>
 
@@ -48,13 +49,13 @@ void Canvas::setBackgroundImage(QString filename) {
 //    QString filename = ;
     QStringList list = filename.split('_');
     if (list.length() != 6) {
-        qDebug() << "Image filename not formatted correctly";
+        // qDebug() << "Image filename not formatted correctly";
     }
 
     if (list[1] == "outdoor") {
-        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:"
-                 << list[3].toFloat() << "width:" << list[4].toFloat()
-                 << "height:" << list[5].toFloat();
+//        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:"
+//                 << list[3].toFloat() << "width:" << list[4].toFloat()
+//                 << "height:" << list[5].toFloat();
         this->background_bottomleft_x_ = 0;
         this->background_bottomleft_y_ = 0;  // list[5].toFloat();
         this->background_topright_x_ = list[4].toFloat();
@@ -66,11 +67,11 @@ void Canvas::setBackgroundImage(QString filename) {
         this->background_bottomleft_y_ = list[3].toFloat();
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
-        qDebug() << "Indoor mode:" << "bottom left"
-                 << this->background_bottomleft_x_
-                 << this->background_bottomleft_y_
-                 << "top right:" << this->background_topright_x_
-                 << this->background_topright_y_;
+//        qDebug() << "Indoor mode:" << "bottom left"
+//                 << this->background_bottomleft_x_
+//                 << this->background_bottomleft_y_
+//                 << "top right:" << this->background_topright_x_
+//                 << this->background_topright_y_;
         this->indoor_ = true;
     }
 

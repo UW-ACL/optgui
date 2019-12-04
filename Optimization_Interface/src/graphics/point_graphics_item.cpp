@@ -15,45 +15,39 @@ namespace interface {
 
 PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
                                      QGraphicsItem *parent,
-                                     quint32 size)
-    : QGraphicsItem(parent) {
+                                     qreal size)
+    : QGraphicsEllipseItem(parent) {
     // Set model
     this->model_ = model;
     this->radius_ = size;
-    this->initialize();
+    this->resize_ = false;
+    this->setPen(QPen(Qt::black));
+    this->setBrush(QBrush(Qt::red));
+    this->setRect(-this->radius_, -this->radius_,
+                  this->radius_ * 2, this->radius_ * 2);
+    this->setPos(*this->model_->pos_);
 }
 
-void PointGraphicsItem::initialize() {
-    // Set pen
-    QColor fill = Qt::red;
-    fill.setAlpha(200);
-    this->brush_ = QBrush(fill);
-
-    // Set brush
-    this->pen_ = QPen(Qt::black);
-    this->pen_.setWidth(3);
-
-    // Set flags
-    this->setFlags(QGraphicsItem::ItemIsMovable |
-                   QGraphicsItem::ItemIsSelectable |
-                   QGraphicsItem::ItemSendsGeometryChanges);
-
-    // Set position
-    this->setPos(this->mapFromScene(*this->model_->pos_));
-
-    this->marker_ = false;
-}
-
-PointGraphicsItem::~PointGraphicsItem() {
-}
-
-QRectF PointGraphicsItem::boundingRect() const {
-    double rad = this->radius_;
-    // Add exterior border if not direction
-    if (!this->model_->direction_) {
-        rad += POINT_BORDER;
+void PointGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        this->resize_ = true;
     }
-    return QRectF(-rad, -rad, rad * 2, rad * 2);
+}
+
+void PointGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        this->resize_ = false;
+    }
+}
+
+void PointGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    if (this->resize_) {
+        QPointF eventPos = event->scenePos();
+        this->model_->pos_->setX(eventPos.x());
+        this->model_->pos_->setY(eventPos.y());
+        this->setPos(*this->model_->pos_);
+        this->expandScene();
+    }
 }
 
 void PointGraphicsItem::paint(QPainter *painter,
@@ -61,36 +55,17 @@ void PointGraphicsItem::paint(QPainter *painter,
                                 QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    // TODO(bchasnov): fix this, use mapfromscene
-    // this->mapFromScene(*this->model_->pos_));
-    this->setPos(*this->model_->pos_);
 
     // scale with view
     qreal scaling_factor = this->getScalingFactor();
+    qreal size = this->radius_ / scaling_factor;
+    QPen pen = this->pen();
+    pen.setWidthF(1.0 / scaling_factor);
+    this->setPen(pen);
+    this->setRect(-size, -size, size * 2, size * 2);
 
-    // Show handles if selected
-    if (this->isSelected()) {
-        this->pen_.setWidth(3.0 / scaling_factor);
-    } else {
-        this->pen_.setWidth(1.0 / scaling_factor);
-    }
-
-    painter->setPen(this->pen_);
-
-    // Draw shape
-    painter->fillPath(this->shape(), this->brush_);
-
-    double rad = this->radius_;
-    switch (this->marker_) {
-    case 0:
-        painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-        break;
-    case 1:
-        painter->setPen(QPen(Qt::green, this->radius_*2));
-        painter->drawLine(-rad * 5, -rad * 5, rad * 5, rad * 5);
-        painter->drawLine(rad * 5, -rad * 5, -rad * 5, rad * 5);
-        break;
-    }
+    // paint
+    QGraphicsEllipseItem::paint(painter, option, widget);
 
     // Label with port
     if (this->model_->port_ != 0) {
@@ -100,23 +75,8 @@ void PointGraphicsItem::paint(QPainter *painter,
     }
 }
 
-void PointGraphicsItem::setMarker(uint32_t type) {
-    this->marker_ = type;
-}
-
 int PointGraphicsItem::type() const {
     return POINT_GRAPHIC;
-}
-
-QPainterPath PointGraphicsItem::shape() const {
-    QPainterPath path;
-    path.addEllipse(this->boundingRect());
-    // Add exterior border if not direction
-    if (!this->model_->direction_) {
-        double rad = 0.03;
-        path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-    }
-    return path;
 }
 
 void PointGraphicsItem::expandScene() {
@@ -136,23 +96,7 @@ void PointGraphicsItem::expandScene() {
     }
 }
 
-
-QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
-                                         const QVariant &value) {
-    if (change == ItemPositionChange && scene()) {
-        // value is the new position.
-        QPointF newPos = value.toPointF();
-
-        // update model
-        *this->model_->pos_ = newPos;
-
-        // check to expand the scene
-        this->expandScene();
-    }
-    return QGraphicsItem::itemChange(change, value);
-}
-
-qreal PointGraphicsItem::getScalingFactor() {
+qreal PointGraphicsItem::getScalingFactor() const {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

@@ -11,6 +11,8 @@
 #include <QGraphicsScene>
 #include <QFont>
 
+#include "polygon_resize_handle.h"
+
 namespace interface {
 
 const qreal GRID_SIZE = 100;

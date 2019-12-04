@@ -8,7 +8,6 @@
 
 #include <QObject>
 #include <QWidget>
-#include <QDebug>
 #include <QString>
 #include <QThread>
 #include <QUdpSocket>

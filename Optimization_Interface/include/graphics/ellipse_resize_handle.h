@@ -15,7 +15,7 @@
 
 namespace interface {
 
-qreal const ELLIPSE_HANDLE_SIZE = 16;
+qreal const ELLIPSE_HANDLE_SIZE = 14;
 
 class EllipseResizeHandle : public QGraphicsEllipseItem {
  public:

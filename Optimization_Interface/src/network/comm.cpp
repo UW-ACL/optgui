@@ -16,7 +16,7 @@ comm::comm(const std::string& ip_address, uint16 port)
   // Connect signals/slots.
   connect(mp_udp, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 
-  std::cout << "Init comm" << std::endl;
+//  std::cout << "Init comm" << std::endl;
 }
 
 comm::~comm() {

@@ -8,11 +8,11 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#include <cprs.h>
-#include <algorithm.h>
-
 #include <QNetworkSession>
 #include <QElapsedTimer>
+
+#include <cprs.h>
+#include <algorithm.h>
 
 #include "../graphics/canvas.h"
 #include "../models/constraint_model.h"
@@ -83,7 +83,7 @@ class Controller : public QObject {
     // functions for setting optimization problem constraints
     void setFinaltime(double_t);
     void setHorizonLength(uint32_t);
-    void updateFinalPosition(QPointF *);
+    void updateFinalPosition(QPointF const &pos);
     double_t getTimeInterval();
 
     // functions for computing, simulating and executing trajectories
@@ -110,7 +110,7 @@ class Controller : public QObject {
     QNetworkSession *network_session_;
     QVector<ItemServer *> *servers_;
 
-    PointGraphicsItem *final_pos_graphic_;
+    PointGraphicsItem *final_point_;
     PointGraphicsItem *puck_graphic_;
 
     PointGraphicsItem *bottom_left_;

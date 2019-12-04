@@ -23,6 +23,7 @@ PolygonResizeHandle::PolygonResizeHandle(QPointF *point,
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
     this->size_ = size;
+    this->index_ = 0;
     this->setRect(-this->size_, -this->size_,
                   this->size_ * 2, this->size_ * 2);
 }
@@ -50,6 +51,9 @@ void PolygonResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 void PolygonResizeHandle::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    Q_UNUSED(option);
+    Q_UNUSED(widget);
+
     // scale with view
     qreal scaling_factor = this->getScalingFactor();
     qreal size = this->size_ / scaling_factor;
@@ -60,6 +64,15 @@ void PolygonResizeHandle::paint(QPainter *painter,
 
     // paint
     QGraphicsEllipseItem::paint(painter, option, widget);
+
+    if (this->index_ > 0) {
+        painter->setPen(Qt::black);
+        QFont font = painter->font();
+        font.setPointSizeF(14 / scaling_factor);
+        painter->setFont(font);
+        painter->drawText(this->boundingRect(), Qt::AlignCenter,
+                          QString::number(this->index_));
+    }
 }
 
 void PolygonResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
@@ -70,7 +83,9 @@ void PolygonResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void PolygonResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
-        *this->point_ = event->scenePos();
+        QPointF eventPos = event->scenePos();
+        this->point_->setX(eventPos.x());
+        this->point_->setY(eventPos.y());
         this->expandScene();
     }
 }
@@ -105,6 +120,10 @@ qreal PolygonResizeHandle::getScalingFactor() {
         scaling_factor = this->scene()->views().first()->matrix().m11();
     }
     return scaling_factor;
+}
+
+void PolygonResizeHandle::setIndex(quint32 index) {
+    this->index_ = index;
 }
 
 }  // namespace interface

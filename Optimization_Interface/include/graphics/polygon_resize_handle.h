@@ -13,7 +13,7 @@
 
 namespace interface {
 
-qreal const POLYGON_HANDLE_SIZE = 16;
+qreal const POLYGON_HANDLE_SIZE = 14;
 
 class PolygonResizeHandle : public QGraphicsEllipseItem {
  public:
@@ -27,6 +27,7 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
     void setColor(const QColor color);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+    void setIndex(quint32 index);
 
  protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -39,6 +40,7 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
     bool resize_;
     qreal size_;
     qreal getScalingFactor();
+    quint32 index_;
 };
 
 }  // namespace interface

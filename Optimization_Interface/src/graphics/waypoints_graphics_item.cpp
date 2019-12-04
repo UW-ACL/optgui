@@ -25,10 +25,6 @@ WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
 }
 
 void WaypointsGraphicsItem::initialize() {
-    // Set pen
-    this->pen_ = QPen(Qt::blue);
-    this->pen_.setWidthF(this->line_width_);
-
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
 
@@ -67,30 +63,11 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
         this->expandScene();
     }
 
-    // scale line width with view
-    this->pen_.setWidthF(this->line_width_ / this->getScalingFactor());
-
-    // Draw connecting path
-    painter->setPen(this->pen_);
-    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
-                    mapFromScene(*this->model_->points_->at(i)));
-        painter->drawLine(line);
-    }
-
-    // Set handle colors
-    qint32 size = this->resize_handles_->size();
+    // Set handle number
     qint32 index = 0;
     for (PolygonResizeHandle *handle : *this->resize_handles_) {
-        QColor color = Qt::white;
-        //  if (index == 0) {
-        //      color = Qt::green;
-        //  } else
-        if (index == size - 1) {
-            color = Qt::red;
-        }
-        handle->setColor(color);
         handle->updatePos();
+        handle->setIndex(index + 1);
         index++;
     }
 
@@ -138,6 +115,7 @@ void WaypointsGraphicsItem::expandScene() {
     }
 }
 
+/*
 QVariant WaypointsGraphicsItem::itemChange(GraphicsItemChange change,
                                          const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
@@ -155,6 +133,7 @@ QVariant WaypointsGraphicsItem::itemChange(GraphicsItemChange change,
     }
     return QGraphicsItem::itemChange(change, value);
 }
+*/
 
 qreal WaypointsGraphicsItem::getScalingFactor() {
     qreal scaling_factor = 1;

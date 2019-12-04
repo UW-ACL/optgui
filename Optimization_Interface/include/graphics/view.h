@@ -20,7 +20,7 @@
 
 namespace interface {
 
-const qreal DOT_SIZE = 20;
+const qreal DOT_SIZE = 14;
 
 class View : public QGraphicsView {
     Q_OBJECT

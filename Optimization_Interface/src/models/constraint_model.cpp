@@ -4,8 +4,8 @@
 // LICENSE: Copyright 2018, All Rights Reserved
 
 #include "../../include/models/constraint_model.h"
+
 #include <QString>
-#include <QDebug>
 
 namespace interface {
 
@@ -198,8 +198,8 @@ bool ConstraintModel::isEllipseOverlap(QPointF * pos) {
         dist /= pow(this->scale_, 2);
         // DEBUG // fix this hardcoded costant...
         double dist_other = pow(r + 0.32, 2);
-        qDebug() << "Distance" << dist << "<=" << dist_other;
-        qDebug() << "r" << r << ", default rad" << DEFAULT_RAD;
+//        qDebug() << "Distance" << dist << "<=" << dist_other;
+//        qDebug() << "r" << r << ", default rad" << DEFAULT_RAD;
         if (dist <= dist_other) {
             return true;
         }
