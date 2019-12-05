@@ -16,26 +16,7 @@
 #include <QGroupBox>
 #include <QMessageBox>
 
-#include "menu_button.h"
-#include "math.h"
-
-
-/*
-#include <QNetworkSession>
-#include <QElapsedTimer>
-
-#include "canvas.h"
-#include "constraint_model.h"
-#include "path_graphics_item.h"
-#include "drone_graphics_item.h"
-#include "waypoints_graphics_item.h"
-#include "point_graphics_item.h"
-#include "port_dialog.h"
-#include "item_server.h"
-#include "cprs.h"
-#include "algorithm.h"
-#include "comm.h"
- */
+#include "include/window/menu_button.h"
 
 namespace interface {
 

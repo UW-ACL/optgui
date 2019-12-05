@@ -12,7 +12,7 @@
 #include <QMenu>
 #include <QAction>
 
-#include "../graphics/view.h"
+#include "include/graphics/view.h"
 
 namespace interface {
 

@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/network/item_server.h"
+#include "include/network/item_server.h"
 
 namespace interface {
 

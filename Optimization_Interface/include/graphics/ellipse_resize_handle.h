@@ -11,7 +11,7 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
 
-#include "../models/ellipse_model_item.h"
+#include "include/models/ellipse_model_item.h"
 
 namespace interface {
 

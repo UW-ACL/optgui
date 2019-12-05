@@ -9,8 +9,8 @@
 #ifndef PATH_SERVER_H_
 #define PATH_SERVER_H_
 
-#include "item_server.h"
-#include "../models/path_model_item.h"
+#include "include/network/item_server.h"
+#include "include/models/path_model_item.h"
 
 namespace interface {
 

@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/models/constraint_model.h"
+#include "include/models/constraint_model.h"
 
 #include <QString>
 

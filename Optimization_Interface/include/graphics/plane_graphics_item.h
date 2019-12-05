@@ -11,8 +11,8 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/plane_model_item.h"
-#include "../graphics/polygon_resize_handle.h"
+#include "include/models/plane_model_item.h"
+#include "include/graphics/polygon_resize_handle.h"
 
 namespace interface {
 

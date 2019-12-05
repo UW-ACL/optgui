@@ -9,8 +9,8 @@
 #ifndef POLYGON_SERVER_H_
 #define POLYGON_SERVER_H_
 
-#include "item_server.h"
-#include "../models/polygon_model_item.h"
+#include "include/network/item_server.h"
+#include "include/models/polygon_model_item.h"
 
 namespace interface {
 

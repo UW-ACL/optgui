@@ -11,8 +11,8 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/ellipse_model_item.h"
-#include "../graphics/ellipse_resize_handle.h"
+#include "include/models/ellipse_model_item.h"
+#include "include/graphics/ellipse_resize_handle.h"
 
 namespace interface {
 

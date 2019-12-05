@@ -13,10 +13,10 @@
 #include <QMouseEvent>
 #include <QGraphicsItem>
 
-#include "canvas.h"
-#include "../window/menu_panel.h"
-#include "../globals.h"
-#include "../controls/controller.h"
+#include "include/graphics/canvas.h"
+#include "include/window/menu_panel.h"
+#include "include/globals.h"
+#include "include/controls/controller.h"
 
 namespace interface {
 

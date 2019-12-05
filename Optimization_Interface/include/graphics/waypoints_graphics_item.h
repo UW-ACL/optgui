@@ -13,8 +13,8 @@
 #include <QPointF>
 #include <QVector>
 
-#include "polygon_resize_handle.h"
-#include "../models/path_model_item.h"
+#include "include/graphics/polygon_resize_handle.h"
+#include "include/models/path_model_item.h"
 
 namespace interface {
 

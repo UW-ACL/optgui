@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/window/main_window.h"
+#include "include/window/main_window.h"
 
 #include <QMenuBar>
 #include <QObject>

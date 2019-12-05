@@ -11,7 +11,7 @@
 #include <QDialog>
 #include <QTableWidget>
 
-#include "../models/constraint_model.h"
+#include "include/models/constraint_model.h"
 
 namespace interface {
 

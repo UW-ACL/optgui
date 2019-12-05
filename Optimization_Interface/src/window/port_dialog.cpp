@@ -3,12 +3,12 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/window/port_dialog.h"
+#include "include/window/port_dialog.h"
 
 #include <QHBoxLayout>
 #include <QHeaderView>
 
-#include "../../include/window/port_selector.h"
+#include "include/window/port_selector.h"
 
 namespace interface {
 

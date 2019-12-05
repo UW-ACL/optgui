@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/controls/controller.h"
+#include "include/controls/controller.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -18,18 +18,18 @@
 #include <QTimer>
 #include <QElapsedTimer>
 
-#include "../../include/graphics/point_graphics_item.h"
-#include "../../include/graphics/ellipse_graphics_item.h"
-#include "../../include/graphics/polygon_graphics_item.h"
-#include "../../include/graphics/plane_graphics_item.h"
-#include "../../include/network/drone_server.h"
-#include "../../include/network/path_server.h"
-#include "../../include/network/point_server.h"
-#include "../../include/network/ellipse_server.h"
-#include "../../include/network/polygon_server.h"
-#include "../../include/network/plane_server.h"
-#include "../../include/globals.h"
-#include "../../include/window/menu_panel.h"
+#include "include/graphics/point_graphics_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/polygon_graphics_item.h"
+#include "include/graphics/plane_graphics_item.h"
+#include "include/network/drone_server.h"
+#include "include/network/path_server.h"
+#include "include/network/point_server.h"
+#include "include/network/ellipse_server.h"
+#include "include/network/polygon_server.h"
+#include "include/network/plane_server.h"
+#include "include/globals.h"
+#include "include/window/menu_panel.h"
 
 
 namespace interface {

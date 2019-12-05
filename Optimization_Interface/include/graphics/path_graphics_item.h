@@ -11,7 +11,7 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/path_model_item.h"
+#include "include/models/path_model_item.h"
 
 namespace interface {
 

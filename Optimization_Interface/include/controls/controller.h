@@ -14,16 +14,16 @@
 #include <cprs.h>
 #include <algorithm.h>
 
-#include "../graphics/canvas.h"
-#include "../models/constraint_model.h"
-#include "../graphics/path_graphics_item.h"
-#include "../graphics/drone_graphics_item.h"
-#include "../graphics/waypoints_graphics_item.h"
-#include "../graphics/point_graphics_item.h"
-#include "../window/port_dialog.h"
-#include "../network/item_server.h"
-#include "../network/comm.h"
-#include "../window/menu_panel.h"
+#include "include/graphics/canvas.h"
+#include "include/models/constraint_model.h"
+#include "include/graphics/path_graphics_item.h"
+#include "include/graphics/drone_graphics_item.h"
+#include "include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/point_graphics_item.h"
+#include "include/window/port_dialog.h"
+#include "include/network/item_server.h"
+#include "include/network/comm.h"
+#include "include/window/menu_panel.h"
 
 namespace interface {
 

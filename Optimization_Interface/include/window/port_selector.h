@@ -11,7 +11,7 @@
 #include <QLineEdit>
 #include <QSet>
 
-#include "../models/data_model.h"
+#include "include/models/data_model.h"
 
 namespace interface {
 

@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/canvas.h"
+#include "include/graphics/canvas.h"
 
 #include <QPainter>
 #include <QGraphicsView>
@@ -76,7 +76,7 @@ void Canvas::setBackgroundImage(QString filename) {
     }
 
     this->background_image_ =
-            new QImage("../../skyenet/maps/" + filename + ".png");
+            new QImage("../../../../skyenet/maps/" + filename + ".png");
 }
 
 QPointF* Canvas::getBottomLeft() {

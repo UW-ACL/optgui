@@ -3,12 +3,12 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/network/polygon_server.h"
+#include "include/network/polygon_server.h"
 
 #include <QTcpSocket>
 #include <QDataStream>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 

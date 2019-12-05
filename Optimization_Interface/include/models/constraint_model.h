@@ -16,12 +16,12 @@
 #include <QPointF>
 #include <QSetIterator>
 
-#include "point_model_item.h"
-#include "ellipse_model_item.h"
-#include "polygon_model_item.h"
-#include "plane_model_item.h"
-#include "path_model_item.h"
-#include "drone_model_item.h"
+#include "include/models/point_model_item.h"
+#include "include/models/ellipse_model_item.h"
+#include "include/models/polygon_model_item.h"
+#include "include/models/plane_model_item.h"
+#include "include/models/path_model_item.h"
+#include "include/models/drone_model_item.h"
 
 namespace interface {
 

@@ -7,7 +7,7 @@
 
 #include <QApplication>
 
-#include "../include/window/main_window.h"
+#include "include/window/main_window.h"
 
 using interface::MainWindow;
 

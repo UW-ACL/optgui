@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/ellipse_resize_handle.h"
+#include "include/graphics/ellipse_resize_handle.h"
 
 #include <QtMath>
 #include <QPen>

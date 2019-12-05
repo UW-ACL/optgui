@@ -3,14 +3,14 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/polygon_resize_handle.h"
+#include "include/graphics/polygon_resize_handle.h"
 
 #include <QtMath>
 #include <QPen>
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 

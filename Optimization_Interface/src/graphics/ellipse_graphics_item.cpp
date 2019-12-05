@@ -3,13 +3,13 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QtMath>
 #include <QGraphicsView>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 

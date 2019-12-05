@@ -3,7 +3,9 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2019, All Rights Reserved
 
-#include "../../include/network/comm.h"
+#include "include/network/comm.h"
+
+#include <string>
 
 namespace interface {
 

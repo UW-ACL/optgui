@@ -3,13 +3,13 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/waypoints_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLineF>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 

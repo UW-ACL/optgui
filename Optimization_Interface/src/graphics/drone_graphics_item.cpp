@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/drone_graphics_item.h"
+#include "include/graphics/drone_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>

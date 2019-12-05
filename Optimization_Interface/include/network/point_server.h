@@ -9,8 +9,8 @@
 #ifndef POINT_SERVER_H_
 #define POINT_SERVER_H_
 
-#include "item_server.h"
-#include "../models/point_model_item.h"
+#include "include/network/item_server.h"
+#include "include/models/point_model_item.h"
 
 namespace interface {
 
