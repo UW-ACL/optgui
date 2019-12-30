@@ -192,11 +192,6 @@ void View::initialize() {
     connect(this->controller_->drone_comm_,
             SIGNAL(tx_pos(float, float, float)),
             this, SLOT(updateViewDronePos(float, float, float)));
-    connect(this->controller_->puck_comm_,
-            SIGNAL(tx_pos(float, float, float)),
-            this, SLOT(updateViewPuckPos(float, float, float)));
-    // TODO(bchasnov): add argument to updateViewPuckPos()
-    // that indicates which puck to update
 
     // TODO(bchasnov): remove sim from TODO
     timer_sim_ = new QTimer(this);
@@ -209,7 +204,7 @@ void View::initialize() {
 }
 
 void View::updateViewDronePos(float n, float e, float d) {
-    QPointF pos(e * this->scale_, -n * this->scale_);
+    QPointF pos(e * GRID_SIZE, -n * GRID_SIZE);
     this->controller_->updateDronePos(pos);
 
     if (compute_timer_.elapsed() >= this->controller_->solver_difficulty_ * 5) {
@@ -219,7 +214,7 @@ void View::updateViewDronePos(float n, float e, float d) {
 }
 
 void View::updateViewPuckPos(float n, float e, float d) {
-    QPointF pos(e * this->scale_, -n * this->scale_);
+    QPointF pos(e * GRID_SIZE, -n * GRID_SIZE);
     // TODO(bchasnov): Change from 0 to index i for multiple obstacle ellipses
     this->controller_->updatePuckPos(0, pos);
 }
@@ -393,17 +388,17 @@ void View::toggleSim() {
 }
 
 
-void View::setFinaltime(int _finaltime) {
-    float finaltime = _finaltime/10.0f;
-    this->controller_->setFinaltime(finaltime);
+void View::setFinaltime(int final_time) {
+    float float_final_time = final_time / 10.0;
+    this->controller_->setFinaltime(float_final_time);
     this->menu_panel_->opt_finaltime_label_->
-            setText("T=" + QString::number(finaltime));
+            setText("T = " + QString::number(final_time));
 }
 
 void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
     this->menu_panel_->opt_horizon_label_->
-            setText("N=" + QString::number(horizon));
+            setText("N = " + QString::number(horizon));
 }
 
 void View::addEllipse() {

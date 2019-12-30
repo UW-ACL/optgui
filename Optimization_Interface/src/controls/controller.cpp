@@ -59,11 +59,6 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
     this->canvas_->addItem(this->drone_graphic_);
 
-    // TODO(bchasnov): make ellipse upate with puck symbol
-    this->loadEllipse(this->model_->puck_ellipse_pos_->at(0));
-    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0));
-    this->canvas_->addItem(this->puck_graphic_);
-
     // initialize final point graphic
     this->final_point_ = new PointGraphicsItem(this->model_->final_pos_);
     this->canvas_->addItem(this->final_point_);
@@ -74,30 +69,12 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     // TODO(ben): Remove this hack and incorporate it into ConstraintModel
     this->trajectory_ = new QVector<QPointF *>;
 
-    // Hack: to add something on the four corners of the map
-    this->bottom_left_ = new PointGraphicsItem(
-                new PointModelItem(this->canvas_->getBottomLeft()));
-    this->top_right_ = new PointGraphicsItem(
-                new PointModelItem(this->canvas_->getTopRight()));
-
-    this->canvas_->addItem(this->bottom_left_);
-    this->canvas_->addItem(this->top_right_);
-
     this->drone_comm_ = new comm("", this->drone_port_);
-    this->puck_comm_ = new comm("", this->puck_port_);
 
     connect(this,
             SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof*)),
             this->drone_comm_,
             SLOT(rx_trajectory(const autogen::packet::traj3dof*)));
-//    connect(this,
-//            SIGNAL(trajectoryExecuted2(const autogen::packet::traj3dof*)),
-//            this->drone_comm_,
-//            SLOT(rx_trajectory2(const autogen::packet::traj3dof*)));
-//    connect(this,
-//            SIGNAL(trajectoryExecuted2(float)),
-//            this->drone_comm_,
-//            SLOT(rx_trajectory2(float)));
 }
 
 Controller::~Controller() {
@@ -328,11 +305,11 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     this->trajectory_->clear();
     for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
         trajectory->append(
-                    new QPointF(this->model_->fly_->O.r[2][i] * 100,
-                                -this->model_->fly_->O.r[1][i] * 100));
+                    new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
+                                -this->model_->fly_->O.r[1][i] * GRID_SIZE));
         this->trajectory_->append(
-                    new QPointF(this->model_->fly_->O.r[2][i] * 100,
-                                -this->model_->fly_->O.r[1][i] * 100));
+                    new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
+                                -this->model_->fly_->O.r[1][i] * GRID_SIZE));
     }
 
     // how feasible is the solution?

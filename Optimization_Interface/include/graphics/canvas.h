@@ -13,7 +13,6 @@
 
 namespace interface {
 
-const qreal GRID_SIZE = 100;
 const QString UNIT = QString("m");
 
 class Canvas : public QGraphicsScene {

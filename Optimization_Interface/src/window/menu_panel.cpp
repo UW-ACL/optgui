@@ -268,7 +268,7 @@ void MenuPanel::initializeHorizonSlider() {
 
     this->opt_horizon_label_ = new QLabel();
     this->opt_horizon_label_->
-            setText("T=" + QString::number(horizonlength_init_));
+            setText("N = " + QString::number(horizonlength_init_));
 
     this->menu_->layout()->addWidget(this->opt_horizon_label_);
     this->menu_->layout()->addWidget(this->opt_horizon_slider_);
@@ -295,7 +295,7 @@ void MenuPanel::initializeFinaltimeSlider() {
 
     this->opt_finaltime_label_ = new QLabel();
     this->opt_finaltime_label_->
-            setText("T=" + QString::number(finaltime_init_));
+            setText("T = " + QString::number(finaltime_init_));
     wid->layout()->addWidget(this->opt_finaltime_slider_);
     wid->layout()->addWidget(this->opt_finaltime_label_);
 

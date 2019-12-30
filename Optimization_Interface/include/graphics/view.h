@@ -70,9 +70,6 @@ class View : public QGraphicsView {
     uint64_t view_tick_ = 0;
 
     QElapsedTimer compute_timer_;
-
-    // TODO(bchasnov): fix this!
-    float scale_ = 100;
 };
 
 }  // namespace interface

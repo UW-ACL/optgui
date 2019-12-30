@@ -12,6 +12,8 @@
 #include <cmath>
 #include <limits>
 
+#include "include/globals.h"
+
 namespace interface {
 
 Canvas::Canvas(QObject *parent, QString background_file)

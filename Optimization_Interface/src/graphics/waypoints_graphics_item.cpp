@@ -75,7 +75,15 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
         painter->setPen(Qt::black);
         QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        qreal scaling_factor = this->getScalingFactor();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
 }

@@ -89,7 +89,14 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     // Label with port
     if (this->model_->port_ != 0) {
         QPointF text_pos(this->mapFromScene(*this->model_->p1_));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
 }

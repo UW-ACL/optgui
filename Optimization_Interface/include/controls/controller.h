@@ -43,11 +43,8 @@ class Controller : public QObject {
 
     comm *drone_comm_;
     uint32_t drone_port_ = 8000;
-    comm *puck_comm_;
-    uint32_t puck_port_ = 8001;
 
     // TODO(bchasnov): update puck to marker with feedback
-    uint32_t marker_;  // 0: final point, 1: puck
     double solver_difficulty_ = 100;
 
     bool valid_path_ = false;
@@ -111,10 +108,6 @@ class Controller : public QObject {
     QVector<ItemServer *> *servers_;
 
     PointGraphicsItem *final_point_;
-    PointGraphicsItem *puck_graphic_;
-
-    PointGraphicsItem *bottom_left_;
-    PointGraphicsItem *top_right_;
 
     // TODO(bchasnov): remove these terrible null pointer......
     QVector<QPointF *>* trajectory_;
