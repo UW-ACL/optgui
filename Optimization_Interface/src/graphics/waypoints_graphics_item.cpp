@@ -72,6 +72,7 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     }
 
     // Label with port
+    /*
     if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
         painter->setPen(Qt::black);
         QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
@@ -86,6 +87,7 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
                           Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
+    */
 }
 
 void WaypointsGraphicsItem::removeHandle(PolygonResizeHandle *handle) {

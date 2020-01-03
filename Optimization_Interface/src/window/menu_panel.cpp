@@ -119,7 +119,7 @@ void MenuPanel::initializePointButton() {
     pix.fill(Qt::transparent);
     QPainter painter(&pix);
     painter.setRenderHint(QPainter::Antialiasing);
-    QPen pen(Qt::red);
+    QPen pen(Qt::black);
     pen.setWidth(2);
     painter.setPen(pen);
     painter.setBrush(Qt::red);
@@ -256,7 +256,7 @@ void MenuPanel::initializeFlipButton() {
 
 // initializes slider for number of iterations allowed (horizon length)
 void MenuPanel::initializeHorizonSlider() {
-    this->opt_horizon_slider_ = new QSlider(Qt::Vertical, this->menu_);
+    this->opt_horizon_slider_ = new QSlider(Qt::Horizontal, this->menu_);
     this->opt_horizon_slider_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
     this->opt_horizon_slider_->setTickInterval(1);
@@ -278,11 +278,7 @@ void MenuPanel::initializeHorizonSlider() {
 
 // initializes slider for final time constraints
 void MenuPanel::initializeFinaltimeSlider() {
-    QWidget *wid = new QWidget(this->menu_);
-    wid->setLayout(new QHBoxLayout(wid));
-    wid->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-    this->opt_finaltime_slider_ = new QSlider(Qt::Vertical, this->menu_);
+    this->opt_finaltime_slider_ = new QSlider(Qt::Horizontal, this->menu_);
     this->opt_finaltime_slider_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
     this->opt_finaltime_slider_->setTickInterval(1);
@@ -296,13 +292,11 @@ void MenuPanel::initializeFinaltimeSlider() {
     this->opt_finaltime_label_ = new QLabel();
     this->opt_finaltime_label_->
             setText("T = " + QString::number(finaltime_init_));
-    wid->layout()->addWidget(this->opt_finaltime_slider_);
-    wid->layout()->addWidget(this->opt_finaltime_label_);
-
 
     this->menu_->layout()->addWidget(this->opt_finaltime_label_);
     this->menu_->layout()->addWidget(this->opt_finaltime_slider_);
-    this->menu_->layout()->setAlignment(wid, Qt::AlignBottom);
+    this->menu_->layout()->setAlignment(this->opt_finaltime_slider_,
+                                        Qt::AlignBottom);
 }
 
 // initializes button for executing traj to vehicle
@@ -351,7 +345,7 @@ void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_->setTickInterval(1);
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
     this->zoom_slider_->setMinimum(1);
-    this->zoom_slider_->setMaximum(49);
+    this->zoom_slider_->setMaximum(10);
     this->zoom_slider_->setValue(this->zoom_init_);
     this->zoom_slider_->setToolTip(tr("Set zoom level"));
     this->menu_->layout()->addWidget(this->zoom_slider_);

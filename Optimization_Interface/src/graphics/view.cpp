@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QInputDialog>
+#include <QDebug>
 
 namespace interface {
 
@@ -332,7 +333,7 @@ void View::openMenu() {
 }
 
 void View::setZoom(int value) {
-    qreal scaleFactor = qreal(value) / (100 - value);
+    qreal scaleFactor = value / 5.0;
     this->resetMatrix();
     this->scale(scaleFactor, scaleFactor);
 }

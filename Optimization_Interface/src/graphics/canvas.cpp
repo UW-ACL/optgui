@@ -130,7 +130,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     qint32 segment_size = GRID_SIZE;
     if (scale < 0.5) {
         segment_size /= 0.5;
-    } else if (scale > 2) {
+    } else if (scale > 1.5) {
         segment_size /= 2;
     }
 
@@ -176,17 +176,22 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
         scale = this->views().first()->matrix().m11();
     }
 
+    // Expand scene to fit exposed area
+    this->setSceneRect(this->sceneRect().united(rect));
+    if (!this->views().isEmpty()) {
+        this->views().first()->setSceneRect(this->sceneRect().united(rect));
+    }
+
     // Add grids proportional to scaling factor
     qint64 segment_size = GRID_SIZE;
     if (scale < 0.5) {
         segment_size /= 0.5;
-    } else if (scale > 2) {
+    } else if (scale > 1.5) {
         segment_size /= 2;
     }
 
     qreal pen_width = 2 / scale;
     qreal font_size = 20 / scale;
-
 
     // Set boundries of grid
     qint64 top_bound = roundDownPast(qRound64(rect.top()), segment_size);
@@ -232,8 +237,12 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->drawText(1, -2, "0");
 
     // Debug info
-    // painter->setPen(Qt::red);
-    // painter->drawRect(this->sceneRect());
+//    painter->setPen(Qt::red);
+//    painter->drawRect(this->sceneRect());
+//    painter->setPen(Qt::blue);
+//    if (!this->views().isEmpty()) {
+//        painter->drawRect(this->views().first()->sceneRect());
+//    }
 }
 
 }  // namespace interface
