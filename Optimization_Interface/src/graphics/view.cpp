@@ -300,7 +300,8 @@ void View::openMenu() {
 }
 
 void View::setZoom(int value) {
-    qreal scaleFactor = value / 5.0;
+    qreal scaleFactor = value / 100.0;
+    qDebug() << scaleFactor;
     this->resetMatrix();
     this->scale(scaleFactor, scaleFactor);
 }

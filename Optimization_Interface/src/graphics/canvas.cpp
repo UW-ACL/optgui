@@ -128,7 +128,11 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     }
 
     qint32 segment_size = GRID_SIZE;
-    if (scale < 0.5) {
+    if (scale < 0.1) {
+        segment_size /= 0.1;
+    } else if (scale < 0.2) {
+        segment_size /= 0.2;
+    } else if (scale < 0.5) {
         segment_size /= 0.5;
     } else if (scale > 1.5) {
         segment_size /= 2;
@@ -150,7 +154,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
                       rect.left() + (offset + segment_size),
                       rect.bottom() - offset);
     // Draw notches on scale
-    for (qint32 i = 0; i <= segment_size; i += GRID_SIZE / 2) {
+    for (qint32 i = 0; i <= segment_size; i += segment_size / 2) {
         painter->drawLine(rect.left() + offset + i, rect.bottom() - offset,
                           rect.left() + offset + i,
                           rect.bottom() - notch_offset);
@@ -184,7 +188,11 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
 
     // Add grids proportional to scaling factor
     qint64 segment_size = GRID_SIZE;
-    if (scale < 0.5) {
+    if (scale < 0.1) {
+        segment_size /= 0.1;
+    } else if (scale < 0.2) {
+        segment_size /= 0.2;
+    } else if (scale < 0.5) {
         segment_size /= 0.5;
     } else if (scale > 1.5) {
         segment_size /= 2;

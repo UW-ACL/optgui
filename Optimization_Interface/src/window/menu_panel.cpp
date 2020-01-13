@@ -345,7 +345,7 @@ void MenuPanel::initializeZoomSlider() {
     this->zoom_slider_->setTickInterval(1);
     this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
     this->zoom_slider_->setMinimum(1);
-    this->zoom_slider_->setMaximum(10);
+    this->zoom_slider_->setMaximum(200);
     this->zoom_slider_->setValue(this->zoom_init_);
     this->zoom_slider_->setToolTip(tr("Set zoom level"));
     this->menu_->layout()->addWidget(this->zoom_slider_);
