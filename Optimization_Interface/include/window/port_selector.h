@@ -25,7 +25,7 @@ class PortSelector : public QLineEdit {
  protected:
     void focusInEvent(QFocusEvent *event) override;
 
- private slots:
+ public slots:
     void updatePort();
 
  private:

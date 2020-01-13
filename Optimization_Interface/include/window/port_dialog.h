@@ -22,9 +22,13 @@ class PortDialog : public QDialog {
     explicit PortDialog(QWidget *parent = nullptr);
     ~PortDialog();
     void setModel(ConstraintModel *model);
+    void closeEvent(QCloseEvent *event) override;
 
  private slots:
     void resetTable();
+
+ signals:
+    void setSocketPorts();
 
  private:
     void initializeTable();

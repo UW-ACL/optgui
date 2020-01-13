@@ -52,9 +52,6 @@ class ConstraintModel {
     void addPathPoint(QPointF *item);
     void clearPath();
 
-    void updateInitialPoint(QPointF *item);
-    void updateFinalPoint(QPointF *item);
-
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 

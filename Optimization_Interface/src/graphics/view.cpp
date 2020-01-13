@@ -98,16 +98,6 @@ void View::setPorts() {
     this->controller_->setPorts();
 }
 
-void View::startServers() {
-    this->setState(IDLE);
-    this->controller_->startServers();
-}
-
-void View::closeServers() {
-    this->setState(IDLE);
-    this->controller_->closeServers();
-}
-
 void View::initialize() {
     // Set color
     this->setAutoFillBackground(true);
@@ -189,12 +179,6 @@ void View::initialize() {
     connect(this->menu_panel_->add_ellipse_button_, SIGNAL(clicked(bool)),
             this, SLOT(addEllipse()));
 
-    // Connect comms to the
-    connect(this->controller_->drone_comm_,
-            SIGNAL(tx_pos(float, float, float)),
-            this, SLOT(updateViewDronePos(float, float, float)));
-
-    // TODO(bchasnov): remove sim from TODO
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
 
@@ -202,22 +186,6 @@ void View::initialize() {
     this->expandView();
 
     this->view_tick_ = 0;
-}
-
-void View::updateViewDronePos(float n, float e, float d) {
-    QPointF pos(e * GRID_SIZE, -n * GRID_SIZE);
-    this->controller_->updateDronePos(pos);
-
-    if (compute_timer_.elapsed() >= this->controller_->solver_difficulty_ * 5) {
-        this->controller_->compute();
-        compute_timer_.restart();
-    }
-}
-
-void View::updateViewPuckPos(float n, float e, float d) {
-    QPointF pos(e * GRID_SIZE, -n * GRID_SIZE);
-    // TODO(bchasnov): Change from 0 to index i for multiple obstacle ellipses
-    this->controller_->updatePuckPos(0, pos);
 }
 
 void View::mousePressEvent(QMouseEvent *event) {

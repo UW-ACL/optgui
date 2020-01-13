@@ -66,16 +66,10 @@ SOURCES += \
     src/graphics/path_graphics_item.cpp \
     src/window/port_dialog.cpp \
     src/window/port_selector.cpp \
-    src/network/item_server.cpp \
-    src/network/drone_server.cpp \
-    src/network/path_server.cpp \
-    src/network/ellipse_server.cpp \
-    src/network/polygon_server.cpp \
-    src/network/plane_server.cpp \
+    src/network/drone_socket.cpp \
+    src/network/ellipse_socket.cpp \
     src/graphics/point_graphics_item.cpp \
-    src/network/point_server.cpp \
-#    ../../mikipilot/gcs/comm.cpp
-    src/network/comm.cpp
+    src/network/point_socket.cpp
 
 HEADERS += \
     include/window/main_window.h \
@@ -102,17 +96,11 @@ HEADERS += \
     include/window/port_dialog.h \
     include/window/port_selector.h \
     include/models/data_model.h \
-    include/network/item_server.h \
-    include/network/drone_server.h \
-    include/network/path_server.h \
-    include/network/ellipse_server.h \
-    include/network/polygon_server.h \
-    include/network/plane_server.h \
-    include/network/point_server.h \
+    include/network/ellipse_socket.h \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
-#    ../../mikipilot/gcs/comm.h
-    include/network/comm.h
+    include/network/drone_socket.h \
+    include/network/point_socket.h
 
 RESOURCES += \
     resources.qrc

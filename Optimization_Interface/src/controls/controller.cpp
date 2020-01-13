@@ -22,15 +22,8 @@
 #include "include/graphics/ellipse_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
-#include "include/network/drone_server.h"
-#include "include/network/path_server.h"
-#include "include/network/point_server.h"
-#include "include/network/ellipse_server.h"
-#include "include/network/polygon_server.h"
-#include "include/network/plane_server.h"
 #include "include/globals.h"
 #include "include/window/menu_panel.h"
-
 
 namespace interface {
 
@@ -42,9 +35,6 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->horizon_length_ = menupanel->horizonlength_init_;
     this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
-
-    this->network_session_ = nullptr;
-    this->servers_ = new QVector<ItemServer *>();
 
     // initialize waypoints graphic
     this->waypoints_graphic_ = new WaypointsGraphicsItem(
@@ -65,16 +55,16 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
+    connect(this->port_dialog_, SIGNAL(setSocketPorts()),
+            this, SLOT(startSockets()));
 
     // TODO(ben): Remove this hack and incorporate it into ConstraintModel
     this->trajectory_ = new QVector<QPointF *>;
 
-    this->drone_comm_ = new comm("", this->drone_port_);
-
-    connect(this,
-            SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof*)),
-            this->drone_comm_,
-            SLOT(rx_trajectory(const autogen::packet::traj3dof*)));
+    // Initialize network
+    this->drone_socket_ = nullptr;
+    this->final_point_socket_ = nullptr;
+    this->ellipse_sockets_ = new QVector<EllipseSocket *>();
 }
 
 Controller::~Controller() {
@@ -93,10 +83,9 @@ Controller::~Controller() {
     // deinitialize port dialog
     delete this->port_dialog_;
 
-    // deinitialize network session
-    if (this->network_session_ != nullptr) {
-        delete this->network_session_;
-    }
+    // deinitialize network
+    this->closeSockets();
+    delete this->ellipse_sockets_;
 
     // clean up model
     delete this->model_;
@@ -110,6 +99,7 @@ void Controller::removeItem(QGraphicsItem *item) {
             EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                     EllipseGraphicsItem *>(item);
             EllipseModelItem *model = ellipse->model_;
+            this->removeEllipseSocket(model);
             this->canvas_->removeItem(ellipse);
             delete ellipse;
             this->model_->removeEllipse(model);
@@ -205,7 +195,7 @@ void Controller::updatePath() {
     // qDebug() << "Tick";
 }
 
-void Controller::setFinaltime(double_t finaltime) {
+void Controller::setFinaltime(double finaltime) {
     this->finaltime_ = finaltime;
 //    qDebug() << "Final time: " << finaltime;
     this->compute();
@@ -217,7 +207,7 @@ void Controller::setHorizonLength(uint32_t horizon) {
     this->compute();
 }
 
-double_t Controller::getTimeInterval() {
+double Controller::getTimeInterval() {
     return this->finaltime_ / this->horizon_length_;
 }
 
@@ -420,18 +410,17 @@ void Controller::execute() {
     std::cout << "accl:" << this->drone_traj3dof_data_.accl_ned.transpose()
               << std::endl;
 
-
-    qDebug() << "before";
     emit trajectoryExecuted(&this->drone_traj3dof_data_);
-    qDebug() << "after";
 }
 
 bool Controller::simDrone(uint64_t tick) {
     if (tick >= (uint64_t)this->trajectory_->length()) {
         return false;
-    } else {
-        this->updateDronePos(*this->trajectory_->value(tick));
     }
+    QPointF *pos = this->trajectory_->value(tick);
+    this->model_->drone_->pos_->setX(pos->x());
+    this->model_->drone_->pos_->setY(pos->y());
+    this->canvas_->update();
     return true;
 }
 
@@ -466,132 +455,64 @@ void Controller::clearPathPoints() {
     this->canvas_->update();
 }
 
-void Controller::updateDronePos(QPointF pos) {
-    this->model_->drone_->point_->setX(pos.x());
-    this->model_->drone_->point_->setY(pos.y());
-    this->canvas_->update();
-}
-
-void Controller::updatePuckPos(uint32_t idx, QPointF pos) {
-    this->model_->puck_pos_->at(idx)->pos_->setX(pos.x());
-    this->model_->puck_pos_->at(idx)->pos_->setY(pos.y());
-    this->model_->puck_ellipse_pos_->at(idx)->pos_->setX(pos.x());
-    this->model_->puck_ellipse_pos_->at(idx)->pos_->setY(pos.y());
-    this->canvas_->update();
-}
-
 // ============ NETWORK CONTROLS ============
 
-void Controller::startServers() {
-    // Close and clear existing servers
-    this->closeServers();
+void Controller::startSockets() {
+    // close old sockets
+    this->closeSockets();
 
-    // Get network config
-    QNetworkConfigurationManager manager;
-    if (manager.capabilities() &
-            QNetworkConfigurationManager::NetworkSessionRequired) {
-        // Get saved network configuration
-        QSettings settings(QSettings::UserScope,
-                           QLatin1String("QtProject"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        const QString id =
-                settings.value(
-                    QLatin1String("DefaultNetworkConfiguration")).toString();
-        settings.endGroup();
-
-        // If the saved network configuration is not currently
-        // discovered use the system default
-        QNetworkConfiguration config =
-                manager.configurationFromIdentifier(id);
-        if ((config.state() & QNetworkConfiguration::Discovered) !=
-            QNetworkConfiguration::Discovered) {
-            config = manager.defaultConfiguration();
-        }
-
-        if (this->network_session_) {
-            this->network_session_->stop();
-            delete this->network_session_;
-        }
-        this->network_session_ = new QNetworkSession(config);
-        network_session_->open();
+    // create drone socket
+    if (this->model_->drone_->port_ > 0) {
+        this->drone_socket_ = new DroneSocket(this->model_->drone_);
+        connect(this,
+                SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof*)),
+                this->drone_socket_,
+                SLOT(rx_trajectory(const autogen::packet::traj3dof*)));
+        connect(this->drone_socket_, SIGNAL(refresh_graphics()),
+                this->canvas_, SLOT(update()));
     }
 
-    // Save the used configuration
-    if (this->network_session_) {
-        QNetworkConfiguration config = this->network_session_->configuration();
-        QString id;
-        if (config.type() == QNetworkConfiguration::UserChoice) {
-            id = this->network_session_->sessionProperty(
-                        QLatin1String("UserChoiceConfiguration")).toString();
-        } else {
-            id = config.identifier();
-        }
-
-        QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
-        settings.endGroup();
+    // create final pos socket
+    if (this->model_->final_pos_->port_ > 0) {
+        this->final_point_socket_ = new PointSocket(this->model_->final_pos_);
+        connect(this->final_point_socket_, SIGNAL(refresh_graphics()),
+                this->canvas_, SLOT(update()));
     }
 
-    // Create server for drone
-    if (this->model_->drone_->port_ != 0) {
-        this->servers_->append(new DroneServer(this->model_->drone_));
-    }
-
-    // Create server for waypoints
-    if (this->model_->waypoints_->port_ != 0) {
-        this->servers_->append(new PathServer(this->model_->waypoints_));
-    }
-
-    // Create server for drone path
-    if (this->model_->path_->port_ != 0) {
-        this->servers_->append(new PathServer(this->model_->path_));
-    }
-
-    // Create servers for point constraints
-    for (PointModelItem *model : *this->model_->points_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new PointServer(model));
-        }
-    }
-    // Create servers for ellipse constraints
+    // create ellipse sockets
     for (EllipseModelItem *model : *this->model_->ellipses_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new EllipseServer(model));
+        if (model->port_ > 0) {
+            EllipseSocket *temp = new EllipseSocket(model);
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(update()));
+            this->ellipse_sockets_->append(temp);
         }
-    }
-
-    // Create servers for polygon constraints
-    for (PolygonModelItem *model : *this->model_->polygons_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new PolygonServer(model));
-        }
-    }
-
-    // Create servers for plane constraints
-    for (PlaneModelItem *model : *this->model_->planes_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new PlaneServer(model));
-        }
-    }
-
-    // Start servers
-    for (ItemServer *server : *this->servers_) {
-        server->startServer();
     }
 }
 
-void Controller::closeServers() {
-    // close servers in list
-    for (ItemServer* server : *this->servers_) {
-        server->close();
-        delete server;
+void Controller::closeSockets() {
+    if (this->drone_socket_) {
+        delete this->drone_socket_;
+        this->drone_socket_ = nullptr;
     }
-    this->servers_->clear();
+    if (this->final_point_socket_) {
+        delete this->final_point_socket_;
+        this->final_point_socket_ = nullptr;
+    }
+    // close ellipse sockets
+    while (!this->ellipse_sockets_->isEmpty()) {
+        delete this->ellipse_sockets_->takeFirst();
+    }
+}
 
-    // close network session
-    if (this->network_session_) {
-        this->network_session_->close();
+void Controller::removeEllipseSocket(EllipseModelItem *model) {
+    for (QVector<EllipseSocket *>::iterator i = this->ellipse_sockets_->begin();
+         i != this->ellipse_sockets_->end(); i++) {
+        if ((*i)->ellipse_model_ == model) {
+            EllipseSocket *temp = *i;
+            i = this->ellipse_sockets_->erase(i);
+            delete temp;
+        }
     }
 }
 
@@ -646,7 +567,7 @@ void Controller::writePath(PathModelItem *model, QDataStream *out) {
 }
 
 void Controller::writeDrone(DroneModelItem *model, QDataStream *out) {
-    *out << *model->point_;
+    *out << *model->pos_;
     *out << (quint16)model->port_;
 }
 
@@ -860,7 +781,6 @@ void Controller::readDrone(QDataStream *in) {
     *in >> point;
     quint16 port;
     *in >> port;
-    this->updateDronePos(point);
     this->model_->drone_->port_ = port;
 }
 

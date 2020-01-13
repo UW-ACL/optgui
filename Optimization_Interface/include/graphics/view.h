@@ -41,16 +41,12 @@ class View : public QGraphicsView {
     void loadFile();
     void saveFile();
     void setPorts();
-    void startServers();
-    void closeServers();
     void execute();
     void updatePath();
     void stepSim();
     void toggleSim();
     void setHorizon(int);
     void setFinaltime(int);
-    void updateViewDronePos(float, float, float);
-    void updateViewPuckPos(float, float, float);
     void addEllipse();
 
  private:

@@ -109,14 +109,6 @@ void ConstraintModel::addPoint(PointModelItem *item) {
     this->points_->insert(item);
 }
 
-void ConstraintModel::updateInitialPoint(QPointF *item) {
-    // TODO(dtsull): implement
-}
-
-void ConstraintModel::updateFinalPoint(QPointF *item) {
-    // TODO(dtsull): implement
-}
-
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
 }
@@ -167,8 +159,8 @@ void ConstraintModel::loadFinalPos(double* r_f) {
 }
 
 void ConstraintModel::loadInitialPos(double* r_i) {
-    r_i[1] = -this->drone_->point_->y()/this->scale_;
-    r_i[2] = this->drone_->point_->x()/this->scale_;
+    r_i[1] = -this->drone_->pos_->y()/this->scale_;
+    r_i[2] = this->drone_->pos_->x()/this->scale_;
 }
 
 uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {

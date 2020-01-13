@@ -55,20 +55,21 @@ void PortDialog::setModel(ConstraintModel *model) {
     this->table_->setCellWidget(0, 1,
             new PortSelector(this->ports_, this->model_->drone_, this->table_));
 
-    // Set waypoints
-    this->table_->setItem(1, 0, new QTableWidgetItem(tr("Waypoints")));
+    // Set final point
+    this->table_->setItem(1, 0, new QTableWidgetItem(tr("Final Point")));
     this->table_->item(1, 0)->setFlags(Qt::ItemIsEnabled);
-    this->ports_->insert(this->model_->waypoints_->port_);
+    this->ports_->insert(this->model_->final_pos_->port_);
     this->table_->setCellWidget(1, 1,
-            new PortSelector(this->ports_, this->model_->waypoints_,
+            new PortSelector(this->ports_, this->model_->final_pos_,
                              this->table_));
 
-    // Set path
-    this->table_->setItem(2, 0, new QTableWidgetItem(tr("Drone Path")));
+    // Set waypoints
+    this->table_->setItem(2, 0, new QTableWidgetItem(tr("Waypoints")));
     this->table_->item(2, 0)->setFlags(Qt::ItemIsEnabled);
-    this->ports_->insert(this->model_->path_->port_);
+    this->ports_->insert(this->model_->waypoints_->port_);
     this->table_->setCellWidget(2, 1,
-            new PortSelector(this->ports_, this->model_->path_, this->table_));
+            new PortSelector(this->ports_, this->model_->waypoints_,
+                             this->table_));
 
     quint16 row = 3;
     // Set ellipses
@@ -118,6 +119,7 @@ void PortDialog::setModel(ConstraintModel *model) {
 }
 
 void PortDialog::resetTable() {
+    // table takes ownership of pointers and deletes them
     this->table_->clearContents();
     this->ports_->clear();
 }
@@ -145,6 +147,18 @@ void PortDialog::initializeTable() {
 
     // Add to layout
     this->layout()->addWidget(this->table_);
+}
+
+void PortDialog::closeEvent(QCloseEvent *event) {
+    // update all ports
+    for (int i = 0; i < this->table_->rowCount(); i++) {
+        PortSelector *selector = qobject_cast<PortSelector*>
+                (this->table_->cellWidget(i, 1));
+        selector->updatePort();
+    }
+
+    emit setSocketPorts();  // create sockets for objects
+    QDialog::closeEvent(event);
 }
 
 }  // namespace interface

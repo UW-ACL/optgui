@@ -35,11 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     // Delete menu items
-    delete this->load_file_;
-    delete this->save_file_;
+//    delete this->load_file_;
+//    delete this->save_file_;
     delete this->set_ports_;
-    delete this->connect_;
-    delete this->disconnect_;
 
     // delete menu
     delete this->file_menu_;
@@ -76,24 +74,10 @@ void MainWindow::initializeMenu() {
     connect(this->set_ports_, SIGNAL(triggered()),
             this->view_, SLOT(setPorts()));
 
-    // Initialize connect file action
-    this->connect_ = new QAction(tr("&Connect"), this->file_menu_);
-    this->connect_->setToolTip(tr("Spin up servers for items with ports"));
-    connect(this->connect_, SIGNAL(triggered()),
-            this->view_, SLOT(startServers()));
-
-    // Initialize disconnect file action
-    this->disconnect_ = new QAction(tr("&Disconnect"), this->file_menu_);
-    this->disconnect_->setToolTip(tr("Close running servers"));
-    connect(this->disconnect_, SIGNAL(triggered()),
-            this->view_, SLOT(closeServers()));
-
     // Add actions to menu
-    this->file_menu_->addAction(this->load_file_);
-    this->file_menu_->addAction(this->save_file_);
+//    this->file_menu_->addAction(this->load_file_);
+//    this->file_menu_->addAction(this->save_file_);
     this->file_menu_->addAction(this->set_ports_);
-    this->file_menu_->addAction(this->connect_);
-    this->file_menu_->addAction(this->disconnect_);
 }
 
 }  // namespace interface
