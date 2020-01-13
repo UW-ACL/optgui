@@ -78,7 +78,7 @@ void Canvas::setBackgroundImage(QString filename) {
     }
 
     this->background_image_ =
-            new QImage("../../../../skyenet/maps/" + filename + ".png");
+            new QImage(":/assets/" + filename + ".png");
 }
 
 QPointF* Canvas::getBottomLeft() {
