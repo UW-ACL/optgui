@@ -41,7 +41,6 @@ class Controller : public QObject {
     float finaltime_;
     uint32_t horizon_length_ = MAX_HORIZON;
 
-    // TODO(bchasnov): update puck to marker with feedback
     double solver_difficulty_ = 100;
 
     bool valid_path_ = false;
@@ -65,6 +64,7 @@ class Controller : public QObject {
     void clearWaypointsGraphic();
     void removeItem(QGraphicsItem *item);
     void clearDroneGraphic();
+    void duplicateSelected();
 
     // save/load functionality
     void loadFile();

@@ -189,6 +189,24 @@ void Controller::addWaypoint(QPointF *point) {
     this->canvas_->update();
 }
 
+void Controller::duplicateSelected() {
+    for (QGraphicsItem *item : this->canvas_->selectedItems()) {
+        switch (item->type()) {
+            case ELLIPSE_GRAPHIC: {
+                EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
+                        EllipseGraphicsItem *>(item);
+                QPointF *new_pos = new QPointF(ellipse->model_->pos_->x(),
+                                               ellipse->model_->pos_->y());
+                EllipseModelItem *new_model =
+                        new EllipseModelItem(new_pos,
+                                             ellipse->model_->radius_);
+                this->loadEllipse(new_model);
+                break;
+            }
+        }
+    }
+}
+
 // ============ BACK END CONTROLS ============
 
 void Controller::updatePath() {

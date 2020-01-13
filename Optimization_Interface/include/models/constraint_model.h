@@ -68,8 +68,6 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
-    QVector<PointModelItem *> *puck_pos_;
-    QVector<EllipseModelItem *> *puck_ellipse_pos_;
 
     SkyeFly *fly_;
 

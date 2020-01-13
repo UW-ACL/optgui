@@ -171,13 +171,12 @@ void View::initialize() {
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
 
-
     // Connect simulate button
     connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
             this, SLOT(toggleSim()));
 
-    connect(this->menu_panel_->add_ellipse_button_, SIGNAL(clicked(bool)),
-            this, SLOT(addEllipse()));
+    connect(this->menu_panel_->duplicate_button_, SIGNAL(clicked(bool)),
+            this, SLOT(duplicateSelected()));
 
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
@@ -311,7 +310,7 @@ void View::setState(STATE button_type) {
     this->clearMarkers();
 
     // Deselect items
-    this->canvas_->clearSelection();
+    // this->canvas_->clearSelection();
 
     // Go to idle or switch to new state
     bool set_idle = false;
@@ -336,8 +335,13 @@ void View::updatePath() {
 
 void View::execute() {
     this->clearMarkers();
-
+    this->setState(IDLE);
     this->controller_->execute();
+}
+
+void View::duplicateSelected() {
+    this->setState(IDLE);
+    this->controller_->duplicateSelected();
 }
 
 // TODO(bchasnov): does this belong in view? probably not..
@@ -368,11 +372,6 @@ void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
     this->menu_panel_->opt_horizon_label_->
             setText("N = " + QString::number(horizon));
-}
-
-void View::addEllipse() {
-    this->controller_->addEllipse(new QPointF(
-            *this->controller_->model_->puck_ellipse_pos_->at(0)->pos_));
 }
 
 void View::clearMarkers() {

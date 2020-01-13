@@ -86,7 +86,7 @@ void MenuPanel::initialize() {
         this->menu_->layout()->setAlignment(button,
                                             Qt::AlignTop|Qt::AlignCenter);
     }
-    this->initializeAddEllipseButton();
+    this->initializeDuplicateButton();
     this->initializeHorizonSlider();
     this->initializeFinaltimeSlider();
 
@@ -125,7 +125,7 @@ void MenuPanel::initializePointButton() {
     painter.setBrush(Qt::red);
     painter.drawEllipse(15, 15, 20, 20);
     point_button->setPixmap(pix);
-    point_button->setToolTip(tr("Add point"));
+    point_button->setToolTip(tr("Set final point"));
     this->menu_buttons_->append(point_button);
 }
 
@@ -317,12 +317,12 @@ void MenuPanel::initializeSimButton() {
     this->menu_->layout()->setAlignment(this->sim_button_, Qt::AlignBottom);
 }
 
-void MenuPanel::initializeAddEllipseButton() {
-    this->add_ellipse_button_ = new QPushButton("Add ellipse", this->menu_);
-    this->add_ellipse_button_->setToolTip(tr("Add ellipse"));
-    this->menu_->layout()->addWidget(this->add_ellipse_button_);
+void MenuPanel::initializeDuplicateButton() {
+    this->duplicate_button_ = new QPushButton("Duplicate", this->menu_);
+    this->duplicate_button_->setToolTip(tr("Duplicate Selected Constraint"));
+    this->menu_->layout()->addWidget(this->duplicate_button_);
     this->menu_->layout()->
-            setAlignment(this->add_ellipse_button_, Qt::AlignBottom);
+            setAlignment(this->duplicate_button_, Qt::AlignBottom);
 }
 
 /* Initializes button for freezing vehicle (TODO: not yet used)

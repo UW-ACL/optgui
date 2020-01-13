@@ -30,7 +30,7 @@ class MenuPanel : public QFrame {
     QToolButton *close_button_;           // closes window
     QPushButton *exec_button_;            // commands trajectory to vehicle
     QPushButton *sim_button_;             // simulates trajectory in GUI
-    QPushButton *add_ellipse_button_;
+    QPushButton *duplicate_button_;       // duplicates selected constraint
 
     QVector<MenuButton*> *menu_buttons_;   // creates menu buttoms
 
@@ -68,7 +68,7 @@ class MenuPanel : public QFrame {
     void initializeSimButton();         // initializes traj sim button
     void initializeFinaltimeSlider();   // initializes final time slider
     void initializeHorizonSlider();     // initializes num iterations permitted
-    void initializeAddEllipseButton();
+    void initializeDuplicateButton();   // initializes duplicate selected item
 //    void initializeFreezeButton();    // initializes freeze button
 };
 

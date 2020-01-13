@@ -47,7 +47,7 @@ class View : public QGraphicsView {
     void toggleSim();
     void setHorizon(int);
     void setFinaltime(int);
-    void addEllipse();
+    void duplicateSelected();
 
  private:
     void initialize();
