@@ -16,38 +16,35 @@ namespace interface {
 PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
                                      QGraphicsItem *parent,
                                      qreal size)
-    : QGraphicsEllipseItem(parent) {
+    : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->radius_ = size;
-    this->resize_ = false;
-    this->setPen(QPen(Qt::black));
-    this->setBrush(QBrush(Qt::red));
-    this->setRect(-this->radius_, -this->radius_,
-                  this->radius_ * 2, this->radius_ * 2);
+    this->initialize();
+}
+
+void PointGraphicsItem::initialize() {
+    // Set pen
+    QColor fill = Qt::red;
+    this->brush_ = QBrush(fill);
+
+    // Set brush
+    this->pen_ = QPen(Qt::black);
+    this->pen_.setWidth(3);
+
+    // Set flags
+    this->setFlags(QGraphicsItem::ItemIsMovable |
+                   QGraphicsItem::ItemIsSelectable |
+                   QGraphicsItem::ItemSendsGeometryChanges);
+
+    // Set position
     this->setPos(*this->model_->pos_);
 }
 
-void PointGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        this->resize_ = true;
-    }
-}
-
-void PointGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        this->resize_ = false;
-    }
-}
-
-void PointGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-    if (this->resize_) {
-        QPointF eventPos = event->scenePos();
-        this->model_->pos_->setX(eventPos.x());
-        this->model_->pos_->setY(eventPos.y());
-        this->setPos(*this->model_->pos_);
-        this->expandScene();
-    }
+QRectF PointGraphicsItem::boundingRect() const {
+    qreal scaling_factor = this->getScalingFactor();
+    qreal rad = this->radius_ / scaling_factor;
+    return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
 
 void PointGraphicsItem::paint(QPainter *painter,
@@ -58,14 +55,22 @@ void PointGraphicsItem::paint(QPainter *painter,
 
     // scale with view
     qreal scaling_factor = this->getScalingFactor();
-    qreal size = this->radius_ / scaling_factor;
-    QPen pen = this->pen();
-    pen.setWidthF(1.0 / scaling_factor);
-    this->setPen(pen);
-    this->setRect(-size, -size, size * 2, size * 2);
 
-    // paint
-    QGraphicsEllipseItem::paint(painter, option, widget);
+    this->setPos(*this->model_->pos_);
+
+    // Show handles if selected
+    if (this->isSelected()) {
+        this->pen_.setWidthF(3.0 / scaling_factor);
+    } else {
+        this->pen_.setWidthF(1.0 / scaling_factor);
+    }
+
+    painter->setPen(this->pen_);
+
+    // Draw shape
+    painter->fillPath(this->shape(), this->brush_);
+    qreal rad = this->radius_ / scaling_factor;
+    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
     if (this->model_->port_ != 0) {
@@ -86,6 +91,12 @@ int PointGraphicsItem::type() const {
     return POINT_GRAPHIC;
 }
 
+QPainterPath PointGraphicsItem::shape() const {
+    QPainterPath path;
+    path.addEllipse(this->boundingRect());
+    return path;
+}
+
 void PointGraphicsItem::expandScene() {
     if (scene()) {
         // expand scene if item goes out of bounds
@@ -101,6 +112,21 @@ void PointGraphicsItem::expandScene() {
         }
         this->scene()->update();
     }
+}
+
+QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
+                                       const QVariant &value) {
+    if (change == ItemPositionChange && scene()) {
+        // value is the new position.
+        QPointF newPos = value.toPointF();
+
+        // update model
+        *this->model_->pos_ = newPos;
+
+        // check to expand the scene
+        this->expandScene();
+    }
+    return QGraphicsItem::itemChange(change, value);
 }
 
 qreal PointGraphicsItem::getScalingFactor() const {

@@ -8,8 +8,8 @@
 #ifndef POINT_GRAPHICS_ITEM_H_
 #define POINT_GRAPHICS_ITEM_H_
 
-#include <QGraphicsEllipseItem>
-#include <QGraphicsSceneMouseEvent>
+#include <QGraphicsItem>
+#include <QPainter>
 
 #include "include/models/point_model_item.h"
 
@@ -17,27 +17,30 @@ namespace interface {
 
 qreal const POINT_SIZE = 14;
 
-class PointGraphicsItem : public QGraphicsEllipseItem {
+class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
                                qreal size = POINT_SIZE);
     PointModelItem *model_;
 
+    QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
     int type() const override;
     void expandScene();
 
  protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+    QPainterPath shape() const override;
+    QVariant itemChange(GraphicsItemChange change,
+                        const QVariant &value) override;
 
  private:
-    bool resize_;
     qreal radius_;
+    QPen pen_;
+    QBrush brush_;
     qreal getScalingFactor() const;
+    void initialize();
 };
 
 }  // namespace interface
