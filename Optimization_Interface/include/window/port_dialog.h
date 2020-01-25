@@ -32,7 +32,8 @@ class PortDialog : public QDialog {
 
  private:
     void initializeTable();
-    QTableWidget *table_;
+    QTableWidget *port_table_;
+    QTableWidget *drone_table_;
     ConstraintModel *model_;
     QSet<quint16> *ports_;
 };

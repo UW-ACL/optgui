@@ -32,6 +32,9 @@ class DroneSocket : public QUdpSocket {
 
  public slots:
     void rx_trajectory(const autogen::packet::traj3dof *data);
+
+ private:
+    bool isDestinationAddrValid();
 };
 
 }  // namespace interface

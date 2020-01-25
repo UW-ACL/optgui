@@ -53,8 +53,35 @@ void DroneSocket::rx_trajectory(const autogen::packet::traj3dof* data) {
     ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
 
     // TODO(dtsull16): use config IP address
-    this->writeDatagram(buffer, ser_data.size(),
-                          QHostAddress("192.168.1.101"), 6000);
+    if (this->isDestinationAddrValid()) {
+        this->writeDatagram(buffer, ser_data.size(),
+                            QHostAddress(this->drone_model_->ip_addr_),
+                            this->drone_model_->destination_port_);
+    }
+}
+
+bool DroneSocket::isDestinationAddrValid() {
+    // validate ip address is long enough
+    QStringList ip_addr_sections_ = this->drone_model_->ip_addr_.split(".");
+    if (ip_addr_sections_.size() != 4) {
+        return false;
+    }
+
+    // validate all sections of ipv4 address are valid
+    for (QString addr_section_ : ip_addr_sections_) {
+        bool ok = false;
+        quint16 value = addr_section_.toUShort(&ok);
+        if (!ok || value > 256) {
+            return false;
+        }
+    }
+
+    // validate destination port is valid
+    quint16 value = this->drone_model_->destination_port_;
+    if (1024 > value || value > 65535) {
+        return false;
+    }
+    return true;
 }
 
 }  // namespace interface

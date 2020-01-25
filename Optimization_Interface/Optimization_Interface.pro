@@ -49,6 +49,8 @@ LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_gnc            
 
 SOURCES += \
     src/main.cpp \
+    src/window/drone_ip_selector.cpp \
+    src/window/drone_port_selector.cpp \
     src/window/main_window.cpp \
     src/graphics/canvas.cpp \
     src/graphics/view.cpp \
@@ -72,6 +74,8 @@ SOURCES += \
     src/network/point_socket.cpp
 
 HEADERS += \
+    include/window/drone_ip_selector.h \
+    include/window/drone_port_selector.h \
     include/window/main_window.h \
     include/graphics/canvas.h \
     include/graphics/view.h \

@@ -68,6 +68,9 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
 }
 
 Controller::~Controller() {
+    // deinitialize port dialog
+    delete this->port_dialog_;
+
     // deinitialize waypoints graphic
     this->clearWaypointsGraphic();
     delete this->waypoints_graphic_;
@@ -79,9 +82,6 @@ Controller::~Controller() {
     // deinitialize drone graphic
     this->clearDroneGraphic();
     delete this->drone_graphic_;
-
-    // deinitialize port dialog
-    delete this->port_dialog_;
 
     // deinitialize network
     this->closeSockets();

@@ -70,6 +70,7 @@ void MainWindow::initializeMenu() {
 
     // Initialize set ports file action
     this->set_ports_ = new QAction(tr("&Set Ports"), this->file_menu_);
+    this->set_ports_->setShortcuts(QKeySequence::Print);
     this->set_ports_->setToolTip(tr("Set ports for constraints"));
     connect(this->set_ports_, SIGNAL(triggered()),
             this->view_, SLOT(setPorts()));
