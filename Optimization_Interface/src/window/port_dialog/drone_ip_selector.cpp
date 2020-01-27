@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2020, All Rights Reserved
 
-#include "include/window/drone_ip_selector.h"
+#include "include/window/port_dialog/drone_ip_selector.h"
 
 #include <QTimer>
 

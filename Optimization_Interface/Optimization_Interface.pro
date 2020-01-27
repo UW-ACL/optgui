@@ -49,8 +49,8 @@ LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_gnc            
 
 SOURCES += \
     src/main.cpp \
-    src/window/drone_ip_selector.cpp \
-    src/window/drone_port_selector.cpp \
+    src/window/port_dialog/drone_ip_selector.cpp \
+    src/window/port_dialog/drone_port_selector.cpp \
     src/window/main_window.cpp \
     src/graphics/canvas.cpp \
     src/graphics/view.cpp \
@@ -67,15 +67,15 @@ SOURCES += \
     src/graphics/waypoints_graphics_item.cpp \
     src/graphics/path_graphics_item.cpp \
     src/window/port_dialog.cpp \
-    src/window/port_selector.cpp \
+    src/window/port_dialog/port_selector.cpp \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
     src/graphics/point_graphics_item.cpp \
     src/network/point_socket.cpp
 
 HEADERS += \
-    include/window/drone_ip_selector.h \
-    include/window/drone_port_selector.h \
+    include/window/port_dialog/drone_ip_selector.h \
+    include/window/port_dialog/drone_port_selector.h \
     include/window/main_window.h \
     include/graphics/canvas.h \
     include/graphics/view.h \
@@ -98,7 +98,7 @@ HEADERS += \
     include/graphics/waypoints_graphics_item.h \
     include/graphics/path_graphics_item.h \
     include/window/port_dialog.h \
-    include/window/port_selector.h \
+    include/window/port_dialog/port_selector.h \
     include/models/data_model.h \
     include/network/ellipse_socket.h \
     include/models/point_model_item.h \

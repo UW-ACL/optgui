@@ -36,7 +36,7 @@ class View : public QGraphicsView {
  private slots:
     void openMenu();
     void closeMenu();
-    void setZoom(int value);
+    void setZoom(double value);
     void setState(STATE button_type);
     void loadFile();
     void saveFile();

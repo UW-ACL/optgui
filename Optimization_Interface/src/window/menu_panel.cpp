@@ -26,7 +26,7 @@ MenuPanel::~MenuPanel() {
     delete this->menu_buttons_;
     delete this->sim_button_;
     delete this->exec_button_;
-    delete this->zoom_slider_;
+    delete this->zoom_;
     delete this->menu_->layout();
 
     // delete menu panel components
@@ -87,8 +87,8 @@ void MenuPanel::initialize() {
                                             Qt::AlignTop|Qt::AlignCenter);
     }
     this->initializeDuplicateButton();
-    this->initializeHorizonSlider();
-    this->initializeFinaltimeSlider();
+    this->initializeHorizon();
+    this->initializeFinaltime();
 
     // Add stretch between sliders and dialogue box
     this->menu_->layout()->addItem(new QSpacerItem(2, 10));
@@ -109,7 +109,7 @@ void MenuPanel::initialize() {
     this->initializeExecButton();
 
     // Create zoom slider
-    this->initializeZoomSlider();
+    this->initializeZoom();
 }
 
 // initializes point button
@@ -254,48 +254,41 @@ void MenuPanel::initializeFlipButton() {
     this->menu_buttons_->append(flip_button);
 }
 
-// initializes slider for number of iterations allowed (horizon length)
-void MenuPanel::initializeHorizonSlider() {
-    this->opt_horizon_slider_ = new QSlider(Qt::Horizontal, this->menu_);
-    this->opt_horizon_slider_->setSizePolicy(QSizePolicy::Expanding,
+// initializes combo box for number of iterations allowed (horizon length)
+void MenuPanel::initializeHorizon() {
+    this->opt_horizon_ = new QSpinBox(this->menu_);
+    this->opt_horizon_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
-    this->opt_horizon_slider_->setTickInterval(1);
-    this->opt_horizon_slider_->setTickPosition(QSlider::TicksAbove);
-    this->opt_horizon_slider_->setMinimum(16);
-    this->opt_horizon_slider_->setMaximum(32);
-    this->opt_horizon_slider_->setValue(this->horizonlength_init_);
-    this->opt_horizon_slider_->setToolTip(tr("Set horizon length"));
+    this->opt_horizon_->setSingleStep(1);
+    this->opt_horizon_->setRange(16, 32);
+    this->opt_horizon_->setValue(this->horizonlength_init_);
+    this->opt_horizon_->setToolTip(tr("Set horizon length"));
 
     this->opt_horizon_label_ = new QLabel();
-    this->opt_horizon_label_->
-            setText("N = " + QString::number(horizonlength_init_));
+    this->opt_horizon_label_->setText("Iterations");
 
     this->menu_->layout()->addWidget(this->opt_horizon_label_);
-    this->menu_->layout()->addWidget(this->opt_horizon_slider_);
-    this->menu_->layout()->setAlignment(this->opt_horizon_slider_,
+    this->menu_->layout()->addWidget(this->opt_horizon_);
+    this->menu_->layout()->setAlignment(this->opt_horizon_,
                                         Qt::AlignBottom);
 }
 
 // initializes slider for final time constraints
-void MenuPanel::initializeFinaltimeSlider() {
-    this->opt_finaltime_slider_ = new QSlider(Qt::Horizontal, this->menu_);
-    this->opt_finaltime_slider_->setSizePolicy(QSizePolicy::Expanding,
+void MenuPanel::initializeFinaltime() {
+    this->opt_finaltime_ = new QSpinBox(this->menu_);
+    this->opt_finaltime_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
-    this->opt_finaltime_slider_->setTickInterval(1);
-    this->opt_finaltime_slider_->setTickPosition(QSlider::TicksAbove);
-    this->opt_finaltime_slider_->setMinimum(20);
-    this->opt_finaltime_slider_->setMaximum(200);
-    // make sure this points to the right member
-    this->opt_finaltime_slider_->setValue(this->finaltime_init_*10);
-    this->opt_finaltime_slider_->setToolTip(tr("Set final time"));
+    this->opt_finaltime_->setSingleStep(1);
+    this->opt_finaltime_->setRange(2, 20);
+    this->opt_finaltime_->setSuffix("s");
+    this->opt_finaltime_->setValue(this->finaltime_init_);
+    this->opt_finaltime_->setToolTip(tr("Set final time"));
 
     this->opt_finaltime_label_ = new QLabel();
-    this->opt_finaltime_label_->
-            setText("T = " + QString::number(finaltime_init_));
-
+    this->opt_finaltime_label_->setText("Final time");
     this->menu_->layout()->addWidget(this->opt_finaltime_label_);
-    this->menu_->layout()->addWidget(this->opt_finaltime_slider_);
-    this->menu_->layout()->setAlignment(this->opt_finaltime_slider_,
+    this->menu_->layout()->addWidget(this->opt_finaltime_);
+    this->menu_->layout()->setAlignment(this->opt_finaltime_,
                                         Qt::AlignBottom);
 }
 
@@ -337,19 +330,18 @@ void MenuPanel::initializeFreezeButton() {
 }
 */
 
-// initializes slider for map scaling (TODO: link to controller at init)
-void MenuPanel::initializeZoomSlider() {
-    this->zoom_slider_ = new QSlider(Qt::Horizontal, this->menu_);
-    this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,
+// initializes combo box for map scaling
+void MenuPanel::initializeZoom() {
+    this->zoom_ = new QDoubleSpinBox(this->menu_);
+    this->zoom_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
-    this->zoom_slider_->setTickInterval(1);
-    this->zoom_slider_->setTickPosition(QSlider::TicksAbove);
-    this->zoom_slider_->setMinimum(1);
-    this->zoom_slider_->setMaximum(200);
-    this->zoom_slider_->setValue(this->zoom_init_);
-    this->zoom_slider_->setToolTip(tr("Set zoom level"));
-    this->menu_->layout()->addWidget(this->zoom_slider_);
-    this->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
+    this->zoom_->setSingleStep(0.1);
+    this->zoom_->setRange(0.1, 2.0);
+    this->zoom_->setSuffix("x");
+    this->zoom_->setValue(this->zoom_init_);
+    this->zoom_->setToolTip(tr("Set zoom level"));
+    this->menu_->layout()->addWidget(this->zoom_);
+    this->menu_->layout()->setAlignment(this->zoom_, Qt::AlignBottom);
 }
 
 }  // namespace interface

@@ -9,9 +9,9 @@
 #include <QBoxLayout>
 #include <QHeaderView>
 
-#include "include/window/port_selector.h"
-#include "include/window/drone_port_selector.h"
-#include "include/window/drone_ip_selector.h"
+#include "include/window/port_dialog/port_selector.h"
+#include "include/window/port_dialog/drone_port_selector.h"
+#include "include/window/port_dialog/drone_ip_selector.h"
 
 namespace interface {
 

@@ -29,7 +29,12 @@ void ConstraintModel::initialize() {
     this->waypoints_ = new PathModelItem();
     this->path_ = new PathModelItem();
     this->drone_ = new DroneModelItem();
+
+    // initialize algorithm
     this->initializeFly();
+    this->finaltime_ = 3;
+    this->horizon_length_ = 16;
+
     // TODO(dtsull): these seem unnecessary
     QSet<EllipseModelItem *> set;
     QSetIterator<EllipseModelItem *> i(set);

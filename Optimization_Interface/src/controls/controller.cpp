@@ -31,8 +31,6 @@ namespace interface {
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->menu_panel_ = menupanel;
-    this->finaltime_ = menupanel->finaltime_init_;
-    this->horizon_length_ = menupanel->horizonlength_init_;
     this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 
@@ -214,19 +212,17 @@ void Controller::updatePath() {
 }
 
 void Controller::setFinaltime(double finaltime) {
-    this->finaltime_ = finaltime;
-//    qDebug() << "Final time: " << finaltime;
+    this->model_->finaltime_ = finaltime;
     this->compute();
 }
 
 void Controller::setHorizonLength(uint32_t horizon) {
-    this->horizon_length_ = horizon;
-    qDebug() << "Horizon length: " << horizon;
+    this->model_->horizon_length_ = horizon;
     this->compute();
 }
 
 double Controller::getTimeInterval() {
-    return this->finaltime_ / this->horizon_length_;
+    return this->model_->finaltime_ / this->model_->horizon_length_;
 }
 
 void Controller::updateFinalPosition(QPointF const &pos) {
@@ -271,8 +267,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     // Parameters
     // Number of points on the trajectory (resolution)
-    this->model_->fly_->P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5);
-    this->model_->fly_->P.tf = this->finaltime_;   // duration of flight
+    this->model_->fly_->P.K = MAX(MIN(this->model_->horizon_length_, MAX_HORIZON), 5);
+    this->model_->fly_->P.tf = this->model_->finaltime_;   // duration of flight
     this->model_->fly_->P.dt = this->model_->fly_->P.tf
                               / (this->model_->fly_->P.K-1.);  // 'resolution'
     // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the
@@ -400,7 +396,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
 bool Controller::isFrozen() {
     bool frozen = exec_once_
-            && ((timer_exec_.elapsed() / 1000) <= (this->finaltime_ * 1.2));
+            && ((timer_exec_.elapsed() / 1000)
+                <= (this->model_->finaltime_ * 1.2));
     if (frozen) {
         qInfo() << "Frozen!";
     }
