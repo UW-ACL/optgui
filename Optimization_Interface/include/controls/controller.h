@@ -59,11 +59,8 @@ class Controller : public QObject {
     void addWaypoint(QPointF *point);
     void addPathPoint(QPointF *point);
     void clearPathPoints();
-    void clearPathGraphic();
     void removeAllWaypoints();
-    void clearWaypointsGraphic();
     void removeItem(QGraphicsItem *item);
-    void clearDroneGraphic();
     void duplicateSelected();
 
     // save/load functionality
@@ -94,23 +91,16 @@ class Controller : public QObject {
     void startSockets();
 
  private:
+    // QGraphicsScene
     Canvas *canvas_;
+    // Side menu panel
     MenuPanel *menu_panel_;
 
-    // TODO(dtsull): move these graphics to the canvas
-    WaypointsGraphicsItem *waypoints_graphic_;
-    PathGraphicsItem *path_graphic_;
-    DroneGraphicsItem *drone_graphic_;
-    PointGraphicsItem *final_point_;
-
+    // Port setting dialog and network sockets
     PortDialog *port_dialog_;
     DroneSocket *drone_socket_;
     PointSocket *final_point_socket_;
     QVector<EllipseSocket *> *ellipse_sockets_;
-
-    // TODO(dtsull16): move to model
-    QVector<QPointF *> *trajectory_;
-    double feasible_tol_ = pow(0.5, 2);
 
     void removeEllipseSocket(EllipseModelItem *model);
     void closeSockets();

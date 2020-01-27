@@ -23,7 +23,26 @@ Canvas::Canvas(QObject *parent, QString background_file)
     this->setBackgroundImage(background_file);
 }
 
+Canvas::~Canvas() {
+    // Do not need to delete contents, handled by
+    // QGraphicsScene destructor
+    delete this->ellipse_graphics_;
+    delete this->polygon_graphics_;
+    delete this->plane_graphics_;
+}
+
 void Canvas::initialize() {
+    // initialized by controller
+    this->waypoints_graphic_ = nullptr;
+    this->path_graphic_ = nullptr;
+    this->drone_graphic_ = nullptr;
+    this->final_point_ = nullptr;
+
+    // initialize graphical types
+    this->ellipse_graphics_ = new QSet<EllipseGraphicsItem *>();
+    this->polygon_graphics_ = new QSet<PolygonGraphicsItem *>();
+    this->plane_graphics_ = new QSet<PlaneGraphicsItem *>();
+
     this->setBackgroundBrush(Qt::black);
     // Set background pen
     QColor background_color = Qt::gray;
@@ -99,6 +118,11 @@ void Canvas::bringSelectedToFront() {
     }
 }
 
+void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
+    // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
+    graphic->expandScene();
+}
+
 void Canvas::bringToFront(QGraphicsItem *item) {
     item->setZValue(this->front_depth_);
     this->front_depth_ = std::nextafter(this->front_depth_,
@@ -162,7 +186,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
 
     // Draw label
     painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
-                      QString::number(qreal(segment_size) / 100) + UNIT);
+                      QString::number(qreal(segment_size) / 100) + "m");
 }
 
 qint64 Canvas::roundUpPast(qint64 n, qint64 m) {

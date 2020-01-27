@@ -60,7 +60,6 @@ class ConstraintModel {
 
     bool isEllipseOverlap(QPointF *pos);
 
-    QSet<PointModelItem *> *points_;
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
@@ -74,8 +73,11 @@ class ConstraintModel {
     uint32_t maxEllipse;
     uint32_t maxHalfspace;
 
-    // TODO(bchasnov): fix magic number.. use mapfromscene?
+    // scale from meters to pixels
     qreal scale_ = 100.0;
+
+    // trajectory points
+    QVector<QPointF *> *trajectory_;
 
  private:
     void initialize();

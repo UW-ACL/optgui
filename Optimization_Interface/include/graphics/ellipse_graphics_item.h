@@ -30,8 +30,8 @@ class EllipseGraphicsItem : public QGraphicsItem {
                QWidget *widget = nullptr) override;
     int type() const override;
 
-    void expandScene();
     void flipDirection();
+    void expandScene();
 
  protected:
     QPainterPath shape() const override;
