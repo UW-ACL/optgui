@@ -263,6 +263,11 @@ void MenuPanel::initializeHorizon() {
     this->opt_horizon_->setRange(16, 32);
     this->opt_horizon_->setValue(this->horizonlength_init_);
     this->opt_horizon_->setToolTip(tr("Set horizon length"));
+    this->opt_horizon_->setMinimumHeight(30);
+    this->opt_horizon_->setStyleSheet("QSpinBox::up-button "
+                               "{ width: 30px; height: 15px; } "
+                               "QSpinBox::down-button "
+                               "{ width: 30px; height: 15px; }");
 
     this->opt_horizon_label_ = new QLabel();
     this->opt_horizon_label_->setText("Iterations");
@@ -275,14 +280,19 @@ void MenuPanel::initializeHorizon() {
 
 // initializes slider for final time constraints
 void MenuPanel::initializeFinaltime() {
-    this->opt_finaltime_ = new QSpinBox(this->menu_);
+    this->opt_finaltime_ = new QDoubleSpinBox(this->menu_);
     this->opt_finaltime_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
-    this->opt_finaltime_->setSingleStep(1);
-    this->opt_finaltime_->setRange(2, 20);
+    this->opt_finaltime_->setSingleStep(1.0);
+    this->opt_finaltime_->setRange(2.0, 20.0);
     this->opt_finaltime_->setSuffix("s");
     this->opt_finaltime_->setValue(this->finaltime_init_);
     this->opt_finaltime_->setToolTip(tr("Set final time"));
+    this->opt_finaltime_->setMinimumHeight(30);
+    this->opt_finaltime_->setStyleSheet("QDoubleSpinBox::up-button "
+                               "{ width: 30px; height: 15px; } "
+                               "QDoubleSpinBox::down-button "
+                               "{ width: 30px; height: 15px; }");
 
     this->opt_finaltime_label_ = new QLabel();
     this->opt_finaltime_label_->setText("Final time");
@@ -340,6 +350,11 @@ void MenuPanel::initializeZoom() {
     this->zoom_->setSuffix("x");
     this->zoom_->setValue(this->zoom_init_);
     this->zoom_->setToolTip(tr("Set zoom level"));
+    this->zoom_->setMinimumHeight(30);
+    this->zoom_->setStyleSheet("QDoubleSpinBox::up-button "
+                               "{ width: 30px; height: 15px; } "
+                               "QDoubleSpinBox::down-button "
+                               "{ width: 30px; height: 15px; }");
     this->menu_->layout()->addWidget(this->zoom_);
     this->menu_->layout()->setAlignment(this->zoom_, Qt::AlignBottom);
 }

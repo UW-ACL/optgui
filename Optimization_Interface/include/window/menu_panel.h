@@ -36,7 +36,7 @@ class MenuPanel : public QFrame {
     QVector<MenuButton*> *menu_buttons_;   // creates menu buttoms
 
     // TODO(bchasnov): link sliders to controller at initialization of window
-    QSpinBox *opt_finaltime_;       // final time
+    QDoubleSpinBox *opt_finaltime_;       // final time
     QSpinBox *opt_horizon_;         // num iterations permitted
     QDoubleSpinBox *zoom_;          // scales background map
 
@@ -46,7 +46,7 @@ class MenuPanel : public QFrame {
     QLabel *user_msg_label_;              // labels user feedback message
 
     // Initialization
-    uint32_t finaltime_init_ = 3;         // initializes final time
+    qreal finaltime_init_ = 3.0;         // initializes final time
     uint32_t horizonlength_init_ = 32;    // initializes horizon length
     qreal zoom_init_ = 1.0;
 

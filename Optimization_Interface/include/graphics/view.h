@@ -46,7 +46,7 @@ class View : public QGraphicsView {
     void stepSim();
     void toggleSim();
     void setHorizon(int);
-    void setFinaltime(int);
+    void setFinaltime(double);
     void duplicateSelected();
 
  private:

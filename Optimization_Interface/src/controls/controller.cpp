@@ -267,7 +267,8 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     // Parameters
     // Number of points on the trajectory (resolution)
-    this->model_->fly_->P.K = MAX(MIN(this->model_->horizon_length_, MAX_HORIZON), 5);
+    this->model_->fly_->P.K = MAX(MIN(
+            this->model_->horizon_length_, MAX_HORIZON), 5);
     this->model_->fly_->P.tf = this->model_->finaltime_;   // duration of flight
     this->model_->fly_->P.dt = this->model_->fly_->P.tf
                               / (this->model_->fly_->P.K-1.);  // 'resolution'

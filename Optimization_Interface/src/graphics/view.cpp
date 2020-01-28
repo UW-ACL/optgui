@@ -164,8 +164,8 @@ void View::initialize() {
     connect(this->menu_panel_->opt_horizon_, SIGNAL(valueChanged(int)),
             this, SLOT(setHorizon(int)));
 
-    connect(this->menu_panel_->opt_finaltime_, SIGNAL(valueChanged(int)),
-            this, SLOT(setFinaltime(int)));
+    connect(this->menu_panel_->opt_finaltime_, SIGNAL(valueChanged(double)),
+            this, SLOT(setFinaltime(double)));
 
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
@@ -361,7 +361,7 @@ void View::toggleSim() {
 }
 
 
-void View::setFinaltime(int final_time) {
+void View::setFinaltime(double final_time) {
     this->controller_->setFinaltime(final_time);
 }
 
