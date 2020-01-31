@@ -84,7 +84,7 @@ void PathGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 

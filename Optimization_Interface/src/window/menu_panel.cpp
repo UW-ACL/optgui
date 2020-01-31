@@ -41,7 +41,6 @@ void MenuPanel::initialize() {
     this->setAutoFillBackground(true);
     QPalette palette = this->palette();
     QColor background = QWidget::palette().window().color();
-    background.setAlpha(200);
     palette.setColor(QPalette::Base, background);
     this->setPalette(palette);
 
