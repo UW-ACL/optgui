@@ -29,6 +29,10 @@ void ConstraintModel::initialize() {
     this->path_ = new PathModelItem();
     this->drone_ = new DroneModelItem();
 
+    // initialize algorithm
+    this->finaltime_ = 3;
+    this->horizon_length_ = 16;
+  
     // trajectory points
     this->trajectory_ = new QVector<QPointF *>;
     this->initializeFly();

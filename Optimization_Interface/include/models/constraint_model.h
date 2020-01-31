@@ -69,6 +69,9 @@ class ConstraintModel {
     PointModelItem *final_pos_;
 
     SkyeFly *fly_;
+    // TODO(dtsull16): incorportate these into Skyfly
+    float finaltime_;
+    uint32_t horizon_length_ = MAX_HORIZON;
 
     uint32_t maxEllipse;
     uint32_t maxHalfspace;

@@ -10,7 +10,8 @@
 
 #include <QFrame>
 #include <QToolButton>
-#include <QSlider>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
 #include <QVector>
 #include <QPushButton>
 #include <QGroupBox>
@@ -34,29 +35,27 @@ class MenuPanel : public QFrame {
 
     QVector<MenuButton*> *menu_buttons_;   // creates menu buttoms
 
-    // Sliders
     // TODO(bchasnov): link sliders to controller at initialization of window
-    QSlider *opt_finaltime_slider_;       // final time slider
-    QSlider *opt_horizon_slider_;         // num iterations permitted slider
-    QSlider *zoom_slider_;                // scales background map;
+    QDoubleSpinBox *opt_finaltime_;       // final time
+    QSpinBox *opt_horizon_;         // num iterations permitted
+    QDoubleSpinBox *zoom_;          // scales background map
 
     // Labels
-    QLabel *opt_finaltime_label_;         // labels final time slider
-    QLabel *opt_horizon_label_;           // labels number of iterations slider
+    QLabel *opt_finaltime_label_;         // labels final time
+    QLabel *opt_horizon_label_;           // labels number of iterations
     QLabel *user_msg_label_;              // labels user feedback message
 
     // Initialization
-    // TODO(bchasnov): add initializations for other sliders
-    uint32_t finaltime_init_ = 3;         // initializes final time
+    qreal finaltime_init_ = 3.0;         // initializes final time
     uint32_t horizonlength_init_ = 32;    // initializes horizon length
-    uint32_t zoom_init_ = 100;
+    qreal zoom_init_ = 1.0;
 
     // Message box for user feedback
     QMessageBox message_box_;             // display feedback about feasibility
 
  private:
     void initialize();                  // initializes menu panel
-    void initializeZoomSlider();        // initializes zoom slider
+    void initializeZoom();        // initializes zoom
     void initializeWaypointButton();    // initializes button for waypoints
     void initializeEraserButton();      // initializes eraser button
     void initializePlaneButton();       // initializes plane button
@@ -66,8 +65,8 @@ class MenuPanel : public QFrame {
     void initializeFlipButton();        // initializes flip button
     void initializeExecButton();        // initializes traj exec button
     void initializeSimButton();         // initializes traj sim button
-    void initializeFinaltimeSlider();   // initializes final time slider
-    void initializeHorizonSlider();     // initializes num iterations permitted
+    void initializeFinaltime();   // initializes final time
+    void initializeHorizon();     // initializes num iterations permitted
     void initializeDuplicateButton();   // initializes duplicate selected item
 //    void initializeFreezeButton();    // initializes freeze button
 };

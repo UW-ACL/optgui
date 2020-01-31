@@ -36,11 +36,6 @@ class Controller : public QObject {
 
     void setCanvas(Canvas *canvas);  // sets up canvas for drawing graphics
 
-    // Controller parameters
-    // TODO(bchasnov): make a proper class for these parameters
-    float finaltime_;
-    uint32_t horizon_length_ = MAX_HORIZON;
-
     double solver_difficulty_ = 100;
 
     bool valid_path_ = false;

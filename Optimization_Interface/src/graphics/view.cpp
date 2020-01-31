@@ -153,14 +153,14 @@ void View::initialize() {
 
     // Connect sliders and zoom
     this->setZoom(this->menu_panel_->zoom_init_);
-    connect(this->menu_panel_->zoom_slider_, SIGNAL(valueChanged(int)),
-            this, SLOT(setZoom(int)));
+    connect(this->menu_panel_->zoom_, SIGNAL(valueChanged(double)),
+            this, SLOT(setZoom(double)));
 
-    connect(this->menu_panel_->opt_horizon_slider_, SIGNAL(valueChanged(int)),
+    connect(this->menu_panel_->opt_horizon_, SIGNAL(valueChanged(int)),
             this, SLOT(setHorizon(int)));
 
-    connect(this->menu_panel_->opt_finaltime_slider_, SIGNAL(valueChanged(int)),
-            this, SLOT(setFinaltime(int)));
+    connect(this->menu_panel_->opt_finaltime_, SIGNAL(valueChanged(double)),
+            this, SLOT(setFinaltime(double)));
 
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
@@ -294,9 +294,8 @@ void View::openMenu() {
     this->update();
 }
 
-void View::setZoom(int value) {
-    qreal scaleFactor = value / 100.0;
-    qDebug() << scaleFactor;
+void View::setZoom(double value) {
+    qreal scaleFactor = value;
     this->resetMatrix();
     this->scale(scaleFactor, scaleFactor);
 }
@@ -357,17 +356,12 @@ void View::toggleSim() {
 }
 
 
-void View::setFinaltime(int final_time) {
-    float float_final_time = final_time / 10.0;
-    this->controller_->setFinaltime(float_final_time);
-    this->menu_panel_->opt_finaltime_label_->
-            setText("T = " + QString::number(final_time));
+void View::setFinaltime(double final_time) {
+    this->controller_->setFinaltime(final_time);
 }
 
 void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
-    this->menu_panel_->opt_horizon_label_->
-            setText("N = " + QString::number(horizon));
 }
 
 void View::clearMarkers() {
