@@ -47,6 +47,7 @@ QRectF WaypointsGraphicsItem::boundingRect() const {
 void WaypointsGraphicsItem::paint(QPainter *painter,
                              const QStyleOptionGraphicsItem *option,
                              QWidget *widget) {
+    Q_UNUSED(painter);
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -121,7 +122,7 @@ void WaypointsGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 

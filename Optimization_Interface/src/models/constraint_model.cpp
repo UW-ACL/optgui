@@ -21,7 +21,6 @@ ConstraintModel::ConstraintModel() {
 
 void ConstraintModel::initialize() {
     // Set model containers
-    this->points_ = new QSet<PointModelItem *>();
     this->final_pos_ = new PointModelItem();
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
@@ -31,22 +30,15 @@ void ConstraintModel::initialize() {
     this->drone_ = new DroneModelItem();
 
     // initialize algorithm
-    this->initializeFly();
     this->finaltime_ = 3;
     this->horizon_length_ = 16;
-
-    // TODO(dtsull): these seem unnecessary
-    QSet<EllipseModelItem *> set;
-    QSetIterator<EllipseModelItem *> i(set);
+  
+    // trajectory points
+    this->trajectory_ = new QVector<QPointF *>;
+    this->initializeFly();
 }
 
 ConstraintModel::~ConstraintModel() {
-    // Delete points
-    for (PointModelItem *point : *this->points_) {
-        delete point;
-    }
-    delete this->points_;
-
     // Delete ellipses
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         delete ellipse;
@@ -105,16 +97,8 @@ void ConstraintModel::initializeFly() {
     this->fly_->P.rfrelax = 10;
 }
 
-void ConstraintModel::addPoint(PointModelItem *item) {
-    this->points_->insert(item);
-}
-
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
-}
-
-void ConstraintModel::removePoint(PointModelItem *item) {
-    this->points_->remove(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {

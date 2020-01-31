@@ -63,11 +63,6 @@ View::~View() {
 }
 
 void View::loadFile() {
-    // Clear graphics
-    this->controller_->clearWaypointsGraphic();
-    this->controller_->clearPathGraphic();
-    this->controller_->clearDroneGraphic();
-
     // Create new canvas
     Canvas *new_canvas = new Canvas(this);
     this->setScene(new_canvas);

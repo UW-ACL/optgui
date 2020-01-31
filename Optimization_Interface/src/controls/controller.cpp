@@ -27,7 +27,6 @@
 
 namespace interface {
 
-// constructor
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->menu_panel_ = menupanel;
@@ -35,29 +34,29 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 
     // initialize waypoints graphic
-    this->waypoints_graphic_ = new WaypointsGraphicsItem(
-                this->model_->waypoints_);
-    this->canvas_->addItem(this->waypoints_graphic_);
+    this->canvas_->waypoints_graphic_ =
+            new WaypointsGraphicsItem(this->model_->waypoints_);
+    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
 
     // initialize course graphic
-    this->path_graphic_ = new PathGraphicsItem(this->model_->path_);
-    this->canvas_->addItem(this->path_graphic_);
+    this->canvas_->path_graphic_ =
+            new PathGraphicsItem(this->model_->path_);
+    this->canvas_->addItem(this->canvas_->path_graphic_);
 
     // initialize drone graphic
-    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_);
-    this->canvas_->addItem(this->drone_graphic_);
+    this->canvas_->drone_graphic_ =
+            new DroneGraphicsItem(this->model_->drone_);
+    this->canvas_->addItem(this->canvas_->drone_graphic_);
 
     // initialize final point graphic
-    this->final_point_ = new PointGraphicsItem(this->model_->final_pos_);
-    this->canvas_->addItem(this->final_point_);
+    this->canvas_->final_point_ =
+            new PointGraphicsItem(this->model_->final_pos_);
+    this->canvas_->addItem(this->canvas_->final_point_);
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
-
-    // TODO(ben): Remove this hack and incorporate it into ConstraintModel
-    this->trajectory_ = new QVector<QPointF *>;
 
     // Initialize network
     this->drone_socket_ = nullptr;
@@ -68,18 +67,6 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
 Controller::~Controller() {
     // deinitialize port dialog
     delete this->port_dialog_;
-
-    // deinitialize waypoints graphic
-    this->clearWaypointsGraphic();
-    delete this->waypoints_graphic_;
-
-    // deinitialize path graphic
-    this->clearPathGraphic();
-    delete this->path_graphic_;
-
-    // deinitialize drone graphic
-    this->clearDroneGraphic();
-    delete this->drone_graphic_;
 
     // deinitialize network
     this->closeSockets();
@@ -99,6 +86,7 @@ void Controller::removeItem(QGraphicsItem *item) {
             EllipseModelItem *model = ellipse->model_;
             this->removeEllipseSocket(model);
             this->canvas_->removeItem(ellipse);
+            this->canvas_->ellipse_graphics_->remove(ellipse);
             delete ellipse;
             this->model_->removeEllipse(model);
             delete model;
@@ -109,6 +97,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PolygonGraphicsItem *>(item);
             PolygonModelItem *model = polygon->model_;
             this->canvas_->removeItem(polygon);
+            this->canvas_->polygon_graphics_->remove(polygon);
             delete polygon;
             this->model_->removePolygon(model);
             delete model;
@@ -119,6 +108,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PlaneGraphicsItem *>(item);
             PlaneModelItem *model = plane->model_;
             this->canvas_->removeItem(plane);
+            this->canvas_->plane_graphics_->remove(plane);
             delete plane;
             this->model_->removePlane(model);
             delete model;
@@ -228,7 +218,7 @@ double Controller::getTimeInterval() {
 void Controller::updateFinalPosition(QPointF const &pos) {
     this->model_->final_pos_->pos_->setX(pos.x());
     this->model_->final_pos_->pos_->setY(pos.y());
-    this->final_point_->setPos(*this->model_->final_pos_->pos_);
+    this->canvas_->final_point_->setPos(*this->model_->final_pos_->pos_);
 }
 
 void Controller::compute() {
@@ -307,12 +297,12 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     this->model_->fly_->run();
 
     // outputs
-    this->trajectory_->clear();
+    this->model_->trajectory_->clear();
     for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
         trajectory->append(
                     new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
                                 -this->model_->fly_->O.r[1][i] * GRID_SIZE));
-        this->trajectory_->append(
+        this->model_->trajectory_->append(
                     new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
                                 -this->model_->fly_->O.r[1][i] * GRID_SIZE));
     }
@@ -333,15 +323,15 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
             + pow(this->model_->fly_->O.r_f_relax[1], 2)
             + pow(this->model_->fly_->O.r_f_relax[2], 2);
 
-    if (accum > this->feasible_tol_) {
+    if (accum > 0.25) {
         this->valid_path_ = false;
-        this->path_graphic_->setColor(QColor(Qt::red));
+        this->canvas_->path_graphic_->setColor(QColor(Qt::red));
         this->menu_panel_->user_msg_label_->
                 setText("Increase final time to regain feasibility!");
 
     } else {
         this->valid_path_ = true;
-        this->path_graphic_->setColor(QColor(Qt::green));
+        this->canvas_->path_graphic_->setColor(QColor(Qt::green));
         this->menu_panel_->user_msg_label_->
                 setText("Trajectory remains feasible!");
     }
@@ -430,10 +420,10 @@ void Controller::execute() {
 }
 
 bool Controller::simDrone(uint64_t tick) {
-    if (tick >= (uint64_t)this->trajectory_->length()) {
+    if (tick >= (uint64_t)this->model_->trajectory_->length()) {
         return false;
     }
-    QPointF *pos = this->trajectory_->value(tick);
+    QPointF *pos = this->model_->trajectory_->value(tick);
     this->model_->drone_->pos_->setX(pos->x());
     this->model_->drone_->pos_->setY(pos->y());
     this->canvas_->update();
@@ -445,30 +435,18 @@ void Controller::setPorts() {
     this->port_dialog_->open();
 }
 
-void Controller::clearWaypointsGraphic() {
-    this->canvas_->removeItem(this->waypoints_graphic_);
-}
-
-void Controller::clearPathGraphic() {
-    this->canvas_->removeItem(this->path_graphic_);
-}
-
-void Controller::clearDroneGraphic() {
-    this->canvas_->removeItem(this->drone_graphic_);
-}
-
 void Controller::setCanvas(Canvas *canvas) {
     this->canvas_ = canvas;
 }
 
 void Controller::addPathPoint(QPointF *point) {
     this->model_->addPathPoint(point);
-    this->canvas_->update();
+    // this->canvas_->update();
 }
 
 void Controller::clearPathPoints() {
     this->model_->clearPath();
-    this->canvas_->update();
+    // this->canvas_->update();
 }
 
 // ============ NETWORK CONTROLS ============
@@ -496,11 +474,11 @@ void Controller::startSockets() {
     }
 
     // create ellipse sockets
-    for (EllipseModelItem *model : *this->model_->ellipses_) {
-        if (model->port_ > 0) {
-            EllipseSocket *temp = new EllipseSocket(model);
+    for (EllipseGraphicsItem *graphic : *this->canvas_->ellipse_graphics_) {
+        if (graphic->model_->port_ > 0) {
+            EllipseSocket *temp = new EllipseSocket(graphic->model_);
             connect(temp, SIGNAL(refresh_graphics()),
-                    this->canvas_, SLOT(update()));
+                    this->canvas_, SLOT(updateEllipseGraphicsItem(graphic)));
             this->ellipse_sockets_->append(temp);
         }
     }
@@ -607,13 +585,6 @@ void Controller::saveFile() {
         QDataStream *out = new QDataStream(file);
         out->setVersion(VERSION_5_8);
 
-        // Write points
-        quint32 num_points = this->model_->points_->size();
-        *out << num_points;
-        for (PointModelItem *model : *this->model_->points_) {
-            this->writePoint(model, out);
-        }
-
         // Write ellipses
         quint32 num_ellipses = this->model_->ellipses_->size();
         *out << num_ellipses;
@@ -652,20 +623,11 @@ void Controller::saveFile() {
 
 // ============ LOAD CONTROLS ============
 
-// NOT being used
-void Controller::loadPoint(PointModelItem *item_model) {
-    PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
-
-    this->canvas_->addItem(item_graphic);
-    this->model_->addPoint(item_model);
-    this->canvas_->bringToFront(item_graphic);
-    item_graphic->expandScene();
-}
-
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic =
             new EllipseGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
+    this->canvas_->ellipse_graphics_->insert(item_graphic);
     this->model_->addEllipse(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
@@ -675,6 +637,7 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
     PolygonGraphicsItem *item_graphic =
             new PolygonGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
+    this->canvas_->polygon_graphics_->insert(item_graphic);
     this->model_->addPolygon(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
@@ -684,6 +647,7 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     PlaneGraphicsItem *item_graphic =
             new PlaneGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
+    this->canvas_->plane_graphics_->insert(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
@@ -824,24 +788,6 @@ void Controller::loadFile() {
         // Reset model
         delete this->model_;
         this->model_ = new ConstraintModel();
-
-        // Reset waypoints graphic
-        delete this->waypoints_graphic_;
-        this->waypoints_graphic_ = new WaypointsGraphicsItem(
-                    this->model_->waypoints_);
-        this->canvas_->addItem(this->waypoints_graphic_);
-
-        // Reset path graphic
-        delete this->path_graphic_;
-        this->path_graphic_ =
-                new PathGraphicsItem(this->model_->path_);
-        this->canvas_->addItem(this->path_graphic_);
-
-        // Reset drone graphic
-        delete this->drone_graphic_;
-        this->drone_graphic_ =
-                new DroneGraphicsItem(this->model_->drone_);
-        this->canvas_->addItem(this->drone_graphic_);
 
         // Read ellipses
         quint32 num_ellipses;
