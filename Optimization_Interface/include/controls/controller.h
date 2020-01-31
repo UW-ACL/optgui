@@ -72,8 +72,6 @@ class Controller : public QObject {
     double getTimeInterval();
 
     // functions for computing, simulating and executing trajectories
-    void compute();
-    void compute(QVector<QPointF *> *trajectory);
     void execute();
     void updatePath();
     bool simDrone(uint64_t tick);
@@ -81,9 +79,12 @@ class Controller : public QObject {
 
  signals:
     void trajectoryExecuted(const autogen::packet::traj3dof *data);
+    void startCompute();
 
  private slots:
     void startSockets();
+//    void compute(QVector<QPointF *> *trajectory);
+    void compute();
 
  private:
     // QGraphicsScene

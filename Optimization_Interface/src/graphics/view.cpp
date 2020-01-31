@@ -274,9 +274,9 @@ void View::mousePressEvent(QMouseEvent *event) {
         }
     }
 
-    if (this->simulating_ == 0) {
-        this->controller_->compute();
-    }
+//    if (this->simulating_ == 0) {
+//        this->controller_->compute();
+//    }
 }
 
 void View::closeMenu() {

@@ -58,10 +58,21 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
 
+
+    // Start compute callback
+    connect(this, SIGNAL(startCompute()), this, SLOT(compute()));
+
     // Initialize network
     this->drone_socket_ = nullptr;
     this->final_point_socket_ = nullptr;
     this->ellipse_sockets_ = new QVector<EllipseSocket *>();
+
+//    emit startCompute();
+//    QTimer* activeTimer = new QTimer(this);
+//    activeTimer->setInterval(20000);
+//    activeTimer->setSingleShot(false);
+//    connect(activeTimer, SIGNAL(timeout()), this, SLOT(compute()));
+//    activeTimer->start();
 }
 
 Controller::~Controller() {
@@ -203,12 +214,12 @@ void Controller::updatePath() {
 
 void Controller::setFinaltime(double finaltime) {
     this->model_->finaltime_ = finaltime;
-    this->compute();
+//    this->compute();
 }
 
 void Controller::setHorizonLength(uint32_t horizon) {
     this->model_->horizon_length_ = horizon;
-    this->compute();
+//    this->compute();
 }
 
 double Controller::getTimeInterval() {
@@ -221,21 +232,20 @@ void Controller::updateFinalPosition(QPointF const &pos) {
     this->canvas_->final_point_->setPos(*this->model_->final_pos_->pos_);
 }
 
-void Controller::compute() {
-    if (this->isFrozen()) return;
-    QVector<QPointF*> trajectory;
-    this->clearPathPoints();
+//void Controller::compute() {
+//    if (this->isFrozen()) return;
+//    //
+//    QVector<QPointF*> trajectory;
+//    this->clearPathPoints();
 
-    this->compute(&trajectory);
-    QVectorIterator<QPointF *> it(trajectory);
-    while (it.hasNext()) {
-        this->addPathPoint(it.next());
-    }
-}
+//    this->compute(&trajectory);
+//    QVectorIterator<QPointF *> it(trajectory);
+//    while (it.hasNext()) {
+//        this->addPathPoint(it.next());
+//    }
+//}
 
-void Controller::compute(QVector<QPointF *> *trajectory) {
-    if (this->isFrozen()) return;
-    this->timer_compute_.restart();
+void Controller::compute() { //QVector<QPointF *> *trajectory) {
 
     // Initialize constant values
     // Parameters.
@@ -297,14 +307,14 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     this->model_->fly_->run();
 
     // outputs
-    this->model_->trajectory_->clear();
+    this->clearPathPoints();
+//    this->model_->trajectory_->clear();
+
     for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
-        trajectory->append(
-                    new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
+        // TODO: Look into memory leak
+        this->addPathPoint(new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
                                 -this->model_->fly_->O.r[1][i] * GRID_SIZE));
-        this->model_->trajectory_->append(
-                    new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
-                                -this->model_->fly_->O.r[1][i] * GRID_SIZE));
+
     }
 
     // how feasible is the solution?
@@ -382,7 +392,9 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // TODO(mceowen): No namespace in algorithm.h to specify reset function
     reset(this->model_->fly_->P, this->model_->fly_->I, this->model_->fly_->O);
 //    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
-    this->solver_difficulty_ = this->timer_compute_.elapsed();
+//    this->solver_difficulty_ = this->timer_compute_.elapsed();
+
+    emit startCompute();
 }
 
 bool Controller::isFrozen() {

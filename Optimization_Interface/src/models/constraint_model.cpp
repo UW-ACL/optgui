@@ -209,7 +209,12 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
         uint32_t i = num+1;
         QPointF *p = plane->p1_;
         QPointF *q = plane->p2_;
-        int32_t flip = (plane->direction_?1:-1);
+        if(plane->direction_){
+            QPointF *tmp = q;
+            q = p;
+            p = tmp;
+        }
+        int32_t flip = 1;// (plane->direction_?1:-1);
 
         qreal px = -p->y() / this->scale_;
         qreal py = p->x() / this->scale_;
