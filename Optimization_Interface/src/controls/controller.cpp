@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/controls/controller.h"
+#include "include/controls/controller.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -18,109 +18,59 @@
 #include <QTimer>
 #include <QElapsedTimer>
 
-#include "../../include/graphics/point_graphics_item.h"
-#include "../../include/graphics/ellipse_graphics_item.h"
-#include "../../include/graphics/polygon_graphics_item.h"
-#include "../../include/graphics/plane_graphics_item.h"
-#include "../../include/network/drone_server.h"
-#include "../../include/network/path_server.h"
-#include "../../include/network/point_server.h"
-#include "../../include/network/ellipse_server.h"
-#include "../../include/network/polygon_server.h"
-#include "../../include/network/plane_server.h"
-#include "../../include/globals.h"
-#include "../../include/window/menu_panel.h"
-
-using namespace cprs;
+#include "include/graphics/point_graphics_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/polygon_graphics_item.h"
+#include "include/graphics/plane_graphics_item.h"
+#include "include/globals.h"
+#include "include/window/menu_panel.h"
 
 namespace interface {
 
-//constructor
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->menu_panel_ = menupanel;
-    this->finaltime_ = menupanel->finaltime_init_;
-    this->horizon_length_ = menupanel->horizonlength_init_;
     this->indoor_ = canvas->indoor_;
     this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
 
-    this->network_session_ = nullptr;
-    this->servers_ = new QVector<ItemServer *>();
-
     // initialize waypoints graphic
-    this->waypoints_graphic_ = new WaypointsGraphicsItem(
-                this->model_->waypoints_);
-    this->canvas_->addItem(this->waypoints_graphic_);
+    this->canvas_->waypoints_graphic_ =
+            new WaypointsGraphicsItem(this->model_->waypoints_);
+    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
 
     // initialize course graphic
-    this->path_graphic_ = new PathGraphicsItem(this->model_->path_,
-                                               nullptr,
-                                               this->indoor_?4:16);
-    this->canvas_->addItem(this->path_graphic_);
+    this->canvas_->path_graphic_ =
+            new PathGraphicsItem(this->model_->path_);
+    this->canvas_->addItem(this->canvas_->path_graphic_);
 
     // initialize drone graphic
-    this->drone_graphic_ = new DroneGraphicsItem(this->model_->drone_,
-                                                 nullptr,
-                                                 this->indoor_?16:128);
-    this->canvas_->addItem(this->drone_graphic_);
-
-    this->loadEllipse(this->model_->puck_ellipse_pos_->at(0)); //TODO: make ellipse upate with puck symbol
-    this->puck_graphic_ = new PointGraphicsItem(this->model_->puck_pos_->at(0),
-                                                nullptr,
-                                                this->indoor_?4:16);
-    this->puck_graphic_->setMarker(1);
-    this->canvas_->addItem(this->puck_graphic_);
+    this->canvas_->drone_graphic_ =
+            new DroneGraphicsItem(this->model_->drone_);
+    this->canvas_->addItem(this->canvas_->drone_graphic_);
 
     // initialize final point graphic
-    this->final_pos_graphic_ = new PointGraphicsItem(this->model_->final_pos_,
-                                                     nullptr,
-                                                     this->indoor_?4:128);
-    this->canvas_->addItem(this->final_pos_graphic_);
+    this->canvas_->final_point_ =
+            new PointGraphicsItem(this->model_->final_pos_);
+    this->canvas_->addItem(this->canvas_->final_point_);
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
+    connect(this->port_dialog_, SIGNAL(setSocketPorts()),
+            this, SLOT(startSockets()));
 
-    // TODO(ben): Remove this hack and incorporate it into ConstraintModel
-    this->trajectory_ = new QVector<QPointF *>;
-
-    // Hack: to add something on the four corners of the map
-    this->bottom_left_ = new PointGraphicsItem(new PointModelItem(this->canvas_->getBottomLeft()));
-    this->top_right_ = new PointGraphicsItem(new PointModelItem(this->canvas_->getTopRight()));
-
-    this->canvas_->addItem(this->bottom_left_);
-    this->canvas_->addItem(this->top_right_);
-
-    this->drone_comm_ = new comm("", this->drone_port_);
-    this->puck_comm_ = new comm("", this->puck_port_);
-
-    connect(this, SIGNAL(trajectoryExecuted(const packet::traj3dof*)),
-            this->drone_comm_, SLOT(rx_trajectory(const packet::traj3dof*)));
-//    connect(this, SIGNAL(trajectoryExecuted2(const packet::traj3dof*)),
-//            this->drone_comm_, SLOT(rx_trajectory2(const packet::traj3dof*)));
-//    connect(this, SIGNAL(trajectoryExecuted2(float)),
-//            this->drone_comm_, SLOT(rx_trajectory2(float)));
+    // Initialize network
+    this->drone_socket_ = nullptr;
+    this->final_point_socket_ = nullptr;
+    this->ellipse_sockets_ = new QVector<EllipseSocket *>();
 }
 
 Controller::~Controller() {
-    // deinitialize waypoints graphic
-    this->clearWaypointsGraphic();
-    delete this->waypoints_graphic_;
-
-    // deinitialize path graphic
-    this->clearPathGraphic();
-    delete this->path_graphic_;
-
-    // deinitialize drone graphic
-    this->clearDroneGraphic();
-    delete this->drone_graphic_;
-
     // deinitialize port dialog
     delete this->port_dialog_;
 
-    // deinitialize network session
-    if (this->network_session_ != nullptr) {
-        delete this->network_session_;
-    }
+    // deinitialize network
+    this->closeSockets();
+    delete this->ellipse_sockets_;
 
     // clean up model
     delete this->model_;
@@ -130,21 +80,13 @@ Controller::~Controller() {
 
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
-        case POINT_GRAPHIC: {
-            PointGraphicsItem *point = qgraphicsitem_cast<
-                    PointGraphicsItem *>(item);
-            PointModelItem *model = point->model_;
-            this->canvas_->removeItem(point);
-            delete point;
-            this->model_->removePoint(model);
-            delete model;
-            break;
-        }
         case ELLIPSE_GRAPHIC: {
             EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                     EllipseGraphicsItem *>(item);
             EllipseModelItem *model = ellipse->model_;
+            this->removeEllipseSocket(model);
             this->canvas_->removeItem(ellipse);
+            this->canvas_->ellipse_graphics_->remove(ellipse);
             delete ellipse;
             this->model_->removeEllipse(model);
             delete model;
@@ -155,6 +97,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PolygonGraphicsItem *>(item);
             PolygonModelItem *model = polygon->model_;
             this->canvas_->removeItem(polygon);
+            this->canvas_->polygon_graphics_->remove(polygon);
             delete polygon;
             this->model_->removePolygon(model);
             delete model;
@@ -165,6 +108,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PlaneGraphicsItem *>(item);
             PlaneModelItem *model = plane->model_;
             this->canvas_->removeItem(plane);
+            this->canvas_->plane_graphics_->remove(plane);
             delete plane;
             this->model_->removePlane(model);
             delete model;
@@ -213,8 +157,8 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
-void Controller::addEllipse(QPointF *point) {
-    EllipseModelItem *item_model = new EllipseModelItem(point);
+void Controller::addEllipse(QPointF *point, qreal radius) {
+    EllipseModelItem *item_model = new EllipseModelItem(point, radius);
     this->loadEllipse(item_model);
 }
 
@@ -233,32 +177,48 @@ void Controller::addWaypoint(QPointF *point) {
     this->canvas_->update();
 }
 
+void Controller::duplicateSelected() {
+    for (QGraphicsItem *item : this->canvas_->selectedItems()) {
+        switch (item->type()) {
+            case ELLIPSE_GRAPHIC: {
+                EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
+                        EllipseGraphicsItem *>(item);
+                QPointF *new_pos = new QPointF(ellipse->model_->pos_->x(),
+                                               ellipse->model_->pos_->y());
+                EllipseModelItem *new_model =
+                        new EllipseModelItem(new_pos,
+                                             ellipse->model_->radius_);
+                this->loadEllipse(new_model);
+                break;
+            }
+        }
+    }
+}
+
 // ============ BACK END CONTROLS ============
 
 void Controller::updatePath() {
-    //qDebug() << "Tick";
+    // qDebug() << "Tick";
 }
 
-void Controller::setFinaltime(double_t finaltime) {
-    this->finaltime_ = finaltime;
-//    qDebug() << "Final time: " << finaltime;
+void Controller::setFinaltime(double finaltime) {
+    this->model_->finaltime_ = finaltime;
     this->compute();
 }
 
 void Controller::setHorizonLength(uint32_t horizon) {
-    this->horizon_length_ = horizon;
-    qDebug() << "Horizon length: " << horizon;
+    this->model_->horizon_length_ = horizon;
     this->compute();
 }
 
-double_t Controller::getTimeInterval() {
-    return this->finaltime_/this->horizon_length_;
+double Controller::getTimeInterval() {
+    return this->model_->finaltime_ / this->model_->horizon_length_;
 }
 
-void Controller::updateFinalPosition(QPointF *pos_final) {
-    this->model_->final_pos_->pos_->setX(pos_final->x());
-    this->model_->final_pos_->pos_->setY(pos_final->y());
-    this->canvas_->update();
+void Controller::updateFinalPosition(QPointF const &pos) {
+    this->model_->final_pos_->pos_->setX(pos.x());
+    this->model_->final_pos_->pos_->setY(pos.y());
+    this->canvas_->final_point_->setPos(*this->model_->final_pos_->pos_);
 }
 
 void Controller::compute() {
@@ -268,9 +228,9 @@ void Controller::compute() {
 
     this->compute(&trajectory);
     QVectorIterator<QPointF *> it(trajectory);
-    while(it.hasNext()) {
-                this->addPathPoint(it.next());
-            }
+    while (it.hasNext()) {
+        this->addPathPoint(it.next());
+    }
 }
 
 void Controller::compute(QVector<QPointF *> *trajectory) {
@@ -279,7 +239,7 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 
     // Initialize constant values
     // Parameters.
-    //SKYENET// this should be moved to skyenet repo
+    // SKYENET // this should be moved to skyenet repo
     //
     /*
 
@@ -295,88 +255,85 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     fly.printTimeHorizon();
     */
 
-    //Create flight trajectory object
-    SkyeFly fly;
-
-    //Parameters
-    fly.P.K = MAX(MIN(this->horizon_length_, MAX_HORIZON), 5); // Number of points on the trajectory (resolution)
-    fly.P.tf = this->finaltime_;   // duration of flight
-    fly.P.dt = fly.P.tf/(fly.P.K-1.); // 'resolution'
-    fly.P.obs.n = model_->loadEllipse(fly.P.obs.R, fly.P.obs.c_e, fly.P.obs.c_n); // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the circle and R is the radius (H some linear transform)
-    fly.P.cpos.n = model_->loadPosConstraint(fly.P.cpos.A, fly.P.cpos.b);  // Affine constraints Ax \leq b
-
-    fly.P.dK = 1;
-    fly.P.n_recalcs = 14;
-    fly.P.g[0] = -9.81;
-    fly.P.g[1] = 0.0;
-    fly.P.g[2] = 0.0;
-    fly.P.a_min = 5.0;   // Minimum accel.
-    fly.P.a_max = 12.0; //  Maximum accel.
-    fly.P.theta_max = 45.0*DEG2RAD;
-    fly.P.q_max = 0.0;
-
-    fly.P.max_iter = 10;
-    fly.P.Delta_i = 100.0;
-    fly.P.lambda = 1e2;
-    fly.P.alpha = 2.0;
-    fly.P.dL_tol = 1e-1;
-    fly.P.rho_0 = -1e-1;
-    fly.P.rho_1 = 0.25;
-    fly.P.rho_2 = 0.90;
-    fly.P.rirelax = 1000;
-    fly.P.rfrelax = 10;
+    // Parameters
+    // Number of points on the trajectory (resolution)
+    this->model_->fly_->P.K = MAX(MIN(
+            this->model_->horizon_length_, MAX_HORIZON), 5);
+    this->model_->fly_->P.tf = this->model_->finaltime_;   // duration of flight
+    this->model_->fly_->P.dt = this->model_->fly_->P.tf
+                              / (this->model_->fly_->P.K-1.);  // 'resolution'
+    // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the
+    // circle and R is the radius (H some linear transform)
+    this->model_->fly_->P.obs.n = model_->
+            loadEllipse(this->model_->fly_->P.obs.R,
+                        this->model_->fly_->P.obs.c_e,
+                        this->model_->fly_->P.obs.c_n);
+    // Affine constraints Ax \leq b
+    this->model_->fly_->P.cpos.n = model_->
+            loadPosConstraint(this->model_->fly_->P.cpos.A,
+                              this->model_->fly_->P.cpos.b);
 
     // Inputs.
-    this->model_->loadInitialPos(fly.I.r_i);
-    fly.I.v_i[0] =  0.0;
-    fly.I.v_i[1] =  0.0; //this->model_->drone_->vel_->x();
-    fly.I.v_i[2] =  0.0; //this->model_->drone_->vel_->x();
-    fly.I.a_i[0] = -fly.P.g[0];
-    fly.I.a_i[1] = -fly.P.g[1];
-    fly.I.a_i[2] = -fly.P.g[2];
-    this->model_->loadFinalPos(fly.I.r_f);
-    fly.I.v_f[0] =  0.0;
-    fly.I.v_f[1] =  0.0;
-    fly.I.v_f[2] =  0.0;
-    fly.I.a_f[0] = -fly.P.g[0];
-    fly.I.a_f[1] = -fly.P.g[1];
-    fly.I.a_f[2] = -fly.P.g[2];
+    this->model_->loadInitialPos(this->model_->fly_->I.r_i);
+    this->model_->fly_->I.v_i[0] =  0.0;
+    this->model_->fly_->I.v_i[1] =  0.0;  // this->model_->drone_->vel_->x();
+    this->model_->fly_->I.v_i[2] =  0.0;  // this->model_->drone_->vel_->x();
+    this->model_->fly_->I.a_i[0] = -this->model_->fly_->P.g[0];
+    this->model_->fly_->I.a_i[1] = -this->model_->fly_->P.g[1];
+    this->model_->fly_->I.a_i[2] = -this->model_->fly_->P.g[2];
+    this->model_->loadFinalPos(this->model_->fly_->I.r_f);
+    this->model_->fly_->I.v_f[0] =  0.0;
+    this->model_->fly_->I.v_f[1] =  0.0;
+    this->model_->fly_->I.v_f[2] =  0.0;
+    this->model_->fly_->I.a_f[0] = -this->model_->fly_->P.g[0];
+    this->model_->fly_->I.a_f[1] = -this->model_->fly_->P.g[1];
+    this->model_->fly_->I.a_f[2] = -this->model_->fly_->P.g[2];
 
 
     // Initialize.
-    fly.init();
+    this->model_->fly_->init();
 
     // Run SCvx algorithm
-    fly.run();
-
+    this->model_->fly_->run();
 
     // outputs
-    this->trajectory_->clear();
-    for(uint32_t i=0; i<fly.P.K; i++) {
-        trajectory->append(new QPointF(fly.O.r[2][i]*100, -fly.O.r[1][i]*100));
-        this->trajectory_->append(new QPointF(fly.O.r[2][i]*100, -fly.O.r[1][i]*100));
+    this->model_->trajectory_->clear();
+    for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
+        trajectory->append(
+                    new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
+                                -this->model_->fly_->O.r[1][i] * GRID_SIZE));
+        this->model_->trajectory_->append(
+                    new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
+                                -this->model_->fly_->O.r[1][i] * GRID_SIZE));
     }
 
     // how feasible is the solution?
     // OUTPUT VIOLATIONS: constraint violation
     double accum = 0;
-    for(uint32_t i=0; i<fly.P.K; i++) {
-        accum += abs( pow(fly.O.a[0][i],2) + pow(fly.O.a[1][i],2) + pow(fly.O.a[2][i],2) \
-                - pow(fly.O.s[i],2) )/fly.P.K;
+    for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
+        accum += abs(pow(this->model_->fly_->O.a[0][i], 2)
+                     + pow(this->model_->fly_->O.a[1][i], 2)
+                     + pow(this->model_->fly_->O.a[2][i], 2)
+                     - pow(this->model_->fly_->O.s[i], 2))
+                 / this->model_->fly_->P.K;
     }
 
     // OUTPUT VIOLATIONS: initial and final pos violation
-    accum = pow(fly.O.r_f_relax[0],2) + pow(fly.O.r_f_relax[1],2) + pow(fly.O.r_f_relax[2],2);
+    accum = pow(this->model_->fly_->O.r_f_relax[0], 2)
+            + pow(this->model_->fly_->O.r_f_relax[1], 2)
+            + pow(this->model_->fly_->O.r_f_relax[2], 2);
 
-    if(accum > this->feasible_tol_) {
+    if (accum > 0.25) {
         this->valid_path_ = false;
-        this->path_graphic_->setColor(QColor(Qt::red));
-        this->menu_panel_->user_msg_label_->setText("Increase final time to regain feasibility!");
+        this->canvas_->path_graphic_->setColor(QColor(Qt::red));
+        this->menu_panel_->user_msg_label_->
+                setText("Increase final time to regain feasibility!");
 
     } else {
         this->valid_path_ = true;
-        this->path_graphic_->setColor(QColor(Qt::green));
-        this->menu_panel_->user_msg_label_->setText("Trajectory remains feasible!");
+        this->canvas_->path_graphic_->setColor(QColor(Qt::green));
+        this->menu_panel_->user_msg_label_->
+                setText("Trajectory remains feasible!");
     }
 
 /* Debugging outputs
@@ -393,34 +350,46 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
 */
 
 
-    this->drone_traj3dof_data_.K = fly.P.K;
-    for(quint32 k=0; k<fly.P.K; k++) {
-//        this->drone_traj3dof_data_.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
+    this->drone_traj3dof_data_.K = this->model_->fly_->P.K;
+    for (quint32 k = 0; k < this->model_->fly_->P.K; k++) {
+//  this->drone_traj3dof_data_.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
 
-        this->drone_traj3dof_data_.time(k) = k*fly.P.dt;
-        this->drone_traj3dof_data_.pos_ned(0,k) = fly.O.r[1][k];
-        this->drone_traj3dof_data_.pos_ned(1,k) = fly.O.r[2][k];
-        this->drone_traj3dof_data_.pos_ned(2,k) = fly.O.r[0][k];
+        this->drone_traj3dof_data_.time(k) = k * this->model_->fly_->P.dt;
+        this->drone_traj3dof_data_.pos_ned(0, k) =
+                this->model_->fly_->O.r[1][k];
+        this->drone_traj3dof_data_.pos_ned(1, k) =
+                this->model_->fly_->O.r[2][k];
+        this->drone_traj3dof_data_.pos_ned(2, k) =
+                this->model_->fly_->O.r[0][k];
 
-        this->drone_traj3dof_data_.vel_ned(0,k) = fly.O.v[1][k];
-        this->drone_traj3dof_data_.vel_ned(1,k) = fly.O.v[2][k];
-        this->drone_traj3dof_data_.vel_ned(2,k) = fly.O.v[0][k];
+        this->drone_traj3dof_data_.vel_ned(0, k) =
+                this->model_->fly_->O.v[1][k];
+        this->drone_traj3dof_data_.vel_ned(1, k) =
+                this->model_->fly_->O.v[2][k];
+        this->drone_traj3dof_data_.vel_ned(2, k) =
+                this->model_->fly_->O.v[0][k];
 
-        this->drone_traj3dof_data_.accl_ned(0,k) = fly.O.a[1][k];
-        this->drone_traj3dof_data_.accl_ned(1,k) = fly.O.a[2][k];
-        this->drone_traj3dof_data_.accl_ned(2,k) = fly.O.a[0][k] - 9.81;
+        this->drone_traj3dof_data_.accl_ned(0, k) =
+                this->model_->fly_->O.a[1][k];
+        this->drone_traj3dof_data_.accl_ned(1, k) =
+                this->model_->fly_->O.a[2][k];
+        this->drone_traj3dof_data_.accl_ned(2, k) =
+                this->model_->fly_->O.a[0][k] - 9.81;
     }
 //    this->drone_traj3dof_data_.
     // Set up next solution.
-    //SKYEFLY// fly.reset
-    reset(fly.P,fly.I,fly.O);
-    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
+    // SKYEFLY //
+    // TODO(mceowen): No namespace in algorithm.h to specify reset function
+    reset(this->model_->fly_->P, this->model_->fly_->I, this->model_->fly_->O);
+//    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
     this->solver_difficulty_ = this->timer_compute_.elapsed();
 }
 
 bool Controller::isFrozen() {
-    bool frozen = exec_once_ && timer_exec_.elapsed()/1000 <= this->finaltime_*1.2;
-    if(frozen) {
+    bool frozen = exec_once_
+            && ((timer_exec_.elapsed() / 1000)
+                <= (this->model_->finaltime_ * 1.2));
+    if (frozen) {
         qInfo() << "Frozen!";
     }
     return frozen;
@@ -440,22 +409,24 @@ void Controller::execute() {
     this->exec_once_ = true;
     timer_exec_.restart();
 
-    std::cout << "pos:" << this->drone_traj3dof_data_.pos_ned.transpose() << std::endl;
-    std::cout << "vel:" << this->drone_traj3dof_data_.vel_ned.transpose() << std::endl;
-    std::cout << "accl:" << this->drone_traj3dof_data_.accl_ned.transpose() << std::endl;
+    std::cout << "pos:" << this->drone_traj3dof_data_.pos_ned.transpose()
+              << std::endl;
+    std::cout << "vel:" << this->drone_traj3dof_data_.vel_ned.transpose()
+              << std::endl;
+    std::cout << "accl:" << this->drone_traj3dof_data_.accl_ned.transpose()
+              << std::endl;
 
-
-    qDebug() << "before";
     emit trajectoryExecuted(&this->drone_traj3dof_data_);
-    qDebug() << "after";
 }
 
 bool Controller::simDrone(uint64_t tick) {
-    if(tick >= (uint64_t)this->trajectory_->length())
+    if (tick >= (uint64_t)this->model_->trajectory_->length()) {
         return false;
-    else {
-        this->updateDronePos(*this->trajectory_->value(tick));
     }
+    QPointF *pos = this->model_->trajectory_->value(tick);
+    this->model_->drone_->pos_->setX(pos->x());
+    this->model_->drone_->pos_->setY(pos->y());
+    this->canvas_->update();
     return true;
 }
 
@@ -464,179 +435,99 @@ void Controller::setPorts() {
     this->port_dialog_->open();
 }
 
-void Controller::clearWaypointsGraphic() {
-    this->canvas_->removeItem(this->waypoints_graphic_);
-}
-
-void Controller::clearPathGraphic() {
-    this->canvas_->removeItem(this->path_graphic_);
-}
-
-void Controller::clearDroneGraphic() {
-    this->canvas_->removeItem(this->drone_graphic_);
-}
-
 void Controller::setCanvas(Canvas *canvas) {
     this->canvas_ = canvas;
 }
 
 void Controller::addPathPoint(QPointF *point) {
     this->model_->addPathPoint(point);
-    this->canvas_->update();
+    // this->canvas_->update();
 }
 
 void Controller::clearPathPoints() {
     this->model_->clearPath();
-    this->canvas_->update();
-}
-
-void Controller::updateDronePos(QPointF pos) {
-    this->model_->drone_->point_->setX(pos.x());
-    this->model_->drone_->point_->setY(pos.y());
-    this->canvas_->update();
-}
-
-void Controller::updatePuckPos(uint32_t idx, QPointF pos) {
-    this->model_->puck_pos_->at(idx)->pos_->setX(pos.x());
-    this->model_->puck_pos_->at(idx)->pos_->setY(pos.y());
-    this->model_->puck_ellipse_pos_->at(idx)->pos_->setX(pos.x());
-    this->model_->puck_ellipse_pos_->at(idx)->pos_->setY(pos.y());
-    this->canvas_->update();
+    // this->canvas_->update();
 }
 
 // ============ NETWORK CONTROLS ============
 
-void Controller::startServers() {
-    // Close and clear existing servers
-    this->closeServers();
+void Controller::startSockets() {
+    // close old sockets
+    this->closeSockets();
 
-    // Get network config
-    QNetworkConfigurationManager manager;
-    if (manager.capabilities() &
-            QNetworkConfigurationManager::NetworkSessionRequired) {
-        // Get saved network configuration
-        QSettings settings(QSettings::UserScope,
-                           QLatin1String("QtProject"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        const QString id =
-                settings.value(
-                    QLatin1String("DefaultNetworkConfiguration")).toString();
-        settings.endGroup();
+    // create drone socket
+    if (this->model_->drone_->port_ > 0) {
+        this->drone_socket_ = new DroneSocket(this->model_->drone_);
+        connect(this,
+                SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof*)),
+                this->drone_socket_,
+                SLOT(rx_trajectory(const autogen::packet::traj3dof*)));
+        connect(this->drone_socket_, SIGNAL(refresh_graphics()),
+                this->canvas_, SLOT(update()));
+    }
 
-        // If the saved network configuration is not currently
-        // discovered use the system default
-        QNetworkConfiguration config =
-                manager.configurationFromIdentifier(id);
-        if ((config.state() & QNetworkConfiguration::Discovered) !=
-            QNetworkConfiguration::Discovered) {
-            config = manager.defaultConfiguration();
+    // create final pos socket
+    if (this->model_->final_pos_->port_ > 0) {
+        this->final_point_socket_ = new PointSocket(this->model_->final_pos_);
+        connect(this->final_point_socket_, SIGNAL(refresh_graphics()),
+                this->canvas_, SLOT(update()));
+    }
+
+    // create ellipse sockets
+    for (EllipseGraphicsItem *graphic : *this->canvas_->ellipse_graphics_) {
+        if (graphic->model_->port_ > 0) {
+            EllipseSocket *temp = new EllipseSocket(graphic->model_);
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(updateEllipseGraphicsItem(graphic)));
+            this->ellipse_sockets_->append(temp);
         }
-
-        if (this->network_session_) {
-            this->network_session_->stop();
-            delete this->network_session_;
-        }
-        this->network_session_ = new QNetworkSession(config);
-        network_session_->open();
-    }
-
-    // Save the used configuration
-    if (this->network_session_) {
-        QNetworkConfiguration config = this->network_session_->configuration();
-        QString id;
-        if (config.type() == QNetworkConfiguration::UserChoice) {
-            id = this->network_session_->sessionProperty(
-                        QLatin1String("UserChoiceConfiguration")).toString();
-        } else {
-            id = config.identifier();
-        }
-
-        QSettings settings(QSettings::UserScope, QLatin1String("QtProject"));
-        settings.beginGroup(QLatin1String("QtNetwork"));
-        settings.setValue(QLatin1String("DefaultNetworkConfiguration"), id);
-        settings.endGroup();
-    }
-
-    // Create server for drone
-    if (this->model_->drone_->port_ != 0) {
-        this->servers_->append(new DroneServer(this->model_->drone_));
-    }
-
-    // Create server for waypoints
-    if (this->model_->waypoints_->port_ != 0) {
-        this->servers_->append(new PathServer(this->model_->waypoints_));
-    }
-
-    // Create server for drone path
-    if (this->model_->path_->port_ != 0) {
-        this->servers_->append(new PathServer(this->model_->path_));
-    }
-
-    // Create servers for point constraints
-    for (PointModelItem *model : *this->model_->points_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new PointServer(model));
-        }
-    }
-    // Create servers for ellipse constraints
-    for (EllipseModelItem *model : *this->model_->ellipses_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new EllipseServer(model));
-        }
-    }
-
-    // Create servers for polygon constraints
-    for (PolygonModelItem *model : *this->model_->polygons_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new PolygonServer(model));
-        }
-    }
-
-    // Create servers for plane constraints
-    for (PlaneModelItem *model : *this->model_->planes_) {
-        if (model->port_ != 0) {
-            this->servers_->append(new PlaneServer(model));
-        }
-    }
-
-    // Start servers
-    for (ItemServer *server : *this->servers_) {
-        server->startServer();
     }
 }
 
-void Controller::closeServers() {
-    // close servers in list
-    for (ItemServer* server : *this->servers_) {
-        server->close();
-        delete server;
+void Controller::closeSockets() {
+    if (this->drone_socket_) {
+        delete this->drone_socket_;
+        this->drone_socket_ = nullptr;
     }
-    this->servers_->clear();
+    if (this->final_point_socket_) {
+        delete this->final_point_socket_;
+        this->final_point_socket_ = nullptr;
+    }
+    // close ellipse sockets
+    while (!this->ellipse_sockets_->isEmpty()) {
+        delete this->ellipse_sockets_->takeFirst();
+    }
+}
 
-    // close network session
-    if (this->network_session_) {
-        this->network_session_->close();
+void Controller::removeEllipseSocket(EllipseModelItem *model) {
+    for (QVector<EllipseSocket *>::iterator i = this->ellipse_sockets_->begin();
+         i != this->ellipse_sockets_->end(); i++) {
+        if ((*i)->ellipse_model_ == model) {
+            EllipseSocket *temp = *i;
+            i = this->ellipse_sockets_->erase(i);
+            delete temp;
+        }
     }
 }
 
 // ============ SAVE CONTROLS ============
 
 void Controller::writePoint(PointModelItem *model, QDataStream *out) {
-    *out << (bool)model->direction_;
+    // *out << static_cast<bool>(model->direction_);
     *out << *model->pos_;
 //    *out << (double)model->radius_;
     *out << (quint16)model->port_;
 }
 
 void Controller::writeEllipse(EllipseModelItem *model, QDataStream *out) {
-    *out << (bool)model->direction_;
+    *out << static_cast<bool>(model->direction_);
     *out << *model->pos_;
-    *out << (double)model->radius_;
+    *out << static_cast<double>(model->radius_);
     *out << (quint16)model->port_;
 }
 
 void Controller::writePolygon(PolygonModelItem *model, QDataStream *out) {
-    *out << (bool)model->direction_;
+    *out << static_cast<bool>(model->direction_);
     *out << (quint32)model->points_->size();
     for (QPointF *point : *model->points_) {
         *out << *point;
@@ -645,7 +536,7 @@ void Controller::writePolygon(PolygonModelItem *model, QDataStream *out) {
 }
 
 void Controller::writePlane(PlaneModelItem *model, QDataStream *out) {
-    *out << (bool)model->direction_;
+    *out << static_cast<bool>(model->direction_);
     *out << *model->p1_;
     *out << *model->p2_;
     *out << (quint16)model->port_;
@@ -670,7 +561,7 @@ void Controller::writePath(PathModelItem *model, QDataStream *out) {
 }
 
 void Controller::writeDrone(DroneModelItem *model, QDataStream *out) {
-    *out << *model->point_;
+    *out << *model->pos_;
     *out << (quint16)model->port_;
 }
 
@@ -693,13 +584,6 @@ void Controller::saveFile() {
 
         QDataStream *out = new QDataStream(file);
         out->setVersion(VERSION_5_8);
-
-        // Write points
-        quint32 num_points = this->model_->points_->size();
-        *out << num_points;
-        for (PointModelItem *model : *this->model_->points_) {
-            this->writePoint(model, out);
-        }
 
         // Write ellipses
         quint32 num_ellipses = this->model_->ellipses_->size();
@@ -739,42 +623,31 @@ void Controller::saveFile() {
 
 // ============ LOAD CONTROLS ============
 
-// NOT being used
-void Controller::loadPoint(PointModelItem *item_model) {
-//    PointGraphicsItem *test = new PointGraphicsItem();
-    PointGraphicsItem *item_graphic = new PointGraphicsItem(item_model);
-
-    this->canvas_->addItem(item_graphic);
-    this->model_->addPoint(item_model);
-    this->canvas_->bringToFront(item_graphic);
-    item_graphic->expandScene();
-}
-
 void Controller::loadEllipse(EllipseModelItem *item_model) {
-    EllipseGraphicsItem *item_graphic = new EllipseGraphicsItem(item_model,
-                                                                nullptr,
-                                                                this->indoor_?16:128);
+    EllipseGraphicsItem *item_graphic =
+            new EllipseGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
+    this->canvas_->ellipse_graphics_->insert(item_graphic);
     this->model_->addEllipse(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
 }
 
 void Controller::loadPolygon(PolygonModelItem *item_model) {
-    PolygonGraphicsItem *item_graphic = new PolygonGraphicsItem(item_model,
-                                                                nullptr,
-                                                                this->indoor_?16:128);
+    PolygonGraphicsItem *item_graphic =
+            new PolygonGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
+    this->canvas_->polygon_graphics_->insert(item_graphic);
     this->model_->addPolygon(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
 }
 
 void Controller::loadPlane(PlaneModelItem *item_model) {
-    PlaneGraphicsItem *item_graphic = new PlaneGraphicsItem(item_model,
-                                                            nullptr,
-                                                            this->indoor_?16:128);
+    PlaneGraphicsItem *item_graphic =
+            new PlaneGraphicsItem(item_model, nullptr);
     this->canvas_->addItem(item_graphic);
+    this->canvas_->plane_graphics_->insert(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
@@ -791,12 +664,13 @@ PointModelItem *Controller::readPoint(QDataStream *in) {
     *in >> port;
 
     PointModelItem *model = new PointModelItem(new QPointF(pos));
-    model->direction_ = direction;
+    // model->direction_ = direction;
 //    model->radius_ = radius;
     model->port_ = port;
 
     return model;
 }
+
 EllipseModelItem *Controller::readEllipse(QDataStream *in) {
     bool direction;
     *in >> direction;
@@ -887,7 +761,6 @@ void Controller::readDrone(QDataStream *in) {
     *in >> point;
     quint16 port;
     *in >> port;
-    this->updateDronePos(point);
     this->model_->drone_->port_ = port;
 }
 
@@ -915,24 +788,6 @@ void Controller::loadFile() {
         // Reset model
         delete this->model_;
         this->model_ = new ConstraintModel();
-
-        // Reset waypoints graphic
-        delete this->waypoints_graphic_;
-        this->waypoints_graphic_ = new WaypointsGraphicsItem(
-                    this->model_->waypoints_);
-        this->canvas_->addItem(this->waypoints_graphic_);
-
-        // Reset path graphic
-        delete this->path_graphic_;
-        this->path_graphic_ =
-                new PathGraphicsItem(this->model_->path_);
-        this->canvas_->addItem(this->path_graphic_);
-
-        // Reset drone graphic
-        delete this->drone_graphic_;
-        this->drone_graphic_ =
-                new DroneGraphicsItem(this->model_->drone_);
-        this->canvas_->addItem(this->drone_graphic_);
 
         // Read ellipses
         quint32 num_ellipses;

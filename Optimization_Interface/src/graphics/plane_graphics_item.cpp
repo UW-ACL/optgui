@@ -3,23 +3,21 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/plane_graphics_item.h"
+#include "include/graphics/plane_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLineF>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 
 PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
-                                     QGraphicsItem *parent,
-                                     quint32 size)
+                                     QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->size_ = size;
     this->initialize();
 }
 
@@ -39,8 +37,10 @@ void PlaneGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set resize handles
-    this->p1_handle_ = new PolygonResizeHandle(this->model_->p1_, this, this->size_);
-    this->p2_handle_ = new PolygonResizeHandle(this->model_->p2_, this, this->size_);
+    this->p1_handle_ =
+            new PolygonResizeHandle(this->model_->p1_, this);
+    this->p2_handle_ =
+            new PolygonResizeHandle(this->model_->p2_, this);
     this->p1_handle_->hide();
     this->p2_handle_->hide();
 }
@@ -60,6 +60,9 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    // scale with view
+    qreal scaling_factor = this->getScalingFactor();
+
     // Show handles if selected
     if (this->isSelected()) {
         this->p1_handle_->updatePos();
@@ -67,12 +70,12 @@ void PlaneGraphicsItem::paint(QPainter *painter,
         this->p1_handle_->show();
         this->p2_handle_->show();
 
-        this->pen_.setWidth(this->size_/2);
+        this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
         this->p1_handle_->hide();
         this->p2_handle_->hide();
 
-        this->pen_.setWidth(this->size_/2);
+        this->pen_.setWidthF(1.0 / scaling_factor);
     }
 
     // Draw shape
@@ -86,7 +89,14 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     // Label with port
     if (this->model_->port_ != 0) {
         QPointF text_pos(this->mapFromScene(*this->model_->p1_));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
 }
@@ -105,12 +115,15 @@ QPainterPath PlaneGraphicsItem::shape() const {
         line = QLineF(line.p2(), line.p1());
     }
 
+    // scale border with view
+    qreal border = PLANE_BORDER / this->getScalingFactor();
+
     QPolygonF poly;
     poly << line.p1();
     poly << line.p2();
     poly << line.normalVector().translated(
-                line.dx(), line.dy()).pointAt(this->size_ / line.length());
-    poly << line.normalVector().pointAt(this->size_ / line.length());
+                line.dx(), line.dy()).pointAt(border / line.length());
+    poly << line.normalVector().pointAt(border / line.length());
     path.addPolygon(poly);
 
     return path;
@@ -129,7 +142,7 @@ void PlaneGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 
@@ -153,6 +166,14 @@ QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal PlaneGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

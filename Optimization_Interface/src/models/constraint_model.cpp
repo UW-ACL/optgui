@@ -3,9 +3,9 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/models/constraint_model.h"
+#include "include/models/constraint_model.h"
+
 #include <QString>
-#include <QDebug>
 
 namespace interface {
 
@@ -21,29 +21,24 @@ ConstraintModel::ConstraintModel() {
 
 void ConstraintModel::initialize() {
     // Set model containers
-    this->points_ = new QSet<PointModelItem *>();
     this->final_pos_ = new PointModelItem();
-    this->puck_pos_ = new QVector<PointModelItem *>();
-    this->puck_pos_->append(new PointModelItem(new QPointF(-600,-600)));
-    this->puck_ellipse_pos_ = new QVector<EllipseModelItem *>();
-    this->puck_ellipse_pos_->append(new EllipseModelItem(new QPointF(-600,-600)));
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
     this->waypoints_ = new PathModelItem();
     this->path_ = new PathModelItem();
     this->drone_ = new DroneModelItem();
-    QSet<EllipseModelItem * > set;
-    QSetIterator<EllipseModelItem *> i(set);
 
+    // initialize algorithm
+    this->finaltime_ = 3;
+    this->horizon_length_ = 16;
+  
+    // trajectory points
+    this->trajectory_ = new QVector<QPointF *>;
+    this->initializeFly();
 }
 
 ConstraintModel::~ConstraintModel() {
-    // Delete points
-    for (PointModelItem *point : *this->points_) {
-        delete point;
-    }
-    delete this->ellipses_;
     // Delete ellipses
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         delete ellipse;
@@ -70,24 +65,40 @@ ConstraintModel::~ConstraintModel() {
 
     // Delete drone
     delete this->drone_;
+
+    // Delete SkyeFly
+    delete this->fly_;
 }
 
-void ConstraintModel::addPoint(PointModelItem *item) {
-    this->points_->insert(item);
+
+void ConstraintModel::initializeFly() {
+    this->fly_ = new SkyeFly();
+
+    // Relaxation variables
+    this->fly_->P.dK = 1;
+    this->fly_->P.n_recalcs = 14;
+    this->fly_->P.g[0] = -9.81;
+    this->fly_->P.g[1] = 0.0;
+    this->fly_->P.g[2] = 0.0;
+    this->fly_->P.a_min = 5.0;   // Minimum accel.
+    this->fly_->P.a_max = 12.0;  // Maximum accel.
+    this->fly_->P.theta_max = 45.0 * DEG2RAD;
+    this->fly_->P.q_max = 0.0;
+
+    this->fly_->P.max_iter = 10;
+    this->fly_->P.Delta_i = 100.0;
+    this->fly_->P.lambda = 1e2;
+    this->fly_->P.alpha = 2.0;
+    this->fly_->P.dL_tol = 1e-1;
+    this->fly_->P.rho_0 = -1e-1;
+    this->fly_->P.rho_1 = 0.25;
+    this->fly_->P.rho_2 = 0.90;
+    this->fly_->P.rirelax = 1000;
+    this->fly_->P.rfrelax = 10;
 }
 
-void ConstraintModel::updateInitialPoint(QPointF *item) {
-    // TODO:
-}
-void ConstraintModel::updateFinalPoint(QPointF *item) {
-    // TODO:
-}
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->ellipses_->insert(item);
-}
-
-void ConstraintModel::removePoint(PointModelItem *item) {
-    this->points_->remove(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
@@ -132,18 +143,19 @@ void ConstraintModel::loadFinalPos(double* r_f) {
 }
 
 void ConstraintModel::loadInitialPos(double* r_i) {
-    r_i[1] = -this->drone_->point_->y()/this->scale_;
-    r_i[2] = this->drone_->point_->x()/this->scale_;
+    r_i[1] = -this->drone_->pos_->y()/this->scale_;
+    r_i[2] = this->drone_->pos_->x()/this->scale_;
 }
 
 uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
+    // TODO(dtsull): put this in a for loop
     uint32_t j = 0;
     QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
-    while(iter.hasNext()) {
+    while (iter.hasNext()) {
         if (j >= this->maxEllipse) break;
 
         EllipseModelItem* ellipse = iter.next();
-        R[j] = ellipse->radius_/this->scale_ + ellipse->clearance_/this->scale_;
+        R[j] = ellipse->radius_/this->scale_;
         c_e[j] = -ellipse->pos_->y()/this->scale_;
         c_n[j] = ellipse->pos_->x()/this->scale_;
         ++j;
@@ -152,21 +164,21 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
 }
 
 bool ConstraintModel::isEllipseOverlap(QPointF * pos) {
-
+    // TODO(dtsull): also put this in a for loop
     QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
-    while(iter.hasNext()) {
+    while (iter.hasNext()) {
         EllipseModelItem* ellipse = iter.next();
         double r = ellipse->radius_/this->scale_;
         double dist = pow(pos->x() - ellipse->pos_->x(), 2)
                     + pow(pos->y() - ellipse->pos_->y(), 2);
         dist /= pow(this->scale_, 2);
-        double dist_other = pow(r + 0.32, 2); //DEBUG// fix this hardcoded costant...
-        qDebug() << "Distance" << dist << "<=" << dist_other;
-        qDebug() << "r" << r << ", default rad" << DEFAULT_RAD;
+        // DEBUG // fix this hardcoded costant...
+        double dist_other = pow(r + 0.32, 2);
+//        qDebug() << "Distance" << dist << "<=" << dist_other;
+//        qDebug() << "r" << r << ", default rad" << DEFAULT_RAD;
         if (dist <= dist_other) {
             return true;
         }
-
     }
     return false;
 }
@@ -175,20 +187,20 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
     uint32_t num = 0;
 
     for (PolygonModelItem *polygon : *this->polygons_) {
-        for (qint32 i = 1; i < polygon->points_->length()+1; i++) {
-            QPointF *p = polygon->points_->at(i-1);
+        for (qint32 i = 1; i < polygon->points_->length() + 1; i++) {
+            QPointF *p = polygon->points_->at(i - 1);
             QPointF *q = polygon->points_->at(i % polygon->points_->length());
             int32_t flip = (polygon->direction_?-1:1);
 
-            qreal px = -p->y()/this->scale_;
-            qreal py = p->x()/this->scale_;
-            qreal qx = -q->y()/this->scale_;
-            qreal qy = q->x()/this->scale_;
-            qreal c = (py*qx-px*qy);
+            qreal px = -p->y() / this->scale_;
+            qreal py = p->x() / this->scale_;
+            qreal qx = -q->y() / this->scale_;
+            qreal qy = q->x() / this->scale_;
+            qreal c = ((py * qx) - (px * qy));
 
-            A[2*(i-1)] = (double)flip*(py-qy)/c;
-            A[2*(i-1)+1] = (double)flip*(qx-px)/c;
-            b[i-1] = (double)flip;
+            A[2 * (i - 1)] = (static_cast<double>(flip) * (py - qy) / c);
+            A[2 * (i - 1) + 1] = (static_cast<double>(flip) * (qx - px) / c);
+            b[i - 1] = static_cast<double>(flip);
             num++;
         }
     }
@@ -199,17 +211,16 @@ uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
         QPointF *q = plane->p2_;
         int32_t flip = (plane->direction_?1:-1);
 
-        qreal px = -p->y()/this->scale_;
-        qreal py = p->x()/this->scale_;
-        qreal qx = -q->y()/this->scale_;
-        qreal qy = q->x()/this->scale_;
-        qreal c = (py*qx-px*qy);
+        qreal px = -p->y() / this->scale_;
+        qreal py = p->x() / this->scale_;
+        qreal qx = -q->y() / this->scale_;
+        qreal qy = q->x() / this->scale_;
+        qreal c = ((py * qx) - (px * qy));
 
-        A[2*(i-1)] = flip*(py-qy)/c;
-        A[2*(i-1)+1] = flip*(qx-px)/c;
-        b[i-1] = flip;
+        A[2 * (i - 1)] = flip * (py - qy) / c;
+        A[2 * (i - 1) + 1] = flip * (qx - px) / c;
+        b[i - 1] = flip;
         num++;
-
     }
     return num;
 }

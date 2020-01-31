@@ -11,7 +11,7 @@
 #include <QDialog>
 #include <QTableWidget>
 
-#include "../models/constraint_model.h"
+#include "include/models/constraint_model.h"
 
 namespace interface {
 
@@ -22,11 +22,18 @@ class PortDialog : public QDialog {
     explicit PortDialog(QWidget *parent = nullptr);
     ~PortDialog();
     void setModel(ConstraintModel *model);
+    void closeEvent(QCloseEvent *event) override;
+
  private slots:
     void resetTable();
+
+ signals:
+    void setSocketPorts();
+
  private:
     void initializeTable();
-    QTableWidget *table_;
+    QTableWidget *port_table_;
+    QTableWidget *drone_table_;
     ConstraintModel *model_;
     QSet<quint16> *ports_;
 };

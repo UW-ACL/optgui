@@ -3,24 +3,21 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QtMath>
 #include <QGraphicsView>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 
 EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
-                                         QGraphicsItem *parent,
-                                         quint32 size)
+                                         QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->size_ = size;
-    this->model_->radius_ = size*4;
     this->initialize();
 }
 
@@ -43,7 +40,8 @@ void EllipseGraphicsItem::initialize() {
     this->setPos(*this->model_->pos_);
 
     // Set resize handle
-    this->resize_handle_ = new EllipseResizeHandle(this->model_, this, this->size_);
+    this->resize_handle_ =
+            new EllipseResizeHandle(this->model_, this);
     this->resize_handle_->hide();
 }
 
@@ -52,10 +50,11 @@ EllipseGraphicsItem::~EllipseGraphicsItem() {
 }
 
 QRectF EllipseGraphicsItem::boundingRect() const {
-    double rad = this->model_->radius_;
+    qreal rad = this->model_->radius_;
     // Add exterior border if not direction
     if (!this->model_->direction_) {
-        rad += ELLIPSE_BORDER;
+        // scale with view
+        rad += ELLIPSE_BORDER / this->getScalingFactor();
     }
     return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
@@ -66,15 +65,20 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    qreal scaling_factor = this->getScalingFactor();
+
     this->setPos(*this->model_->pos_);
+
     // Show handles if selected
     if (this->isSelected()) {
         this->resize_handle_->setPos(-this->model_->radius_, 0);
         this->resize_handle_->show();
-        this->pen_.setWidth(3);
+
+        this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
         this->resize_handle_->hide();
-        this->pen_.setWidth(1);
+
+        this->pen_.setWidthF(1.0 / scaling_factor);
     }
 
     painter->setPen(this->pen_);
@@ -83,14 +87,18 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     painter->fillPath(this->shape(), this->brush_);
     double rad = this->model_->radius_;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-    rad += this->model_->clearance_;
-    painter->fillPath(this->shape(), this->brush_);
-    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
     if (this->model_->port_ != 0) {
         QPointF text_pos(this->mapFromScene(*this->model_->pos_));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
 }
@@ -102,7 +110,7 @@ int EllipseGraphicsItem::type() const {
 QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
     path.addEllipse(this->boundingRect());
-    // Add exterior border if not direction
+    // Add interior border if not direction
     if (!this->model_->direction_) {
         double rad = this->model_->radius_;
         path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
@@ -123,7 +131,7 @@ void EllipseGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 
@@ -145,6 +153,14 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal EllipseGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

@@ -11,29 +11,34 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/drone_model_item.h"
+#include "include/models/drone_model_item.h"
 
 namespace interface {
+
+qreal const DRONE_SIZE = 20;
 
 class DroneGraphicsItem : public QGraphicsItem {
  public:
     explicit DroneGraphicsItem(DroneModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qint32 size=16);
+                               qreal size = DRONE_SIZE);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;
     void expandScene();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                        const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;
     QBrush brush_;
     DroneModelItem *model_;
-    qint32 size_ = 32;
+    qreal size_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

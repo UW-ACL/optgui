@@ -36,6 +36,8 @@ namespace interface {
     enum DATA_STREAM_VERSION {
         VERSION_5_8 = QDataStream::Qt_5_8,
     };
+
+#define GRID_SIZE 100
 }  // namespace interface
 
 #endif  // GLOBALS_H_

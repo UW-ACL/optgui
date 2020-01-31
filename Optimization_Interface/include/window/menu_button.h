@@ -10,7 +10,7 @@
 
 #include <QLabel>
 
-#include "../globals.h"
+#include "include/globals.h"
 
 namespace interface {
 

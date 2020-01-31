@@ -11,18 +11,17 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/ellipse_model_item.h"
-#include "../graphics/ellipse_resize_handle.h"
+#include "include/models/ellipse_model_item.h"
+#include "include/graphics/ellipse_resize_handle.h"
 
 namespace interface {
 
-const qreal ELLIPSE_BORDER = 15;
+qreal const ELLIPSE_BORDER = 15;
 
 class EllipseGraphicsItem : public QGraphicsItem {
  public:
     explicit EllipseGraphicsItem(EllipseModelItem *model,
-                                 QGraphicsItem *parent = nullptr,
-                                 quint32 size = 16);
+                                 QGraphicsItem *parent = nullptr);
     ~EllipseGraphicsItem();
     EllipseModelItem *model_;
 
@@ -31,18 +30,20 @@ class EllipseGraphicsItem : public QGraphicsItem {
                QWidget *widget = nullptr) override;
     int type() const override;
 
-    void expandScene();
     void flipDirection();
+    void expandScene();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;
     QBrush brush_;
     EllipseResizeHandle *resize_handle_;
-    quint32 size_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

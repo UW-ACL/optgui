@@ -10,20 +10,19 @@
 
 #include <QPointF>
 
-#include "data_model.h"
+#include "include/models/data_model.h"
 
 namespace interface {
 
-const double DEFAULT_RAD = 150;
+qreal const DEFAULT_RAD = 100;
 
 class EllipseModelItem : public DataModel {
  public:
-    explicit EllipseModelItem(QPointF *pos) : radius_(DEFAULT_RAD),
-        direction_(true) { pos_ = pos; port_ = 0; clearance_ = 0;}
+    explicit EllipseModelItem(QPointF *pos, qreal radius = DEFAULT_RAD) :
+        radius_(radius), direction_(true) { pos_ = pos; port_ = 0; }
     ~EllipseModelItem() { delete pos_; }
     double radius_;
     QPointF *pos_;
-    double clearance_;
     bool direction_;
 };
 

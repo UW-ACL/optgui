@@ -8,17 +8,20 @@
 #ifndef CONSTRAINT_MODEL_H_
 #define CONSTRAINT_MODEL_H_
 
+#include <cprs.h>
+#include <algorithm.h>
+
 #include <QSet>
 #include <QVector>
 #include <QPointF>
 #include <QSetIterator>
 
-#include "point_model_item.h"
-#include "ellipse_model_item.h"
-#include "polygon_model_item.h"
-#include "plane_model_item.h"
-#include "path_model_item.h"
-#include "drone_model_item.h"
+#include "include/models/point_model_item.h"
+#include "include/models/ellipse_model_item.h"
+#include "include/models/polygon_model_item.h"
+#include "include/models/plane_model_item.h"
+#include "include/models/path_model_item.h"
+#include "include/models/drone_model_item.h"
 
 namespace interface {
 
@@ -28,6 +31,8 @@ class ConstraintModel {
     ConstraintModel(uint32_t maxEllipse, uint32_t maxAffine);
 
     ~ConstraintModel();
+
+    void initializeFly();
 
     void addPoint(PointModelItem *item);
     void removePoint(PointModelItem *item);
@@ -47,9 +52,6 @@ class ConstraintModel {
     void addPathPoint(QPointF *item);
     void clearPath();
 
-    void updateInitialPoint(QPointF *item);
-    void updateFinalPoint(QPointF *item);
-
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
@@ -58,7 +60,6 @@ class ConstraintModel {
 
     bool isEllipseOverlap(QPointF *pos);
 
-    QSet<PointModelItem *> *points_;
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
@@ -66,14 +67,20 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
-    QVector<PointModelItem *> *puck_pos_;
-    QVector<EllipseModelItem *> *puck_ellipse_pos_;
+
+    SkyeFly *fly_;
+    // TODO(dtsull16): incorportate these into Skyfly
+    float finaltime_;
+    uint32_t horizon_length_ = MAX_HORIZON;
 
     uint32_t maxEllipse;
     uint32_t maxHalfspace;
 
-    // TODO: fix magic number.. use mapfromscene?
+    // scale from meters to pixels
     qreal scale_ = 100.0;
+
+    // trajectory points
+    QVector<QPointF *> *trajectory_;
 
  private:
     void initialize();

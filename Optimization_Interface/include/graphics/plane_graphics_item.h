@@ -11,18 +11,17 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/plane_model_item.h"
-#include "../graphics/polygon_resize_handle.h"
+#include "include/models/plane_model_item.h"
+#include "include/graphics/polygon_resize_handle.h"
 
 namespace interface {
 
-const qreal PLANE_BORDER = 15;
+qreal const PLANE_BORDER = 15;
 
 class PlaneGraphicsItem : public QGraphicsItem {
  public:
     explicit PlaneGraphicsItem(PlaneModelItem *model,
-                               QGraphicsItem *parent = nullptr,
-                               quint32 size = 16);
+                               QGraphicsItem *parent = nullptr);
     ~PlaneGraphicsItem();
     PlaneModelItem *model_;
 
@@ -33,17 +32,19 @@ class PlaneGraphicsItem : public QGraphicsItem {
 
     void expandScene();
     void flipDirection();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     QPen pen_;
     QBrush brush_;
     PolygonResizeHandle *p1_handle_;
     PolygonResizeHandle *p2_handle_;
-    quint32 size_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

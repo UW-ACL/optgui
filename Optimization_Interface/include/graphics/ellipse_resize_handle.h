@@ -11,26 +11,31 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
 
-#include "../models/ellipse_model_item.h"
+#include "include/models/ellipse_model_item.h"
 
 namespace interface {
 
-const qreal ELLIPSE_HANDLE_SIZE = 16;
+qreal const ELLIPSE_HANDLE_SIZE = 14;
 
 class EllipseResizeHandle : public QGraphicsEllipseItem {
  public:
     explicit EllipseResizeHandle(EllipseModelItem *model,
                                  QGraphicsItem *parent,
-                                 quint32 size);
+                                 qreal size = ELLIPSE_HANDLE_SIZE);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget = nullptr) override;
+
  protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+
  private:
     void expandScene();
     EllipseModelItem *model_;
     bool resize_;
     qreal size_;
+    qreal getScalingFactor();
 };
 
 }  // namespace interface

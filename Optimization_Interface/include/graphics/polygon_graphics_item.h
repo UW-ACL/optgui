@@ -11,18 +11,17 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/polygon_model_item.h"
-#include "../graphics/polygon_resize_handle.h"
+#include "include/models/polygon_model_item.h"
+#include "include/graphics/polygon_resize_handle.h"
 
 namespace interface {
 
-const qreal POLYGON_BORDER = 15;
+qreal const POLYGON_BORDER = 15;
 
 class PolygonGraphicsItem : public QGraphicsItem {
  public:
     explicit PolygonGraphicsItem(PolygonModelItem *model,
-                                 QGraphicsItem *parent = nullptr,
-                                 quint32 size = 16);
+                                 QGraphicsItem *parent = nullptr);
     ~PolygonGraphicsItem();
     PolygonModelItem *model_;
 
@@ -33,18 +32,19 @@ class PolygonGraphicsItem : public QGraphicsItem {
 
     void expandScene();
     void flipDirection();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     bool isConvex() const;
     QPen pen_;
     QBrush brush_;
     QVector<PolygonResizeHandle *> *resize_handles_;
-
-    quint32 size_;
+    qreal getScalingFactor() const;
 };
 
 }  // namespace interface

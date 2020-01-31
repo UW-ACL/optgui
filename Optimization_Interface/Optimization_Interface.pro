@@ -30,37 +30,27 @@ INCLUDEPATH += $$PWD/../../skyenet/algorithm/
 INCLUDEPATH += $$PWD/../../skyenet/cprs/headers/
 INCLUDEPATH += $$PWD/../../skyenet/csocp/
 INCLUDEPATH += $$PWD/../../mikipilot
+INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/release/
 
 LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # //SKYENET// looks for libalgorithm.a file
 LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS     # looks for libCPRS.a
 LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP         # looks for libCSOCP.a
 
-
-## Add libraries.
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/utilities/globals.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/utilities/ifile.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/utilities/object.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/utilities/ofile.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/utilities/timer.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/utilities/tob.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/network/deserializable.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/network/packet.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/network/parameter.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/network/serializable.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/network/state.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/network/timestamped.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/gnc/dcm.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/gnc/globals.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/objects/gnc/quat.o
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/release/lib_autogen_globals.a
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/release/lib_autogen_packet.a
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/release/lib_autogen_state.a
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/release/lib_autogen_parameter.a
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/release/lib_autogen_timestamped.a
-LIBS += $${PWD}/../../mikipilot/build/gcs/executable/release/lib_autogen_bus.a
+# //MIKIPILOT//
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_globals     # looks for lib_autogen_globals.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_packet      # looks for lib_autogen_packet.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_state       # looks for lib_autogen_state.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_parameter   # looks for lib_autogen_parameter.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_timestamped # looks for lib_autogen_timestamped.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_bus         # looks for lib_autogen_bus.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_network             # looks for lib_network.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_utilities           # looks for lib_utilities.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_gnc                 # looks for lib_gnc.a
 
 SOURCES += \
     src/main.cpp \
+    src/window/port_dialog/drone_ip_selector.cpp \
+    src/window/port_dialog/drone_port_selector.cpp \
     src/window/main_window.cpp \
     src/graphics/canvas.cpp \
     src/graphics/view.cpp \
@@ -77,19 +67,15 @@ SOURCES += \
     src/graphics/waypoints_graphics_item.cpp \
     src/graphics/path_graphics_item.cpp \
     src/window/port_dialog.cpp \
-    src/window/port_selector.cpp \
-    src/network/item_server.cpp \
-    src/network/drone_server.cpp \
-    src/network/path_server.cpp \
-    src/network/ellipse_server.cpp \
-    src/network/polygon_server.cpp \
-    src/network/plane_server.cpp \
+    src/window/port_dialog/port_selector.cpp \
+    src/network/drone_socket.cpp \
+    src/network/ellipse_socket.cpp \
     src/graphics/point_graphics_item.cpp \
-    src/network/point_server.cpp \
-#    ../../mikipilot/gcs/comm.cpp
-    src/network/comm.cpp
+    src/network/point_socket.cpp
 
 HEADERS += \
+    include/window/port_dialog/drone_ip_selector.h \
+    include/window/port_dialog/drone_port_selector.h \
     include/window/main_window.h \
     include/graphics/canvas.h \
     include/graphics/view.h \
@@ -112,19 +98,13 @@ HEADERS += \
     include/graphics/waypoints_graphics_item.h \
     include/graphics/path_graphics_item.h \
     include/window/port_dialog.h \
-    include/window/port_selector.h \
+    include/window/port_dialog/port_selector.h \
     include/models/data_model.h \
-    include/network/item_server.h \
-    include/network/drone_server.h \
-    include/network/path_server.h \
-    include/network/ellipse_server.h \
-    include/network/polygon_server.h \
-    include/network/plane_server.h \
-    include/network/point_server.h \
+    include/network/ellipse_socket.h \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
-#    ../../mikipilot/gcs/comm.h
-    include/network/comm.h
+    include/network/drone_socket.h \
+    include/network/point_socket.h
 
 RESOURCES += \
     resources.qrc

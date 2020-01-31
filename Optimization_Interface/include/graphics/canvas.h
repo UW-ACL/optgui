@@ -11,27 +11,45 @@
 #include <QGraphicsScene>
 #include <QFont>
 
-namespace interface {
+#include "include/graphics/path_graphics_item.h"
+#include "include/graphics/drone_graphics_item.h"
+#include "include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/point_graphics_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/polygon_graphics_item.h"
+#include "include/graphics/plane_graphics_item.h"
 
-const qreal GRID_SIZE = 100;
-const QString UNIT = QString("m");
+namespace interface {
 
 class Canvas : public QGraphicsScene {
     Q_OBJECT
 
  public:
     explicit Canvas(QObject *parent = nullptr, QString background_file = "");
+    ~Canvas();
     void bringToFront(QGraphicsItem *item);
     void expandScene();
     QPointF* getBottomLeft();
     QPointF* getTopRight();
     bool indoor_ = true;
 
+    WaypointsGraphicsItem *waypoints_graphic_;
+    PathGraphicsItem *path_graphic_;
+    DroneGraphicsItem *drone_graphic_;
+    PointGraphicsItem *final_point_;
+
+    QSet<EllipseGraphicsItem *> *ellipse_graphics_;
+    QSet<PolygonGraphicsItem *> *polygon_graphics_;
+    QSet<PlaneGraphicsItem *> *plane_graphics_;
+
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
+
  private slots:
     void bringSelectedToFront();
+    void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
+
  private:
     void initialize();
     void setBackgroundImage(QString filename);
@@ -47,7 +65,7 @@ class Canvas : public QGraphicsScene {
     double background_bottomleft_y_ = 0;
     double background_topright_x_ = 1;
     double background_topright_y_ = 1;
-    // TODO: fix this...
+    // TODO(bchasnov): fix this...
     double scale_ = 100;
 };
 

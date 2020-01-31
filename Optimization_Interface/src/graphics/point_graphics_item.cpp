@@ -3,19 +3,19 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/point_graphics_item.h"
+#include "include/graphics/point_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QtMath>
 #include <QGraphicsView>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 
 PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
                                      QGraphicsItem *parent,
-                                     quint32 size)
+                                     qreal size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
@@ -26,7 +26,6 @@ PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
 void PointGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::red;
-    fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 
     // Set brush
@@ -39,20 +38,12 @@ void PointGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set position
-    this->setPos(this->mapFromScene(*this->model_->pos_));
-
-    this->marker_ = false;
-}
-
-PointGraphicsItem::~PointGraphicsItem() {
+    this->setPos(*this->model_->pos_);
 }
 
 QRectF PointGraphicsItem::boundingRect() const {
-    double rad = this->radius_;
-    // Add exterior border if not direction
-    if (!this->model_->direction_) {
-        rad += POINT_BORDER;
-    }
+    qreal scaling_factor = this->getScalingFactor();
+    qreal rad = this->radius_ / scaling_factor;
     return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
 
@@ -61,43 +52,39 @@ void PointGraphicsItem::paint(QPainter *painter,
                                 QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    // TODO: fix this, use mapfromscene
-    this->setPos(*this->model_->pos_);//this->mapFromScene(*this->model_->pos_));
+
+    // scale with view
+    qreal scaling_factor = this->getScalingFactor();
+
+    this->setPos(*this->model_->pos_);
 
     // Show handles if selected
     if (this->isSelected()) {
-        this->pen_.setWidth(3);
+        this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
-        this->pen_.setWidth(1);
+        this->pen_.setWidthF(1.0 / scaling_factor);
     }
 
     painter->setPen(this->pen_);
 
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
-
-    double rad = this->radius_;
-    switch (this->marker_) {
-    case 0:
-        painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-        break;
-    case 1:
-        painter->setPen(QPen(Qt::green, this->radius_*2));
-        painter->drawLine(-rad*5,-rad*5,rad*5,rad*5);
-        painter->drawLine(rad*5,-rad*5,-rad*5,rad*5);
-        break;
-    }
+    qreal rad = this->radius_ / scaling_factor;
+    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
     if (this->model_->port_ != 0) {
         QPointF text_pos(this->mapFromScene(*this->model_->pos_));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
-}
-
-void PointGraphicsItem::setMarker(uint32_t type) {
-    this->marker_ = type;
 }
 
 int PointGraphicsItem::type() const {
@@ -107,11 +94,6 @@ int PointGraphicsItem::type() const {
 QPainterPath PointGraphicsItem::shape() const {
     QPainterPath path;
     path.addEllipse(this->boundingRect());
-    // Add exterior border if not direction
-    if (!this->model_->direction_) {
-        double rad = 0.03;
-        path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-    }
     return path;
 }
 
@@ -128,13 +110,12 @@ void PointGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 
-
 QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
-                                         const QVariant &value) {
+                                       const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         // value is the new position.
         QPointF newPos = value.toPointF();
@@ -146,6 +127,14 @@ QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+
+qreal PointGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

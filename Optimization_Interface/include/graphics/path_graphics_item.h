@@ -11,30 +11,32 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/path_model_item.h"
+#include "include/models/path_model_item.h"
 
 namespace interface {
 
 class PathGraphicsItem : public QGraphicsItem {
  public:
     explicit PathGraphicsItem(PathModelItem *model,
-                                QGraphicsItem *parent = nullptr,
+                              QGraphicsItem *parent = nullptr,
                               quint32 size = 4);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
     void expandScene();
-
     void setColor(QColor);
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
     void initialize();
     PathModelItem *model_;
     QPen pen_;
     quint32 width_;
+    qreal getScalingFactor();
 };
 
 }  // namespace interface

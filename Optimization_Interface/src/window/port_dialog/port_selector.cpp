@@ -3,9 +3,8 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/window/port_selector.h"
+#include "include/window/port_dialog/port_selector.h"
 
-#include <QDebug>
 #include <QTimer>
 
 namespace interface {
@@ -27,18 +26,27 @@ void PortSelector::focusInEvent(QFocusEvent *event) {
 }
 
 void PortSelector::updatePort() {
-    qint64 value = this->text().toInt();
     this->ports_->remove(this->model_->port_);
 
     // check that port is in valid range and unused
-    if (1024 <= value && value <= 65535 &&
-            !this->ports_->contains((quint16)value)) {
+    if (this->isPortValid()) {
+        quint64 value = this->text().toUShort();
         this->ports_->insert((quint16)value);
         this->model_->port_ = (quint16)value;
     } else {
         this->setText("0");
         this->model_->port_ = 0;
     }
+}
+
+bool PortSelector::isPortValid() {
+    bool ok = false;
+    quint64 value = this->text().toUShort(&ok);
+
+    if (!ok || 1024 > value || value > 65535) {
+        return false;
+    }
+    return true;
 }
 
 }  // namespace interface

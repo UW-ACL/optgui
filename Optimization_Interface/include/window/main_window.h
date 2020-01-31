@@ -12,7 +12,7 @@
 #include <QMenu>
 #include <QAction>
 
-#include "../graphics/view.h"
+#include "include/graphics/view.h"
 
 namespace interface {
 
@@ -26,11 +26,9 @@ class MainWindow : public QMainWindow {
     void initializeMenu();
     View *view_;
     QMenu *file_menu_;
-    QAction *save_file_;
-    QAction *load_file_;
+//    QAction *save_file_;
+//    QAction *load_file_;
     QAction *set_ports_;
-    QAction *connect_;
-    QAction *disconnect_;
 };
 
 }  // namespace interface

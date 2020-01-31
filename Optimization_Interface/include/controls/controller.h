@@ -8,113 +8,97 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-
-#include <QNetworkSession>
 #include <QElapsedTimer>
 
-#include "../graphics/canvas.h"
-#include "../models/constraint_model.h"
-#include "../graphics/path_graphics_item.h"
-#include "../graphics/drone_graphics_item.h"
-#include "../graphics/waypoints_graphics_item.h"
-#include "../graphics/point_graphics_item.h"
-#include "../window/port_dialog.h"
-#include "../network/item_server.h"
-#include "cprs.h"
-#include "algorithm.h"
-#include "../network/comm.h"
-#include "../window/menu_panel.h"
+#include <cprs.h>
+#include <algorithm.h>
+
+#include "include/graphics/canvas.h"
+#include "include/models/constraint_model.h"
+#include "include/graphics/path_graphics_item.h"
+#include "include/graphics/drone_graphics_item.h"
+#include "include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/point_graphics_item.h"
+#include "include/window/port_dialog.h"
+#include "include/network/drone_socket.h"
+#include "include/network/ellipse_socket.h"
+#include "include/network/point_socket.h"
+#include "include/window/menu_panel.h"
 
 namespace interface {
 
 class Controller : public QObject {
     Q_OBJECT
+
  public:
     explicit Controller(Canvas *canvas, MenuPanel *menupanel);
     ~Controller();
 
-    void setCanvas(Canvas *canvas);     //sets up canvas for drawing graphics
+    void setCanvas(Canvas *canvas);  // sets up canvas for drawing graphics
 
-    //Controller parameters
-    // TODO: make a proper class for these parameters
-    float_t finaltime_;
-    uint32_t horizon_length_ = MAX_HORIZON;
-
-    comm *drone_comm_;
-    uint32_t drone_port_ = 8000;
-    comm *puck_comm_;
-    uint32_t puck_port_ = 8001;
-
-    //TODO: update puck to marker with feedback
-    uint32_t marker_; // 0: final point, 1: puck
     double solver_difficulty_ = 100;
 
     bool valid_path_ = false;
     bool indoor_ = true;
     ConstraintModel *model_;
 
-    //functions to add constraints
-    void addEllipse(QPointF *point);            //adds elliptical constraint
-    void addPolygon(QVector<QPointF *> *points);//adds polygon constraint
-    void addPlane(QPointF *p1, QPointF *p2);    //adds affine constraint
-    void flipDirection(QGraphicsItem *item);    //flips direction of affine constraint
+    // add constraints
+    void addEllipse(QPointF *point, qreal radius = 120);
+    void addPolygon(QVector<QPointF *> *points);
+    void addPlane(QPointF *p1, QPointF *p2);
 
-    //functions to add points for vehicle, obstacle, and waypoint locations
+    // flip constraint direction
+    void flipDirection(QGraphicsItem *item);
+
+    // functions to add points for vehicle, obstacle, and waypoint locations
     void addWaypoint(QPointF *point);
     void addPathPoint(QPointF *point);
     void clearPathPoints();
-    void clearPathGraphic();
     void removeAllWaypoints();
-    void clearWaypointsGraphic();
     void removeItem(QGraphicsItem *item);
-    void updateDronePos(QPointF pos);
-    void clearDroneGraphic();
-    void updatePuckPos(uint32_t idx, QPointF pos);
-    //TODO: Add function to clear puck graphic
+    void duplicateSelected();
 
-    //functions for loading and saving files
+    // save/load functionality
     void loadFile();
     void saveFile();
+
+    // network functionality
     void setPorts();
-    void startServers();
-    void closeServers();
 
-    //functions for setting optimization problem constraints
-    void setFinaltime(double_t);
+    // functions for setting optimization problem constraints
+    void setFinaltime(double);
     void setHorizonLength(uint32_t);
-    void updateFinalPosition(QPointF *);
-    double_t getTimeInterval();
+    void updateFinalPosition(QPointF const &pos);
+    double getTimeInterval();
 
-    //functions for computing, simulating and executing trajectories
+    // functions for computing, simulating and executing trajectories
     void compute();
-    void compute(QVector<QPointF* > *trajectory);
+    void compute(QVector<QPointF *> *trajectory);
     void execute();
     void updatePath();
     bool simDrone(uint64_t tick);
     bool isFrozen();
 
-signals:
-    void trajectoryExecuted(const packet::traj3dof* data);
+ signals:
+    void trajectoryExecuted(const autogen::packet::traj3dof *data);
+
+ private slots:
+    void startSockets();
 
  private:
+    // QGraphicsScene
     Canvas *canvas_;
+    // Side menu panel
     MenuPanel *menu_panel_;
-    WaypointsGraphicsItem *waypoints_graphic_;
-    PathGraphicsItem *path_graphic_;
-    DroneGraphicsItem *drone_graphic_;
+
+    // Port setting dialog and network sockets
     PortDialog *port_dialog_;
-    QNetworkSession *network_session_;
-    QVector<ItemServer *> *servers_;
+    DroneSocket *drone_socket_;
+    PointSocket *final_point_socket_;
+    QVector<EllipseSocket *> *ellipse_sockets_;
 
-    PointGraphicsItem *final_pos_graphic_;
-    PointGraphicsItem *puck_graphic_;
-
-    PointGraphicsItem *bottom_left_;
-    PointGraphicsItem *top_right_;
-
-    // TODO: remove these terrible null pointer......
-    QVector<QPointF *>* trajectory_;
-    double feasible_tol_ = pow(0.5,2);
+    void removeEllipseSocket(EllipseModelItem *model);
+    void closeSockets();
 
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
@@ -129,7 +113,6 @@ signals:
     void writePath(PathModelItem *model, QDataStream *out);
     void writeDrone(DroneModelItem *model, QDataStream *out);
 
-
     PointModelItem *readPoint(QDataStream *in);
     EllipseModelItem *readEllipse(QDataStream *in);
     PolygonModelItem *readPolygon(QDataStream *in);
@@ -143,8 +126,7 @@ signals:
 
     bool exec_once_ = false;
 
-    packet::traj3dof drone_traj3dof_data_;
-
+    autogen::packet::traj3dof drone_traj3dof_data_;
 };
 
 }  // namespace interface

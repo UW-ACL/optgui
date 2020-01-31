@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Pop up dialog for setting port numbers
+// Entry box for setting port numbers
 
 #ifndef PORT_SELECTOR_H_
 #define PORT_SELECTOR_H_
@@ -11,7 +11,7 @@
 #include <QLineEdit>
 #include <QSet>
 
-#include "../models/data_model.h"
+#include "include/models/data_model.h"
 
 namespace interface {
 
@@ -21,13 +21,17 @@ class PortSelector : public QLineEdit {
  public:
     explicit PortSelector(QSet<quint16> *ports,
                           DataModel *model, QWidget *parent);
+
  protected:
     void focusInEvent(QFocusEvent *event) override;
- private slots:
+
+ public slots:
     void updatePort();
+
  private:
     QSet<quint16> *ports_;
     DataModel *model_;
+    bool isPortValid();
 };
 
 }  // namespace interface

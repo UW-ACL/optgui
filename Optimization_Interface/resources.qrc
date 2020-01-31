@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/erasericon.png</file>
+        <file>assets/demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810.PNG</file>
+        <file>assets/demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843.png</file>
+        <file>assets/lab_6,-6_-6,6.png</file>
+        <file>assets/lab_indoor_-6_-6_6_6.png</file>
     </qresource>
 </RCC>

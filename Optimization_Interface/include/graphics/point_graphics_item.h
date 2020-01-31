@@ -11,37 +11,36 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-#include "../models/point_model_item.h"
+#include "include/models/point_model_item.h"
 
 namespace interface {
 
-const qreal POINT_BORDER = 3;
+qreal const POINT_SIZE = 14;
 
 class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               quint32 size = 4);
-    ~PointGraphicsItem();
+                               qreal size = POINT_SIZE);
     PointModelItem *model_;
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
     int type() const override;
-
     void expandScene();
-    void setMarker(uint32_t);
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
+
  private:
-    void initialize();
+    qreal radius_;
     QPen pen_;
     QBrush brush_;
-    uint32_t marker_;
-    quint32 radius_;
+    qreal getScalingFactor() const;
+    void initialize();
 };
 
 }  // namespace interface

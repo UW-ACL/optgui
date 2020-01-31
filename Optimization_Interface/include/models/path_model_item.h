@@ -11,13 +11,13 @@
 #include <QPointF>
 #include <QVector>
 
-#include "data_model.h"
+#include "include/models/data_model.h"
 
 namespace interface {
 
 class PathModelItem : public DataModel {
  public:
-    explicit PathModelItem()
+    PathModelItem()
         { this->points_ = new QVector<QPointF *>(); port_ = 0; }
     ~PathModelItem() {
         for (QPointF *point : *this->points_) {

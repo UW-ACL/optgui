@@ -3,23 +3,21 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/polygon_graphics_item.h"
+#include "include/graphics/polygon_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLineF>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 
 PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
-                                         QGraphicsItem *parent,
-                                         quint32 size)
+                                         QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->size_ = size;
     this->initialize();
 }
 
@@ -31,7 +29,6 @@ void PolygonGraphicsItem::initialize() {
 
     // Set brush
     this->pen_ = QPen(Qt::black);
-    this->pen_.setWidth(this->size_*4);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemIsMovable |
@@ -41,7 +38,8 @@ void PolygonGraphicsItem::initialize() {
     // Set resize handles
     this->resize_handles_ = new QVector<PolygonResizeHandle *>();
     for (QPointF *point : *this->model_->points_) {
-        PolygonResizeHandle *handle = new PolygonResizeHandle(point, this, this->size_);
+        PolygonResizeHandle *handle =
+                new PolygonResizeHandle(point, this);
         this->resize_handles_->append(handle);
         handle->hide();
     }
@@ -75,18 +73,26 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 
+    // scale with view
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+
     // Show handles if selected
     if (this->isSelected()) {
         for (PolygonResizeHandle *handle : *this->resize_handles_) {
             handle->updatePos();
             handle->show();
         }
-        this->pen_.setWidth(this->size_/4); //3
+
+        this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
         for (PolygonResizeHandle *handle : *this->resize_handles_) {
             handle->hide();
         }
-        this->pen_.setWidth(this->size_/4); //1
+
+        this->pen_.setWidthF(1.0 / scaling_factor);
     }
 
     painter->setPen(this->pen_);
@@ -109,7 +115,14 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     // Label with port
     if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
         QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
 }
@@ -120,6 +133,9 @@ int PolygonGraphicsItem::type() const {
 
 QPainterPath PolygonGraphicsItem::shape() const {
     QPainterPath path;
+
+    // scale border with view
+    qreal border = POLYGON_BORDER / this->getScalingFactor();
 
     // Define exterior shadings
     for (qint32 i = 1; i < this->model_->points_->length(); i++) {
@@ -134,10 +150,12 @@ QPainterPath PolygonGraphicsItem::shape() const {
         poly << line.p2();
         poly << line.normalVector().translated(
                     line.dx(),
-                    line.dy()).pointAt(this->size_ /line.length());
-        poly << line.normalVector().pointAt(this->size_ / line.length());
+                    line.dy()).pointAt(border /line.length());
+        poly << line.normalVector().pointAt(border / line.length());
         path.addPolygon(poly);
     }
+
+    // Manually draw last line from last point back to first point
     QLineF line(mapFromScene(*this->model_->points_->last()),
                 mapFromScene(*this->model_->points_->first()));
     // Flip shading if direction is reversed
@@ -148,8 +166,8 @@ QPainterPath PolygonGraphicsItem::shape() const {
     poly << line.p1();
     poly << line.p2();
     poly << line.normalVector().translated(
-                line.dx(), line.dy()).pointAt(this->size_ / line.length());
-    poly << line.normalVector().pointAt(this->size_ / line.length());
+                line.dx(), line.dy()).pointAt(border / line.length());
+    poly << line.normalVector().pointAt(border / line.length());
     path.addPolygon(poly);
 
     // Return shape
@@ -169,7 +187,7 @@ void PolygonGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 
@@ -219,6 +237,14 @@ bool PolygonGraphicsItem::isConvex() const {
         }
     }
     return true;
+}
+
+qreal PolygonGraphicsItem::getScalingFactor() const {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface

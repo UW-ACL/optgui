@@ -13,16 +13,16 @@
 #include <QPointF>
 #include <QVector>
 
-#include "polygon_resize_handle.h"
-#include "../models/path_model_item.h"
+#include "include/graphics/polygon_resize_handle.h"
+#include "include/models/path_model_item.h"
 
 namespace interface {
 
 class WaypointsGraphicsItem : public QGraphicsItem {
  public:
     explicit WaypointsGraphicsItem(PathModelItem *model,
-                              QGraphicsItem *parent = nullptr,
-                                   quint32 size = 16);
+                                   QGraphicsItem *parent = nullptr,
+                                   qreal size = 16);
     ~WaypointsGraphicsItem();
 
     QRectF boundingRect() const override;
@@ -32,18 +32,19 @@ class WaypointsGraphicsItem : public QGraphicsItem {
     void expandScene();
     void removeHandle(PolygonResizeHandle *handle);
     int type() const override;
+
  protected:
     QPainterPath shape() const override;
-    QVariant itemChange(GraphicsItemChange change,
-                        const QVariant &value) override;
+//    QVariant itemChange(GraphicsItemChange change,
+//                        const QVariant &value) override;
+
  private:
     void initialize();
-    QPen pen_;
-    QBrush brush_;
     PathModelItem *model_;
     QVector<PolygonResizeHandle *> *resize_handles_;
-
-    quint32 size_;
+    qreal line_width_;
+    qreal size_;
+    qreal getScalingFactor();
 };
 
 }  // namespace interface

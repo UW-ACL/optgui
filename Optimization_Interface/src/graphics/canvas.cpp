@@ -3,13 +3,16 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/canvas.h"
-#include <QDebug>
+#include "include/graphics/canvas.h"
+
 #include <QPainter>
 #include <QGraphicsView>
 #include <QGraphicsItem>
+
 #include <cmath>
 #include <limits>
+
+#include "include/globals.h"
 
 namespace interface {
 
@@ -20,7 +23,26 @@ Canvas::Canvas(QObject *parent, QString background_file)
     this->setBackgroundImage(background_file);
 }
 
+Canvas::~Canvas() {
+    // Do not need to delete contents, handled by
+    // QGraphicsScene destructor
+    delete this->ellipse_graphics_;
+    delete this->polygon_graphics_;
+    delete this->plane_graphics_;
+}
+
 void Canvas::initialize() {
+    // initialized by controller
+    this->waypoints_graphic_ = nullptr;
+    this->path_graphic_ = nullptr;
+    this->drone_graphic_ = nullptr;
+    this->final_point_ = nullptr;
+
+    // initialize graphical types
+    this->ellipse_graphics_ = new QSet<EllipseGraphicsItem *>();
+    this->polygon_graphics_ = new QSet<PolygonGraphicsItem *>();
+    this->plane_graphics_ = new QSet<PlaneGraphicsItem *>();
+
     this->setBackgroundBrush(Qt::black);
     // Set background pen
     QColor background_color = Qt::gray;
@@ -48,14 +70,15 @@ void Canvas::setBackgroundImage(QString filename) {
 //    QString filename = ;
     QStringList list = filename.split('_');
     if (list.length() != 6) {
-        qDebug() << "Image filename not formatted correctly";
+        // qDebug() << "Image filename not formatted correctly";
     }
 
-    if(list[1] == "outdoor") {
-        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:" << list[3].toFloat()
-                 << "width:" <<list[4].toFloat() << "height:" << list[5].toFloat();
+    if (list[1] == "outdoor") {
+//        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:"
+//                 << list[3].toFloat() << "width:" << list[4].toFloat()
+//                 << "height:" << list[5].toFloat();
         this->background_bottomleft_x_ = 0;
-        this->background_bottomleft_y_ = 0;//list[5].toFloat();
+        this->background_bottomleft_y_ = 0;  // list[5].toFloat();
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
         this->indoor_ = false;
@@ -65,23 +88,26 @@ void Canvas::setBackgroundImage(QString filename) {
         this->background_bottomleft_y_ = list[3].toFloat();
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
-        qDebug() << "Indoor mode:" << "bottom left" << this->background_bottomleft_x_ << this->background_bottomleft_y_
-                 << "top right:" << this->background_topright_x_ << this->background_topright_y_;
+//        qDebug() << "Indoor mode:" << "bottom left"
+//                 << this->background_bottomleft_x_
+//                 << this->background_bottomleft_y_
+//                 << "top right:" << this->background_topright_x_
+//                 << this->background_topright_y_;
         this->indoor_ = true;
     }
 
-    this->background_image_ = new QImage("../../skyenet/maps/" + filename + ".png");
+    this->background_image_ =
+            new QImage(":/assets/" + filename + ".png");
 }
 
 QPointF* Canvas::getBottomLeft() {
     return new QPointF(this->background_bottomleft_y_*this->scale_,
-                      -this->background_bottomleft_x_*this->scale_);
-
+                       -this->background_bottomleft_x_*this->scale_);
 }
 
 QPointF* Canvas::getTopRight() {
-   return new QPointF(this->background_topright_y_*this->scale_,
-         -this->background_topright_x_*this->scale_);
+    return new QPointF(this->background_topright_y_*this->scale_,
+                       -this->background_topright_x_*this->scale_);
 }
 
 void Canvas::bringSelectedToFront() {
@@ -90,6 +116,11 @@ void Canvas::bringSelectedToFront() {
         this->front_depth_ = std::nextafter(this->front_depth_,
                                             std::numeric_limits<qreal>::max());
     }
+}
+
+void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
+    // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
+    graphic->expandScene();
 }
 
 void Canvas::bringToFront(QGraphicsItem *item) {
@@ -121,9 +152,13 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
     }
 
     qint32 segment_size = GRID_SIZE;
-    if (scale < 0.5) {
+    if (scale < 0.1) {
+        segment_size /= 0.1;
+    } else if (scale < 0.2) {
+        segment_size /= 0.2;
+    } else if (scale < 0.5) {
         segment_size /= 0.5;
-    } else if (scale > 2) {
+    } else if (scale > 1.5) {
         segment_size /= 2;
     }
 
@@ -143,7 +178,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
                       rect.left() + (offset + segment_size),
                       rect.bottom() - offset);
     // Draw notches on scale
-    for (qint32 i = 0; i <= segment_size; i += GRID_SIZE / 2) {
+    for (qint32 i = 0; i <= segment_size; i += segment_size / 2) {
         painter->drawLine(rect.left() + offset + i, rect.bottom() - offset,
                           rect.left() + offset + i,
                           rect.bottom() - notch_offset);
@@ -151,8 +186,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
 
     // Draw label
     painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
-                      QString::number(qreal(segment_size) / 100) + UNIT);
-
+                      QString::number(qreal(segment_size) / 100) + "m");
 }
 
 qint64 Canvas::roundUpPast(qint64 n, qint64 m) {
@@ -170,17 +204,26 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
         scale = this->views().first()->matrix().m11();
     }
 
+    // Expand scene to fit exposed area
+    this->setSceneRect(this->sceneRect().united(rect));
+    if (!this->views().isEmpty()) {
+        this->views().first()->setSceneRect(this->sceneRect().united(rect));
+    }
+
     // Add grids proportional to scaling factor
     qint64 segment_size = GRID_SIZE;
-    if (scale < 0.5) {
+    if (scale < 0.1) {
+        segment_size /= 0.1;
+    } else if (scale < 0.2) {
+        segment_size /= 0.2;
+    } else if (scale < 0.5) {
         segment_size /= 0.5;
-    } else if (scale > 2) {
+    } else if (scale > 1.5) {
         segment_size /= 2;
     }
 
     qreal pen_width = 2 / scale;
     qreal font_size = 20 / scale;
-
 
     // Set boundries of grid
     qint64 top_bound = roundDownPast(qRound64(rect.top()), segment_size);
@@ -194,8 +237,10 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
-    double width  = this->background_topright_y_ - this->background_bottomleft_y_;
-    double height = this->background_topright_x_ - this->background_bottomleft_x_;
+    double width  = this->background_topright_y_
+            - this->background_bottomleft_y_;
+    double height = this->background_topright_x_
+            - this->background_bottomleft_x_;
 
     QRectF bbox(this->background_bottomleft_y_*this->scale_,
                 -this->background_topright_x_*this->scale_,
@@ -224,8 +269,12 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->drawText(1, -2, "0");
 
     // Debug info
-    // painter->setPen(Qt::red);
-    // painter->drawRect(this->sceneRect());
+//    painter->setPen(Qt::red);
+//    painter->drawRect(this->sceneRect());
+//    painter->setPen(Qt::blue);
+//    if (!this->views().isEmpty()) {
+//        painter->drawRect(this->views().first()->sceneRect());
+//    }
 }
 
 }  // namespace interface

@@ -13,14 +13,14 @@
 #include <QMouseEvent>
 #include <QGraphicsItem>
 
-#include "canvas.h"
-#include "../window/menu_panel.h"
-#include "../globals.h"
-#include "../controls/controller.h"
+#include "include/graphics/canvas.h"
+#include "include/window/menu_panel.h"
+#include "include/globals.h"
+#include "include/controls/controller.h"
 
 namespace interface {
 
-const qreal DOT_SIZE = 20;
+const qreal DOT_SIZE = 14;
 
 class View : public QGraphicsView {
     Q_OBJECT
@@ -36,22 +36,18 @@ class View : public QGraphicsView {
  private slots:
     void openMenu();
     void closeMenu();
-    void setZoom(int value);
+    void setZoom(double value);
     void setState(STATE button_type);
     void loadFile();
     void saveFile();
     void setPorts();
-    void startServers();
-    void closeServers();
     void execute();
     void updatePath();
     void stepSim();
     void toggleSim();
     void setHorizon(int);
-    void setFinaltime(int);
-    void updateViewDronePos(float,float,float);
-    void updateViewPuckPos(float,float,float);
-    void addEllipse();
+    void setFinaltime(double);
+    void duplicateSelected();
 
  private:
     void initialize();
@@ -70,10 +66,6 @@ class View : public QGraphicsView {
     uint64_t view_tick_ = 0;
 
     QElapsedTimer compute_timer_;
-
-    // TODO: fix this!
-    float scale_ = 100;
-
 };
 
 }  // namespace interface

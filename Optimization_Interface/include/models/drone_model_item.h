@@ -9,19 +9,24 @@
 #define DRONE_MODEL_ITEM_H_
 
 #include <QPointF>
+#include <QString>
 
-#include "data_model.h"
+#include "include/models/data_model.h"
 
 namespace interface {
 
 class DroneModelItem : public DataModel {
  public:
-    explicit DroneModelItem()
-            { this->point_ = new QPointF(0, 0); port_ = 8000; }
-    ~DroneModelItem() { delete this->point_; }
-    QPointF *point_;
+    DroneModelItem() {
+        this->pos_ = new QPointF(0, 0);
+        port_ = 0;
+        destination_port_ = 0;
+        ip_addr_ = "0.0.0.0";
+    }
+    ~DroneModelItem() { delete this->pos_; }
     QPointF *pos_;
-    QPointF *vel_;
+    QString ip_addr_;
+    quint16 destination_port_;
 };
 
 }  // namespace interface

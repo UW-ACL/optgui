@@ -10,7 +10,7 @@
 
 #include <QPointF>
 
-#include "data_model.h"
+#include "include/models/data_model.h"
 
 namespace interface {
 

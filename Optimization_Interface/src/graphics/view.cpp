@@ -3,12 +3,13 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/view.h"
+#include "include/graphics/view.h"
 
 #include <QHBoxLayout>
 #include <QTimer>
 #include <QScrollBar>
 #include <QInputDialog>
+#include <QDebug>
 
 namespace interface {
 
@@ -16,8 +17,8 @@ View::View(QWidget * parent)
     : QGraphicsView(parent) {
     // Create Canvas
     QStringList background_images = {"lab_indoor_-6_-6_6_6",
-                                     "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810",
-                                     "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
+            "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810",
+            "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
 
     QString background_image = QInputDialog::getItem(this, tr("Select scene"),
                                       tr("mode"), background_images, 0, false);
@@ -29,7 +30,8 @@ View::View(QWidget * parent)
     this->menu_panel_ = new MenuPanel(this);
 
     // Create Controller
-    this->controller_ = new Controller(this->canvas_,this->menu_panel_); //added menu panel to construction
+    // added menu panel to construction
+    this->controller_ = new Controller(this->canvas_, this->menu_panel_);
 
     // Set State
     this->state_ = IDLE;
@@ -61,11 +63,6 @@ View::~View() {
 }
 
 void View::loadFile() {
-    // Clear graphics
-    this->controller_->clearWaypointsGraphic();
-    this->controller_->clearPathGraphic();
-    this->controller_->clearDroneGraphic();
-
     // Create new canvas
     Canvas *new_canvas = new Canvas(this);
     this->setScene(new_canvas);
@@ -94,16 +91,6 @@ void View::saveFile() {
 void View::setPorts() {
     this->setState(IDLE);
     this->controller_->setPorts();
-}
-
-void View::startServers() {
-    this->setState(IDLE);
-    this->controller_->startServers();
-}
-
-void View::closeServers() {
-    this->setState(IDLE);
-    this->controller_->closeServers();
 }
 
 void View::initialize() {
@@ -138,7 +125,8 @@ void View::initialize() {
     this->layout()->setAlignment(this->menu_button_, Qt::AlignRight);
 
     // Configure menu panel parameters
-        //TODO - Might want to move this to the constructor where menu_panel_ is initialized?
+    // TODO(bchasnov): Might want to move this to the constructor
+    // where menu_panel_ is initialized?
     this->menu_panel_->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->menu_panel_->setFixedWidth(100);
@@ -165,35 +153,26 @@ void View::initialize() {
 
     // Connect sliders and zoom
     this->setZoom(this->menu_panel_->zoom_init_);
-    connect(this->menu_panel_->zoom_slider_, SIGNAL(valueChanged(int)),
-            this, SLOT(setZoom(int)));
+    connect(this->menu_panel_->zoom_, SIGNAL(valueChanged(double)),
+            this, SLOT(setZoom(double)));
 
-    connect(this->menu_panel_->opt_horizon_slider_, SIGNAL(valueChanged(int)),
+    connect(this->menu_panel_->opt_horizon_, SIGNAL(valueChanged(int)),
             this, SLOT(setHorizon(int)));
 
-    connect(this->menu_panel_->opt_finaltime_slider_, SIGNAL(valueChanged(int)),
-            this, SLOT(setFinaltime(int)));
+    connect(this->menu_panel_->opt_finaltime_, SIGNAL(valueChanged(double)),
+            this, SLOT(setFinaltime(double)));
 
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
 
-
     // Connect simulate button
     connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
             this, SLOT(toggleSim()));
 
-    connect(this->menu_panel_->add_ellipse_button_, SIGNAL(clicked(bool)),
-            this, SLOT(addEllipse()));
+    connect(this->menu_panel_->duplicate_button_, SIGNAL(clicked(bool)),
+            this, SLOT(duplicateSelected()));
 
-    // Connect comms to the
-    connect(this->controller_->drone_comm_, SIGNAL(tx_pos(float,float,float)),
-            this, SLOT(updateViewDronePos(float,float,float)));
-    connect(this->controller_->puck_comm_, SIGNAL(tx_pos(float,float,float)),
-            this, SLOT(updateViewPuckPos(float, float, float))); //TODO: add argument to updateViewPuckPos()
-                                                                    //that indicates which puck to update
-
-    // TODO: remove sim from TODO
     timer_sim_ = new QTimer(this);
     connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
 
@@ -203,26 +182,10 @@ void View::initialize() {
     this->view_tick_ = 0;
 }
 
-void View::updateViewDronePos(float n, float e, float d) {
-    QPointF pos(e*this->scale_,-n*this->scale_);
-    this->controller_->updateDronePos(pos);
-
-    if(compute_timer_.elapsed() >= this->controller_->solver_difficulty_*5) {
-        this->controller_->compute();
-        compute_timer_.restart();
-    }
-}
-
-void View::updateViewPuckPos(float n, float e, float d) {
-    QPointF pos(e*this->scale_, -n*this->scale_);
-    this->controller_->updatePuckPos(0, pos); //TODO: Change from 0 to index i for multiple obstacle ellipses
-}
-
 void View::mousePressEvent(QMouseEvent *event) {
     // Grab event position in scene coordinates
-    if(this->controller_->isFrozen()) {
+    if (this->controller_->isFrozen()) {
         qDebug() << "Frozen! Cannot take mouse event";
-
     }
     QPointF pos = this->mapToScene(event->pos());
 
@@ -232,16 +195,15 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case POINT: {
-            this->controller_->updateFinalPosition(&pos);
+            this->controller_->updateFinalPosition(pos);
             break;
         }
         case ELLIPSE: {
-            // TODO: disallow user from adding ellipse if it overlaps?
-            if (!this->controller_->model_->isEllipseOverlap(new QPointF(pos))) {
-                this->controller_->addEllipse(new QPointF(pos));
-            } else {
-               qDebug() << "Cannot add overlapping ellipse";
-            }
+            // TODO(bchasnov): disallow user from adding
+            // ellipse if it overlaps?
+            qreal scaling_factor = this->matrix().m11();
+            this->controller_->addEllipse(new QPointF(pos),
+                                          DEFAULT_RAD / scaling_factor);
             break;
         }
         case POLYGON: {
@@ -260,11 +222,10 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                // TODO: dot size should be dynamic depending on the zoom level
-                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
+                qreal dotSize = DOT_SIZE / this->matrix().m11();
                 QGraphicsItem *dot =
-                        this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
-                                                  dotSize, dotSize,
+                        this->scene()->addEllipse(-dotSize, -dotSize,
+                                                  dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
@@ -280,11 +241,10 @@ void View::mousePressEvent(QMouseEvent *event) {
                 this->clearMarkers();
             } else {
                 // Add temporary marker
-                // TODO: dot size should be dynamic depending on the zoom level
-                qreal dotSize = this->controller_->indoor_?DOT_SIZE:DOT_SIZE*16;
+                qreal dotSize = DOT_SIZE / this->matrix().m11();
                 QGraphicsItem *dot =
-                        this->scene()->addEllipse(-dotSize / 2, -dotSize / 2,
-                                                  dotSize, dotSize,
+                        this->scene()->addEllipse(-dotSize, -dotSize,
+                                                  dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
                 temp_markers_->append(dot);
                 dot->setPos(pos);
@@ -313,9 +273,10 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
-    if(this->simulating_ == 0)
-        this->controller_->compute();
 
+    if (this->simulating_ == 0) {
+        this->controller_->compute();
+    }
 }
 
 void View::closeMenu() {
@@ -333,8 +294,8 @@ void View::openMenu() {
     this->update();
 }
 
-void View::setZoom(int value) {
-    qreal scaleFactor = qreal(value) / (100 - value);
+void View::setZoom(double value) {
+    qreal scaleFactor = value;
     this->resetMatrix();
     this->scale(scaleFactor, scaleFactor);
 }
@@ -344,7 +305,7 @@ void View::setState(STATE button_type) {
     this->clearMarkers();
 
     // Deselect items
-    this->canvas_->clearSelection();
+    // this->canvas_->clearSelection();
 
     // Go to idle or switch to new state
     bool set_idle = false;
@@ -369,15 +330,20 @@ void View::updatePath() {
 
 void View::execute() {
     this->clearMarkers();
-
+    this->setState(IDLE);
     this->controller_->execute();
 }
 
-// TODO: does this belong in view? probably not..
+void View::duplicateSelected() {
+    this->setState(IDLE);
+    this->controller_->duplicateSelected();
+}
+
+// TODO(bchasnov): does this belong in view? probably not..
 void View::stepSim() {
-    if(this->controller_->simDrone(this->simulating_)) {
+    if (this->controller_->simDrone(this->simulating_)) {
         ++this->simulating_;
-        QTimer::singleShot(this->controller_->getTimeInterval()*1000, this,
+        QTimer::singleShot(this->controller_->getTimeInterval() * 1000, this,
                            SLOT(stepSim()));
     } else {
         this->simulating_ = 0;
@@ -390,19 +356,12 @@ void View::toggleSim() {
 }
 
 
-void View::setFinaltime(int _finaltime) {
-    float finaltime = _finaltime/10.0f;
-    this->controller_->setFinaltime(finaltime);
-    this->menu_panel_->opt_finaltime_label_->setText("T=" + QString::number(finaltime));
+void View::setFinaltime(double final_time) {
+    this->controller_->setFinaltime(final_time);
 }
 
 void View::setHorizon(int horizon) {
     this->controller_->setHorizonLength(horizon);
-    this->menu_panel_->opt_horizon_label_->setText("N=" + QString::number(horizon));
-}
-
-void View::addEllipse() {
-    this->controller_->addEllipse(new QPointF(*this->controller_->model_->puck_ellipse_pos_->at(0)->pos_));
 }
 
 void View::clearMarkers() {

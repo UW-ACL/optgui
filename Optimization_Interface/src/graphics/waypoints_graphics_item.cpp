@@ -3,31 +3,28 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "../../include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/waypoints_graphics_item.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QLineF>
 
-#include "../../include/globals.h"
+#include "include/globals.h"
 
 namespace interface {
 
 WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
                                              QGraphicsItem *parent,
-                                             quint32 size)
+                                             qreal size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->size_ = size;
+    this->line_width_ = 4;
     this->initialize();
 }
 
 void WaypointsGraphicsItem::initialize() {
-    // Set pen
-    this->pen_ = QPen(Qt::blue);
-    this->pen_.setWidth(1);
-
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
 
@@ -50,6 +47,7 @@ QRectF WaypointsGraphicsItem::boundingRect() const {
 void WaypointsGraphicsItem::paint(QPainter *painter,
                              const QStyleOptionGraphicsItem *option,
                              QWidget *widget) {
+    Q_UNUSED(painter);
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -58,44 +56,39 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
         for (qint32 i = this->resize_handles_->size();
              i < this->model_->points_->size(); i++) {
             PolygonResizeHandle *handle =
-                    new PolygonResizeHandle(this->model_->points_->at(i), this, this->size_);
+                    new PolygonResizeHandle(
+                        this->model_->points_->at(i), this, this->size_);
             this->resize_handles_->append(handle);
             handle->show();
         }
         this->expandScene();
     }
 
-    // Draw connecting path
-    painter->setPen(this->pen_);
-    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
-                    mapFromScene(*this->model_->points_->at(i)));
-        painter->drawLine(line);
-    }
-
-    // Set handle colors
-    qint32 size = this->resize_handles_->size();
+    // Set handle number
     qint32 index = 0;
     for (PolygonResizeHandle *handle : *this->resize_handles_) {
-        QColor color = Qt::white;
-        //  if (index == 0) {
-        //      color = Qt::green;
-        //  } else
-        if (index == size - 1) {
-            color = Qt::red;
-        }
-        handle->setColor(color);
         handle->updatePos();
+        handle->setIndex(index + 1);
         index++;
     }
 
     // Label with port
+    /*
     if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
         painter->setPen(Qt::black);
         QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
-        painter->drawText(QRectF(text_pos.x(), text_pos.y(), 50, 15),
+        QFont font = painter->font();
+        qreal scaling_factor = this->getScalingFactor();
+        font.setPointSizeF(12 / scaling_factor);
+        painter->setFont(font);
+        qreal text_box_size = 50.0 / scaling_factor;
+        painter->drawText(text_pos.x() - text_box_size,
+                          text_pos.y() - text_box_size,
+                          text_box_size * 2, text_box_size * 2,
+                          Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
+    */
 }
 
 void WaypointsGraphicsItem::removeHandle(PolygonResizeHandle *handle) {
@@ -129,10 +122,11 @@ void WaypointsGraphicsItem::expandScene() {
                             this->scene()->sceneRect());
             }
         }
-        this->scene()->update();
+        this->update(this->boundingRect());
     }
 }
 
+/*
 QVariant WaypointsGraphicsItem::itemChange(GraphicsItemChange change,
                                          const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
@@ -149,6 +143,15 @@ QVariant WaypointsGraphicsItem::itemChange(GraphicsItemChange change,
         this->expandScene();
     }
     return QGraphicsItem::itemChange(change, value);
+}
+*/
+
+qreal WaypointsGraphicsItem::getScalingFactor() {
+    qreal scaling_factor = 1;
+    if (this->scene() && !this->scene()->views().isEmpty()) {
+        scaling_factor = this->scene()->views().first()->matrix().m11();
+    }
+    return scaling_factor;
 }
 
 }  // namespace interface
