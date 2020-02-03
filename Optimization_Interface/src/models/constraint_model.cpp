@@ -6,6 +6,7 @@
 #include "include/models/constraint_model.h"
 
 #include <QString>
+#include <QLineF>
 
 namespace interface {
 
@@ -147,27 +148,20 @@ void ConstraintModel::loadInitialPos(double* r_i) {
     r_i[2] = this->drone_->pos_->x()/this->scale_;
 }
 
-uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
-    // TODO(dtsull): put this in a for loop
-    uint32_t j = 0;
-    QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
-    while (iter.hasNext()) {
-        if (j >= this->maxEllipse) break;
-
-        EllipseModelItem* ellipse = iter.next();
-        R[j] = ellipse->radius_/this->scale_;
-        c_e[j] = -ellipse->pos_->y()/this->scale_;
-        c_n[j] = ellipse->pos_->x()/this->scale_;
-        ++j;
+uint32_t ConstraintModel::loadEllipseConstraint(double* R, double* c_e, double* c_n) {
+    uint32_t index = 0;
+    for (EllipseModelItem *ellipse : *this->ellipses_) {
+        R[index] = ellipse->radius_/this->scale_;
+        c_e[index] = -ellipse->pos_->y()/this->scale_;
+        c_n[index] = ellipse->pos_->x()/this->scale_;
+        index++;
+        if (index >= this->maxEllipse) return index;
     }
-    return j;
+    return index;
 }
 
 bool ConstraintModel::isEllipseOverlap(QPointF * pos) {
-    // TODO(dtsull): also put this in a for loop
-    QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
-    while (iter.hasNext()) {
-        EllipseModelItem* ellipse = iter.next();
+    for (EllipseModelItem *ellipse : *this->ellipses_) {
         double r = ellipse->radius_/this->scale_;
         double dist = pow(pos->x() - ellipse->pos_->x(), 2)
                     + pow(pos->y() - ellipse->pos_->y(), 2);
@@ -183,46 +177,57 @@ bool ConstraintModel::isEllipseOverlap(QPointF * pos) {
     return false;
 }
 
-uint32_t ConstraintModel::loadPosConstraint(double* A, double* b) {
-    uint32_t num = 0;
+uint32_t ConstraintModel::loadPosConstraints(double* A, double* b) {
+    uint32_t index = 0;
 
     for (PolygonModelItem *polygon : *this->polygons_) {
         for (qint32 i = 1; i < polygon->points_->length() + 1; i++) {
             QPointF *p = polygon->points_->at(i - 1);
             QPointF *q = polygon->points_->at(i % polygon->points_->length());
-            int32_t flip = (polygon->direction_?-1:1);
-
-            qreal px = -p->y() / this->scale_;
-            qreal py = p->x() / this->scale_;
-            qreal qx = -q->y() / this->scale_;
-            qreal qy = q->x() / this->scale_;
-            qreal c = ((py * qx) - (px * qy));
-
-            A[2 * (i - 1)] = (static_cast<double>(flip) * (py - qy) / c);
-            A[2 * (i - 1) + 1] = (static_cast<double>(flip) * (qx - px) / c);
-            b[i - 1] = static_cast<double>(flip);
-            num++;
+            if (polygon->direction_) {
+                this->loadPlaneConstraint(A, b, index, q, p);
+            } else {
+                this->loadPlaneConstraint(A, b, index, p, q);
+            }
+            index++;
+            if (index >= this->maxHalfspace) return index;
         }
     }
 
     for (PlaneModelItem *plane : *this->planes_) {
-        uint32_t i = num+1;
         QPointF *p = plane->p1_;
         QPointF *q = plane->p2_;
-        int32_t flip = (plane->direction_?1:-1);
 
-        qreal px = -p->y() / this->scale_;
-        qreal py = p->x() / this->scale_;
-        qreal qx = -q->y() / this->scale_;
-        qreal qy = q->x() / this->scale_;
-        qreal c = ((py * qx) - (px * qy));
-
-        A[2 * (i - 1)] = flip * (py - qy) / c;
-        A[2 * (i - 1) + 1] = flip * (qx - px) / c;
-        b[i - 1] = flip;
-        num++;
+        if (plane->direction_) {
+            this->loadPlaneConstraint(A, b, index, q, p);
+        } else {
+            this->loadPlaneConstraint(A, b, index, p, q);
+        }
+        index++;
+        if (index >= this->maxHalfspace) return index;
     }
-    return num;
+
+    return index;
+}
+
+void ConstraintModel::loadPlaneConstraint(double *A, double *b, uint32_t index,
+                                              QPointF *p, QPointF *q) {
+    qreal px = -p->y() / this->scale_;
+    qreal py = p->x() / this->scale_;
+    qreal qx = -q->y() / this->scale_;
+    qreal qy = q->x() / this->scale_;
+    qreal c = ((py * qx) - (px * qy));
+
+    qreal a1 = (py - qy) / c;
+    qreal a2 = (px - qx) / -c;
+
+    QLineF line(*p, *q);
+    QPointF normal = line.normalVector().p2();
+    qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? 1 : -1;
+
+    A[2 * index] = flip * a1;
+    A[(2 * index) + 1] = flip * a2;
+    b[index] = flip;
 }
 
 }  // namespace interface
