@@ -123,6 +123,11 @@ void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
     graphic->expandScene();
 }
 
+void Canvas::updatePathGraphicsItem(PathGraphicsItem *graphic) {
+    // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
+    graphic->expandScene();
+}
+
 void Canvas::bringToFront(QGraphicsItem *item) {
     item->setZValue(this->front_depth_);
     this->front_depth_ = std::nextafter(this->front_depth_,

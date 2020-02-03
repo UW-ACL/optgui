@@ -52,23 +52,6 @@ void PathGraphicsItem::paint(QPainter *painter,
                     mapFromScene(*this->model_->points_->at(i)));
         painter->drawLine(line);
     }
-
-    // Label with port
-    /*
-    if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
-        painter->setPen(Qt::black);
-        QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
-        QFont font = painter->font();
-        font.setPointSizeF(12 / scaling_factor);
-        painter->setFont(font);
-        qreal text_box_size = 50.0 / scaling_factor;
-        painter->drawText(text_pos.x() - text_box_size,
-                          text_pos.y() - text_box_size,
-                          text_box_size * 2, text_box_size * 2,
-                          Qt::AlignCenter,
-                          QString::number(this->model_->port_));
-    }
-    */
 }
 
 void PathGraphicsItem::expandScene() {

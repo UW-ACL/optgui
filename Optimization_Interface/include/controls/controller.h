@@ -36,10 +36,6 @@ class Controller : public QObject {
 
     void setCanvas(Canvas *canvas);  // sets up canvas for drawing graphics
 
-    double solver_difficulty_ = 100;
-
-    bool valid_path_ = false;
-    bool indoor_ = true;
     ConstraintModel *model_;
 
     // add constraints
@@ -121,13 +117,6 @@ class Controller : public QObject {
     void readWaypoints(QDataStream *in);
     void readPath(QDataStream *in);
     void readDrone(QDataStream *in);
-
-    QElapsedTimer timer_exec_;
-    QElapsedTimer timer_compute_;
-
-    bool exec_once_ = false;
-
-    autogen::packet::traj3dof drone_traj3dof_data_;
 };
 
 }  // namespace interface

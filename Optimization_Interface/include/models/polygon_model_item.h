@@ -10,6 +10,7 @@
 
 #include <QVector>
 #include <QPointF>
+#include <QMutex>
 
 #include "include/models/data_model.h"
 
@@ -18,13 +19,51 @@ namespace interface {
 class PolygonModelItem : public DataModel {
  public:
     explicit PolygonModelItem(QVector<QPointF *> *points) :
-        direction_(true) { points_ = points; port_ = 0;}
+        mutex_(), direction_(true) { points_ = points; port_ = 0;}
     ~PolygonModelItem() {
         for (QPointF *point : *this->points_) {
             delete point;
         }
         delete this->points_;
     }
+
+    quint64 getSize() {
+        this->mutex_.lock();
+        quint64 size = this->points_->size();
+        this->mutex_.unlock();
+        return size;
+    }
+
+    void setPointAt(QPointF point, quint64 index) {
+        this->mutex_.lock();
+        QPointF *temp = this->points_->at(index);
+        temp->setX(point.x());
+        temp->setY(point.y());
+        this->mutex_.unlock();
+    }
+
+    QPointF getPointAt(quint64 index) {
+        this->mutex_.lock();
+        QPointF temp = *this->points_->at(index);
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    bool getDirection() {
+        this->mutex_.lock();
+        qreal temp = this->direction_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void flipDirection() {
+        this->mutex_.lock();
+        this->direction_ = !this->direction_;
+        this->mutex_.unlock();
+    }
+
+ private:
+    QMutex mutex_;
     QVector<QPointF *> *points_;
     bool direction_;
 };

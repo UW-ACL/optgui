@@ -9,13 +9,7 @@
 
 namespace interface {
 
-ConstraintModel::ConstraintModel(uint32_t maxEllipse, uint32_t maxHalfspace) {
-    this->maxEllipse = maxEllipse;
-    this->maxHalfspace = maxHalfspace;
-    this->initialize();
-}
-
-ConstraintModel::ConstraintModel() {
+ConstraintModel::ConstraintModel() : model_lock_() {
     this->initialize();
 }
 
@@ -32,9 +26,7 @@ void ConstraintModel::initialize() {
     // initialize algorithm
     this->finaltime_ = 3;
     this->horizon_length_ = 16;
-  
-    // trajectory points
-    this->trajectory_ = new QVector<QPointF *>;
+
     this->initializeFly();
 }
 
@@ -152,7 +144,7 @@ uint32_t ConstraintModel::loadEllipse(double* R, double* c_e, double* c_n) {
     uint32_t j = 0;
     QSetIterator<EllipseModelItem *> iter(*this->ellipses_);
     while (iter.hasNext()) {
-        if (j >= this->maxEllipse) break;
+        if (j >= MAX_OBS) break;
 
         EllipseModelItem* ellipse = iter.next();
         R[j] = ellipse->radius_/this->scale_;

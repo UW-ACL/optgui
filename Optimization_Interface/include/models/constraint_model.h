@@ -14,7 +14,7 @@
 #include <QSet>
 #include <QVector>
 #include <QPointF>
-#include <QSetIterator>
+#include <QMutex>
 
 #include "include/models/point_model_item.h"
 #include "include/models/ellipse_model_item.h"
@@ -27,8 +27,7 @@ namespace interface {
 
 class ConstraintModel {
  public:
-    ConstraintModel();
-    ConstraintModel(uint32_t maxEllipse, uint32_t maxAffine);
+    explicit ConstraintModel();
 
     ~ConstraintModel();
 
@@ -49,8 +48,7 @@ class ConstraintModel {
     void addWaypoint(QPointF *item);
     void removeWaypoint(QPointF *item);
 
-    void addPathPoint(QPointF *item);
-    void clearPath();
+    void SetPathPoints(QPointF *item);
 
     void loadFinalPos(double*);
     void loadInitialPos(double*);
@@ -60,6 +58,20 @@ class ConstraintModel {
 
     bool isEllipseOverlap(QPointF *pos);
 
+    SkyeFly *fly_;
+
+    // scale from meters to pixels
+    qreal scale_ = 100.0;
+
+ private:
+    void initialize();
+
+    QMutex model_lock_;
+
+    float finaltime_;
+    uint32_t horizon_length_;
+    autogen::packet::traj3dof drone_traj3dof_data_;
+
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
@@ -67,23 +79,6 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
-
-    SkyeFly *fly_;
-    // TODO(dtsull16): incorportate these into Skyfly
-    float finaltime_;
-    uint32_t horizon_length_ = MAX_HORIZON;
-
-    uint32_t maxEllipse;
-    uint32_t maxHalfspace;
-
-    // scale from meters to pixels
-    qreal scale_ = 100.0;
-
-    // trajectory points
-    QVector<QPointF *> *trajectory_;
-
- private:
-    void initialize();
 };
 
 }  // namespace interface

@@ -49,6 +49,7 @@ class Canvas : public QGraphicsScene {
  private slots:
     void bringSelectedToFront();
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
+    void updatePathGraphicsItem(PathGraphicsItem *graphic);
 
  private:
     void initialize();
