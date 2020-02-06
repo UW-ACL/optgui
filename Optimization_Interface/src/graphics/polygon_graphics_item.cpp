@@ -138,9 +138,10 @@ QPainterPath PolygonGraphicsItem::shape() const {
     qreal border = POLYGON_BORDER / this->getScalingFactor();
 
     // Define exterior shadings
-    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
-                    mapFromScene(*this->model_->points_->at(i)));
+    for (qint32 i = 1; i < this->model_->points_->length() + 1; i++) {
+        QLineF line(mapFromScene(*this->model_->points_->at(i - 1)),
+                    mapFromScene(*this->model_->points_->at(
+                                     i % this->model_->points_->length())));
         // Flip shading if direction is reversed
         if (this->model_->direction_) {
             line = QLineF(line.p2(), line.p1());
@@ -154,21 +155,6 @@ QPainterPath PolygonGraphicsItem::shape() const {
         poly << line.normalVector().pointAt(border / line.length());
         path.addPolygon(poly);
     }
-
-    // Manually draw last line from last point back to first point
-    QLineF line(mapFromScene(*this->model_->points_->last()),
-                mapFromScene(*this->model_->points_->first()));
-    // Flip shading if direction is reversed
-    if (this->model_->direction_) {
-        line = QLineF(line.p2(), line.p1());
-    }
-    QPolygonF poly;
-    poly << line.p1();
-    poly << line.p2();
-    poly << line.normalVector().translated(
-                line.dx(), line.dy()).pointAt(border / line.length());
-    poly << line.normalVector().pointAt(border / line.length());
-    path.addPolygon(poly);
 
     // Return shape
     return path;

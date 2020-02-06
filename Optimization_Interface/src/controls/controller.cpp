@@ -265,12 +265,12 @@ void Controller::compute(QVector<QPointF *> *trajectory) {
     // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the
     // circle and R is the radius (H some linear transform)
     this->model_->fly_->P.obs.n = model_->
-            loadEllipse(this->model_->fly_->P.obs.R,
+            loadEllipseConstraint(this->model_->fly_->P.obs.R,
                         this->model_->fly_->P.obs.c_e,
                         this->model_->fly_->P.obs.c_n);
     // Affine constraints Ax \leq b
     this->model_->fly_->P.cpos.n = model_->
-            loadPosConstraint(this->model_->fly_->P.cpos.A,
+            loadPosConstraints(this->model_->fly_->P.cpos.A,
                               this->model_->fly_->P.cpos.b);
 
     // Inputs.

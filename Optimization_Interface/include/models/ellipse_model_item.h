@@ -19,7 +19,7 @@ qreal const DEFAULT_RAD = 100;
 class EllipseModelItem : public DataModel {
  public:
     explicit EllipseModelItem(QPointF *pos, qreal radius = DEFAULT_RAD) :
-        radius_(radius), direction_(true) { pos_ = pos; port_ = 0; }
+        radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
     ~EllipseModelItem() { delete pos_; }
     double radius_;
     QPointF *pos_;

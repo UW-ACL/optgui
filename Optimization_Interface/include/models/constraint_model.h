@@ -55,8 +55,8 @@ class ConstraintModel {
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    uint32_t loadEllipse(double* R, double* c_e, double* c_n);
-    uint32_t loadPosConstraint(double* A, double* b);
+    uint32_t loadEllipseConstraint(double* R, double* c_e, double* c_n);
+    uint32_t loadPosConstraints(double* A, double* b);
 
     bool isEllipseOverlap(QPointF *pos);
 
@@ -84,6 +84,8 @@ class ConstraintModel {
 
  private:
     void initialize();
+    void loadPlaneConstraint(double *A, double *b, uint32_t index,
+                                 QPointF *p, QPointF *q);
 };
 
 }  // namespace interface

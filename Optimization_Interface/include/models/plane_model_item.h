@@ -17,7 +17,7 @@ namespace interface {
 class PlaneModelItem : public DataModel {
  public:
     explicit PlaneModelItem(QPointF *p1, QPointF *p2) :
-        direction_(true) { p1_ = p1; p2_ = p2; port_ = 0;}
+        direction_(false) { p1_ = p1; p2_ = p2; port_ = 0;}
     ~PlaneModelItem() { delete p1_; delete p2_; }
     QPointF *p1_;
     QPointF *p2_;

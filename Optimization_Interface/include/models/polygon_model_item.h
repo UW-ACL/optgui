@@ -18,7 +18,7 @@ namespace interface {
 class PolygonModelItem : public DataModel {
  public:
     explicit PolygonModelItem(QVector<QPointF *> *points) :
-        direction_(true) { points_ = points; port_ = 0;}
+        direction_(false) { points_ = points; port_ = 0;}
     ~PolygonModelItem() {
         for (QPointF *point : *this->points_) {
             delete point;
