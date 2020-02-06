@@ -21,10 +21,12 @@ class PathModelItem : public DataModel {
     PathModelItem() : mutex_()
         { this->points_ = new QVector<QPointF *>(); port_ = 0; }
     ~PathModelItem() {
+        this->mutex_.lock();
         for (QPointF *point : *this->points_) {
             delete point;
         }
         delete this->points_;
+        this->mutex_.unlock();
     }
 
     quint64 getSize() {

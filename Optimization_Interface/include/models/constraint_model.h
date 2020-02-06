@@ -16,6 +16,7 @@
 #include <QPointF>
 #include <QMutex>
 
+#include "include/globals.h"
 #include "include/models/point_model_item.h"
 #include "include/models/ellipse_model_item.h"
 #include "include/models/polygon_model_item.h"
@@ -30,8 +31,6 @@ class ConstraintModel {
     explicit ConstraintModel();
 
     ~ConstraintModel();
-
-    void initializeFly();
 
     void addPoint(PointModelItem *item);
     void removePoint(PointModelItem *item);
@@ -48,20 +47,15 @@ class ConstraintModel {
     void addWaypoint(QPointF *item);
     void removeWaypoint(QPointF *item);
 
-    void SetPathPoints(QPointF *item);
+    void setPathPoints(QVector<QPointF *> *points);
 
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    uint32_t loadEllipse(double* R, double* c_e, double* c_n);
-    uint32_t loadPosConstraint(double* A, double* b);
+    uint32_t loadEllipseConstraint(double* R, double* c_e, double* c_n);
+    uint32_t loadPosConstraints(double* A, double* b);
 
     bool isEllipseOverlap(QPointF *pos);
-
-    SkyeFly *fly_;
-
-    // scale from meters to pixels
-    qreal scale_ = 100.0;
 
  private:
     void initialize();
@@ -79,6 +73,10 @@ class ConstraintModel {
     PathModelItem *path_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
+
+    void loadPlaneConstraint(double *A, double *b, uint32_t index,
+                                 QPointF p, QPointF q);
+
 };
 
 }  // namespace interface

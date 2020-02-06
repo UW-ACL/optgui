@@ -21,7 +21,11 @@ class PointModelItem : public DataModel {
  public:
     PointModelItem() : mutex_() { pos_ = new QPointF(0, 0); port_ = 0; }
     PointModelItem(QPointF *pos) : mutex_() { pos_ = pos; port_ = 0;}
-    ~PointModelItem() { delete pos_; }
+    ~PointModelItem() {
+        this->mutex_.lock();
+        delete this->pos_;
+        this->mutex_.unlock();
+    }
 
     QPointF getPos() {
         this->mutex_.lock();

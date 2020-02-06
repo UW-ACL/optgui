@@ -51,8 +51,8 @@ EllipseGraphicsItem::~EllipseGraphicsItem() {
 
 QRectF EllipseGraphicsItem::boundingRect() const {
     qreal rad = this->model_->radius_;
-    // Add exterior border if not direction
-    if (!this->model_->direction_) {
+    // Add exterior border if direction flipped
+    if (this->model_->direction_) {
         // scale with view
         rad += ELLIPSE_BORDER / this->getScalingFactor();
     }
@@ -110,8 +110,8 @@ int EllipseGraphicsItem::type() const {
 QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
     path.addEllipse(this->boundingRect());
-    // Add interior border if not direction
-    if (!this->model_->direction_) {
+    // Add exterior border if direction flipped
+    if (this->model_->direction_) {
         double rad = this->model_->radius_;
         path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
     }

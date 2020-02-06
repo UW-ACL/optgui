@@ -17,8 +17,13 @@ namespace interface {
 class PlaneModelItem : public DataModel {
  public:
     explicit PlaneModelItem(QPointF *p1, QPointF *p2) :
-        mutex_(), direction_(true) { p1_ = p1; p2_ = p2; port_ = 0;}
-    ~PlaneModelItem() { delete p1_; delete p2_; }
+        mutex_(), direction_(false) { p1_ = p1; p2_ = p2; port_ = 0;}
+    ~PlaneModelItem() {
+        this->mutex_.lock();
+        delete p1_;
+        delete p2_;
+        this->mutex_.unlock();
+    }
 
     QPointF getP1() {
         this->mutex_.lock();

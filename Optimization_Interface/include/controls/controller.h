@@ -8,7 +8,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#include <QElapsedTimer>
+#include <QThread>
 
 #include <cprs.h>
 #include <algorithm.h>

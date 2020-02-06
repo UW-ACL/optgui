@@ -20,8 +20,12 @@ qreal const DEFAULT_RAD = 100;
 class EllipseModelItem : public DataModel {
  public:
     explicit EllipseModelItem(QPointF *pos, qreal radius = DEFAULT_RAD) :
-        mutex_(), radius_(radius), direction_(true) { pos_ = pos; port_ = 0; }
-    ~EllipseModelItem() { delete pos_; }
+        mutex_(), radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
+    ~EllipseModelItem() {
+        this->mutex_.lock();
+        delete this->pos_;
+        this->mutex_.unlock();
+    }
 
     qreal getRadius() {
         this->mutex_.lock();

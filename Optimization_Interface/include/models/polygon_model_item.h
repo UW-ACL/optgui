@@ -19,12 +19,14 @@ namespace interface {
 class PolygonModelItem : public DataModel {
  public:
     explicit PolygonModelItem(QVector<QPointF *> *points) :
-        mutex_(), direction_(true) { points_ = points; port_ = 0;}
+        mutex_(), direction_(false) { points_ = points; port_ = 0;}
     ~PolygonModelItem() {
+        this->mutex_.lock();
         for (QPointF *point : *this->points_) {
             delete point;
         }
         delete this->points_;
+        this->mutex_.unlock();
     }
 
     quint64 getSize() {

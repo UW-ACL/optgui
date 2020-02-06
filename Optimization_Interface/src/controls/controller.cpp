@@ -5,18 +5,10 @@
 
 #include "include/controls/controller.h"
 
-#include <QFileDialog>
 #include <QMessageBox>
-#include <QNetworkConfigurationManager>
 #include <QSettings>
 #include <QTranslator>
 #include <QSet>
-
-#include <QFile>
-#include <QTextStream>
-#include <QDateTime>
-#include <QTimer>
-#include <QElapsedTimer>
 
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
@@ -208,18 +200,12 @@ void Controller::duplicateSelected() {
 
 // ============ BACK END CONTROLS ============
 
-void Controller::updatePath() {
-    // qDebug() << "Tick";
-}
-
 void Controller::setFinaltime(double finaltime) {
     this->model_->finaltime_ = finaltime;
-//    this->compute();
 }
 
 void Controller::setHorizonLength(uint32_t horizon) {
     this->model_->horizon_length_ = horizon;
-//    this->compute();
 }
 
 double Controller::getTimeInterval() {
@@ -275,12 +261,12 @@ void Controller::compute() { //QVector<QPointF *> *trajectory) {
     // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the
     // circle and R is the radius (H some linear transform)
     this->model_->fly_->P.obs.n = model_->
-            loadEllipse(this->model_->fly_->P.obs.R,
+            loadEllipseConstraint(this->model_->fly_->P.obs.R,
                         this->model_->fly_->P.obs.c_e,
                         this->model_->fly_->P.obs.c_n);
     // Affine constraints Ax \leq b
     this->model_->fly_->P.cpos.n = model_->
-            loadPosConstraint(this->model_->fly_->P.cpos.A,
+            loadPosConstraints(this->model_->fly_->P.cpos.A,
                               this->model_->fly_->P.cpos.b);
 
     // Inputs.
@@ -453,12 +439,10 @@ void Controller::setCanvas(Canvas *canvas) {
 
 void Controller::addPathPoint(QPointF *point) {
     this->model_->addPathPoint(point);
-    // this->canvas_->update();
 }
 
 void Controller::clearPathPoints() {
     this->model_->clearPath();
-    // this->canvas_->update();
 }
 
 // ============ NETWORK CONTROLS ============
@@ -522,117 +506,6 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
     }
 }
 
-// ============ SAVE CONTROLS ============
-
-void Controller::writePoint(PointModelItem *model, QDataStream *out) {
-    // *out << static_cast<bool>(model->direction_);
-    *out << *model->pos_;
-//    *out << (double)model->radius_;
-    *out << (quint16)model->port_;
-}
-
-void Controller::writeEllipse(EllipseModelItem *model, QDataStream *out) {
-    *out << static_cast<bool>(model->direction_);
-    *out << *model->pos_;
-    *out << static_cast<double>(model->radius_);
-    *out << (quint16)model->port_;
-}
-
-void Controller::writePolygon(PolygonModelItem *model, QDataStream *out) {
-    *out << static_cast<bool>(model->direction_);
-    *out << (quint32)model->points_->size();
-    for (QPointF *point : *model->points_) {
-        *out << *point;
-    }
-    *out << (quint16)model->port_;
-}
-
-void Controller::writePlane(PlaneModelItem *model, QDataStream *out) {
-    *out << static_cast<bool>(model->direction_);
-    *out << *model->p1_;
-    *out << *model->p2_;
-    *out << (quint16)model->port_;
-}
-
-void Controller::writeWaypoints(PathModelItem *model, QDataStream *out) {
-    quint32 num_waypoints = model->points_->size();
-    *out << num_waypoints;
-    for (QPointF *point : *model->points_) {
-        *out << *point;
-    }
-    *out << (quint16)model->port_;
-}
-
-void Controller::writePath(PathModelItem *model, QDataStream *out) {
-    quint32 num_path_points = model->points_->size();
-    *out << num_path_points;
-    for (QPointF *point : *model->points_) {
-        *out << *point;
-    }
-    *out << (quint16)model->port_;
-}
-
-void Controller::writeDrone(DroneModelItem *model, QDataStream *out) {
-    *out << *model->pos_;
-    *out << (quint16)model->port_;
-}
-
-void Controller::saveFile() {
-    QString file_name = QFileDialog::getSaveFileName(nullptr,
-        QFileDialog::tr("Save Constraint Layout"), "",
-        QFileDialog::tr("Constraint Layout (*.cst);;All Files (*)"));
-
-    if (file_name.isEmpty()) {
-        return;
-    } else {
-        QFile *file = new QFile(file_name);
-        if (!file->open(QIODevice::WriteOnly)) {
-            QMessageBox::information(nullptr,
-                                     QFileDialog::tr("Unable to open file"),
-                                     file->errorString());
-            delete file;
-            return;
-        }
-
-        QDataStream *out = new QDataStream(file);
-        out->setVersion(VERSION_5_8);
-
-        // Write ellipses
-        quint32 num_ellipses = this->model_->ellipses_->size();
-        *out << num_ellipses;
-        for (EllipseModelItem *model : *this->model_->ellipses_) {
-            this->writeEllipse(model, out);
-        }
-
-        // Write polygons
-        quint32 num_polygons = this->model_->polygons_->size();
-        *out << num_polygons;
-        for (PolygonModelItem *model : *this->model_->polygons_) {
-            this->writePolygon(model, out);
-        }
-
-        // Write planes
-        quint32 num_planes = this->model_->planes_->size();
-        *out << num_planes;
-        for (PlaneModelItem *model : *this->model_->planes_) {
-            this->writePlane(model, out);
-        }
-
-        // Write waypoints
-        this->writeWaypoints(this->model_->waypoints_, out);
-
-        // Write drone
-        this->writeDrone(this->model_->drone_, out);
-
-        // Write drone path
-        this->writePath(this->model_->path_, out);
-
-        // Clean up IO
-        delete out;
-        delete file;
-    }
-}
-
 // ============ LOAD CONTROLS ============
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
@@ -663,178 +536,6 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
-}
-
-PointModelItem *Controller::readPoint(QDataStream *in) {
-    bool direction;
-    *in >> direction;
-    QPointF pos;
-    *in >> pos;
-//    double radius;
-//    *in >> radius;
-    quint16 port;
-    *in >> port;
-
-    PointModelItem *model = new PointModelItem(new QPointF(pos));
-    // model->direction_ = direction;
-//    model->radius_ = radius;
-    model->port_ = port;
-
-    return model;
-}
-
-EllipseModelItem *Controller::readEllipse(QDataStream *in) {
-    bool direction;
-    *in >> direction;
-    QPointF pos;
-    *in >> pos;
-    double radius;
-    *in >> radius;
-    quint16 port;
-    *in >> port;
-
-    EllipseModelItem *model = new EllipseModelItem(new QPointF(pos));
-    model->direction_ = direction;
-    model->radius_ = radius;
-    model->port_ = port;
-
-    return model;
-}
-
-PolygonModelItem *Controller::readPolygon(QDataStream *in) {
-    bool direction;
-    *in >> direction;
-    quint32 size;
-    *in >> size;
-
-    QVector<QPointF *> *points = new QVector<QPointF *>();
-    points->reserve(size);
-    for (quint32 i = 0; i < size; i++) {
-        QPointF point;
-        *in >> point;
-        points->append(new QPointF(point));
-    }
-    PolygonModelItem *model = new PolygonModelItem(points);
-    model->direction_ = direction;
-
-    quint16 port;
-    *in >> port;
-    model->port_ = port;
-
-    return model;
-}
-
-PlaneModelItem *Controller::readPlane(QDataStream *in) {
-    bool direction;
-    *in >> direction;
-    QPointF p1;
-    *in >> p1;
-    QPointF p2;
-    *in >> p2;
-    quint16 port;
-    *in >> port;
-
-    PlaneModelItem *model = new PlaneModelItem(new QPointF(p1),
-                                               new QPointF(p2));
-    model->direction_ = direction;
-    model->port_ = port;
-
-    return model;
-}
-
-void Controller::readWaypoints(QDataStream *in) {
-    quint32 num_waypoints;
-    *in >> num_waypoints;
-    for (quint32 i = 0; i < num_waypoints; i++) {
-        QPointF point;
-        *in >> point;
-        this->addWaypoint(new QPointF(point));
-    }
-    quint16 port;
-    *in >> port;
-    this->model_->waypoints_->port_ = port;
-}
-
-void Controller::readPath(QDataStream *in) {
-    quint32 num_path_points;
-    *in >> num_path_points;
-    for (quint32 i = 0; i < num_path_points; i++) {
-        QPointF point;
-        *in >> point;
-        this->addPathPoint(new QPointF(point));
-    }
-    quint16 port;
-    *in >> port;
-    this->model_->path_->port_ = port;
-}
-
-void Controller::readDrone(QDataStream *in) {
-    QPointF point;
-    *in >> point;
-    quint16 port;
-    *in >> port;
-    this->model_->drone_->port_ = port;
-}
-
-void Controller::loadFile() {
-    QString file_name = QFileDialog::getOpenFileName(nullptr,
-        QFileDialog::tr("Open Constraint Layout"), "",
-        QFileDialog::tr("Constraint Layout (*.cst);;All Files (*)"));
-
-    if (file_name.isEmpty()) {
-        return;
-    } else {
-        QFile *file = new QFile(file_name);
-
-        if (!file->open(QIODevice::ReadOnly)) {
-            QMessageBox::information(nullptr,
-                                     QFileDialog::tr("Unable to open file"),
-                                     file->errorString());
-            delete file;
-            return;
-        }
-
-        QDataStream *in = new QDataStream(file);
-        in->setVersion(VERSION_5_8);
-
-        // Reset model
-        delete this->model_;
-        this->model_ = new ConstraintModel();
-
-        // Read ellipses
-        quint32 num_ellipses;
-        *in >> num_ellipses;
-        for (quint32 i = 0; i < num_ellipses; i++) {
-            this->loadEllipse(this->readEllipse(in));
-        }
-
-        // Read polygons
-        quint32 num_polygons;
-        *in >> num_polygons;
-        for (quint32 i = 0; i < num_polygons; i++) {
-            this->loadPolygon(this->readPolygon(in));
-        }
-
-        // Read planes
-        quint32 num_planes;
-        *in >> num_planes;
-        for (quint32 i = 0; i < num_planes; i++) {
-            this->loadPlane(this->readPlane(in));
-        }
-
-        // Read waypoints
-        this->readWaypoints(in);
-
-        // Read drone
-        this->readDrone(in);
-
-        // Read path
-        this->readPath(in);
-
-        // clean up IO
-        delete in;
-        delete file;
-    }
 }
 
 }  // namespace interface

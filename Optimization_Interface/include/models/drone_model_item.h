@@ -24,7 +24,11 @@ class DroneModelItem : public DataModel {
         destination_port_ = 0;
         ip_addr_ = "0.0.0.0";
     }
-    ~DroneModelItem() { delete this->pos_; }
+    ~DroneModelItem() {
+        this->mutex_.lock();
+        delete this->pos_;
+        this->mutex_.unlock();
+    }
 
     QPointF getPos() {
         this->mutex_.lock();

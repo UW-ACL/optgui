@@ -10,6 +10,8 @@
 
 #include <QGraphicsItem>
 
+#define GRID_SIZE 100
+
 namespace interface {
     enum STATE {
         IDLE,
@@ -32,12 +34,6 @@ namespace interface {
         HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
         POINT_GRAPHIC = QGraphicsItem::UserType + 6
     };
-
-    enum DATA_STREAM_VERSION {
-        VERSION_5_8 = QDataStream::Qt_5_8,
-    };
-
-#define GRID_SIZE 100
 }  // namespace interface
 
 #endif  // GLOBALS_H_

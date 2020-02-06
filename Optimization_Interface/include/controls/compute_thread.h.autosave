@@ -8,8 +8,6 @@
 #ifndef COMPUTE_THREAD_H_
 #define COMPUTE_THREAD_H_
 
-#include <QThread>
-
 #include <cprs.h>
 #include <algorithm.h>
 
