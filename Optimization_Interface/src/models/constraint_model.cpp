@@ -16,15 +16,15 @@ ConstraintModel::ConstraintModel() : model_lock_() {
 
 void ConstraintModel::initialize() {
     // Set model containers
-    this->final_pos_ = new PointModelItem();
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
-    this->waypoints_ = new PathModelItem();
-    this->path_ = new PathModelItem();
-    this->drone_ = new DroneModelItem();
+    this->final_pos_ = nullptr;
+    this->waypoints_ = nullptr;
+    this->path_ = nullptr;
+    this->drone_ = nullptr;
 
-    // initialize algorithm
+    // initialize algorithm variables
     this->finaltime_ = 3;
     this->horizon_length_ = 16;
 }
@@ -50,15 +50,26 @@ ConstraintModel::~ConstraintModel() {
     delete this->planes_;
 
     // Delete waypoints
-    delete this->waypoints_;
-
+    if (!this->waypoints_) {
+        delete this->waypoints_;
+    }
     // Delete path
-    delete this->path_;
-
+    if (!this->path_) {
+        delete this->path_;
+    }
     // Delete drone
-    delete this->drone_;
+    if (!this->drone_) {
+        delete this->drone_;
+    }
+
+    // Delete final point
+    if (!this->final_pos_) {
+        delete this->final_pos_;
+    }
     this->model_lock_.unlock();
 }
+
+// Public functions, need to lock
 
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->model_lock_.lock();
@@ -96,6 +107,15 @@ void ConstraintModel::removePlane(PlaneModelItem *item) {
     this->model_lock_.unlock();
 }
 
+void ConstraintModel::setWaypointsModel(PathModelItem *waypoints) {
+    this->model_lock_.lock();
+    if (!this->waypoints_) {
+        delete this->waypoints_;
+    }
+    this->waypoints_ = waypoints;
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::addWaypoint(QPointF *item) {
     this->model_lock_.lock();
     this->waypoints_->addPoint(item);
@@ -108,10 +128,37 @@ void ConstraintModel::removeWaypoint(QPointF *item) {
     this->model_lock_.unlock();
 }
 
+void ConstraintModel::setPathModel(PathModelItem *trajectory) {
+    this->model_lock_.lock();
+    if (!this->path_) {
+        delete this->path_;
+    }
+    this->path_ = trajectory;
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setPathPoints(QVector<QPointF *> *points) {
     this->model_lock_.lock();
     this->path_->setPoints(points);
     this->model_lock_.lock();
+}
+
+void ConstraintModel::setDroneModel(DroneModelItem *drone) {
+    this->model_lock_.lock();
+    if (!this->drone_) {
+        delete this->drone_;
+    }
+    this->drone_ = drone;
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::setFinalPointModel(PointModelItem *final_point) {
+    this->model_lock_.lock();
+    if (!this->final_pos_) {
+        delete this->final_pos_;
+    }
+    this->final_pos_ = final_point;
+    this->model_lock_.unlock();
 }
 
 void ConstraintModel::loadFinalPos(double* r_f) {
@@ -123,78 +170,105 @@ void ConstraintModel::loadFinalPos(double* r_f) {
 }
 
 void ConstraintModel::loadInitialPos(double* r_i) {
-    r_i[1] = -this->drone_->pos_->y()/this->scale_;
-    r_i[2] = this->drone_->pos_->x()/this->scale_;
+    this->model_lock_.lock();
+    QPointF pos = this->drone_->getPos();
+    r_i[1] = -pos.y() / GRID_SIZE;
+    r_i[2] = pos.x() / GRID_SIZE;
+    this->model_lock_.unlock();
 }
 
-uint32_t ConstraintModel::loadEllipseConstraint(double* R, double* c_e, double* c_n) {
+uint32_t ConstraintModel::loadEllipseConstraints(double* R, double* c_e, double* c_n) {
     uint32_t index = 0;
+    this->model_lock_.lock();
     for (EllipseModelItem *ellipse : *this->ellipses_) {
-        R[index] = ellipse->radius_/this->scale_;
-        c_e[index] = -ellipse->pos_->y()/this->scale_;
-        c_n[index] = ellipse->pos_->x()/this->scale_;
+        R[index] = ellipse->getRadius() / GRID_SIZE;
+        QPointF pos = this->drone_->getPos();
+        c_e[index] = -pos.y() / GRID_SIZE;
+        c_n[index] = pos.x() / GRID_SIZE;
         index++;
-        if (index >= MAX_OBS) return index;
-    }
-    return index;
-}
-
-bool ConstraintModel::isEllipseOverlap(QPointF * pos) {
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
-        double r = ellipse->radius_/this->scale_;
-        double dist = pow(pos->x() - ellipse->pos_->x(), 2)
-                    + pow(pos->y() - ellipse->pos_->y(), 2);
-        dist /= pow(this->scale_, 2);
-        // DEBUG // fix this hardcoded costant...
-        double dist_other = pow(r + 0.32, 2);
-//        qDebug() << "Distance" << dist << "<=" << dist_other;
-//        qDebug() << "r" << r << ", default rad" << DEFAULT_RAD;
-        if (dist <= dist_other) {
-            return true;
+        if (index >= MAX_OBS) {
+            this->model_lock_.unlock();
+            return index;
         }
     }
-    return false;
+    this->model_lock_.unlock();
+    return index;
 }
 
 uint32_t ConstraintModel::loadPosConstraints(double* A, double* b) {
     uint32_t index = 0;
-
+    this->model_lock_.lock();
     for (PolygonModelItem *polygon : *this->polygons_) {
-        for (qint32 i = 1; i < polygon->points_->length() + 1; i++) {
-            QPointF p = polygon->points_->at(i - 1);
-            QPointF q = polygon->points_->at(i % polygon->points_->length());
-            if (polygon->direction_) {
+        uint32_t size = polygon->getSize();
+        for (qint32 i = 1; i < size + 1; i++) {
+            QPointF p = polygon->getPointAt(i - 1);
+            QPointF q = polygon->getPointAt(i % size);
+            if (polygon->getDirection()) {
                 this->loadPlaneConstraint(A, b, index, q, p);
             } else {
                 this->loadPlaneConstraint(A, b, index, p, q);
             }
             index++;
-            if (index >= MAX_CPOS) return index;
+            if (index >= MAX_CPOS) {
+                this->model_lock_.unlock();
+                return index;
+            }
         }
     }
 
     for (PlaneModelItem *plane : *this->planes_) {
-        QPointF p = *plane->p1_;
-        QPointF q = *plane->p2_;
+        QPointF p = plane->getP1();
+        QPointF q = plane->getP2();
 
-        if (plane->direction_) {
+        if (plane->getDirection()) {
             this->loadPlaneConstraint(A, b, index, q, p);
         } else {
             this->loadPlaneConstraint(A, b, index, p, q);
         }
         index++;
-        if (index >= MAX_CPOS) return index;
+        if (index >= MAX_CPOS) {
+            this->model_lock_.unlock();
+            return index;
+        }
     }
-
+    this->model_lock_.unlock();
     return index;
 }
 
+qreal ConstraintModel::getFinaltime() {
+    this->model_lock_.lock();
+    qreal temp = this->finaltime_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setFinaltime(qreal finaltime) {
+    this->model_lock_.lock();
+    this->finaltime_ = finaltime;
+    this->model_lock_.unlock();
+}
+
+uint32_t ConstraintModel::getHorizon() {
+    this->model_lock_.lock();
+    uint32_t temp = this->horizon_length_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setHorizon(uint32_t horizon) {
+    this->model_lock_.lock();
+    this->horizon_length_ = horizon;
+    this->model_lock_.unlock();
+}
+
+// Private functions, should not lock
+
 void ConstraintModel::loadPlaneConstraint(double *A, double *b, uint32_t index,
                                               QPointF p, QPointF q) {
-    qreal px = -p.y() / this->scale_;
-    qreal py = p.x() / this->scale_;
-    qreal qx = -q.y() / this->scale_;
-    qreal qy = q.x() / this->scale_;
+    qreal px = -p.y() / GRID_SIZE;
+    qreal py = p.x() / GRID_SIZE;
+    qreal qx = -q.y() / GRID_SIZE;
+    qreal qy = q.x() / GRID_SIZE;
     qreal c = ((py * qx) - (px * qy));
 
     qreal a1 = (py - qy) / c;

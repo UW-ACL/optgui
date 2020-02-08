@@ -10,9 +10,9 @@
 
 #include <QGraphicsItem>
 
-#define GRID_SIZE 100
-
 namespace interface {
+    static const uint32_t GRID_SIZE = 100;
+
     enum STATE {
         IDLE,
         ERASER,

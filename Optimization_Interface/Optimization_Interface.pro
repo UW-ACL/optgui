@@ -48,7 +48,6 @@ LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_utilities      
 LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_gnc                 # looks for lib_gnc.a
 
 SOURCES += \
-    src/controls/compute_thread.cpp \
     src/controls/controller.cpp \
     src/main.cpp \
     src/window/port_dialog/drone_ip_selector.cpp \
@@ -72,10 +71,10 @@ SOURCES += \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
     src/graphics/point_graphics_item.cpp \
-    src/network/point_socket.cpp
+    src/network/point_socket.cpp \
+    src/controls/compute_worker.cpp
 
 HEADERS += \
-    include/controls/compute_thread.h \
     include/window/port_dialog/drone_ip_selector.h \
     include/window/port_dialog/drone_port_selector.h \
     include/window/main_window.h \
@@ -106,7 +105,8 @@ HEADERS += \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
     include/network/drone_socket.h \
-    include/network/point_socket.h
+    include/network/point_socket.h \
+    include/controls/compute_worker.h
 
 RESOURCES += \
     resources.qrc

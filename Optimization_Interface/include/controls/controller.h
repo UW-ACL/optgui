@@ -24,6 +24,7 @@
 #include "include/network/ellipse_socket.h"
 #include "include/network/point_socket.h"
 #include "include/window/menu_panel.h"
+#include "include/controls/compute_worker.h"
 
 namespace interface {
 
@@ -75,18 +76,20 @@ class Controller : public QObject {
 
  signals:
     void trajectoryExecuted(const autogen::packet::traj3dof *data);
-    void startCompute();
+    void startComputeWorker();
 
  private slots:
     void startSockets();
-//    void compute(QVector<QPointF *> *trajectory);
-    void compute();
+    void threadExitDebug();
 
  private:
     // QGraphicsScene
     Canvas *canvas_;
     // Side menu panel
     MenuPanel *menu_panel_;
+
+    // SkyFly compute thread
+    QThread compute_thread_;
 
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;
@@ -101,22 +104,6 @@ class Controller : public QObject {
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
-
-    void writePoint(PointModelItem *model, QDataStream *out);
-    void writeEllipse(EllipseModelItem *model, QDataStream *out);
-    void writePolygon(PolygonModelItem *model, QDataStream *out);
-    void writePlane(PlaneModelItem *model, QDataStream *out);
-    void writeWaypoints(PathModelItem *model, QDataStream *out);
-    void writePath(PathModelItem *model, QDataStream *out);
-    void writeDrone(DroneModelItem *model, QDataStream *out);
-
-    PointModelItem *readPoint(QDataStream *in);
-    EllipseModelItem *readEllipse(QDataStream *in);
-    PolygonModelItem *readPolygon(QDataStream *in);
-    PlaneModelItem *readPlane(QDataStream *in);
-    void readWaypoints(QDataStream *in);
-    void readPath(QDataStream *in);
-    void readDrone(QDataStream *in);
 };
 
 }  // namespace interface

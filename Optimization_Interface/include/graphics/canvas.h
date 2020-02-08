@@ -46,7 +46,7 @@ class Canvas : public QGraphicsScene {
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
 
- private slots:
+ public slots:
     void bringSelectedToFront();
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
     void updatePathGraphicsItem(PathGraphicsItem *graphic);

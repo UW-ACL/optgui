@@ -8,8 +8,7 @@
 #ifndef CONSTRAINT_MODEL_H_
 #define CONSTRAINT_MODEL_H_
 
-#include <cprs.h>
-#include <algorithm.h>
+#include "autogen/lib.h"
 
 #include <QSet>
 #include <QVector>
@@ -32,8 +31,7 @@ class ConstraintModel {
 
     ~ConstraintModel();
 
-    void addPoint(PointModelItem *item);
-    void removePoint(PointModelItem *item);
+    void setFinalPointModel(PointModelItem *model);
 
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
@@ -44,25 +42,33 @@ class ConstraintModel {
     void addPlane(PlaneModelItem *item);
     void removePlane(PlaneModelItem *item);
 
+    void setWaypointsModel(PathModelItem *model);
     void addWaypoint(QPointF *item);
     void removeWaypoint(QPointF *item);
 
+    void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF *> *points);
+
+    void setDroneModel(DroneModelItem *model);
 
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    uint32_t loadEllipseConstraint(double* R, double* c_e, double* c_n);
+    uint32_t loadEllipseConstraints(double* R, double* c_e, double* c_n);
     uint32_t loadPosConstraints(double* A, double* b);
 
-    bool isEllipseOverlap(QPointF *pos);
+    qreal getFinaltime();
+    void setFinaltime(qreal finaltime);
+
+    uint32_t getHorizon();
+    void setHorizon(uint32_t horizon);
 
  private:
     void initialize();
 
     QMutex model_lock_;
 
-    float finaltime_;
+    qreal finaltime_;
     uint32_t horizon_length_;
     autogen::packet::traj3dof drone_traj3dof_data_;
 

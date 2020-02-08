@@ -17,32 +17,42 @@
 #include "include/globals.h"
 #include "include/window/menu_panel.h"
 
+#include <QDebug>
+
 namespace interface {
 
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->menu_panel_ = menupanel;
-    this->indoor_ = canvas->indoor_;
-    this->model_ = new ConstraintModel(MAX_OBS, MAX_CPOS);
+    this->model_ = new ConstraintModel();
 
-    // initialize waypoints graphic
+    // TODO(dtsull16): create model here and pass to model
+    // initialize waypoints model and graphic
+    PathModelItem *waypoint_model = new PathModelItem();
+    this->model_->setWaypointsModel(waypoint_model);
     this->canvas_->waypoints_graphic_ =
-            new WaypointsGraphicsItem(this->model_->waypoints_);
+            new WaypointsGraphicsItem(waypoint_model);
     this->canvas_->addItem(this->canvas_->waypoints_graphic_);
 
-    // initialize course graphic
+    // initialize trajectory model and graphic
+    PathModelItem *trajectory_model = new PathModelItem();
+    this->model_->setPathModel(trajectory_model);
     this->canvas_->path_graphic_ =
-            new PathGraphicsItem(this->model_->path_);
+            new PathGraphicsItem(trajectory_model);
     this->canvas_->addItem(this->canvas_->path_graphic_);
 
-    // initialize drone graphic
+    // initialize drone model and graphic
+    DroneModelItem *drone_model = new DroneModelItem();
+    this->model_->setDroneModel(drone_model);
     this->canvas_->drone_graphic_ =
-            new DroneGraphicsItem(this->model_->drone_);
+            new DroneGraphicsItem(drone_model);
     this->canvas_->addItem(this->canvas_->drone_graphic_);
 
-    // initialize final point graphic
+    // initialize final point model and graphic
+    PointModelItem *final_point_model = new PointModelItem();
+    this->model_->setFinalPointModel(final_point_model);
     this->canvas_->final_point_ =
-            new PointGraphicsItem(this->model_->final_pos_);
+            new PointGraphicsItem(final_point_model);
     this->canvas_->addItem(this->canvas_->final_point_);
 
     // initialize port dialog
@@ -50,24 +60,29 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
 
-
-    // Start compute callback
-    connect(this, SIGNAL(startCompute()), this, SLOT(compute()));
+    // initialize skyfly thread
+    ComputeWorker *skyfly_compute = new ComputeWorker(this->model_);
+    skyfly_compute->moveToThread(&this->compute_thread_);
+    connect(skyfly_compute, SIGNAL(updateGraphics()), this->canvas_, SLOT(updatePathGraphicsItem(this->canvas_->path_graphic_)));
+    connect(this, SIGNAL(startComputeWorker()), skyfly_compute, SLOT(compute()));
+    connect(&this->compute_thread_, SIGNAL(finished()), skyfly_compute, SLOT(deleteLater()));
+    connect(&this->compute_thread_, SIGNAL(finished()), this, SLOT(threadExitDebug()));
+    this->compute_thread_.start();
 
     // Initialize network
     this->drone_socket_ = nullptr;
     this->final_point_socket_ = nullptr;
     this->ellipse_sockets_ = new QVector<EllipseSocket *>();
+}
 
-//    emit startCompute();
-//    QTimer* activeTimer = new QTimer(this);
-//    activeTimer->setInterval(20000);
-//    activeTimer->setSingleShot(false);
-//    connect(activeTimer, SIGNAL(timeout()), this, SLOT(compute()));
-//    activeTimer->start();
+void threadExitDebug() {
+    qDebug() << "thread exited";
 }
 
 Controller::~Controller() {
+    this->compute_thread_.quit();
+    this->compute_thread_.wait(1);
+
     // deinitialize port dialog
     delete this->port_dialog_;
 
@@ -186,11 +201,10 @@ void Controller::duplicateSelected() {
             case ELLIPSE_GRAPHIC: {
                 EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                         EllipseGraphicsItem *>(item);
-                QPointF *new_pos = new QPointF(ellipse->model_->pos_->x(),
-                                               ellipse->model_->pos_->y());
+                QPointF *new_pos = new QPointF(ellipse->model_->getPos());
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
-                                             ellipse->model_->radius_);
+                                             ellipse->model_->getRadius());
                 this->loadEllipse(new_model);
                 break;
             }
@@ -201,196 +215,19 @@ void Controller::duplicateSelected() {
 // ============ BACK END CONTROLS ============
 
 void Controller::setFinaltime(double finaltime) {
-    this->model_->finaltime_ = finaltime;
+    this->model_->setFinaltime(finaltime);
 }
 
 void Controller::setHorizonLength(uint32_t horizon) {
-    this->model_->horizon_length_ = horizon;
+    this->model_->setHorizon(horizon);
 }
 
 double Controller::getTimeInterval() {
-    return this->model_->finaltime_ / this->model_->horizon_length_;
+    return this->model_->getFinaltime() / this->model_->getHorizon();
 }
 
 void Controller::updateFinalPosition(QPointF const &pos) {
-    this->model_->final_pos_->pos_->setX(pos.x());
-    this->model_->final_pos_->pos_->setY(pos.y());
-    this->canvas_->final_point_->setPos(*this->model_->final_pos_->pos_);
-}
-
-//void Controller::compute() {
-//    if (this->isFrozen()) return;
-//    //
-//    QVector<QPointF*> trajectory;
-//    this->clearPathPoints();
-
-//    this->compute(&trajectory);
-//    QVectorIterator<QPointF *> it(trajectory);
-//    while (it.hasNext()) {
-//        this->addPathPoint(it.next());
-//    }
-//}
-
-void Controller::compute() { //QVector<QPointF *> *trajectory) {
-
-    // Initialize constant values
-    // Parameters.
-    // SKYENET // this should be moved to skyenet repo
-    //
-    /*
-
-      SkyeAlg alg(this->horizon_length_);
-      alg.setFinalTime(this->final_time_);
-
-      alg.cpos.n = model_->loadEllipse(alg.P.obs.R, alg.P.obs.c_e, alg.obs.c_n);
-      alg.cpos.n = model_->loadPosConstraint(alg.P.cpos.A, alg.P.cpos.b);
-
-    double test = 5;
-    SkyeFly fly;
-    fly.setTimeHorizon(test); //fly.time_horizon = 5;
-    fly.printTimeHorizon();
-    */
-
-    // Parameters
-    // Number of points on the trajectory (resolution)
-    this->model_->fly_->P.K = MAX(MIN(
-            this->model_->horizon_length_, MAX_HORIZON), 5);
-    this->model_->fly_->P.tf = this->model_->finaltime_;   // duration of flight
-    this->model_->fly_->P.dt = this->model_->fly_->P.tf
-                              / (this->model_->fly_->P.K-1.);  // 'resolution'
-    // Circle constraints \| H(r - p) \|^2 > R^2 where p is the center of the
-    // circle and R is the radius (H some linear transform)
-    this->model_->fly_->P.obs.n = model_->
-            loadEllipseConstraint(this->model_->fly_->P.obs.R,
-                        this->model_->fly_->P.obs.c_e,
-                        this->model_->fly_->P.obs.c_n);
-    // Affine constraints Ax \leq b
-    this->model_->fly_->P.cpos.n = model_->
-            loadPosConstraints(this->model_->fly_->P.cpos.A,
-                              this->model_->fly_->P.cpos.b);
-
-    // Inputs.
-    this->model_->loadInitialPos(this->model_->fly_->I.r_i);
-    this->model_->fly_->I.v_i[0] =  0.0;
-    this->model_->fly_->I.v_i[1] =  0.0;  // this->model_->drone_->vel_->x();
-    this->model_->fly_->I.v_i[2] =  0.0;  // this->model_->drone_->vel_->x();
-    this->model_->fly_->I.a_i[0] = -this->model_->fly_->P.g[0];
-    this->model_->fly_->I.a_i[1] = -this->model_->fly_->P.g[1];
-    this->model_->fly_->I.a_i[2] = -this->model_->fly_->P.g[2];
-    this->model_->loadFinalPos(this->model_->fly_->I.r_f);
-    this->model_->fly_->I.v_f[0] =  0.0;
-    this->model_->fly_->I.v_f[1] =  0.0;
-    this->model_->fly_->I.v_f[2] =  0.0;
-    this->model_->fly_->I.a_f[0] = -this->model_->fly_->P.g[0];
-    this->model_->fly_->I.a_f[1] = -this->model_->fly_->P.g[1];
-    this->model_->fly_->I.a_f[2] = -this->model_->fly_->P.g[2];
-
-
-    // Initialize.
-    this->model_->fly_->init();
-
-    // Run SCvx algorithm
-    this->model_->fly_->run();
-
-    // outputs
-    this->clearPathPoints();
-//    this->model_->trajectory_->clear();
-
-    for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
-        // TODO: Look into memory leak
-        this->addPathPoint(new QPointF(this->model_->fly_->O.r[2][i] * GRID_SIZE,
-                                -this->model_->fly_->O.r[1][i] * GRID_SIZE));
-
-    }
-
-    // how feasible is the solution?
-    // OUTPUT VIOLATIONS: constraint violation
-    double accum = 0;
-    for (uint32_t i = 0; i < this->model_->fly_->P.K; i++) {
-        accum += abs(pow(this->model_->fly_->O.a[0][i], 2)
-                     + pow(this->model_->fly_->O.a[1][i], 2)
-                     + pow(this->model_->fly_->O.a[2][i], 2)
-                     - pow(this->model_->fly_->O.s[i], 2))
-                 / this->model_->fly_->P.K;
-    }
-
-    // OUTPUT VIOLATIONS: initial and final pos violation
-    accum = pow(this->model_->fly_->O.r_f_relax[0], 2)
-            + pow(this->model_->fly_->O.r_f_relax[1], 2)
-            + pow(this->model_->fly_->O.r_f_relax[2], 2);
-
-    if (accum > 0.25) {
-        this->valid_path_ = false;
-        this->canvas_->path_graphic_->setColor(QColor(Qt::red));
-        this->menu_panel_->user_msg_label_->
-                setText("Increase final time to regain feasibility!");
-
-    } else {
-        this->valid_path_ = true;
-        this->canvas_->path_graphic_->setColor(QColor(Qt::green));
-        this->menu_panel_->user_msg_label_->
-                setText("Trajectory remains feasible!");
-    }
-
-/* Debugging outputs
-    qDebug() << "i= " << I.i
-             << "| Del = " << O.Delta
-             << "| L = " << O.L
-             << "| J = " << O.J
-             << "| dL = " << O.dL
-             << "| dJ = " << O.dJ
-             << "| I.J_0 = " << I.J_0
-             << "| O.J = " << O.J
-             << "| r = " << O.ratio;
-    qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
-*/
-
-
-    this->drone_traj3dof_data_.K = this->model_->fly_->P.K;
-    for (quint32 k = 0; k < this->model_->fly_->P.K; k++) {
-//  this->drone_traj3dof_data_.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
-
-        this->drone_traj3dof_data_.time(k) = k * this->model_->fly_->P.dt;
-        this->drone_traj3dof_data_.pos_ned(0, k) =
-                this->model_->fly_->O.r[1][k];
-        this->drone_traj3dof_data_.pos_ned(1, k) =
-                this->model_->fly_->O.r[2][k];
-        this->drone_traj3dof_data_.pos_ned(2, k) =
-                this->model_->fly_->O.r[0][k];
-
-        this->drone_traj3dof_data_.vel_ned(0, k) =
-                this->model_->fly_->O.v[1][k];
-        this->drone_traj3dof_data_.vel_ned(1, k) =
-                this->model_->fly_->O.v[2][k];
-        this->drone_traj3dof_data_.vel_ned(2, k) =
-                this->model_->fly_->O.v[0][k];
-
-        this->drone_traj3dof_data_.accl_ned(0, k) =
-                this->model_->fly_->O.a[1][k];
-        this->drone_traj3dof_data_.accl_ned(1, k) =
-                this->model_->fly_->O.a[2][k];
-        this->drone_traj3dof_data_.accl_ned(2, k) =
-                this->model_->fly_->O.a[0][k] - 9.81;
-    }
-//    this->drone_traj3dof_data_.
-    // Set up next solution.
-    // SKYEFLY //
-    // TODO(mceowen): No namespace in algorithm.h to specify reset function
-    reset(this->model_->fly_->P, this->model_->fly_->I, this->model_->fly_->O);
-//    qInfo() << "Solver took " << this->timer_compute_.elapsed() << "ms";
-//    this->solver_difficulty_ = this->timer_compute_.elapsed();
-
-    emit startCompute();
-}
-
-bool Controller::isFrozen() {
-    bool frozen = exec_once_
-            && ((timer_exec_.elapsed() / 1000)
-                <= (this->model_->finaltime_ * 1.2));
-    if (frozen) {
-        qInfo() << "Frozen!";
-    }
-    return frozen;
+    this->model_->final_pos_->setPos(pos);
 }
 
 void Controller::execute() {
