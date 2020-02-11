@@ -13,39 +13,37 @@
 
 #include "include/models/data_model.h"
 
-namespace interface {
+namespace optgui {
 
 const double DEFAULT_RAD2 = 5;
 
 class PointModelItem : public DataModel {
  public:
-    PointModelItem() : mutex_() { pos_ = new QPointF(0, 0); port_ = 0; }
-    PointModelItem(QPointF *pos) : mutex_() { pos_ = pos; port_ = 0;}
+    PointModelItem() : mutex_() { pos_ = QPointF(0, 0); port_ = 0; }
     ~PointModelItem() {
         this->mutex_.lock();
-        delete this->pos_;
         this->mutex_.unlock();
     }
 
     QPointF getPos() {
         this->mutex_.lock();
-        QPointF temp = *this->pos_;
+        QPointF temp = this->pos_;
         this->mutex_.unlock();
         return temp;
     }
 
     void setPos(QPointF pos) {
         this->mutex_.lock();
-        this->pos_->setX(pos.x());
-        this->pos_->setY(pos.y());
+        this->pos_.setX(pos.x());
+        this->pos_.setY(pos.y());
         this->mutex_.unlock();
     }
 
  private:
     QMutex mutex_;
-    QPointF *pos_;
+    QPointF pos_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // POINT_MODEL_ITEM_H_

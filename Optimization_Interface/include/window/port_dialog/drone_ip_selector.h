@@ -12,7 +12,7 @@
 
 #include "include/models/drone_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class DroneIpSelector : public QLineEdit {
     Q_OBJECT
@@ -31,6 +31,6 @@ class DroneIpSelector : public QLineEdit {
     bool isIpValid();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // DRONE_IP_SELECTOR_H_

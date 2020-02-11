@@ -7,7 +7,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 EllipseSocket::EllipseSocket(EllipseModelItem *model, QObject *parent)
     : QUdpSocket(parent) {
@@ -35,14 +35,13 @@ void EllipseSocket::readPendingDatagrams() {
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
             if (ptr_telemetry_data != NULL) {
-              this->ellipse_model_->pos_->setX(telemetry_data.pos_ned(1) *
-                                               GRID_SIZE);
-              this->ellipse_model_->pos_->setY(telemetry_data.pos_ned(0) *
-                                               GRID_SIZE * -1);
-              emit refresh_graphics();
+                QPointF pos(telemetry_data.pos_ned(1) * GRID_SIZE,
+                            telemetry_data.pos_ned(0) * GRID_SIZE * -1);
+                this->ellipse_model_->setPos(pos);
+                emit refresh_graphics();
             }
         }
     }
 }
 
-}  // namespace interface
+}  // namespace optgui

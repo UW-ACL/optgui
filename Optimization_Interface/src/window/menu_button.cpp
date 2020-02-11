@@ -5,7 +5,7 @@
 
 #include "include/window/menu_button.h"
 
-namespace interface {
+namespace optgui {
 
 MenuButton::MenuButton(STATE button_type, QWidget *parent)
     : QLabel(parent) {
@@ -29,4 +29,4 @@ void MenuButton::initialize() {
     this->setFrameShadow(QFrame::Raised);
 }
 
-}  // namespace interface
+}  // namespace optgui

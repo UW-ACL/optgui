@@ -1,23 +1,23 @@
-// TITLE:   Optimization_Interface/include/graphics/polygon_resize_handle.h
-// AUTHORS: Daniel Sullivan, Miki Szmuk
+// TITLE:   Optimization_Interface/include/graphics/waypoints_resize_handle.h
+// AUTHORS: Daniel Sullivan
 // LAB:     Autonomous Controls Lab (ACL)
-// LICENSE: Copyright 2018, All Rights Reserved
+// LICENSE: Copyright 2020, All Rights Reserved
 
 // Graphical resize handle
 
-#ifndef POLYGON_RESIZE_HANDLE_H_
-#define POLYGON_RESIZE_HANDLE_H_
+#ifndef WAYPOINTS_RESIZE_HANDLE_H_
+#define WAYPOINTS_RESIZE_HANDLE_H_
 
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
 
-#include "include/models/polygon_model_item.h"
+#include "include/models/path_model_item.h"
 
 namespace optgui {
 
-class PolygonResizeHandle : public QGraphicsEllipseItem {
+class WaypointsResizeHandle : public QGraphicsEllipseItem {
  public:
-    explicit PolygonResizeHandle(PolygonModelItem *model,
+    explicit WaypointsResizeHandle(PathModelItem *model,
                                  quint32 index,
                                  QGraphicsItem *parent,
                                  qreal size = 14);
@@ -29,6 +29,8 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 
+    quint32 index_;
+
  protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -36,8 +38,7 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
 
  private:
     void expandScene();
-    PolygonModelItem *model_;
-    quint32 index_;
+    PathModelItem *model_;
     bool resize_;
     qreal size_;
     qreal getScalingFactor();
@@ -45,4 +46,4 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
 
 }  // namespace optgui
 
-#endif  // POLYGON_RESIZE_HANDLE_H_
+#endif  // WAYPOINTS_RESIZE_HANDLE_H_

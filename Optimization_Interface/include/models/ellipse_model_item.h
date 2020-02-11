@@ -13,17 +13,16 @@
 
 #include "include/models/data_model.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const DEFAULT_RAD = 100;
 
 class EllipseModelItem : public DataModel {
  public:
-    explicit EllipseModelItem(QPointF *pos, qreal radius = DEFAULT_RAD) :
+    explicit EllipseModelItem(QPointF pos, qreal radius = DEFAULT_RAD) :
         mutex_(), radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
     ~EllipseModelItem() {
         this->mutex_.lock();
-        delete this->pos_;
         this->mutex_.unlock();
     }
 
@@ -42,15 +41,15 @@ class EllipseModelItem : public DataModel {
 
     QPointF getPos() {
         this->mutex_.lock();
-        QPointF temp = *this->pos_;
+        QPointF temp = this->pos_;
         this->mutex_.unlock();
         return temp;
     }
 
     void setPos(QPointF pos) {
         this->mutex_.lock();
-        this->pos_->setX(pos.x());
-        this->pos_->setY(pos.y());
+        this->pos_.setX(pos.x());
+        this->pos_.setY(pos.y());
         this->mutex_.unlock();
     }
 
@@ -70,10 +69,10 @@ class EllipseModelItem : public DataModel {
  private:
     QMutex mutex_;
     qreal radius_;
-    QPointF *pos_;
+    QPointF pos_;
     bool direction_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // ELLIPSE_MODEL_ITEM_H_

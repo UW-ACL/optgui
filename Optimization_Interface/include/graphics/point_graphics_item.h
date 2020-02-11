@@ -13,7 +13,7 @@
 
 #include "include/models/point_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const POINT_SIZE = 14;
 
@@ -43,6 +43,6 @@ class PointGraphicsItem : public QGraphicsItem {
     void initialize();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // POINT_GRAPHICS_ITEM_H_

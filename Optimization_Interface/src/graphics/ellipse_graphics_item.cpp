@@ -11,7 +11,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
                                          QGraphicsItem *parent)
@@ -37,7 +37,7 @@ void EllipseGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set position
-    this->setPos(*this->model_->pos_);
+    this->setPos(this->model_->getPos());
 
     // Set resize handle
     this->resize_handle_ =
@@ -50,9 +50,9 @@ EllipseGraphicsItem::~EllipseGraphicsItem() {
 }
 
 QRectF EllipseGraphicsItem::boundingRect() const {
-    qreal rad = this->model_->radius_;
+    qreal rad = this->model_->getRadius();
     // Add exterior border if direction flipped
-    if (this->model_->direction_) {
+    if (this->model_->getDirection()) {
         // scale with view
         rad += ELLIPSE_BORDER / this->getScalingFactor();
     }
@@ -66,12 +66,14 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     qreal scaling_factor = this->getScalingFactor();
+    qreal rad = this->model_->getRadius();
+    QPointF pos = this->model_->getPos();
 
-    this->setPos(*this->model_->pos_);
+    this->setPos(pos);
 
     // Show handles if selected
     if (this->isSelected()) {
-        this->resize_handle_->setPos(-this->model_->radius_, 0);
+        this->resize_handle_->setPos(-rad, 0);
         this->resize_handle_->show();
 
         this->pen_.setWidthF(3.0 / scaling_factor);
@@ -85,12 +87,11 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
-    double rad = this->model_->radius_;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
     // Label with port
     if (this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(*this->model_->pos_));
+        QPointF text_pos(this->mapFromScene(pos));
         QFont font = painter->font();
         font.setPointSizeF(12 / scaling_factor);
         painter->setFont(font);
@@ -111,8 +112,8 @@ QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
     path.addEllipse(this->boundingRect());
     // Add exterior border if direction flipped
-    if (this->model_->direction_) {
-        double rad = this->model_->radius_;
+    if (this->model_->getDirection()) {
+        qreal rad = this->model_->getRadius();
         path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
     }
     return path;
@@ -136,7 +137,7 @@ void EllipseGraphicsItem::expandScene() {
 }
 
 void EllipseGraphicsItem::flipDirection() {
-    this->model_->direction_ = !this->model_->direction_;
+    this->model_->flipDirection();
     this->expandScene();
 }
 
@@ -147,7 +148,7 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
         QPointF newPos = value.toPointF();
 
         // update model
-        *this->model_->pos_ = newPos;
+        this->model_->setPos(newPos);
 
         // check to expand the scene
         this->expandScene();
@@ -163,4 +164,4 @@ qreal EllipseGraphicsItem::getScalingFactor() const {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

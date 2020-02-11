@@ -13,7 +13,7 @@
 
 #include "include/models/drone_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const DRONE_SIZE = 20;
 
@@ -27,6 +27,8 @@ class DroneGraphicsItem : public QGraphicsItem {
               QWidget *widget = nullptr) override;
     void expandScene();
 
+    DroneModelItem *model_;
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
@@ -36,11 +38,10 @@ class DroneGraphicsItem : public QGraphicsItem {
     void initialize();
     QPen pen_;
     QBrush brush_;
-    DroneModelItem *model_;
     qreal size_;
     qreal getScalingFactor() const;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // DRONE_GRAPHICS_ITEM_H_

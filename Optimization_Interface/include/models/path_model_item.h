@@ -14,70 +14,69 @@
 
 #include "include/models/data_model.h"
 
-namespace interface {
+namespace optgui {
 
 class PathModelItem : public DataModel {
  public:
     PathModelItem() : mutex_()
-        { this->points_ = new QVector<QPointF *>(); port_ = 0; }
+        { this->points_ = QVector<QPointF>(); port_ = 0; }
     ~PathModelItem() {
         this->mutex_.lock();
-        for (QPointF *point : *this->points_) {
-            delete point;
-        }
-        delete this->points_;
         this->mutex_.unlock();
     }
 
-    quint64 getSize() {
+    quint32 getSize() {
         this->mutex_.lock();
-        quint64 size = this->points_->size();
+        quint32 size = this->points_.size();
         this->mutex_.unlock();
         return size;
     }
 
-    void setPointAt(QPointF point, quint64 index) {
+    void setPointAt(QPointF point, quint32 index) {
         this->mutex_.lock();
-        QPointF *temp = this->points_->at(index);
-        temp->setX(point.x());
-        temp->setY(point.y());
+        if (index < this->points_.size()) {
+            QPointF &temp = this->points_[index];
+            temp.setX(point.x());
+            temp.setY(point.y());
+        }
         this->mutex_.unlock();
     }
 
-    QPointF *getPointAt(quint64 index) {
+    QPointF getPointAt(quint32 index) {
         this->mutex_.lock();
-        QPointF *temp = this->points_->at(index);
+        QPointF temp = QPointF();
+        if (index < this->points_.size()) {
+            temp = this->points_.value(index);
+        }
         this->mutex_.unlock();
         return temp;
     }
 
-    void setPoints(QVector<QPointF *> *points) {
+    void setPoints(QVector<QPointF> points) {
         this->mutex_.lock();
-        for (QPointF *point : *this->points_) {
-            delete point;
-        }
-        delete this->points_;
         this->points_ = points;
         this->mutex_.unlock();
     }
 
-    void addPoint(QPointF *point) {
+    void addPoint(QPointF point) {
         this->mutex_.lock();
-        this->points_->append(point);
+        this->points_.append(point);
         this->mutex_.unlock();
     }
 
-    void removePoint(QPointF *point) {
+    void removePointAt(quint32 index) {
         this->mutex_.lock();
-        this->points_->removeOne(point);
+        if (index < this->points_.size()) {
+            this->points_.removeAt(index);
+        }
         this->mutex_.unlock();
     }
 
  private:
     QMutex mutex_;
-    QVector<QPointF *> *points_;
+    QVector<QPointF> points_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // PATH_MODEL_ITEM_H_

@@ -11,7 +11,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
                                      QGraphicsItem *parent)
@@ -38,9 +38,9 @@ void PlaneGraphicsItem::initialize() {
 
     // Set resize handles
     this->p1_handle_ =
-            new PolygonResizeHandle(this->model_->p1_, this);
+            new PlaneResizeHandle(this->model_, false, this);
     this->p2_handle_ =
-            new PolygonResizeHandle(this->model_->p2_, this);
+            new PlaneResizeHandle(this->model_, true, this);
     this->p1_handle_->hide();
     this->p2_handle_->hide();
 }
@@ -82,13 +82,13 @@ void PlaneGraphicsItem::paint(QPainter *painter,
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
     painter->fillPath(this->shape(), this->brush_);
-    QLineF line(mapFromScene(*this->model_->p1_),
-                mapFromScene(*this->model_->p2_));
+    QLineF line(mapFromScene(this->model_->getP1()),
+                mapFromScene(this->model_->getP2()));
     painter->drawLine(line);
 
     // Label with port
     if (this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(*this->model_->p1_));
+        QPointF text_pos(this->mapFromScene(this->model_->getP1()));
         QFont font = painter->font();
         font.setPointSizeF(12 / scaling_factor);
         painter->setFont(font);
@@ -108,10 +108,10 @@ int PlaneGraphicsItem::type() const {
 QPainterPath PlaneGraphicsItem::shape() const {
     QPainterPath path;
 
-    QLineF line(mapFromScene(*this->model_->p1_),
-                mapFromScene(*this->model_->p2_));
+    QLineF line(mapFromScene(this->model_->getP1()),
+                mapFromScene(this->model_->getP2()));
     // Flip shaded side if direction
-    if (this->model_->direction_) {
+    if (this->model_->getDirection()) {
         line = QLineF(line.p2(), line.p1());
     }
 
@@ -147,7 +147,7 @@ void PlaneGraphicsItem::expandScene() {
 }
 
 void PlaneGraphicsItem::flipDirection() {
-    this->model_->direction_ = !this->model_->direction_;
+    this->model_->flipDirection();
     this->expandScene();
 }
 
@@ -176,4 +176,4 @@ qreal PlaneGraphicsItem::getScalingFactor() const {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

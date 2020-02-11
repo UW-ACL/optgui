@@ -10,10 +10,8 @@
 #include <QHeaderView>
 
 #include "include/window/port_dialog/port_selector.h"
-#include "include/window/port_dialog/drone_port_selector.h"
-#include "include/window/port_dialog/drone_ip_selector.h"
 
-namespace interface {
+namespace optgui {
 
 PortDialog::PortDialog(QWidget *parent)
     : QDialog(parent, Qt::Tool) {
@@ -50,97 +48,9 @@ PortDialog::~PortDialog() {
 void PortDialog::setModel(ConstraintModel *model) {
     this->model_ = model;
     this->resetTable();
-
-    // Configure port table
-    this->port_table_->setRowCount(3 + this->model_->ellipses_->size() +
-                              this->model_->polygons_->size() +
-                              this->model_->planes_->size());
-
-    // Set drone
-    this->port_table_->setItem(0, 0, new QTableWidgetItem(tr("Drone")));
-    this->port_table_->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    this->ports_->insert(this->model_->drone_->port_);
-    this->port_table_->setCellWidget(0, 1,
-            new PortSelector(this->ports_, this->model_->drone_,
-                             this->port_table_));
-
-    // Set final point
-    this->port_table_->setItem(1, 0, new QTableWidgetItem(tr("Final Point")));
-    this->port_table_->item(1, 0)->setFlags(Qt::ItemIsEnabled);
-    this->ports_->insert(this->model_->final_pos_->port_);
-    this->port_table_->setCellWidget(1, 1,
-            new PortSelector(this->ports_, this->model_->final_pos_,
-                             this->port_table_));
-
-    // Set waypoints
-    this->port_table_->setItem(2, 0, new QTableWidgetItem(tr("Waypoints")));
-    this->port_table_->item(2, 0)->setFlags(Qt::ItemIsEnabled);
-    this->ports_->insert(this->model_->waypoints_->port_);
-    this->port_table_->setCellWidget(2, 1,
-            new PortSelector(this->ports_, this->model_->waypoints_,
-                             this->port_table_));
-
-    quint16 row = 3;
-    // Set ellipses
-    quint16 count = 1;
-    for (EllipseModelItem *model : *this->model_->ellipses_) {
-        this->port_table_->setItem(row, 0,
-                new QTableWidgetItem(tr("Ellipse ") + QString::number(count)));
-        this->port_table_->item(row, 0)->setFlags(Qt::ItemIsEnabled);
-
-        this->port_table_->setCellWidget(row, 1,
-                new PortSelector(this->ports_, model, this->port_table_));
-        this->ports_->insert(model->port_);
-
-        row++;
-        count++;
-    }
-
-    // Set polygons
-    count = 1;
-    for (PolygonModelItem *model : *this->model_->polygons_) {
-        this->port_table_->setItem(row, 0,
-                new QTableWidgetItem(tr("Polygon ") + QString::number(count)));
-        this->port_table_->item(row, 0)->setFlags(Qt::ItemIsEnabled);
-
-        this->port_table_->setCellWidget(row, 1,
-                new PortSelector(this->ports_, model, this->port_table_));
-        this->ports_->insert(model->port_);
-
-        row++;
-        count++;
-    }
-
-    // Set planes
-    count = 1;
-    for (PlaneModelItem *model : *this->model_->planes_) {
-        this->port_table_->setItem(row, 0,
-                new QTableWidgetItem(tr("Plane ") + QString::number(count)));
-        this->port_table_->item(row, 0)->setFlags(Qt::ItemIsEnabled);
-
-        this->port_table_->setCellWidget(row, 1,
-                new PortSelector(this->ports_, model, this->port_table_));
-        this->ports_->insert(model->port_);
-
-        row++;
-        count++;
-    }
-
-    // Set drone table
-    this->drone_table_->setRowCount(2);
-
-    // Set drone ip
-    this->drone_table_->setItem(0, 0,
-                                new QTableWidgetItem(tr("Drone Ip Addr")));
-    this->drone_table_->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    this->drone_table_->setCellWidget(0, 1,
-            new DroneIpSelector(this->model_->drone_, this->drone_table_));
-
-    // Set drone destination port
-    this->drone_table_->setItem(1, 0, new QTableWidgetItem(tr("Drone Port")));
-    this->drone_table_->item(1, 0)->setFlags(Qt::ItemIsEnabled);
-    this->drone_table_->setCellWidget(1, 1,
-            new DronePortSelector(this->model_->drone_, this->drone_table_));
+    this->model_->fillTable(this->port_table_,
+                            this->drone_table_,
+                            this->ports_);
 }
 
 void PortDialog::resetTable() {
@@ -207,4 +117,4 @@ void PortDialog::closeEvent(QCloseEvent *event) {
     QDialog::closeEvent(event);
 }
 
-}  // namespace interface
+}  // namespace optgui

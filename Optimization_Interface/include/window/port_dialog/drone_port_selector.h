@@ -12,7 +12,7 @@
 
 #include "include/models/drone_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class DronePortSelector : public QLineEdit {
     Q_OBJECT
@@ -31,6 +31,6 @@ class DronePortSelector : public QLineEdit {
     bool isPortValid();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // DRONE_PORT_SELECTOR_H_

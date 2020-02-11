@@ -10,7 +10,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-namespace interface {
+namespace optgui {
 
 EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
                                          QGraphicsItem *parent,
@@ -39,8 +39,8 @@ void EllipseResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void EllipseResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
-        this->model_->radius_ = (qFabs(event->scenePos().x() -
-                                       parentItem()->scenePos().x()));
+        this->model_->setRadius(qFabs(event->scenePos().x() -
+                                parentItem()->scenePos().x()));
         this->expandScene();
     }
 }
@@ -85,4 +85,4 @@ qreal EllipseResizeHandle::getScalingFactor() {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

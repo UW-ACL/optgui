@@ -14,7 +14,7 @@
 
 #include "include/models/drone_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class DroneSocket : public QUdpSocket {
     Q_OBJECT
@@ -31,12 +31,12 @@ class DroneSocket : public QUdpSocket {
     void refresh_graphics();
 
  public slots:
-    void rx_trajectory(const autogen::packet::traj3dof *data);
+    void rx_trajectory(const autogen::packet::traj3dof data);
 
  private:
     bool isDestinationAddrValid();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // DRONE_SOCKET_H_

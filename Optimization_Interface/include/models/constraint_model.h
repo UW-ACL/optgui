@@ -8,12 +8,15 @@
 #ifndef CONSTRAINT_MODEL_H_
 #define CONSTRAINT_MODEL_H_
 
-#include "autogen/lib.h"
-
 #include <QSet>
 #include <QVector>
 #include <QPointF>
 #include <QMutex>
+#include <QTableWidget>
+
+#include "cprs.h"
+#include "algorithm.h"
+#include "autogen/lib.h"
 
 #include "include/globals.h"
 #include "include/models/point_model_item.h"
@@ -23,7 +26,7 @@
 #include "include/models/path_model_item.h"
 #include "include/models/drone_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class ConstraintModel {
  public:
@@ -32,6 +35,7 @@ class ConstraintModel {
     ~ConstraintModel();
 
     void setFinalPointModel(PointModelItem *model);
+    void setFinalPointPos(QPointF const &pos);
 
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
@@ -43,25 +47,35 @@ class ConstraintModel {
     void removePlane(PlaneModelItem *item);
 
     void setWaypointsModel(PathModelItem *model);
-    void addWaypoint(QPointF *item);
-    void removeWaypoint(QPointF *item);
+    void addWaypoint(QPointF const &pos);
 
     void setPathModel(PathModelItem *model);
-    void setPathPoints(QVector<QPointF *> *points);
+    void setPathPoints(QVector<QPointF> points);
 
     void setDroneModel(DroneModelItem *model);
+    void setDroneModelPos(QPointF const &pos);
 
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    uint32_t loadEllipseConstraints(double* R, double* c_e, double* c_n);
-    uint32_t loadPosConstraints(double* A, double* b);
+    quint32 loadEllipseConstraints(double* R, double* c_e, double* c_n);
+    quint32 loadPosConstraints(double* A, double* b);
 
     qreal getFinaltime();
     void setFinaltime(qreal finaltime);
 
-    uint32_t getHorizon();
-    void setHorizon(uint32_t horizon);
+    quint32 getHorizon();
+    void setHorizon(quint32 horizon);
+
+    autogen::packet::traj3dof getTraj3dof();
+    void setTraj3dof(autogen::packet::traj3dof traj3dof_data);
+
+    bool getIsValidTraj();
+    void setIsValidTraj(bool is_valid);
+
+    void fillTable(QTableWidget *port_table,
+                   QTableWidget *drone_table,
+                   QSet<quint16> *ports);
 
  private:
     void initialize();
@@ -69,8 +83,9 @@ class ConstraintModel {
     QMutex model_lock_;
 
     qreal finaltime_;
-    uint32_t horizon_length_;
+    quint32 horizon_length_;
     autogen::packet::traj3dof drone_traj3dof_data_;
+    bool is_valid_traj;
 
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
@@ -80,11 +95,10 @@ class ConstraintModel {
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
-    void loadPlaneConstraint(double *A, double *b, uint32_t index,
+    void loadPlaneConstraint(double *A, double *b, quint32 index,
                                  QPointF p, QPointF q);
-
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // CONSTRAINT_MODEL_H_

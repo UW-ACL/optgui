@@ -9,7 +9,7 @@
 #include <QPainter>
 #include <QtMath>
 
-namespace interface {
+namespace optgui {
 
 // constructor
 MenuPanel::MenuPanel(QWidget *parent, Qt::WindowFlags flags)
@@ -358,4 +358,4 @@ void MenuPanel::initializeZoom() {
     this->menu_->layout()->setAlignment(this->zoom_, Qt::AlignBottom);
 }
 
-}  // namespace interface
+}  // namespace optgui

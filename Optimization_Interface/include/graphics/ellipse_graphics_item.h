@@ -14,7 +14,7 @@
 #include "include/models/ellipse_model_item.h"
 #include "include/graphics/ellipse_resize_handle.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const ELLIPSE_BORDER = 15;
 
@@ -46,6 +46,6 @@ class EllipseGraphicsItem : public QGraphicsItem {
     qreal getScalingFactor() const;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // ELLIPSE_GRAPHICS_ITEM_H_

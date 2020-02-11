@@ -14,7 +14,7 @@
 #include "include/models/polygon_model_item.h"
 #include "include/graphics/polygon_resize_handle.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const POLYGON_BORDER = 15;
 
@@ -40,13 +40,12 @@ class PolygonGraphicsItem : public QGraphicsItem {
 
  private:
     void initialize();
-    bool isConvex() const;
     QPen pen_;
     QBrush brush_;
     QVector<PolygonResizeHandle *> *resize_handles_;
     qreal getScalingFactor() const;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // POLYGON_GRAPHICS_ITEM_H_

@@ -7,7 +7,7 @@
 
 #include <QTimer>
 
-namespace interface {
+namespace optgui {
 
 PortSelector::PortSelector(QSet<quint16> *ports,
                            DataModel *model, QWidget *parent)
@@ -30,7 +30,7 @@ void PortSelector::updatePort() {
 
     // check that port is in valid range and unused
     if (this->isPortValid()) {
-        quint64 value = this->text().toUShort();
+        quint32 value = this->text().toUShort();
         this->ports_->insert((quint16)value);
         this->model_->port_ = (quint16)value;
     } else {
@@ -41,7 +41,7 @@ void PortSelector::updatePort() {
 
 bool PortSelector::isPortValid() {
     bool ok = false;
-    quint64 value = this->text().toUShort(&ok);
+    quint32 value = this->text().toUShort(&ok);
 
     if (!ok || 1024 > value || value > 65535) {
         return false;
@@ -49,4 +49,4 @@ bool PortSelector::isPortValid() {
     return true;
 }
 
-}  // namespace interface
+}  // namespace optgui

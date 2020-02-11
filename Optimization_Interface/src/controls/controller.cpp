@@ -14,19 +14,20 @@
 #include "include/graphics/ellipse_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
+#include "include/graphics/polygon_resize_handle.h"
+#include "include/graphics/path_graphics_item.h"
+#include "include/graphics/drone_graphics_item.h"
+#include "include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/waypoints_resize_handle.h"
 #include "include/globals.h"
-#include "include/window/menu_panel.h"
 
-#include <QDebug>
-
-namespace interface {
+namespace optgui {
 
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->menu_panel_ = menupanel;
     this->model_ = new ConstraintModel();
 
-    // TODO(dtsull16): create model here and pass to model
     // initialize waypoints model and graphic
     PathModelItem *waypoint_model = new PathModelItem();
     this->model_->setWaypointsModel(waypoint_model);
@@ -60,28 +61,41 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
 
-    // initialize skyfly thread
-    ComputeWorker *skyfly_compute = new ComputeWorker(this->model_);
-    skyfly_compute->moveToThread(&this->compute_thread_);
-    connect(skyfly_compute, SIGNAL(updateGraphics()), this->canvas_, SLOT(updatePathGraphicsItem(this->canvas_->path_graphic_)));
-    connect(this, SIGNAL(startComputeWorker()), skyfly_compute, SLOT(compute()));
-    connect(&this->compute_thread_, SIGNAL(finished()), skyfly_compute, SLOT(deleteLater()));
-    connect(&this->compute_thread_, SIGNAL(finished()), this, SLOT(threadExitDebug()));
-    this->compute_thread_.start();
-
     // Initialize network
     this->drone_socket_ = nullptr;
     this->final_point_socket_ = nullptr;
     this->ellipse_sockets_ = new QVector<EllipseSocket *>();
+
+    // initialize skyfly thread
+    this->compute_thread_ = new ComputeThread(this->model_);
+    connect(this->compute_thread_, SIGNAL(updateGraphics()), this->canvas_,
+            SLOT(updatePathGraphicsItem()));
+    connect(this->compute_thread_, SIGNAL(setMessage(QString)),
+            this, SLOT(setMessage(QString)));
+    connect(this->compute_thread_, SIGNAL(setPathColor(bool)),
+            this, SLOT(setPathColor(bool)));
+    connect(this, SIGNAL(stopComputeWorker()),
+            this->compute_thread_, SLOT(stopCompute()));
+    this->compute_thread_->start();
 }
 
-void threadExitDebug() {
-    qDebug() << "thread exited";
+void Controller::setMessage(QString message) {
+    this->menu_panel_->user_msg_label_->setText(message);
+}
+
+void Controller::setPathColor(bool isRed) {
+    if (isRed) {
+        this->canvas_->path_graphic_->setColor(Qt::red);
+    } else {
+        this->canvas_->path_graphic_->setColor(Qt::green);
+    }
 }
 
 Controller::~Controller() {
-    this->compute_thread_.quit();
-    this->compute_thread_.wait(1);
+    emit this->stopComputeWorker();
+    this->compute_thread_->quit();
+    this->compute_thread_->wait();
+    delete this->compute_thread_;
 
     // deinitialize port dialog
     delete this->port_dialog_;
@@ -135,17 +149,15 @@ void Controller::removeItem(QGraphicsItem *item) {
         case HANDLE_GRAPHIC: {
             if (item->parentItem() &&
                     item->parentItem()->type() == WAYPOINTS_GRAPHIC) {
-                PolygonResizeHandle *point_handle =
-                        dynamic_cast<PolygonResizeHandle *>(item);
-                QPointF *point_model = point_handle->getPoint();
+                WaypointsResizeHandle *point_handle =
+                        dynamic_cast<WaypointsResizeHandle *>(item);
+                quint32 point_model_index = point_handle->index_;
                 qgraphicsitem_cast<WaypointsGraphicsItem *>
                         (point_handle->parentItem())->
-                        removeHandle(point_handle);
+                        removeHandle(point_model_index);
                 this->canvas_->removeItem(point_handle);
                 delete point_handle;
-                this->model_->removeWaypoint(point_model);
-                this->canvas_->update();
-                delete point_model;
+                this->canvas_->waypoints_graphic_->expandScene();
             }
             break;
         }
@@ -175,22 +187,22 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
-void Controller::addEllipse(QPointF *point, qreal radius) {
+void Controller::addEllipse(QPointF point, qreal radius) {
     EllipseModelItem *item_model = new EllipseModelItem(point, radius);
     this->loadEllipse(item_model);
 }
 
-void Controller::addPolygon(QVector<QPointF *> *points) {
+void Controller::addPolygon(QVector<QPointF> points) {
     PolygonModelItem *item_model = new PolygonModelItem(points);
     this->loadPolygon(item_model);
 }
 
-void Controller::addPlane(QPointF *p1, QPointF *p2) {
+void Controller::addPlane(QPointF p1, QPointF p2) {
     PlaneModelItem *item_model = new PlaneModelItem(p1, p2);
     this->loadPlane(item_model);
 }
 
-void Controller::addWaypoint(QPointF *point) {
+void Controller::addWaypoint(QPointF point) {
     this->model_->addWaypoint(point);
     this->canvas_->update();
 }
@@ -201,7 +213,7 @@ void Controller::duplicateSelected() {
             case ELLIPSE_GRAPHIC: {
                 EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                         EllipseGraphicsItem *>(item);
-                QPointF *new_pos = new QPointF(ellipse->model_->getPos());
+                QPointF new_pos = QPointF(ellipse->model_->getPos());
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
                                              ellipse->model_->getRadius());
@@ -214,55 +226,22 @@ void Controller::duplicateSelected() {
 
 // ============ BACK END CONTROLS ============
 
-void Controller::setFinaltime(double finaltime) {
-    this->model_->setFinaltime(finaltime);
+void Controller::setFinaltime(qreal final_time) {
+    this->model_->setFinaltime(final_time);
 }
 
-void Controller::setHorizonLength(uint32_t horizon) {
-    this->model_->setHorizon(horizon);
-}
-
-double Controller::getTimeInterval() {
-    return this->model_->getFinaltime() / this->model_->getHorizon();
+void Controller::setHorizonLength(quint32 horizon_length) {
+    this->model_->setHorizon(horizon_length);
 }
 
 void Controller::updateFinalPosition(QPointF const &pos) {
-    this->model_->final_pos_->setPos(pos);
+    this->model_->setFinalPointPos(pos);
 }
 
 void Controller::execute() {
-    if (!this->valid_path_) {
-        qInfo() << "Execution disabled, no valid trajectory.";
-        return;
+    if (this->model_->getIsValidTraj()) {
+        emit trajectoryExecuted(this->model_->getTraj3dof());
     }
-    if (this->isFrozen()) {
-        std::cout << "Execution disabled, frozen mode.";
-        return;
-    }
-    std::cout << "Executing trajectory!";
-    qDebug() << "Executing trajectory..";
-    this->exec_once_ = true;
-    timer_exec_.restart();
-
-    std::cout << "pos:" << this->drone_traj3dof_data_.pos_ned.transpose()
-              << std::endl;
-    std::cout << "vel:" << this->drone_traj3dof_data_.vel_ned.transpose()
-              << std::endl;
-    std::cout << "accl:" << this->drone_traj3dof_data_.accl_ned.transpose()
-              << std::endl;
-
-    emit trajectoryExecuted(&this->drone_traj3dof_data_);
-}
-
-bool Controller::simDrone(uint64_t tick) {
-    if (tick >= (uint64_t)this->model_->trajectory_->length()) {
-        return false;
-    }
-    QPointF *pos = this->model_->trajectory_->value(tick);
-    this->model_->drone_->pos_->setX(pos->x());
-    this->model_->drone_->pos_->setY(pos->y());
-    this->canvas_->update();
-    return true;
 }
 
 void Controller::setPorts() {
@@ -274,14 +253,6 @@ void Controller::setCanvas(Canvas *canvas) {
     this->canvas_ = canvas;
 }
 
-void Controller::addPathPoint(QPointF *point) {
-    this->model_->addPathPoint(point);
-}
-
-void Controller::clearPathPoints() {
-    this->model_->clearPath();
-}
-
 // ============ NETWORK CONTROLS ============
 
 void Controller::startSockets() {
@@ -289,19 +260,21 @@ void Controller::startSockets() {
     this->closeSockets();
 
     // create drone socket
-    if (this->model_->drone_->port_ > 0) {
-        this->drone_socket_ = new DroneSocket(this->model_->drone_);
+    if (this->canvas_->drone_graphic_->model_->port_ > 0) {
+        this->drone_socket_ = new DroneSocket(
+                    this->canvas_->drone_graphic_->model_);
         connect(this,
-                SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof*)),
+                SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof)),
                 this->drone_socket_,
-                SLOT(rx_trajectory(const autogen::packet::traj3dof*)));
+                SLOT(rx_trajectory(const autogen::packet::traj3dof)));
         connect(this->drone_socket_, SIGNAL(refresh_graphics()),
                 this->canvas_, SLOT(update()));
     }
 
     // create final pos socket
-    if (this->model_->final_pos_->port_ > 0) {
-        this->final_point_socket_ = new PointSocket(this->model_->final_pos_);
+    if (this->canvas_->final_point_->model_->port_ > 0) {
+        this->final_point_socket_ = new PointSocket(
+                    this->canvas_->final_point_->model_);
         connect(this->final_point_socket_, SIGNAL(refresh_graphics()),
                 this->canvas_, SLOT(update()));
     }
@@ -375,4 +348,4 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     item_graphic->expandScene();
 }
 
-}  // namespace interface
+}  // namespace optgui

@@ -32,7 +32,8 @@ INCLUDEPATH += $$PWD/../../skyenet/csocp/
 INCLUDEPATH += $$PWD/../../mikipilot
 INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/release/
 
-LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # //SKYENET// looks for libalgorithm.a file
+# //SKYENET//
+LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # looks for libalgorithm.a file
 LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS     # looks for libCPRS.a
 LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP         # looks for libCSOCP.a
 
@@ -48,7 +49,10 @@ LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_utilities      
 LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_gnc                 # looks for lib_gnc.a
 
 SOURCES += \
+    src/controls/compute_thread.cpp \
     src/controls/controller.cpp \
+    src/graphics/plane_resize_handle.cpp \
+    src/graphics/waypoints_resize_handle.cpp \
     src/main.cpp \
     src/window/port_dialog/drone_ip_selector.cpp \
     src/window/port_dialog/drone_port_selector.cpp \
@@ -71,10 +75,12 @@ SOURCES += \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
     src/graphics/point_graphics_item.cpp \
-    src/network/point_socket.cpp \
-    src/controls/compute_worker.cpp
+    src/network/point_socket.cpp
 
 HEADERS += \
+    include/controls/compute_thread.h \
+    include/graphics/plane_resize_handle.h \
+    include/graphics/waypoints_resize_handle.h \
     include/window/port_dialog/drone_ip_selector.h \
     include/window/port_dialog/drone_port_selector.h \
     include/window/main_window.h \
@@ -105,8 +111,7 @@ HEADERS += \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
     include/network/drone_socket.h \
-    include/network/point_socket.h \
-    include/controls/compute_worker.h
+    include/network/point_socket.h
 
 RESOURCES += \
     resources.qrc

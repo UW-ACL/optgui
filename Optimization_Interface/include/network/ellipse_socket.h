@@ -15,7 +15,7 @@
 
 #include "include/models/ellipse_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class EllipseSocket : public QUdpSocket {
     Q_OBJECT
@@ -32,6 +32,6 @@ class EllipseSocket : public QUdpSocket {
     void readPendingDatagrams();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // ELLIPSE_SOCKET_H_

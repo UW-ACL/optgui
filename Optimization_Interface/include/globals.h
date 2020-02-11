@@ -10,20 +10,18 @@
 
 #include <QGraphicsItem>
 
-namespace interface {
-    static const uint32_t GRID_SIZE = 100;
+namespace optgui {
+    static qreal const GRID_SIZE = 100.0;
 
     enum STATE {
         IDLE,
         ERASER,
         FLIP,
-        POINT,
         ELLIPSE,
         POLYGON,
         PLANE,
         WAYPOINT,
-        FREEZE,
-        EXEC
+        POINT
     };
 
     enum GRAPHICS_TYPE {
@@ -34,6 +32,6 @@ namespace interface {
         HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
         POINT_GRAPHIC = QGraphicsItem::UserType + 6
     };
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // GLOBALS_H_

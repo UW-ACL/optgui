@@ -10,7 +10,7 @@
 
 #include <QtMath>
 
-namespace interface {
+namespace optgui {
 
 class DataModel {
  public:
@@ -19,6 +19,6 @@ class DataModel {
     quint16 port_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // DATA_MODEL_H_

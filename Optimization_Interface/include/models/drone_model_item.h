@@ -14,43 +14,43 @@
 
 #include "include/models/data_model.h"
 
-namespace interface {
+namespace optgui {
 
 class DroneModelItem : public DataModel {
  public:
     DroneModelItem() : mutex_() {
-        this->pos_ = new QPointF(0, 0);
+        this->pos_ = QPointF(0, 0);
         port_ = 0;
         destination_port_ = 0;
         ip_addr_ = "0.0.0.0";
     }
     ~DroneModelItem() {
         this->mutex_.lock();
-        delete this->pos_;
         this->mutex_.unlock();
     }
 
     QPointF getPos() {
         this->mutex_.lock();
-        QPointF temp = *this->pos_;
+        QPointF temp = this->pos_;
         this->mutex_.unlock();
         return temp;
     }
 
     void setPos(QPointF pos) {
         this->mutex_.lock();
-        this->pos_->setX(pos.x());
-        this->pos_->setY(pos.y());
+        this->pos_.setX(pos.x());
+        this->pos_.setY(pos.y());
         this->mutex_.unlock();
     }
 
     QString ip_addr_;
     quint16 destination_port_;
+
  private:
     QMutex mutex_;
-    QPointF *pos_;
+    QPointF pos_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // DRONE_MODEL_ITEM_H_

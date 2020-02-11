@@ -7,7 +7,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 DroneSocket::DroneSocket(DroneModelItem *model, QObject *parent)
     : QUdpSocket(parent) {
@@ -35,20 +35,19 @@ void DroneSocket::readPendingDatagrams() {
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
             if (ptr_telemetry_data != NULL) {
-              this->drone_model_->pos_->setX(telemetry_data.pos_ned(1) *
-                                             GRID_SIZE);
-              this->drone_model_->pos_->setY(telemetry_data.pos_ned(0) *
-                                             GRID_SIZE * -1);
-              emit refresh_graphics();
+                QPointF pos(telemetry_data.pos_ned(1) * GRID_SIZE,
+                            telemetry_data.pos_ned(0) * GRID_SIZE * -1);
+                this->drone_model_->setPos(pos);
+                emit refresh_graphics();
             }
         }
     }
 }
 
-void DroneSocket::rx_trajectory(const autogen::packet::traj3dof* data) {
+void DroneSocket::rx_trajectory(const autogen::packet::traj3dof data) {
     autogen::serializable::traj3dof
             <autogen::topic::traj3dof::UNDEFINED> ser_data;
-    ser_data = *data;
+    ser_data = data;
     char buffer[4096] = {0};
     ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
 
@@ -84,4 +83,4 @@ bool DroneSocket::isDestinationAddrValid() {
     return true;
 }
 
-}  // namespace interface
+}  // namespace optgui

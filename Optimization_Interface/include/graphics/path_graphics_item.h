@@ -13,7 +13,7 @@
 
 #include "include/models/path_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class PathGraphicsItem : public QGraphicsItem {
  public:
@@ -39,6 +39,6 @@ class PathGraphicsItem : public QGraphicsItem {
     qreal getScalingFactor();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // PATH_GRAPHICS_ITEM_H_

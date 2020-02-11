@@ -11,7 +11,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
                                      QGraphicsItem *parent,
@@ -38,7 +38,7 @@ void PointGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set position
-    this->setPos(*this->model_->pos_);
+    this->setPos(this->model_->getPos());
 }
 
 QRectF PointGraphicsItem::boundingRect() const {
@@ -56,7 +56,7 @@ void PointGraphicsItem::paint(QPainter *painter,
     // scale with view
     qreal scaling_factor = this->getScalingFactor();
 
-    this->setPos(*this->model_->pos_);
+    this->setPos(this->model_->getPos());
 
     // Show handles if selected
     if (this->isSelected()) {
@@ -74,7 +74,7 @@ void PointGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(*this->model_->pos_));
+        QPointF text_pos(this->mapFromScene(this->model_->getPos()));
         QFont font = painter->font();
         font.setPointSizeF(12 / scaling_factor);
         painter->setFont(font);
@@ -121,7 +121,7 @@ QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
         QPointF newPos = value.toPointF();
 
         // update model
-        *this->model_->pos_ = newPos;
+        this->model_->setPos(newPos);
 
         // check to expand the scene
         this->expandScene();
@@ -137,4 +137,4 @@ qreal PointGraphicsItem::getScalingFactor() const {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

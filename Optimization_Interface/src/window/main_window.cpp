@@ -8,7 +8,7 @@
 #include <QMenuBar>
 #include <QObject>
 
-namespace interface {
+namespace optgui {
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent, Qt::Window) {
@@ -81,4 +81,4 @@ void MainWindow::initializeMenu() {
     this->file_menu_->addAction(this->set_ports_);
 }
 
-}  // namespace interface
+}  // namespace optgui

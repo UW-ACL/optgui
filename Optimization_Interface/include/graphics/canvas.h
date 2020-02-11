@@ -19,7 +19,7 @@
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
 
-namespace interface {
+namespace optgui {
 
 class Canvas : public QGraphicsScene {
     Q_OBJECT
@@ -49,7 +49,7 @@ class Canvas : public QGraphicsScene {
  public slots:
     void bringSelectedToFront();
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
-    void updatePathGraphicsItem(PathGraphicsItem *graphic);
+    void updatePathGraphicsItem();
 
  private:
     void initialize();
@@ -70,6 +70,6 @@ class Canvas : public QGraphicsScene {
     double scale_ = 100;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // CANVAS_H_

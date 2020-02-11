@@ -8,7 +8,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-namespace interface {
+namespace optgui {
 
 PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
                                    QGraphicsItem *parent,
@@ -47,9 +47,10 @@ void PathGraphicsItem::paint(QPainter *painter,
     qreal scaling_factor = this->getScalingFactor();
     this->pen_.setWidthF(this->width_ / scaling_factor);
     painter->setPen(this->pen_);
-    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
-                    mapFromScene(*this->model_->points_->at(i)));
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 1; i < size; i++) {
+        QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
+                    mapFromScene(this->model_->getPointAt(i)));
         painter->drawLine(line);
     }
 }
@@ -74,8 +75,9 @@ void PathGraphicsItem::expandScene() {
 QPainterPath PathGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    for (QPointF *point : *this->model_->points_) {
-        poly << *point;
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 0; i < size; i++) {
+        poly << this->model_->getPointAt(i);
     }
     path.addPolygon(poly);
     return path;
@@ -98,4 +100,4 @@ qreal PathGraphicsItem::getScalingFactor() {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

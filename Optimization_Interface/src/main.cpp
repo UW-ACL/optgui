@@ -9,7 +9,7 @@
 
 #include "include/window/main_window.h"
 
-using interface::MainWindow;
+using optgui::MainWindow;
 
 int main(int argc, char *argv[]) {
     qRegisterMetaType<autogen::packet::traj3dof>("autogen::packet::traj3dof");
