@@ -8,6 +8,8 @@
 #include <QString>
 #include <QLineF>
 
+#include <algorithm>
+
 #include "include/window/port_dialog/port_selector.h"
 #include "include/window/port_dialog/drone_port_selector.h"
 #include "include/window/port_dialog/drone_ip_selector.h"
@@ -30,7 +32,7 @@ void ConstraintModel::initialize() {
 
     // initialize algorithm variables
     this->finaltime_ = 3;
-    this->horizon_length_ = 16;
+    this->horizon_length_ = MAX_HORIZON;
     this->is_valid_traj = false;
 }
 
@@ -277,7 +279,7 @@ quint32 ConstraintModel::getHorizon() {
 
 void ConstraintModel::setHorizon(quint32 horizon) {
     this->model_lock_.lock();
-    this->horizon_length_ = horizon;
+    this->horizon_length_ = std::min(horizon, MAX_HORIZON);
     this->model_lock_.unlock();
 }
 
