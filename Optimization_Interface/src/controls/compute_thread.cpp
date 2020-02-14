@@ -92,12 +92,12 @@ void ComputeThread::run() {
         // Iterations in resulting trajectory
         quint32 size = this->fly_->P.K;
         // GUI trajecotry points
-        QVector<QPointF> trajectory = QVector<QPointF>(size);
+        QVector<QPointF> trajectory = QVector<QPointF>();
         // Mikipilot trajectory to send to drone
         autogen::packet::traj3dof drone_traj3dof_data;
         drone_traj3dof_data.K = size;
 
-        for (quint32 i = 0; i < this->fly_->P.K; i++) {
+        for (quint32 i = 0; i < size; i++) {
             // Add points to GUI trajectory
             QPointF gui_coords = nedToGuiXyz(this->fly_->O.r[1][i],
                                              this->fly_->O.r[2][i]);
@@ -129,6 +129,7 @@ void ComputeThread::run() {
         }
         // set points on graphical display
         this->model_->setPathPoints(trajectory);
+        this->model_->setTraj3dof(drone_traj3dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation
         qreal accum = pow(this->fly_->O.r_f_relax[0], 2)

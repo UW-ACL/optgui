@@ -9,6 +9,7 @@
 #define PLANE_MODEL_ITEM_H_
 
 #include <QPointF>
+#include <QMutex>
 
 #include "include/models/data_model.h"
 
