@@ -33,6 +33,9 @@ class Controller : public QObject {
 
     ConstraintModel *model_;
 
+    // SkyFly compute thread
+    ComputeThread *compute_thread_;
+
     // add constraints
     void addEllipse(QPointF point, qreal radius = 120);
     void addPolygon(QVector<QPointF> points);
@@ -66,17 +69,11 @@ class Controller : public QObject {
 
  private slots:
     void startSockets();
-    void setMessage(QString message);
     void setPathColor(bool isRed);
 
  private:
     // QGraphicsScene
     Canvas *canvas_;
-    // Side menu panel
-    MenuPanel *menu_panel_;
-
-    // SkyFly compute thread
-    ComputeThread *compute_thread_;
 
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;

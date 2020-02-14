@@ -25,7 +25,6 @@ namespace optgui {
 
 Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
-    this->menu_panel_ = menupanel;
     this->model_ = new ConstraintModel();
 
     // initialize waypoints model and graphic
@@ -70,17 +69,11 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->compute_thread_ = new ComputeThread(this->model_);
     connect(this->compute_thread_, SIGNAL(updateGraphics()), this->canvas_,
             SLOT(updatePathGraphicsItem()));
-    connect(this->compute_thread_, SIGNAL(setMessage(QString)),
-            this, SLOT(setMessage(QString)));
     connect(this->compute_thread_, SIGNAL(setPathColor(bool)),
             this, SLOT(setPathColor(bool)));
     connect(this, SIGNAL(stopComputeWorker()),
             this->compute_thread_, SLOT(stopCompute()));
     this->compute_thread_->start();
-}
-
-void Controller::setMessage(QString message) {
-    this->menu_panel_->user_msg_label_->setText(message);
 }
 
 void Controller::setPathColor(bool isRed) {
