@@ -12,7 +12,7 @@ namespace optgui {
 ComputeThread::ComputeThread(ConstraintModel *model) {
     this->model_ = model;
     this->run_loop_ = true;
-    this->fly_ = new SkyeFly();
+    this->fly_ = new skyenet::SkyeFly();
 }
 
 ComputeThread::~ComputeThread() {
@@ -27,6 +27,19 @@ void ComputeThread::run() {
     while (this->run_loop_) {
         // Parameters
 
+        /*
+         *      fly_->init_problem1(this->model_->getHorizon(),
+         *                          this->model_->ellipses_->size(),
+         *                          this->model_->planes_->size(),
+         *                          this->model_->polygons_->size(),
+         *                         );
+         *      fly_->update(this->model_->drone_->pos_,
+         *                   this->model_->final_pos_->getPos());
+         *
+         *      fly_->output(this->model_->drone_traj3dof_data_);
+         *
+         */
+
         // Relaxation variables
         this->fly_->P.dK = 1;
         this->fly_->P.n_recalcs = 14;
@@ -35,7 +48,7 @@ void ComputeThread::run() {
         this->fly_->P.g[2] = 0.0;
         this->fly_->P.a_min = 5.0;   // Minimum accel.
         this->fly_->P.a_max = 12.0;  // Maximum accel.
-        this->fly_->P.theta_max = 45.0 * DEG2RAD;
+        this->fly_->P.theta_max = 45.0 * skyenet::DEG2RAD;
         this->fly_->P.q_max = 0.0;
 
         this->fly_->P.max_iter = 10;
@@ -51,7 +64,7 @@ void ComputeThread::run() {
 
         // Number of points on the trajectory (resolution)
         this->fly_->P.K = std::max(std::min(
-                this->model_->getHorizon(), MAX_HORIZON), 5u);
+                this->model_->getHorizon(), skyenet::MAX_HORIZON), 5u);
         // duration of flight
         this->fly_->P.tf = this->model_->getFinaltime();
         // 'resolution'
