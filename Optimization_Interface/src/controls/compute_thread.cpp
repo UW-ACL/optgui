@@ -99,8 +99,9 @@ void ComputeThread::run() {
 
         for (quint32 i = 0; i < this->fly_->P.K; i++) {
             // Add points to GUI trajectory
-            trajectory.append(QPointF(this->fly_->O.r[2][i] * GRID_SIZE,
-                               this->fly_->O.r[1][i] * GRID_SIZE * -1.0));
+            QPointF gui_coords = nedToGuiXyz(this->fly_->O.r[1][i],
+                                             this->fly_->O.r[2][i]);
+            trajectory.append(gui_coords);
 
             // Add data to mikipilot trajectory
             // drone_traj3dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;

@@ -184,17 +184,17 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
 
 void ConstraintModel::loadFinalPos(double *r_f) {
     this->model_lock_.lock();
-    QPointF pos = this->final_pos_->getPos();
-    r_f[1] = -1.0 * pos.y() / GRID_SIZE;
-    r_f[2] = pos.x() / GRID_SIZE;
+    QPointF ned_coords = guiXyzToNED(this->final_pos_->getPos());
+    r_f[1] = ned_coords.x();
+    r_f[2] = ned_coords.y();
     this->model_lock_.unlock();
 }
 
 void ConstraintModel::loadInitialPos(double *r_i) {
     this->model_lock_.lock();
-    QPointF pos = this->drone_->getPos();
-    r_i[1] = -1.0 * pos.y() / GRID_SIZE;
-    r_i[2] = pos.x() / GRID_SIZE;
+    QPointF ned_coords = guiXyzToNED(this->drone_->getPos());
+    r_i[1] = ned_coords.x();
+    r_i[2] = ned_coords.y();
     this->model_lock_.unlock();
 }
 
@@ -204,9 +204,10 @@ quint32 ConstraintModel::loadEllipseConstraints(
     this->model_lock_.lock();
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         R[index] = ellipse->getRadius() / GRID_SIZE;
-        QPointF pos = ellipse->getPos();
-        c_e[index] = -1.0 * pos.y() / GRID_SIZE;
-        c_n[index] = pos.x() / GRID_SIZE;
+        QPointF ned_coords = guiXyzToNED(ellipse->getPos());
+        // TODO(mceowen): c_e and c_n are backward in Skyefly
+        c_e[index] = ned_coords.x();
+        c_n[index] = ned_coords.y();
         index++;
         if (index >= MAX_OBS) {
             this->model_lock_.unlock();
@@ -223,12 +224,12 @@ quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
     for (PolygonModelItem *polygon : *this->polygons_) {
         quint32 size = polygon->getSize();
         for (quint32 i = 1; i < size + 1; i++) {
-            QPointF p = polygon->getPointAt(i - 1);
-            QPointF q = polygon->getPointAt(i % size);
+            QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
+            QPointF ned_q = guiXyzToNED(polygon->getPointAt(i % size));
             if (polygon->getDirection()) {
-                this->loadPlaneConstraint(A, b, index, q, p);
+                this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
             } else {
-                this->loadPlaneConstraint(A, b, index, p, q);
+                this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
             }
             index++;
             if (index >= MAX_CPOS) {
@@ -239,13 +240,13 @@ quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
     }
 
     for (PlaneModelItem *plane : *this->planes_) {
-        QPointF p = plane->getP1();
-        QPointF q = plane->getP2();
+        QPointF ned_p = guiXyzToNED(plane->getP1());
+        QPointF ned_q = guiXyzToNED(plane->getP2());
 
         if (plane->getDirection()) {
-            this->loadPlaneConstraint(A, b, index, q, p);
+            this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
         } else {
-            this->loadPlaneConstraint(A, b, index, p, q);
+            this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
         }
         index++;
         if (index >= MAX_CPOS) {
@@ -410,19 +411,15 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 // Private functions, should not lock
 
 void ConstraintModel::loadPlaneConstraint(double *A, double *b, quint32 index,
-                                              QPointF p, QPointF q) {
-    qreal px = -1.0 * p.y() / GRID_SIZE;
-    qreal py = p.x() / GRID_SIZE;
-    qreal qx = -1.0 * q.y() / GRID_SIZE;
-    qreal qy = q.x() / GRID_SIZE;
-    qreal c = ((py * qx) - (px * qy));
+                                              QPointF ned_p, QPointF ned_q) {
+    qreal c = ((ned_p.y() * ned_q.x()) - (ned_p.x() * ned_q.y()));
 
-    qreal a1 = (py - qy) / c;
-    qreal a2 = (px - qx) / c * -1.0;
+    qreal a1 = (ned_p.y() - ned_q.y()) / c;
+    qreal a2 = (ned_p.x() - ned_q.x()) / c * -1.0;
 
-    QLineF line(p, q);
+    QLineF line(ned_p, ned_q);
     QPointF normal = line.normalVector().p2();
-    qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? 1 : -1;
+    qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? -1 : 1;
 
     A[2 * index] = flip * a1;
     A[(2 * index) + 1] = flip * a2;

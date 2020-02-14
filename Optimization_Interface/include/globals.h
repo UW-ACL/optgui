@@ -32,6 +32,22 @@ namespace optgui {
         HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
         POINT_GRAPHIC = QGraphicsItem::UserType + 6
     };
+
+    static QPointF nedToGuiXyz(qreal n, qreal e) {
+        // QPointF(x, y ,z)
+        return QPointF(e * GRID_SIZE, -1.0 * n * GRID_SIZE);
+    }
+
+    static QPointF guiXyzToNED(qreal x, qreal y) {
+        // QPointF(n, e, d)
+        return QPointF(-1.0 * y / GRID_SIZE, x / GRID_SIZE);
+    }
+
+    static QPointF guiXyzToNED(QPointF const &gui_coords) {
+        // QPointF(n, e, d)
+        return QPointF(-1.0 * gui_coords.y() / GRID_SIZE,
+                       gui_coords.x() / GRID_SIZE);
+    }
 }  // namespace optgui
 
 #endif  // GLOBALS_H_

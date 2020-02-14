@@ -35,9 +35,10 @@ void EllipseSocket::readPendingDatagrams() {
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
             if (ptr_telemetry_data != NULL) {
-                QPointF pos(telemetry_data.pos_ned(1) * GRID_SIZE,
-                            telemetry_data.pos_ned(0) * GRID_SIZE * -1);
-                this->ellipse_model_->setPos(pos);
+                QPointF gui_coords =
+                        nedToGuiXyz(telemetry_data.pos_ned(0),
+                                    telemetry_data.pos_ned(1));
+                this->ellipse_model_->setPos(gui_coords);
                 emit refresh_graphics();
             }
         }
