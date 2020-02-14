@@ -1,27 +1,31 @@
-// TITLE:   Optimization_Interface/include/graphics/ellipse_resize_handle.h
+// TITLE:   Optimization_Interface/include/graphics/plane_resize_handle.h
 // AUTHORS: Daniel Sullivan, Miki Szmuk
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Graphical resize handle for modifying ellipse constraints
+// Graphical resize handle
 
-#ifndef ELLIPSE_RESIZE_HANDLE_H_
-#define ELLIPSE_RESIZE_HANDLE_H_
+#ifndef PLANE_RESIZE_HANDLE_H_
+#define PLANE_RESIZE_HANDLE_H_
 
 #include <QGraphicsEllipseItem>
 #include <QGraphicsSceneMouseEvent>
 
-#include "include/models/ellipse_model_item.h"
+#include "include/models/plane_model_item.h"
 
 namespace optgui {
 
-qreal const ELLIPSE_HANDLE_SIZE = 14;
-
-class EllipseResizeHandle : public QGraphicsEllipseItem {
+class PlaneResizeHandle : public QGraphicsEllipseItem {
  public:
-    explicit EllipseResizeHandle(EllipseModelItem *model,
-                                 QGraphicsItem *parent,
-                                 qreal size = ELLIPSE_HANDLE_SIZE);
+    explicit PlaneResizeHandle(PlaneModelItem *model,
+                               bool isP2,
+                               QGraphicsItem *parent,
+                               qreal size = 14);
+    void updatePos();
+    void updateModel(QPointF diff);
+    int type() const override;
+    QPointF getPoint();
+    void setColor(const QColor color);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 
@@ -32,7 +36,8 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
 
  private:
     void expandScene();
-    EllipseModelItem *model_;
+    PlaneModelItem *model_;
+    bool isP2_;
     bool resize_;
     qreal size_;
     qreal getScalingFactor();
@@ -40,4 +45,4 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
 
 }  // namespace optgui
 
-#endif  // ELLIPSE_RESIZE_HANDLE_H_
+#endif  // PLANE_RESIZE_HANDLE_H_

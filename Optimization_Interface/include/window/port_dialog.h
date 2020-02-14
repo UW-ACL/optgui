@@ -13,7 +13,7 @@
 
 #include "include/models/constraint_model.h"
 
-namespace interface {
+namespace optgui {
 
 class PortDialog : public QDialog {
     Q_OBJECT
@@ -38,6 +38,6 @@ class PortDialog : public QDialog {
     QSet<quint16> *ports_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // PORT_DIALOG_H_

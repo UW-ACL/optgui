@@ -14,7 +14,7 @@
 
 #include "include/graphics/view.h"
 
-namespace interface {
+namespace optgui {
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -31,6 +31,6 @@ class MainWindow : public QMainWindow {
     QAction *set_ports_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // MAIN_WINDOW_H_

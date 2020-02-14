@@ -11,7 +11,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
                                          QGraphicsItem *parent)
@@ -37,9 +37,10 @@ void PolygonGraphicsItem::initialize() {
 
     // Set resize handles
     this->resize_handles_ = new QVector<PolygonResizeHandle *>();
-    for (QPointF *point : *this->model_->points_) {
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 0; i < size; i++) {
         PolygonResizeHandle *handle =
-                new PolygonResizeHandle(point, this);
+                new PolygonResizeHandle(this->model_, i, this);
         this->resize_handles_->append(handle);
         handle->hide();
     }
@@ -65,7 +66,7 @@ void PolygonGraphicsItem::paint(QPainter *painter,
 
     // Change color based on convexity
     QColor fill;
-    if (this->isConvex()) {
+    if (this->model_->isConvex()) {
         fill = Qt::gray;
     } else {
         fill = Qt::red;
@@ -103,18 +104,16 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     painter->fillPath(this->shape(), this->brush_);
 
     // Draw outline
-    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
-                    mapFromScene(*this->model_->points_->at(i)));
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 1; i < size + 1; i++) {
+        QLineF line(mapFromScene(this->model_->getPointAt(i-1)),
+                    mapFromScene(this->model_->getPointAt(i % size)));
         painter->drawLine(line);
     }
-    QLineF line(mapFromScene(*this->model_->points_->last()),
-                mapFromScene(*this->model_->points_->first()));
-    painter->drawLine(line);
 
     // Label with port
-    if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
+    if (this->model_->port_ != 0) {
+        QPointF text_pos(this->mapFromScene(this->model_->getPointAt(0)));
         QFont font = painter->font();
         font.setPointSizeF(12 / scaling_factor);
         painter->setFont(font);
@@ -138,12 +137,12 @@ QPainterPath PolygonGraphicsItem::shape() const {
     qreal border = POLYGON_BORDER / this->getScalingFactor();
 
     // Define exterior shadings
-    for (qint32 i = 1; i < this->model_->points_->length() + 1; i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i - 1)),
-                    mapFromScene(*this->model_->points_->at(
-                                     i % this->model_->points_->length())));
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 1; i < size + 1; i++) {
+        QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
+                    mapFromScene(this->model_->getPointAt(i % size)));
         // Flip shading if direction is reversed
-        if (this->model_->direction_) {
+        if (this->model_->getDirection()) {
             line = QLineF(line.p2(), line.p1());
         }
         QPolygonF poly;
@@ -151,7 +150,7 @@ QPainterPath PolygonGraphicsItem::shape() const {
         poly << line.p2();
         poly << line.normalVector().translated(
                     line.dx(),
-                    line.dy()).pointAt(border /line.length());
+                    line.dy()).pointAt(border / line.length());
         poly << line.normalVector().pointAt(border / line.length());
         path.addPolygon(poly);
     }
@@ -178,7 +177,7 @@ void PolygonGraphicsItem::expandScene() {
 }
 
 void PolygonGraphicsItem::flipDirection() {
-    this->model_->direction_ = !this->model_->direction_;
+    this->model_->flipDirection();
     this->expandScene();
 }
 
@@ -200,31 +199,6 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
     return QGraphicsItem::itemChange(change, value);
 }
 
-bool PolygonGraphicsItem::isConvex() const {
-    quint32 n = this->model_->points_->size();
-    if (n < 4) {
-        return true;
-    }
-
-    bool sign = false;
-    QVector<QPointF *> *points = this->model_->points_;
-
-    for (quint32 i = 0; i < n; i++) {
-        qreal dx1 = points->at((i + 2) % n)->x() - points->at((i + 1) % n)->x();
-        qreal dy1 = points->at((i + 2) % n)->y() - points->at((i + 1) % n)->y();
-        qreal dx2 = points->at(i)->x() - points->at((i + 1) % n)->x();
-        qreal dy2 = points->at(i)->y() - points->at((i + 1) % n)->y();
-        qreal z_cross_product = (dx1 * dy2) - (dy1 * dx2);
-
-        if (i == 0) {
-            sign = z_cross_product > 0;
-        } else if (sign != (z_cross_product > 0)) {
-            return false;
-        }
-    }
-    return true;
-}
-
 qreal PolygonGraphicsItem::getScalingFactor() const {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
@@ -233,4 +207,4 @@ qreal PolygonGraphicsItem::getScalingFactor() const {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

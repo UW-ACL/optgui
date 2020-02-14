@@ -9,9 +9,8 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QInputDialog>
-#include <QDebug>
 
-namespace interface {
+namespace optgui {
 
 View::View(QWidget * parent)
     : QGraphicsView(parent) {
@@ -44,7 +43,6 @@ View::View(QWidget * parent)
     this->temp_markers_ = new QVector<QGraphicsItem*>();
 
     this->initialize();
-    this->compute_timer_.start();
 }
 
 View::~View() {
@@ -60,32 +58,6 @@ View::~View() {
     // Delete controller and canvas
     delete this->controller_;
     delete this->canvas_;
-}
-
-void View::loadFile() {
-    // Create new canvas
-    Canvas *new_canvas = new Canvas(this);
-    this->setScene(new_canvas);
-    delete this->canvas_;
-    this->canvas_ = new_canvas;
-
-    // Pass new canvas to controller
-    this->controller_->setCanvas(new_canvas);
-
-    // Set state to idle
-    this->setState(IDLE);
-
-    // Load file onto canvas
-    this->controller_->loadFile();
-
-    // Expand scene
-    this->expandView();
-    this->canvas_->expandScene();
-}
-
-void View::saveFile() {
-    this->setState(IDLE);
-    this->controller_->saveFile();
 }
 
 void View::setPorts() {
@@ -160,40 +132,24 @@ void View::initialize() {
             this, SLOT(setHorizon(int)));
 
     connect(this->menu_panel_->opt_finaltime_, SIGNAL(valueChanged(double)),
-            this, SLOT(setFinaltime(double)));
+            this, SLOT(setFinaltime(qreal)));
 
     // Connect execute button
     connect(this->menu_panel_->exec_button_, SIGNAL(clicked(bool)),
             this, SLOT(execute()));
 
-    // Connect simulate button
-    connect(this->menu_panel_->sim_button_, SIGNAL(clicked(bool)),
-            this, SLOT(toggleSim()));
-
     connect(this->menu_panel_->duplicate_button_, SIGNAL(clicked(bool)),
             this, SLOT(duplicateSelected()));
 
-    timer_sim_ = new QTimer(this);
-    connect(this->timer_sim_, SIGNAL(timeout()), this, SLOT(stepSim()));
-
     // Expand view to fill screen
     this->expandView();
-
-    this->view_tick_ = 0;
 }
 
 void View::mousePressEvent(QMouseEvent *event) {
     // Grab event position in scene coordinates
-    if (this->controller_->isFrozen()) {
-        qDebug() << "Frozen! Cannot take mouse event";
-    }
     QPointF pos = this->mapToScene(event->pos());
 
     switch (this->state_) {
-        case FREEZE: {
-            // do nothing
-            break;
-        }
         case POINT: {
             this->controller_->updateFinalPosition(pos);
             break;
@@ -202,7 +158,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             // TODO(bchasnov): disallow user from adding
             // ellipse if it overlaps?
             qreal scaling_factor = this->matrix().m11();
-            this->controller_->addEllipse(new QPointF(pos),
+            this->controller_->addEllipse(pos,
                                           DEFAULT_RAD / scaling_factor);
             break;
         }
@@ -211,10 +167,9 @@ void View::mousePressEvent(QMouseEvent *event) {
             if (!this->temp_markers_->isEmpty() &&
                     itemAt(event->pos()) == this->temp_markers_->first()) {
                 if (this->temp_markers_->size() >= 3) {
-                    QVector<QPointF*> *poly = new QVector<QPointF*>();
+                    QVector<QPointF> poly = QVector<QPointF>();
                     for (QGraphicsItem *dot : *this->temp_markers_) {
-                        poly->append(new QPointF(dot->pos().x(),
-                                                 dot->pos().y()));
+                        poly.append(QPointF(dot->pos()));
                     }
                     this->controller_->addPolygon(poly);
                 }
@@ -235,8 +190,8 @@ void View::mousePressEvent(QMouseEvent *event) {
         case PLANE: {
             // Add markers to define line
             if (!this->temp_markers_->isEmpty()) {
-                QPointF *p1 = new QPointF(temp_markers_->first()->pos());
-                this->controller_->addPlane(p1, new QPointF(pos));
+                QPointF p1 = QPointF(temp_markers_->first()->pos());
+                this->controller_->addPlane(p1, pos);
                 // Clean up markers
                 this->clearMarkers();
             } else {
@@ -252,7 +207,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case WAYPOINT: {
-            this->controller_->addWaypoint(new QPointF(pos));
+            this->controller_->addWaypoint(pos);
             break;
         }
         case ERASER: {
@@ -273,10 +228,6 @@ void View::mousePressEvent(QMouseEvent *event) {
             QGraphicsView::mousePressEvent(event);
         }
     }
-
-    if (this->simulating_ == 0) {
-        this->controller_->compute();
-    }
 }
 
 void View::closeMenu() {
@@ -294,10 +245,9 @@ void View::openMenu() {
     this->update();
 }
 
-void View::setZoom(double value) {
-    qreal scaleFactor = value;
+void View::setZoom(qreal value) {
     this->resetMatrix();
-    this->scale(scaleFactor, scaleFactor);
+    this->scale(value, value);
 }
 
 void View::setState(STATE button_type) {
@@ -324,10 +274,6 @@ void View::setState(STATE button_type) {
     }
 }
 
-void View::updatePath() {
-    this->controller_->updatePath();
-}
-
 void View::execute() {
     this->clearMarkers();
     this->setState(IDLE);
@@ -339,29 +285,12 @@ void View::duplicateSelected() {
     this->controller_->duplicateSelected();
 }
 
-// TODO(bchasnov): does this belong in view? probably not..
-void View::stepSim() {
-    if (this->controller_->simDrone(this->simulating_)) {
-        ++this->simulating_;
-        QTimer::singleShot(this->controller_->getTimeInterval() * 1000, this,
-                           SLOT(stepSim()));
-    } else {
-        this->simulating_ = 0;
-    }
-}
-
-void View::toggleSim() {
-    this->simulating_ = 0;
-    stepSim();
-}
-
-
-void View::setFinaltime(double final_time) {
+void View::setFinaltime(qreal final_time) {
     this->controller_->setFinaltime(final_time);
 }
 
-void View::setHorizon(int horizon) {
-    this->controller_->setHorizonLength(horizon);
+void View::setHorizon(int horizon_length) {
+    this->controller_->setHorizonLength(horizon_length);
 }
 
 void View::clearMarkers() {
@@ -388,4 +317,4 @@ void View::expandView() {
     this->setSceneRect(this->scene()->sceneRect());
 }
 
-}  // namespace interface
+}  // namespace optgui

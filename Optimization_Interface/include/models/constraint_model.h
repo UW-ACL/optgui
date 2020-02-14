@@ -8,14 +8,17 @@
 #ifndef CONSTRAINT_MODEL_H_
 #define CONSTRAINT_MODEL_H_
 
-#include <cprs.h>
-#include <algorithm.h>
-
 #include <QSet>
 #include <QVector>
 #include <QPointF>
-#include <QSetIterator>
+#include <QMutex>
+#include <QTableWidget>
 
+#include "cprs.h"
+#include "algorithm.h"
+#include "autogen/lib.h"
+
+#include "include/globals.h"
 #include "include/models/point_model_item.h"
 #include "include/models/ellipse_model_item.h"
 #include "include/models/polygon_model_item.h"
@@ -23,19 +26,16 @@
 #include "include/models/path_model_item.h"
 #include "include/models/drone_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class ConstraintModel {
  public:
-    ConstraintModel();
-    ConstraintModel(uint32_t maxEllipse, uint32_t maxAffine);
+    explicit ConstraintModel();
 
     ~ConstraintModel();
 
-    void initializeFly();
-
-    void addPoint(PointModelItem *item);
-    void removePoint(PointModelItem *item);
+    void setFinalPointModel(PointModelItem *model);
+    void setFinalPointPos(QPointF const &pos);
 
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
@@ -46,19 +46,46 @@ class ConstraintModel {
     void addPlane(PlaneModelItem *item);
     void removePlane(PlaneModelItem *item);
 
-    void addWaypoint(QPointF *item);
-    void removeWaypoint(QPointF *item);
+    void setWaypointsModel(PathModelItem *model);
+    void addWaypoint(QPointF const &pos);
 
-    void addPathPoint(QPointF *item);
-    void clearPath();
+    void setPathModel(PathModelItem *model);
+    void setPathPoints(QVector<QPointF> points);
+
+    void setDroneModel(DroneModelItem *model);
+    void setDroneModelPos(QPointF const &pos);
 
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    uint32_t loadEllipseConstraint(double* R, double* c_e, double* c_n);
-    uint32_t loadPosConstraints(double* A, double* b);
+    quint32 loadEllipseConstraints(double* R, double* c_e, double* c_n);
+    quint32 loadPosConstraints(double* A, double* b);
 
-    bool isEllipseOverlap(QPointF *pos);
+    qreal getFinaltime();
+    void setFinaltime(qreal finaltime);
+
+    quint32 getHorizon();
+    void setHorizon(quint32 horizon);
+
+    autogen::packet::traj3dof getTraj3dof();
+    void setTraj3dof(autogen::packet::traj3dof traj3dof_data);
+
+    bool getIsValidTraj();
+    void setIsValidTraj(bool is_valid);
+
+    void fillTable(QTableWidget *port_table,
+                   QTableWidget *drone_table,
+                   QSet<quint16> *ports);
+
+ private:
+    void initialize();
+
+    QMutex model_lock_;
+
+    qreal finaltime_;
+    quint32 horizon_length_;
+    autogen::packet::traj3dof drone_traj3dof_data_;
+    bool is_valid_traj;
 
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
@@ -68,26 +95,10 @@ class ConstraintModel {
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
-    SkyeFly *fly_;
-    // TODO(dtsull16): incorportate these into Skyfly
-    float finaltime_;
-    uint32_t horizon_length_ = MAX_HORIZON;
-
-    uint32_t maxEllipse;
-    uint32_t maxHalfspace;
-
-    // scale from meters to pixels
-    qreal scale_ = 100.0;
-
-    // trajectory points
-    QVector<QPointF *> *trajectory_;
-
- private:
-    void initialize();
-    void loadPlaneConstraint(double *A, double *b, uint32_t index,
-                                 QPointF *p, QPointF *q);
+    void loadPlaneConstraint(double *A, double *b, quint32 index,
+                                 QPointF p, QPointF q);
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // CONSTRAINT_MODEL_H_

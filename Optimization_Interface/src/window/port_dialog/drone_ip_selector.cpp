@@ -7,7 +7,7 @@
 
 #include <QTimer>
 
-namespace interface {
+namespace optgui {
 
 DroneIpSelector::DroneIpSelector(DroneModelItem *model, QWidget *parent)
     : QLineEdit(parent) {
@@ -51,4 +51,4 @@ bool DroneIpSelector::isIpValid() {
     return true;
 }
 
-}  // namespace interface
+}  // namespace optgui

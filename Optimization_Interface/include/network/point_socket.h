@@ -15,7 +15,7 @@
 
 #include "include/models/point_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class PointSocket : public QUdpSocket {
     Q_OBJECT
@@ -32,7 +32,7 @@ class PointSocket : public QUdpSocket {
     void readPendingDatagrams();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // POINT_SOCKET_H_
 

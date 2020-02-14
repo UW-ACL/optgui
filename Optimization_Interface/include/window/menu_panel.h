@@ -17,9 +17,11 @@
 #include <QGroupBox>
 #include <QMessageBox>
 
+#include "algorithm.h"
+
 #include "include/window/menu_button.h"
 
-namespace interface {
+namespace optgui {
 
 class MenuPanel : public QFrame {
  public:
@@ -47,7 +49,7 @@ class MenuPanel : public QFrame {
 
     // Initialization
     qreal finaltime_init_ = 3.0;         // initializes final time
-    uint32_t horizonlength_init_ = 32;    // initializes horizon length
+    quint32 horizon_length_init_ = MAX_HORIZON;    // initializes horizon length
     qreal zoom_init_ = 1.0;
 
     // Message box for user feedback
@@ -68,9 +70,8 @@ class MenuPanel : public QFrame {
     void initializeFinaltime();   // initializes final time
     void initializeHorizon();     // initializes num iterations permitted
     void initializeDuplicateButton();   // initializes duplicate selected item
-//    void initializeFreezeButton();    // initializes freeze button
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // MENU_PANEL_H_

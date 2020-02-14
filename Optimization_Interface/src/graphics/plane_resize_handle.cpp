@@ -1,9 +1,9 @@
-// TITLE:   Optimization_Interface/src/graphics/polygon_resize_handle.cpp
+// TITLE:   Optimization_Interface/src/graphics/plane_resize_handle.cpp
 // AUTHORS: Daniel Sullivan, Miki Szmuk
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "include/graphics/polygon_resize_handle.h"
+#include "include/graphics/plane_resize_handle.h"
 
 #include <QtMath>
 #include <QPen>
@@ -14,8 +14,8 @@
 
 namespace optgui {
 
-PolygonResizeHandle::PolygonResizeHandle(PolygonModelItem *model,
-                                         quint32 index,
+PlaneResizeHandle::PlaneResizeHandle(PlaneModelItem *model,
+                                         bool isP2,
                                          QGraphicsItem *parent,
                                          qreal size)
     : QGraphicsEllipseItem(parent) {
@@ -24,34 +24,44 @@ PolygonResizeHandle::PolygonResizeHandle(PolygonModelItem *model,
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
     this->size_ = size;
-    this->index_ = index;
+    this->isP2_ = isP2;
     this->setRect(-this->size_, -this->size_,
                   this->size_ * 2, this->size_ * 2);
 }
 
-void PolygonResizeHandle::setColor(const QColor color) {
+void PlaneResizeHandle::setColor(const QColor color) {
     this->setBrush(QBrush(color));
 }
 
-void PolygonResizeHandle::updatePos() {
+void PlaneResizeHandle::updatePos() {
     // Translate model point to local coordinates
-    this->setPos(this->parentItem()->mapFromScene(
-                     this->model_->getPointAt(this->index_)));
+    if (this->isP2_) {
+        this->setPos(this->parentItem()->mapFromScene(
+                     this->model_->getP2()));
+    } else {
+        this->setPos(this->parentItem()->mapFromScene(
+                     this->model_->getP1()));
+    }
 }
 
-void PolygonResizeHandle::updateModel(QPointF diff) {
+void PlaneResizeHandle::updateModel(QPointF diff) {
     // Adjust model to new parent position
-    QPointF currPos = this->model_->getPointAt(this->index_);
-    this->model_->setPointAt(currPos + diff, this->index_);
+    if (this->isP2_) {
+        QPointF currPos = this->model_->getP2();
+        this->model_->setP2(currPos + diff);
+    } else {
+        QPointF currPos = this->model_->getP1();
+        this->model_->setP1(currPos + diff);
+    }
 }
 
-void PolygonResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void PlaneResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         this->resize_ = true;
     }
 }
 
-void PolygonResizeHandle::paint(QPainter *painter,
+void PlaneResizeHandle::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
     Q_UNUSED(option);
@@ -69,29 +79,37 @@ void PolygonResizeHandle::paint(QPainter *painter,
     QGraphicsEllipseItem::paint(painter, option, widget);
 }
 
-void PolygonResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void PlaneResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         this->resize_ = false;
     }
 }
 
-void PolygonResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void PlaneResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
         QPointF eventPos = event->scenePos();
-        this->model_->setPointAt(eventPos, this->index_);
+        if (this->isP2_) {
+            this->model_->setP2(eventPos);
+        } else {
+            this->model_->setP1(eventPos);
+        }
         this->expandScene();
     }
 }
 
-int PolygonResizeHandle::type() const {
+int PlaneResizeHandle::type() const {
     return HANDLE_GRAPHIC;
 }
 
-QPointF PolygonResizeHandle::getPoint() {
-    return this->model_->getPointAt(this->index_);
+QPointF PlaneResizeHandle::getPoint() {
+    if (this->isP2_) {
+        return this->model_->getP2();
+    } else {
+        return this->model_->getP1();
+    }
 }
 
-void PolygonResizeHandle::expandScene() {
+void PlaneResizeHandle::expandScene() {
     if (scene()) {
         // expand scene if item goes out of bounds
         QRectF newRect = this->parentItem()->sceneBoundingRect();
@@ -107,7 +125,7 @@ void PolygonResizeHandle::expandScene() {
     }
 }
 
-qreal PolygonResizeHandle::getScalingFactor() {
+qreal PlaneResizeHandle::getScalingFactor() {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

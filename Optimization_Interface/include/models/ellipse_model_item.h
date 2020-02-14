@@ -9,23 +9,70 @@
 #define ELLIPSE_MODEL_ITEM_H_
 
 #include <QPointF>
+#include <QMutex>
 
 #include "include/models/data_model.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const DEFAULT_RAD = 100;
 
 class EllipseModelItem : public DataModel {
  public:
-    explicit EllipseModelItem(QPointF *pos, qreal radius = DEFAULT_RAD) :
-        radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
-    ~EllipseModelItem() { delete pos_; }
-    double radius_;
-    QPointF *pos_;
+    explicit EllipseModelItem(QPointF pos, qreal radius = DEFAULT_RAD) :
+        mutex_(), radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
+    ~EllipseModelItem() {
+        this->mutex_.lock();
+        this->mutex_.unlock();
+    }
+
+    qreal getRadius() {
+        this->mutex_.lock();
+        qreal temp = this->radius_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void setRadius(qreal radius) {
+        this->mutex_.lock();
+        this->radius_ = radius;
+        this->mutex_.unlock();
+    }
+
+    QPointF getPos() {
+        this->mutex_.lock();
+        QPointF temp = this->pos_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void setPos(QPointF pos) {
+        this->mutex_.lock();
+        this->pos_.setX(pos.x());
+        this->pos_.setY(pos.y());
+        this->mutex_.unlock();
+    }
+
+    bool getDirection() {
+        this->mutex_.lock();
+        qreal temp = this->direction_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void flipDirection() {
+        this->mutex_.lock();
+        this->direction_ = !this->direction_;
+        this->mutex_.unlock();
+    }
+
+ private:
+    QMutex mutex_;
+    qreal radius_;
+    QPointF pos_;
     bool direction_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // ELLIPSE_MODEL_ITEM_H_

@@ -12,9 +12,9 @@
 #include <QPainter>
 
 #include "include/models/plane_model_item.h"
-#include "include/graphics/polygon_resize_handle.h"
+#include "include/graphics/plane_resize_handle.h"
 
-namespace interface {
+namespace optgui {
 
 qreal const PLANE_BORDER = 15;
 
@@ -42,11 +42,11 @@ class PlaneGraphicsItem : public QGraphicsItem {
     void initialize();
     QPen pen_;
     QBrush brush_;
-    PolygonResizeHandle *p1_handle_;
-    PolygonResizeHandle *p2_handle_;
+    PlaneResizeHandle *p1_handle_;
+    PlaneResizeHandle *p2_handle_;
     qreal getScalingFactor() const;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // PLANE_GRAPHICS_ITEM_H_

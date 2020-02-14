@@ -13,10 +13,10 @@
 #include <QPointF>
 #include <QVector>
 
-#include "include/graphics/polygon_resize_handle.h"
+#include "include/graphics/waypoints_resize_handle.h"
 #include "include/models/path_model_item.h"
 
-namespace interface {
+namespace optgui {
 
 class WaypointsGraphicsItem : public QGraphicsItem {
  public:
@@ -30,7 +30,7 @@ class WaypointsGraphicsItem : public QGraphicsItem {
                QWidget *widget = nullptr) override;
 
     void expandScene();
-    void removeHandle(PolygonResizeHandle *handle);
+    void removeHandle(quint32 index);
     int type() const override;
 
  protected:
@@ -41,12 +41,12 @@ class WaypointsGraphicsItem : public QGraphicsItem {
  private:
     void initialize();
     PathModelItem *model_;
-    QVector<PolygonResizeHandle *> *resize_handles_;
+    QVector<WaypointsResizeHandle *> *resize_handles_;
     qreal line_width_;
     qreal size_;
     qreal getScalingFactor();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // WAYPOINTS_GRAPHICS_ITEM_H_

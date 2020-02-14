@@ -8,7 +8,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-namespace interface {
+namespace optgui {
 
 DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
                                      QGraphicsItem *parent,
@@ -43,7 +43,8 @@ void DroneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Update pos
-    this->setPos(*this->model_->pos_);
+    QPointF pos = this->model_->getPos();
+    this->setPos(pos);
 
     // scale with view zoom level
     qreal scaling_factor = this->getScalingFactor();
@@ -57,7 +58,7 @@ void DroneGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(*this->model_->pos_));
+        QPointF text_pos(this->mapFromScene(pos));
         QFont font = painter->font();
         font.setPointSizeF(12.0 / scaling_factor);
         painter->setFont(font);
@@ -117,4 +118,4 @@ qreal DroneGraphicsItem::getScalingFactor() const {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

@@ -8,7 +8,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-namespace interface {
+namespace optgui {
 
 PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
                                    QGraphicsItem *parent,
@@ -47,28 +47,12 @@ void PathGraphicsItem::paint(QPainter *painter,
     qreal scaling_factor = this->getScalingFactor();
     this->pen_.setWidthF(this->width_ / scaling_factor);
     painter->setPen(this->pen_);
-    for (qint32 i = 1; i < this->model_->points_->length(); i++) {
-        QLineF line(mapFromScene(*this->model_->points_->at(i-1)),
-                    mapFromScene(*this->model_->points_->at(i)));
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 1; i < size; i++) {
+        QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
+                    mapFromScene(this->model_->getPointAt(i)));
         painter->drawLine(line);
     }
-
-    // Label with port
-    /*
-    if (!this->model_->points_->isEmpty() && this->model_->port_ != 0) {
-        painter->setPen(Qt::black);
-        QPointF text_pos(this->mapFromScene(*this->model_->points_->first()));
-        QFont font = painter->font();
-        font.setPointSizeF(12 / scaling_factor);
-        painter->setFont(font);
-        qreal text_box_size = 50.0 / scaling_factor;
-        painter->drawText(text_pos.x() - text_box_size,
-                          text_pos.y() - text_box_size,
-                          text_box_size * 2, text_box_size * 2,
-                          Qt::AlignCenter,
-                          QString::number(this->model_->port_));
-    }
-    */
 }
 
 void PathGraphicsItem::expandScene() {
@@ -91,8 +75,9 @@ void PathGraphicsItem::expandScene() {
 QPainterPath PathGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    for (QPointF *point : *this->model_->points_) {
-        poly << *point;
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 0; i < size; i++) {
+        poly << this->model_->getPointAt(i);
     }
     path.addPolygon(poly);
     return path;
@@ -115,4 +100,4 @@ qreal PathGraphicsItem::getScalingFactor() {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

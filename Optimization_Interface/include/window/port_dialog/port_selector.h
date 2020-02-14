@@ -13,7 +13,7 @@
 
 #include "include/models/data_model.h"
 
-namespace interface {
+namespace optgui {
 
 class PortSelector : public QLineEdit {
     Q_OBJECT
@@ -34,6 +34,6 @@ class PortSelector : public QLineEdit {
     bool isPortValid();
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // PORT_SELECTOR_H_

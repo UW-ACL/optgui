@@ -18,7 +18,7 @@
 #include "include/globals.h"
 #include "include/controls/controller.h"
 
-namespace interface {
+namespace optgui {
 
 const qreal DOT_SIZE = 14;
 
@@ -36,17 +36,12 @@ class View : public QGraphicsView {
  private slots:
     void openMenu();
     void closeMenu();
-    void setZoom(double value);
+    void setZoom(qreal value);
     void setState(STATE button_type);
-    void loadFile();
-    void saveFile();
     void setPorts();
     void execute();
-    void updatePath();
-    void stepSim();
-    void toggleSim();
-    void setHorizon(int);
-    void setFinaltime(double);
+    void setHorizon(int horizon_length);
+    void setFinaltime(qreal final_time);
     void duplicateSelected();
 
  private:
@@ -61,13 +56,8 @@ class View : public QGraphicsView {
     QVector<QGraphicsItem*> *temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
-    uint64_t simulating_ = 0;
-    QTimer *timer_sim_;
-    uint64_t view_tick_ = 0;
-
-    QElapsedTimer compute_timer_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // VIEW_H_

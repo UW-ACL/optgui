@@ -11,7 +11,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
                                              QGraphicsItem *parent,
@@ -29,12 +29,12 @@ void WaypointsGraphicsItem::initialize() {
     this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
 
     // Initialize resize handles
-    this->resize_handles_ = new QVector<PolygonResizeHandle *>();
+    this->resize_handles_ = new QVector<WaypointsResizeHandle *>();
 }
 
 WaypointsGraphicsItem::~WaypointsGraphicsItem() {
     // Delete resize handles
-    for (PolygonResizeHandle *handle : *this->resize_handles_) {
+    for (WaypointsResizeHandle *handle : *this->resize_handles_) {
         delete handle;
     }
     delete this->resize_handles_;
@@ -51,25 +51,20 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    // Create new handles if necessary
-    if (this->model_->points_->size() > this->resize_handles_->size()) {
-        for (qint32 i = this->resize_handles_->size();
-             i < this->model_->points_->size(); i++) {
-            PolygonResizeHandle *handle =
-                    new PolygonResizeHandle(
-                        this->model_->points_->at(i), this, this->size_);
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 0; i < size; i++) {
+        // Create new handles if necessary
+        if (i+1 > this->resize_handles_->size()) {
+            WaypointsResizeHandle *handle =
+                    new WaypointsResizeHandle(
+                        this->model_, i, this, this->size_);
             this->resize_handles_->append(handle);
             handle->show();
+            this->expandScene();
+        } else {
+            // update handle pos
+            this->resize_handles_->at(i)->updatePos();
         }
-        this->expandScene();
-    }
-
-    // Set handle number
-    qint32 index = 0;
-    for (PolygonResizeHandle *handle : *this->resize_handles_) {
-        handle->updatePos();
-        handle->setIndex(index + 1);
-        index++;
     }
 
     // Label with port
@@ -91,8 +86,14 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     */
 }
 
-void WaypointsGraphicsItem::removeHandle(PolygonResizeHandle *handle) {
-    this->resize_handles_->removeOne(handle);
+void WaypointsGraphicsItem::removeHandle(quint32 index) {
+    this->resize_handles_->removeAt(index);
+    this->model_->removePointAt(index);
+    qint32 index_label = 0;
+    for (WaypointsResizeHandle *handle : *this->resize_handles_) {
+        handle->index_ = index_label + 1;
+        index_label++;
+    }
 }
 
 int WaypointsGraphicsItem::type() const {
@@ -102,8 +103,9 @@ int WaypointsGraphicsItem::type() const {
 QPainterPath WaypointsGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
-    for (QPointF *point : *this->model_->points_) {
-        poly << *point;
+    quint32 size = this->model_->getSize();
+    for (quint32 i = 0; i < size; i++) {
+        poly << this->model_->getPointAt(i);
     }
     path.addPolygon(poly);
     return path;
@@ -154,4 +156,4 @@ qreal WaypointsGraphicsItem::getScalingFactor() {
     return scaling_factor;
 }
 
-}  // namespace interface
+}  // namespace optgui

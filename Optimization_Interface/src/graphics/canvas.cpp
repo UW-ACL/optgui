@@ -14,7 +14,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 Canvas::Canvas(QObject *parent, QString background_file)
     : QGraphicsScene(parent) {
@@ -66,8 +66,6 @@ void Canvas::initialize() {
 }
 
 void Canvas::setBackgroundImage(QString filename) {
-//     QString filename = ";
-//    QString filename = ;
     QStringList list = filename.split('_');
     if (list.length() != 6) {
         // qDebug() << "Image filename not formatted correctly";
@@ -82,7 +80,6 @@ void Canvas::setBackgroundImage(QString filename) {
         this->background_topright_x_ = list[4].toFloat();
         this->background_topright_y_ = list[5].toFloat();
         this->indoor_ = false;
-
     } else if (list[1] == "indoor") {
         this->background_bottomleft_x_ = list[2].toFloat();
         this->background_bottomleft_y_ = list[3].toFloat();
@@ -121,6 +118,11 @@ void Canvas::bringSelectedToFront() {
 void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
     // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
     graphic->expandScene();
+}
+
+void Canvas::updatePathGraphicsItem() {
+    // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
+    this->path_graphic_->expandScene();
 }
 
 void Canvas::bringToFront(QGraphicsItem *item) {
@@ -277,4 +279,4 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
 //    }
 }
 
-}  // namespace interface
+}  // namespace optgui

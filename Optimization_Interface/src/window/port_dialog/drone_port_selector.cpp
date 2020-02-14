@@ -7,7 +7,7 @@
 
 #include <QTimer>
 
-namespace interface {
+namespace optgui {
 
 DronePortSelector::DronePortSelector(DroneModelItem *model, QWidget *parent)
     : QLineEdit(parent) {
@@ -35,7 +35,7 @@ void DronePortSelector::updatePort() {
 
 bool DronePortSelector::isPortValid() {
     bool ok = false;
-    quint64 value = this->text().toUShort(&ok);
+    quint32 value = this->text().toUShort(&ok);
 
     if (!ok || 1024 > value || value > 65535) {
         return false;
@@ -43,4 +43,4 @@ bool DronePortSelector::isPortValid() {
     return true;
 }
 
-}  // namespace interface
+}  // namespace optgui

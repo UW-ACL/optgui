@@ -12,7 +12,7 @@
 
 #include "include/globals.h"
 
-namespace interface {
+namespace optgui {
 
 class MenuButton : public QLabel {
     Q_OBJECT
@@ -28,6 +28,6 @@ class MenuButton : public QLabel {
     STATE button_type_;
 };
 
-}  // namespace interface
+}  // namespace optgui
 
 #endif  // MENU_BUTTON_H_

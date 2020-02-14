@@ -10,18 +10,18 @@
 
 #include <QGraphicsItem>
 
-namespace interface {
+namespace optgui {
+    static qreal const GRID_SIZE = 100.0;
+
     enum STATE {
         IDLE,
         ERASER,
         FLIP,
-        POINT,
         ELLIPSE,
         POLYGON,
         PLANE,
         WAYPOINT,
-        FREEZE,
-        EXEC
+        POINT
     };
 
     enum GRAPHICS_TYPE {
@@ -33,11 +33,21 @@ namespace interface {
         POINT_GRAPHIC = QGraphicsItem::UserType + 6
     };
 
-    enum DATA_STREAM_VERSION {
-        VERSION_5_8 = QDataStream::Qt_5_8,
-    };
+    static QPointF nedToGuiXyz(qreal n, qreal e) {
+        // QPointF(x, y ,z)
+        return QPointF(e * GRID_SIZE, -1.0 * n * GRID_SIZE);
+    }
 
-#define GRID_SIZE 100
-}  // namespace interface
+    static QPointF guiXyzToNED(qreal x, qreal y) {
+        // QPointF(n, e, d)
+        return QPointF(-1.0 * y / GRID_SIZE, x / GRID_SIZE);
+    }
+
+    static QPointF guiXyzToNED(QPointF const &gui_coords) {
+        // QPointF(n, e, d)
+        return QPointF(-1.0 * gui_coords.y() / GRID_SIZE,
+                       gui_coords.x() / GRID_SIZE);
+    }
+}  // namespace optgui
 
 #endif  // GLOBALS_H_
