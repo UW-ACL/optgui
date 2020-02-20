@@ -46,27 +46,46 @@ void ComputeThread::run() {
         this->fly_->setDefaults();
 
 
-        // Number of points on the trajectory (resolution)
-        this->fly_->P.K = std::max(std::min(
-                this->model_->getHorizon(), skyenet::MAX_HORIZON), 5u);
-        // duration of flight
-        this->fly_->P.tf = this->model_->getFinaltime();
-        // 'resolution'
-        this->fly_->P.dt = this->fly_->P.tf / (this->fly_->P.K - 1.0);
-        // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
-        // circle and R is the radius (H some linear transform)
-        this->fly_->P.obs.n = this->model_->
+        uint32_t K = this->model_->getHorizon();
+        double tf = this->model_->getFinaltime();
+        uint32_t n_obs = this->model_->
                 loadEllipseConstraints(this->fly_->P.obs.R,
                                        this->fly_->P.obs.c_e,
                                        this->fly_->P.obs.c_n);
-        // Affine constraints Ax leq b
-        this->fly_->P.cpos.n = this->model_->
-                loadPosConstraints(this->fly_->P.cpos.A,
-                                   this->fly_->P.cpos.b);
+        //uint32_t n_cpos =
 
+
+        // Number of points on the trajectory (resolution)
+            /*
+            this->fly_->P.K = std::max(std::min(
+                    this->model_->getHorizon(), skyenet::MAX_HORIZON), 5u);
+            */
+
+        // duration of flight
+            //this->fly_->P.tf = this->model_->getFinaltime();
+
+        // 'resolution'
+            //this->fly_->P.dt = this->fly_->P.tf / (this->fly_->P.K - 1.0);
+
+        // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
+        // circle and R is the radius (H some linear transform)
+            /*
+            this->fly_->P.obs.n = this->model_->
+                loadEllipseConstraints(this->fly_->P.obs.R,
+                                       this->fly_->P.obs.c_e,
+                                       this->fly_->P.obs.c_n);
+            */
+
+        // Affine constraints Ax leq b
+            /*
+             * this->fly_->P.cpos.n = this->model_->
+                    loadPosConstraints(this->fly_->P.cpos.A,
+                                       this->fly_->P.cpos.b);
+            */
         // Inputs
         this->model_->loadInitialPos(this->fly_->I.r_i);
         this->model_->loadFinalPos(this->fly_->I.r_f);
+
 
         // Initialize.
         this->fly_->init();
