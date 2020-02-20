@@ -49,7 +49,7 @@ class MenuPanel : public QFrame {
 
     // Initialization
     qreal finaltime_init_ = 3.0;         // initializes final time
-    quint32 horizon_length_init_ = MAX_HORIZON;    // initializes horizon length
+    quint32 horizon_length_init_ = skyenet::MAX_HORIZON;    // initializes horizon length
     qreal zoom_init_ = 1.0;
 
     // Message box for user feedback

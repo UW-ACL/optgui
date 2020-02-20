@@ -32,7 +32,7 @@ void ConstraintModel::initialize() {
 
     // initialize algorithm variables
     this->finaltime_ = 3;
-    this->horizon_length_ = MAX_HORIZON;
+    this->horizon_length_ = skyenet::MAX_HORIZON;
     this->is_valid_traj = false;
 }
 
@@ -209,7 +209,7 @@ quint32 ConstraintModel::loadEllipseConstraints(
         c_e[index] = ned_coords.x();
         c_n[index] = ned_coords.y();
         index++;
-        if (index >= MAX_OBS) {
+        if (index >= skyenet::MAX_OBS) {
             this->model_lock_.unlock();
             return index;
         }
@@ -232,7 +232,7 @@ quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
                 this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
             }
             index++;
-            if (index >= MAX_CPOS) {
+            if (index >= skyenet::MAX_CPOS) {
                 this->model_lock_.unlock();
                 return index;
             }
@@ -249,7 +249,7 @@ quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
             this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
         }
         index++;
-        if (index >= MAX_CPOS) {
+        if (index >= skyenet::MAX_CPOS) {
             this->model_lock_.unlock();
             return index;
         }
@@ -280,7 +280,7 @@ quint32 ConstraintModel::getHorizon() {
 
 void ConstraintModel::setHorizon(quint32 horizon) {
     this->model_lock_.lock();
-    this->horizon_length_ = std::min(horizon, MAX_HORIZON);
+    this->horizon_length_ = std::min(horizon, skyenet::MAX_HORIZON);
     this->model_lock_.unlock();
 }
 

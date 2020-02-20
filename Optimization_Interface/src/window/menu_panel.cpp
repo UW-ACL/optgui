@@ -259,7 +259,7 @@ void MenuPanel::initializeHorizon() {
     this->opt_horizon_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
     this->opt_horizon_->setSingleStep(1);
-    this->opt_horizon_->setRange(16, MAX_HORIZON);
+    this->opt_horizon_->setRange(16, skyenet::MAX_HORIZON);
     this->opt_horizon_->setValue(this->horizon_length_init_);
     this->opt_horizon_->setToolTip(tr("Set horizon length"));
     this->opt_horizon_->setMinimumHeight(30);

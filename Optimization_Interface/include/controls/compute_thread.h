@@ -38,7 +38,7 @@ protected:
 
  private:
     ConstraintModel *model_;
-    SkyeFly *fly_;
+    skyenet::SkyeFly *fly_;
     bool run_loop_;
 };
 
