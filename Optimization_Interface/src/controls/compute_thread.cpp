@@ -29,7 +29,7 @@ void ComputeThread::run() {
 
         /*
          *      fly_->init_problem1(this->model_->getHorizon(),
-         *                          this->model
+         *                          this->model_->getFinalTime(),
          *                          this->model_->ellipses_->size(),
          *                          this->model_->planes_->size(),
          *                          this->model_->polygons_->size(),
@@ -42,30 +42,25 @@ void ComputeThread::run() {
          *
          */
 
-        //Set default values
-        this->fly_->setDefaults();
-
-
         //Initialize problem 1
-        // Number of points on the trajectory (resolution)
-        uint32_t K = this->model_->getHorizon();
-
-        // duration of flight
-        double tf = this->model_->getFinaltime();
-
-        // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
-        // circle and R is the radius (H some linear transform)
-        uint32_t n_obs = this->model_->
-                loadEllipseConstraints(this->fly_->P.obs.R,
-                                       this->fly_->P.obs.c_e,
-                                       this->fly_->P.obs.c_n);
-        // Affine constraints Ax leq b
-        uint32_t n_cpos = this->model_->
-                loadPosConstraints(this->fly_->P.cpos.A,
-                                   this->fly_->P.cpos.b);
+        this->fly_->init_problem1(this->model_->getHorizon(),   // Number of points on the trajectory (resolution)
+                                  this->model_->getFinaltime(), // Duration of flight [s]
+                                  this->model_->                // Circle constraints | H(r - p) |^2 > R^2
+                                      loadEllipseConstraints(this->fly_->P.obs.R,
+                                                             this->fly_->P.obs.c_e,
+                                                             this->fly_->P.obs.c_n),
+                                  this->model_->                // Affine constraints Ax leq b
+                                      loadPosConstraints(this->fly_->P.cpos.A,
+                                                         this->fly_->P.cpos.b)
+                                  );
 
 
-        this->fly_->init_problem1(K, tf, n_obs,n_cpos);
+        // Inputs
+        //TODO(mceowen): Need to determine way to set this on skyenet side while
+        //still conducting thread locking
+        this->model_->loadInitialPos(this->fly_->I.r_i);
+        this->model_->loadFinalPos(this->fly_->I.r_f);
+
 
         // Initialize.
         this->fly_->init();
@@ -147,7 +142,7 @@ void ComputeThread::run() {
         */
 
         // TODO(mceowen): No namespace in algorithm.h to specify reset function
-        reset(this->fly_->P, this->fly_->I, this->fly_->O);
+        skyenet::reset(this->fly_->P, this->fly_->I, this->fly_->O);
     }
 }
 

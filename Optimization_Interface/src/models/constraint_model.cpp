@@ -182,6 +182,14 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
     this->model_lock_.unlock();
 }
 
+/*
+void ConstraintModel::init_problem1() {
+    this->model_lock_.lock();
+
+    this->model_lock_.unlock();
+}
+*/
+
 void ConstraintModel::loadFinalPos(double *r_f) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->final_pos_->getPos());
