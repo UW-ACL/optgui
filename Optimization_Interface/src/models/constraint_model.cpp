@@ -284,6 +284,13 @@ void ConstraintModel::setHorizon(quint32 horizon) {
     this->model_lock_.unlock();
 }
 
+QPointF ConstraintModel::getWaypoint(quint16 idx) {
+    this->model_lock_.lock();
+    QPointF temp = this->waypoints_->getPointAt(idx);
+    this->model_lock_.unlock();
+    return temp;
+}
+
 autogen::packet::traj3dof ConstraintModel::getTraj3dof() {
     this->model_lock_.lock();
     autogen::packet::traj3dof temp = this->drone_traj3dof_data_;

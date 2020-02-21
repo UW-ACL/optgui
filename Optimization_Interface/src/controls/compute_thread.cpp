@@ -3,9 +3,11 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2020, All Rights Reserved
 
+#include "include/globals.h"
 #include "include/controls/compute_thread.h"
 
 #include <algorithm>
+#include <QDebug>
 
 namespace optgui {
 
@@ -82,6 +84,17 @@ void ComputeThread::run() {
         this->fly_->I.a_f[0] = -this->fly_->P.g[0];
         this->fly_->I.a_f[1] = -this->fly_->P.g[1];
         this->fly_->I.a_f[2] = -this->fly_->P.g[2];
+
+        // TODO: waypoints
+        this->fly_->P.wprelax[0] = 5;
+        this->fly_->P.wp_idx[0] = this->fly_->P.K/2;
+        QPointF _wp = guiXyzToNED(this->model_->getWaypoint(0));
+        this->fly_->I.wp[0][0] = 0;
+        this->fly_->I.wp[0][1] = _wp.x();
+        this->fly_->I.wp[0][2] = _wp.y();
+
+        qDebug() << this->fly_->I.wp[0][1] << this->fly_->I.wp[0][1];
+
 
         // Initialize.
         this->fly_->init();

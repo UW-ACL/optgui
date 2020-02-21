@@ -77,6 +77,10 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     connect(this, SIGNAL(stopComputeWorker()),
             this->compute_thread_, SLOT(stopCompute()));
     this->compute_thread_->start();
+
+
+    // TODO: hack to get one waypoint
+    this->addWaypoint(QPointF(0,0));
 }
 
 void Controller::setMessage(QString message) {
