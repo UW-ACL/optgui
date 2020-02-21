@@ -182,14 +182,6 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
     this->model_lock_.unlock();
 }
 
-//TODO(mceowen):Set fully on skyenet side while maintaining thread locking
-/*
-void ConstraintModel::init_problem1(skyenet::SkyeFly *fly_) {
-    this->model_lock_.lock();
-
-    this->model_lock_.unlock();
-}
-*/
 
 double* ConstraintModel::loadFinalPos(double *r_f) {
     this->model_lock_.lock();

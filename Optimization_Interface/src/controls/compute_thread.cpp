@@ -43,7 +43,7 @@ void ComputeThread::run() {
          */
 
         //TODO(mceowen):Set fully on skyenet side while maintaining thread locking
-        //Initialize problem 1
+        /*
         this->fly_->init_problem1(this->model_->getHorizon(),   // Number of points on the trajectory (resolution)
                                   this->model_->getFinaltime(), // Duration of flight [s]
                                   this->model_->                // Circle constraints | H(r - p) |^2 > R^2
@@ -58,10 +58,18 @@ void ComputeThread::run() {
                                   this->model_->
                                     loadFinalPos(this->fly_->I.r_f)
                                   );
+        */
+
+        //Initialize problem 1
+        //TODO(dtsullivan): Change constraint_model fcns to update/return P, r_i, r_f;
+        skyenet::params P = this->fly_->getDefaultP();
+        double r_i[3];
+        double r_f[3];
+        this->fly_->init_problem1(P,r_i,r_f);
 
 
         // Run SCvx algorithm
-        this->fly_->run(); //this->fly_->update();
+        skyenet::outputs O = this->fly_->update(); //this->fly_->update();
 
         // Iterations in resulting trajectory
         quint32 size = this->fly_->P.K;
