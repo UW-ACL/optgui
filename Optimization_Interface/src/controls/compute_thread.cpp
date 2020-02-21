@@ -163,7 +163,7 @@ void ComputeThread::run() {
         */
 
         // TODO(mceowen): No namespace in algorithm.h to specify reset function
-        reset(this->fly_->P, this->fly_->I, this->fly_->O);
+        skyenet::reset(this->fly_->P, this->fly_->I, this->fly_->O);
     }
 }
 
