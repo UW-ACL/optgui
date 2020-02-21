@@ -86,12 +86,16 @@ void ComputeThread::run() {
         this->fly_->I.a_f[2] = -this->fly_->P.g[2];
 
         // TODO: waypoints
-        this->fly_->P.wprelax[0] = 5;
-        this->fly_->P.wp_idx[0] = this->fly_->P.K/2;
-        QPointF _wp = guiXyzToNED(this->model_->getWaypoint(0));
-        this->fly_->I.wp[0][0] = 0;
-        this->fly_->I.wp[0][1] = _wp.x();
-        this->fly_->I.wp[0][2] = _wp.y();
+        if(this->model_->hasWaypoints()) {
+            this->fly_->P.wprelax[0] = 10;
+            this->fly_->P.wp_idx[0] = this->fly_->P.K/2;
+            QPointF _wp = guiXyzToNED(this->model_->getWaypoint(0));
+            this->fly_->I.wp[0][0] = 0;
+            this->fly_->I.wp[0][1] = _wp.x();
+            this->fly_->I.wp[0][2] = _wp.y();
+        } else {
+            this->fly_->P.wprelax[0] = 0;
+        }
 
         qDebug() << this->fly_->I.wp[0][1] << this->fly_->I.wp[0][1];
 

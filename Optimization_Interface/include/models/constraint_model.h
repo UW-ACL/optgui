@@ -70,6 +70,7 @@ class ConstraintModel {
     autogen::packet::traj3dof getTraj3dof();
     void setTraj3dof(autogen::packet::traj3dof traj3dof_data);
 
+    bool hasWaypoints();
     QPointF getWaypoint(quint16);
 
     bool getIsValidTraj();

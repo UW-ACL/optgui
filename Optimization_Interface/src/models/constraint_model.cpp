@@ -284,7 +284,12 @@ void ConstraintModel::setHorizon(quint32 horizon) {
     this->model_lock_.unlock();
 }
 
+bool ConstraintModel::hasWaypoints() {
+    return this->waypoints_->getSize() > 0;
+}
+
 QPointF ConstraintModel::getWaypoint(quint16 idx) {
+    // TODO: handle error that idx is out of range.
     this->model_lock_.lock();
     QPointF temp = this->waypoints_->getPointAt(idx);
     this->model_lock_.unlock();
