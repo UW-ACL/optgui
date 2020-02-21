@@ -55,8 +55,8 @@ class ConstraintModel {
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
 
-    void loadFinalPos(double*);
-    void loadInitialPos(double*);
+    double* loadFinalPos(double*);
+    double* loadInitialPos(double*);
 
     quint32 loadEllipseConstraints(double* R, double* c_e, double* c_n);
     quint32 loadPosConstraints(double* A, double* b);

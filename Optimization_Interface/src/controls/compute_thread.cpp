@@ -42,6 +42,7 @@ void ComputeThread::run() {
          *
          */
 
+        //TODO(mceowen):Set fully on skyenet side while maintaining thread locking
         //Initialize problem 1
         this->fly_->init_problem1(this->model_->getHorizon(),   // Number of points on the trajectory (resolution)
                                   this->model_->getFinaltime(), // Duration of flight [s]
@@ -51,22 +52,16 @@ void ComputeThread::run() {
                                                              this->fly_->P.obs.c_n),
                                   this->model_->                // Affine constraints Ax leq b
                                       loadPosConstraints(this->fly_->P.cpos.A,
-                                                         this->fly_->P.cpos.b)
+                                                         this->fly_->P.cpos.b),
+                                  this->model_->
+                                    loadInitialPos(this->fly_->I.r_i),
+                                  this->model_->
+                                    loadFinalPos(this->fly_->I.r_f)
                                   );
 
 
-        // Inputs
-        //TODO(mceowen): Need to determine way to set this on skyenet side while
-        //still conducting thread locking
-        this->model_->loadInitialPos(this->fly_->I.r_i);
-        this->model_->loadFinalPos(this->fly_->I.r_f);
-
-
-        // Initialize.
-        this->fly_->init();
-
         // Run SCvx algorithm
-        this->fly_->run();
+        this->fly_->run(); //this->fly_->update();
 
         // Iterations in resulting trajectory
         quint32 size = this->fly_->P.K;

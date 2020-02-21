@@ -182,28 +182,31 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
     this->model_lock_.unlock();
 }
 
+//TODO(mceowen):Set fully on skyenet side while maintaining thread locking
 /*
-void ConstraintModel::init_problem1() {
+void ConstraintModel::init_problem1(skyenet::SkyeFly *fly_) {
     this->model_lock_.lock();
 
     this->model_lock_.unlock();
 }
 */
 
-void ConstraintModel::loadFinalPos(double *r_f) {
+double* ConstraintModel::loadFinalPos(double *r_f) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->final_pos_->getPos());
     r_f[1] = ned_coords.x();
     r_f[2] = ned_coords.y();
     this->model_lock_.unlock();
+    return r_f;
 }
 
-void ConstraintModel::loadInitialPos(double *r_i) {
+double* ConstraintModel::loadInitialPos(double *r_i) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->drone_->getPos());
     r_i[1] = ned_coords.x();
     r_i[2] = ned_coords.y();
     this->model_lock_.unlock();
+    return r_i;
 }
 
 quint32 ConstraintModel::loadEllipseConstraints(
