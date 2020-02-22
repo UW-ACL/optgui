@@ -28,6 +28,7 @@ void ConstraintModel::initialize() {
     this->final_pos_ = nullptr;
     this->waypoints_ = nullptr;
     this->path_ = nullptr;
+    this->path_sent_ = nullptr;
     this->drone_ = nullptr;
 
     // initialize algorithm variables
@@ -63,6 +64,10 @@ ConstraintModel::~ConstraintModel() {
     // Delete path
     if (this->path_) {
         delete this->path_;
+    }
+    // Delete path sent
+    if (this->path_sent_) {
+        delete this->path_sent_;
     }
     // Delete drone
     if (this->drone_) {
@@ -140,10 +145,28 @@ void ConstraintModel::setPathModel(PathModelItem *trajectory) {
     this->model_lock_.unlock();
 }
 
+
+void ConstraintModel::setPathSentModel(PathModelItem *trajectory) {
+    this->model_lock_.lock();
+    if (this->path_sent_) {
+        delete this->path_sent_;
+    }
+    this->path_sent_ = trajectory;
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setPathPoints(QVector<QPointF> points) {
     this->model_lock_.lock();
     if (this->path_) {
         this->path_->setPoints(points);
+    }
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::setPathSentPoints(QVector<QPointF> points) {
+    this->model_lock_.lock();
+    if (this->path_sent_ && !this->is_frozen_) {
+        this->path_sent_->setPoints(points);
     }
     this->model_lock_.unlock();
 }

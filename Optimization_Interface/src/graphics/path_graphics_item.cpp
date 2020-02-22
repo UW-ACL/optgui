@@ -22,7 +22,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
 
 void PathGraphicsItem::initialize() {
     // Set pen
-    this->pen_ = QPen(Qt::red);
+    this->pen_ = QPen(Qt::green);
     this->pen_.setWidth(this->width_);
 
     // Set flags
