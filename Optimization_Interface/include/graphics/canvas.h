@@ -35,6 +35,7 @@ class Canvas : public QGraphicsScene {
 
     WaypointsGraphicsItem *waypoints_graphic_;
     PathGraphicsItem *path_graphic_;
+    PathGraphicsItem *path_sent_graphic_;
     DroneGraphicsItem *drone_graphic_;
     PointGraphicsItem *final_point_;
 

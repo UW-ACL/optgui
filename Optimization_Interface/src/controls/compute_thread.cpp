@@ -97,7 +97,6 @@ void ComputeThread::run() {
             this->fly_->P.wprelax[0] = 0;
         }
 
-        qDebug() << this->fly_->I.wp[0][1] << this->fly_->I.wp[0][1];
 
 
         // Initialize.
@@ -146,6 +145,7 @@ void ComputeThread::run() {
         }
         // set points on graphical display
         this->model_->setPathPoints(trajectory);
+        this->model_->setPathSentPoints(trajectory);
         this->model_->setTraj3dof(drone_traj3dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation

@@ -40,6 +40,7 @@ protected:
     ConstraintModel *model_;
     skyenet::SkyeFly *fly_;
     bool run_loop_;
+    bool freeze_;
 };
 
 }  // namespace optgui
