@@ -55,11 +55,11 @@ class ConstraintModel {
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
 
-    double* loadFinalPos(double*);
-    double* loadInitialPos(double*);
+    void loadFinalPos(double*);
+    void loadInitialPos(double*);
 
-    quint32 loadEllipseConstraints(double* R, double* c_e, double* c_n);
-    quint32 loadPosConstraints(double* A, double* b);
+    void loadEllipseConstraints(skyenet::params &P);
+    void loadPosConstraints(skyenet::params &P);
 
     qreal getFinaltime();
     void setFinaltime(qreal finaltime);
@@ -95,7 +95,7 @@ class ConstraintModel {
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
-    void loadPlaneConstraint(double *A, double *b, quint32 index,
+    void loadPlaneConstraint(skyenet::params &P, quint32 index,
                                  QPointF p, QPointF q);
 };
 
