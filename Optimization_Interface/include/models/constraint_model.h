@@ -51,6 +51,11 @@ class ConstraintModel {
 
     void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF> points);
+    QVector<QPointF> getPathPoints();
+
+    void setPathSentModel(PathModelItem *model);
+    void setPathSentPoints(QVector<QPointF> points);
+    void clearPathSentPoints();
 
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
@@ -92,6 +97,7 @@ class ConstraintModel {
     QSet<PlaneModelItem *> *planes_;
     PathModelItem *waypoints_;
     PathModelItem *path_;
+    PathModelItem *path_sent_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
