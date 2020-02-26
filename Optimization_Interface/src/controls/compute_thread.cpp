@@ -34,8 +34,9 @@ void ComputeThread::run() {
         double r_f[3] = { 0 };
         this->model_->loadInitialPos(r_i);
         this->model_->loadFinalPos(r_f);
+      
         // Horizon
-        this->P.K = std::max(std::min(
+        this->fly_->P.K = std::max(std::min(
                 this->model_->getHorizon(), skyenet::MAX_HORIZON), 5u);
         // duration of flight
         this->P.tf = this->model_->getFinaltime();
@@ -50,7 +51,6 @@ void ComputeThread::run() {
 
         // Run SCvx algorithm
         skyenet::outputs O = this->fly_->update();
-        // qDebug() << O.r[1][0];
 
         // Iterations in resulting trajectory
         quint32 size = this->P.K;
@@ -100,20 +100,6 @@ void ComputeThread::run() {
             emit this->setMessage("Trajectory remains feasible!");
         }
         emit updateGraphics();
-
-        // Debugging outputs
-        /*
-        qDebug() << "i= " << I.i
-                 << "| Del = " << O.Delta
-                 << "| L = " << O.L
-                 << "| J = " << O.J
-                 << "| dL = " << O.dL
-                 << "| dJ = " << O.dJ
-                 << "| I.J_0 = " << I.J_0
-                 << "| O.J = " << O.J
-                 << "| r = " << O.ratio;
-        qDebug() << O.r_f_relax[0] << O.r_f_relax[1];
-        */
     }
 }
 
