@@ -163,10 +163,28 @@ void ConstraintModel::setPathPoints(QVector<QPointF> points) {
     this->model_lock_.unlock();
 }
 
+QVector<QPointF> ConstraintModel::getPathPoints() {
+    this->model_lock_.lock();
+    QVector<QPointF> temp;
+    if (this->path_) {
+        temp = this->path_->getPoints();
+    }
+    this->model_lock_.unlock();
+    return temp;
+}
+
 void ConstraintModel::setPathSentPoints(QVector<QPointF> points) {
     this->model_lock_.lock();
-    if (this->path_sent_ && !this->is_frozen_) {
+    if (this->path_sent_) {
         this->path_sent_->setPoints(points);
+    }
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::clearPathSentPoints() {
+    this->model_lock_.lock();
+    if (this->path_sent_) {
+        this->path_sent_->clearPoints();
     }
     this->model_lock_.unlock();
 }

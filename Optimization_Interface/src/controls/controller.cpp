@@ -9,7 +9,6 @@
 #include <QSettings>
 #include <QTranslator>
 #include <QSet>
-#include <QDebug>
 
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
@@ -36,13 +35,13 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
             new WaypointsGraphicsItem(waypoint_model);
     this->canvas_->addItem(this->canvas_->waypoints_graphic_);
 
-    // initialize trajectory model and graphic
+    // initialize trajectory sent model and graphic
     PathModelItem *trajectory_sent_model = new PathModelItem();
     this->model_->setPathSentModel(trajectory_sent_model);
     this->canvas_->path_sent_graphic_ =
             new PathGraphicsItem(trajectory_sent_model);
+    this->canvas_->path_sent_graphic_->setColor(Qt::blue);
     this->canvas_->addItem(this->canvas_->path_sent_graphic_);
-    // TODO: set the color for the trajectory
 
     // initialize trajectory model and graphic
     PathModelItem *trajectory_model = new PathModelItem();
@@ -120,6 +119,9 @@ Controller::~Controller() {
 
     // clean up model
     delete this->model_;
+
+    // clean up timer
+    delete this->freeze_timer_;
 }
 
 // ============ MOUSE CONTROLS ============
@@ -253,25 +255,26 @@ void Controller::updateFinalPosition(QPointF const &pos) {
 }
 
 void Controller::setFreeze() {
-    this->model_->is_frozen_ = true;
+    this->freeze_timer_->start(1000*this->model_->getFinaltime());
+    // set path sent
+    this->model_->setPathSentPoints(this->model_->getPathPoints());
+    this->canvas_->path_sent_graphic_->expandScene();
 }
 
 void Controller::setUnfreeze() {
-    this->model_->is_frozen_ = false;
     this->freeze_timer_->stop();
+    // clear path sent
+    this->model_->clearPathSentPoints();
+    this->canvas_->path_sent_graphic_->expandScene();
 }
 
 void Controller::execute() {
-    // If frozen, don't execute.
-    qDebug() << this->freeze_timer_->remainingTime();
-    if (this->freeze_timer_->isActive()){
+    if (this->freeze_timer_->isActive()) {
         return;
     }
     this->setFreeze();
-    this->freeze_timer_->start(1000*this->model_->getFinaltime());
 
     if (this->model_->getIsValidTraj()) {
-        qDebug() << "send trajectories";
         emit trajectoryExecuted(this->model_->getTraj3dof());
     }
 }

@@ -48,8 +48,8 @@ class MenuPanel : public QFrame {
     QLabel *user_msg_label_;              // labels user feedback message
 
     // Initialization
-    qreal finaltime_init_ = 3.0;         // initializes final time
-    quint32 horizon_length_init_ = skyenet::MAX_HORIZON;    // initializes horizon length
+    qreal finaltime_init_ = 3.0;  // initializes final time
+    quint32 horizon_length_init_ = skyenet::MAX_HORIZON;
     qreal zoom_init_ = 1.0;
 
     // Message box for user feedback

@@ -129,7 +129,6 @@ void ComputeThread::run() {
         }
         // set points on graphical display
         this->model_->setPathPoints(trajectory);
-        this->model_->setPathSentPoints(trajectory);
         this->model_->setTraj3dof(drone_traj3dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation

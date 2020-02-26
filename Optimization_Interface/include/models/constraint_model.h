@@ -51,9 +51,11 @@ class ConstraintModel {
 
     void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF> points);
+    QVector<QPointF> getPathPoints();
 
     void setPathSentModel(PathModelItem *model);
     void setPathSentPoints(QVector<QPointF> points);
+    void clearPathSentPoints();
 
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
@@ -80,8 +82,6 @@ class ConstraintModel {
                    QTableWidget *drone_table,
                    QSet<quint16> *ports);
 
-    // Freeze. TODO: remove private variable
-    bool is_frozen_;
  private:
     void initialize();
 
