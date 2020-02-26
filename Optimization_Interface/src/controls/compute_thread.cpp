@@ -15,7 +15,7 @@ ComputeThread::ComputeThread(ConstraintModel *model) {
     this->model_ = model;
     this->run_loop_ = true;
     this->fly_ = new skyenet::SkyeFly();
-    this->P = this->fly_->getDefaultP();  //skyenet::getDefaultP();
+    this->P = skyenet::getDefaultP();
 }
 
 ComputeThread::~ComputeThread() {
