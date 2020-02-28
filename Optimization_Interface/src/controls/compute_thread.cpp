@@ -36,7 +36,7 @@ void ComputeThread::run() {
         this->model_->loadFinalPos(r_f);
       
         // Horizon
-        this->fly_->P.K = std::max(std::min(
+        this->P.K = std::max(std::min(
                 this->model_->getHorizon(), skyenet::MAX_HORIZON), 5u);
         // duration of flight
         this->P.tf = this->model_->getFinaltime();
