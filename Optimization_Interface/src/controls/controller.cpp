@@ -143,7 +143,7 @@ void Controller::removeItem(QGraphicsItem *item) {
             if (item->parentItem() &&
                     item->parentItem()->type() == WAYPOINTS_GRAPHIC) {
                 WaypointsResizeHandle *point_handle =
-                        dynamic_cast<WaypointsResizeHandle *>(item);
+                        reinterpret_cast<WaypointsResizeHandle *>(item);
                 quint32 point_model_index = point_handle->index_;
                 qgraphicsitem_cast<WaypointsGraphicsItem *>
                         (point_handle->parentItem())->
@@ -218,14 +218,6 @@ void Controller::duplicateSelected() {
 }
 
 // ============ BACK END CONTROLS ============
-
-void Controller::setFinaltime(qreal final_time) {
-    this->model_->setFinaltime(final_time);
-}
-
-void Controller::setHorizonLength(quint32 horizon_length) {
-    this->model_->setHorizon(horizon_length);
-}
 
 void Controller::updateFinalPosition(QPointF const &pos) {
     this->model_->setFinalPointPos(pos);

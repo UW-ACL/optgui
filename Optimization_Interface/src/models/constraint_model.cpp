@@ -7,6 +7,8 @@
 
 #include <QString>
 #include <QLineF>
+#include <QSpinBox>
+#include <QDoubleSpinBox>
 
 #include <algorithm>
 
@@ -31,8 +33,7 @@ void ConstraintModel::initialize() {
     this->drone_ = nullptr;
 
     // initialize algorithm variables
-    this->finaltime_ = 3;
-    this->horizon_length_ = MAX_HORIZON;
+    this->P_ = skyefly::getDefaultP();
     this->is_valid_traj = false;
 }
 
@@ -198,89 +199,16 @@ void ConstraintModel::loadInitialPos(double *r_i) {
     this->model_lock_.unlock();
 }
 
-quint32 ConstraintModel::loadEllipseConstraints(
-        double *R, double *c_e, double *c_n) {
-    quint32 index = 0;
-    this->model_lock_.lock();
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
-        R[index] = ellipse->getRadius() / GRID_SIZE;
-        QPointF ned_coords = guiXyzToNED(ellipse->getPos());
-        // TODO(mceowen): c_e and c_n are backward in Skyefly
-        c_e[index] = ned_coords.x();
-        c_n[index] = ned_coords.y();
-        index++;
-        if (index >= MAX_OBS) {
-            this->model_lock_.unlock();
-            return index;
-        }
-    }
-    this->model_lock_.unlock();
-    return index;
-}
-
-quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
-    quint32 index = 0;
-    this->model_lock_.lock();
-    for (PolygonModelItem *polygon : *this->polygons_) {
-        quint32 size = polygon->getSize();
-        for (quint32 i = 1; i < size + 1; i++) {
-            QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
-            QPointF ned_q = guiXyzToNED(polygon->getPointAt(i % size));
-            if (polygon->getDirection()) {
-                this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
-            } else {
-                this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
-            }
-            index++;
-            if (index >= MAX_CPOS) {
-                this->model_lock_.unlock();
-                return index;
-            }
-        }
-    }
-
-    for (PlaneModelItem *plane : *this->planes_) {
-        QPointF ned_p = guiXyzToNED(plane->getP1());
-        QPointF ned_q = guiXyzToNED(plane->getP2());
-
-        if (plane->getDirection()) {
-            this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
-        } else {
-            this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
-        }
-        index++;
-        if (index >= MAX_CPOS) {
-            this->model_lock_.unlock();
-            return index;
-        }
-    }
-    this->model_lock_.unlock();
-    return index;
-}
-
 qreal ConstraintModel::getFinaltime() {
     this->model_lock_.lock();
-    qreal temp = this->finaltime_;
+    qreal temp = this->P_.tf;
     this->model_lock_.unlock();
     return temp;
 }
 
 void ConstraintModel::setFinaltime(qreal finaltime) {
     this->model_lock_.lock();
-    this->finaltime_ = finaltime;
-    this->model_lock_.unlock();
-}
-
-quint32 ConstraintModel::getHorizon() {
-    this->model_lock_.lock();
-    quint32 temp = this->horizon_length_;
-    this->model_lock_.unlock();
-    return temp;
-}
-
-void ConstraintModel::setHorizon(quint32 horizon) {
-    this->model_lock_.lock();
-    this->horizon_length_ = std::min(horizon, MAX_HORIZON);
+    this->P_.tf = finaltime;
     this->model_lock_.unlock();
 }
 
@@ -308,6 +236,45 @@ void ConstraintModel::setIsValidTraj(bool is_valid) {
     this->model_lock_.lock();
     this->is_valid_traj = is_valid;
     this->model_lock_.unlock();
+}
+
+void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
+    this->model_lock_.lock();
+    // load skyefly::params from  expert panel table
+    this->P_.K = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 0))->value();
+    this->P_.dK = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 1))->value();
+    this->P_.n_recalcs = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 2))->value();
+    this->P_.a_min = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 3))->value();
+    this->P_.a_max = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 4))->value();
+    this->P_.theta_max = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 5))->value();
+    this->P_.q_max = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 6))->value();
+    this->P_.max_iter = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 7))->value();
+    this->P_.Delta_i = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 8))->value();
+    this->P_.lambda = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 9))->value();
+    this->P_.alpha = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 10))->value();
+    this->P_.dL_tol = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 11))->value();
+    this->P_.rho_0 = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 12))->value();
+    this->P_.rho_1 = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 13))->value();
+    this->P_.rho_2 = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 14))->value();
+    this->P_.rirelax = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 15))->value();
+    this->P_.rfrelax = reinterpret_cast<QDoubleSpinBox *>(params_table->cellWidget(0, 16))->value();
+
+    this->model_lock_.unlock();
+}
+
+skyefly::params ConstraintModel::getSkyeFlyParams() {
+    this->model_lock_.lock();
+    // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
+    // circle and R is the radius (H some linear transform)
+    this->P_.obs.n = this->loadEllipseConstraints(this->P_.obs.R,
+                                   this->P_.obs.c_e,
+                                   this->P_.obs.c_n);
+    // Affine constraints Ax leq b
+    this->P_.cpos.n = this->loadPosConstraints(this->P_.cpos.A,
+                               this->P_.cpos.b);
+    skyefly::params P = this->P_;
+    this->model_lock_.unlock();
+    return P;
 }
 
 void ConstraintModel::fillTable(QTableWidget *port_table,
@@ -408,7 +375,60 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     this->model_lock_.unlock();
 }
 
-// Private functions, should not lock
+// ====== Private functions, should not lock =======
+
+quint32 ConstraintModel::loadEllipseConstraints(
+        double *R, double *c_e, double *c_n) {
+    quint32 index = 0;
+    for (EllipseModelItem *ellipse : *this->ellipses_) {
+        R[index] = ellipse->getRadius() / GRID_SIZE;
+        QPointF ned_coords = guiXyzToNED(ellipse->getPos());
+        // TODO(mceowen): c_e and c_n are backward in Skyefly
+        c_e[index] = ned_coords.x();
+        c_n[index] = ned_coords.y();
+        index++;
+        if (index >= MAX_OBS) {
+            return index;
+        }
+    }
+    return index;
+}
+
+quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
+    quint32 index = 0;
+    for (PolygonModelItem *polygon : *this->polygons_) {
+        quint32 size = polygon->getSize();
+        for (quint32 i = 1; i < size + 1; i++) {
+            QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
+            QPointF ned_q = guiXyzToNED(polygon->getPointAt(i % size));
+            if (polygon->getDirection()) {
+                this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
+            } else {
+                this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
+            }
+            index++;
+            if (index >= MAX_CPOS) {
+                return index;
+            }
+        }
+    }
+
+    for (PlaneModelItem *plane : *this->planes_) {
+        QPointF ned_p = guiXyzToNED(plane->getP1());
+        QPointF ned_q = guiXyzToNED(plane->getP2());
+
+        if (plane->getDirection()) {
+            this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
+        } else {
+            this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
+        }
+        index++;
+        if (index >= MAX_CPOS) {
+            return index;
+        }
+    }
+    return index;
+}
 
 void ConstraintModel::loadPlaneConstraint(double *A, double *b, quint32 index,
                                               QPointF ned_p, QPointF ned_q) {

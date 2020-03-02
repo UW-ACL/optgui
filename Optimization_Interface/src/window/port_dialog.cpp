@@ -108,7 +108,7 @@ void PortDialog::initializeTable() {
 void PortDialog::closeEvent(QCloseEvent *event) {
     // update all ports
     for (int i = 0; i < this->port_table_->rowCount(); i++) {
-        PortSelector *selector = qobject_cast<PortSelector*>
+        PortSelector *selector = reinterpret_cast<PortSelector*>
                 (this->port_table_->cellWidget(i, 1));
         selector->updatePort();
     }

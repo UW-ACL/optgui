@@ -56,8 +56,6 @@ class Controller : public QObject {
     void setPorts();
 
     // functions for setting optimization problem constraints
-    void setFinaltime(qreal final_time);
-    void setHorizonLength(quint32 horizon_length);
     void updateFinalPosition(QPointF const &pos);
 
     void execute();

@@ -12,6 +12,8 @@
 #include <QToolButton>
 #include <QMouseEvent>
 #include <QGraphicsItem>
+#include <QTableWidget>
+#include <QHeaderView>
 
 #include "algorithm.h"
 
@@ -44,7 +46,7 @@ class View : public QGraphicsView {
     void setState(STATE button_type);
     void setPorts();
     void execute();
-    void setHorizon(int horizon_length);
+    void setSkyeFlyParams();
     void setFinaltime(qreal final_time);
     void duplicateSelected();
 
@@ -64,6 +66,7 @@ class View : public QGraphicsView {
     QVector<QGraphicsItem*> *temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
+    QTableWidget *skyefly_params_table_;
 
     // keep track of all widgets to delete them
     QVector<QWidget *> panel_widgets_;
@@ -83,8 +86,8 @@ class View : public QGraphicsView {
     void initializeFlipButton(MenuPanel *panel);
     void initializeExecButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
-    void initializeHorizon(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
+    void initializeSkyeFlyParamsTable(MenuPanel *panel);
 };
 
 }  // namespace optgui
