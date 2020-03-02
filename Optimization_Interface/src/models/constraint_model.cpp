@@ -30,10 +30,11 @@ void ConstraintModel::initialize() {
     this->final_pos_ = nullptr;
     this->waypoints_ = nullptr;
     this->path_ = nullptr;
+    this->path_sent_ = nullptr;
     this->drone_ = nullptr;
 
     // initialize algorithm variables
-    this->P_ = skyefly::getDefaultP();
+    this->P_ = skyenet::getDefaultP();
     this->is_valid_traj = false;
 }
 
@@ -64,6 +65,10 @@ ConstraintModel::~ConstraintModel() {
     // Delete path
     if (this->path_) {
         delete this->path_;
+    }
+    // Delete path sent
+    if (this->path_sent_) {
+        delete this->path_sent_;
     }
     // Delete drone
     if (this->drone_) {
@@ -141,10 +146,46 @@ void ConstraintModel::setPathModel(PathModelItem *trajectory) {
     this->model_lock_.unlock();
 }
 
+
+void ConstraintModel::setPathSentModel(PathModelItem *trajectory) {
+    this->model_lock_.lock();
+    if (this->path_sent_) {
+        delete this->path_sent_;
+    }
+    this->path_sent_ = trajectory;
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setPathPoints(QVector<QPointF> points) {
     this->model_lock_.lock();
     if (this->path_) {
         this->path_->setPoints(points);
+    }
+    this->model_lock_.unlock();
+}
+
+QVector<QPointF> ConstraintModel::getPathPoints() {
+    this->model_lock_.lock();
+    QVector<QPointF> temp;
+    if (this->path_) {
+        temp = this->path_->getPoints();
+    }
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setPathSentPoints(QVector<QPointF> points) {
+    this->model_lock_.lock();
+    if (this->path_sent_) {
+        this->path_sent_->setPoints(points);
+    }
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::clearPathSentPoints() {
+    this->model_lock_.lock();
+    if (this->path_sent_) {
+        this->path_sent_->clearPoints();
     }
     this->model_lock_.unlock();
 }
@@ -182,6 +223,7 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
     }
     this->model_lock_.unlock();
 }
+
 
 void ConstraintModel::loadFinalPos(double *r_f) {
     this->model_lock_.lock();
@@ -240,7 +282,7 @@ void ConstraintModel::setIsValidTraj(bool is_valid) {
 
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     this->model_lock_.lock();
-    // load skyefly::params from  expert panel table
+    // load skyenet::params from  expert panel table
     this->P_.K = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 0))->value();
     this->P_.dK = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 1))->value();
     this->P_.n_recalcs = reinterpret_cast<QSpinBox *>(params_table->cellWidget(0, 2))->value();
@@ -262,17 +304,16 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     this->model_lock_.unlock();
 }
 
-skyefly::params ConstraintModel::getSkyeFlyParams() {
+skyenet::params ConstraintModel::getSkyeFlyParams() {
     this->model_lock_.lock();
     // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
     // circle and R is the radius (H some linear transform)
-    this->P_.obs.n = this->loadEllipseConstraints(this->P_.obs.R,
-                                   this->P_.obs.c_e,
-                                   this->P_.obs.c_n);
+    this->loadEllipseConstraints(this->P_);
     // Affine constraints Ax leq b
-    this->P_.cpos.n = this->loadPosConstraints(this->P_.cpos.A,
-                               this->P_.cpos.b);
-    skyefly::params P = this->P_;
+    this->loadPosConstraints(this->P_);
+    // time intervals
+    this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
+    skyenet::params P = this->P_;
     this->model_lock_.unlock();
     return P;
 }
@@ -377,24 +418,24 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
 // ====== Private functions, should not lock =======
 
-quint32 ConstraintModel::loadEllipseConstraints(
-        double *R, double *c_e, double *c_n) {
+void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
     quint32 index = 0;
     for (EllipseModelItem *ellipse : *this->ellipses_) {
-        R[index] = ellipse->getRadius() / GRID_SIZE;
+        P.obs.R[index] = ellipse->getRadius() / GRID_SIZE;
         QPointF ned_coords = guiXyzToNED(ellipse->getPos());
         // TODO(mceowen): c_e and c_n are backward in Skyefly
-        c_e[index] = ned_coords.x();
-        c_n[index] = ned_coords.y();
+        P.obs.c_e[index] = ned_coords.x();
+        P.obs.c_n[index] = ned_coords.y();
         index++;
-        if (index >= MAX_OBS) {
-            return index;
+        if (index >= skyenet::MAX_OBS) {
+            P.obs.n = index;
+            return;
         }
     }
-    return index;
+    P.obs.n = index;
 }
 
-quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
+void ConstraintModel::loadPosConstraints(skyenet::params &P) {
     quint32 index = 0;
     for (PolygonModelItem *polygon : *this->polygons_) {
         quint32 size = polygon->getSize();
@@ -402,13 +443,14 @@ quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
             QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
             QPointF ned_q = guiXyzToNED(polygon->getPointAt(i % size));
             if (polygon->getDirection()) {
-                this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
+                this->loadPlaneConstraint(P, index, ned_q, ned_p);
             } else {
-                this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
+                this->loadPlaneConstraint(P, index, ned_p, ned_q);
             }
             index++;
-            if (index >= MAX_CPOS) {
-                return index;
+            if (index >= skyenet::MAX_CPOS) {
+                P.cpos.n = index;
+                return;
             }
         }
     }
@@ -418,19 +460,21 @@ quint32 ConstraintModel::loadPosConstraints(double* A, double* b) {
         QPointF ned_q = guiXyzToNED(plane->getP2());
 
         if (plane->getDirection()) {
-            this->loadPlaneConstraint(A, b, index, ned_q, ned_p);
+            this->loadPlaneConstraint(P, index, ned_q, ned_p);
         } else {
-            this->loadPlaneConstraint(A, b, index, ned_p, ned_q);
+            this->loadPlaneConstraint(P, index, ned_p, ned_q);
         }
         index++;
-        if (index >= MAX_CPOS) {
-            return index;
+        if (index >= skyenet::MAX_CPOS) {
+            P.cpos.n = index;
+            return;
         }
     }
-    return index;
+    this->model_lock_.unlock();
+    P.cpos.n = index;
 }
 
-void ConstraintModel::loadPlaneConstraint(double *A, double *b, quint32 index,
+void ConstraintModel::loadPlaneConstraint(skyenet::params &P, quint32 index,
                                               QPointF ned_p, QPointF ned_q) {
     qreal c = ((ned_p.y() * ned_q.x()) - (ned_p.x() * ned_q.y()));
 
@@ -441,9 +485,9 @@ void ConstraintModel::loadPlaneConstraint(double *A, double *b, quint32 index,
     QPointF normal = line.normalVector().p2();
     qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? -1 : 1;
 
-    A[2 * index] = flip * a1;
-    A[(2 * index) + 1] = flip * a2;
-    b[index] = flip;
+    P.cpos.A[2 * index] = flip * a1;
+    P.cpos.A[(2 * index) + 1] = flip * a2;
+    P.cpos.b[index] = flip;
 }
 
 }  // namespace optgui

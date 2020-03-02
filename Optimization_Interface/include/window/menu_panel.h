@@ -21,6 +21,7 @@ class MenuPanel : public QFrame {
     explicit MenuPanel(QWidget *parent, bool isRight,
                        Qt::WindowFlags flags = Qt::Widget);
     ~MenuPanel();
+
     QWidget *menu_;
     QVBoxLayout *menu_layout_;
     QToolButton *close_button_;

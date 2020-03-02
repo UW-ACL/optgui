@@ -72,6 +72,19 @@ class PathModelItem : public DataModel {
         this->mutex_.unlock();
     }
 
+    void clearPoints() {
+        this->mutex_.lock();
+        this->points_.clear();
+        this->mutex_.unlock();
+    }
+
+    QVector<QPointF> getPoints() {
+        this->mutex_.lock();
+        QVector<QPointF> temp = this->points_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
  private:
     QMutex mutex_;
     QVector<QPointF> points_;

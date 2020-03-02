@@ -10,6 +10,7 @@
 
 #include <cprs.h>
 #include <algorithm.h>
+#include <QTimer>
 
 #include "include/graphics/canvas.h"
 #include "include/models/constraint_model.h"
@@ -68,10 +69,14 @@ class Controller : public QObject {
  private slots:
     void startSockets();
     void setPathColor(bool isRed);
+    void setUnfreeze();
 
  private:
     // QGraphicsScene
     Canvas *canvas_;
+
+    // Freeze timer
+    QTimer *freeze_timer_;
 
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;
@@ -86,6 +91,8 @@ class Controller : public QObject {
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
+
+    void setFreeze();
 };
 
 }  // namespace optgui

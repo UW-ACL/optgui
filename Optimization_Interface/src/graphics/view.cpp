@@ -637,13 +637,14 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
                                         Qt::AlignTop|Qt::AlignCenter);
 
     // Default skyefly param values
-    skyefly::params default_P = skyefly::getDefaultP();
+    skyenet::params default_P = skyenet::getDefaultP();
     // TODO(dtsull16): get min and max values for all params
     quint32 row_index = 0;
 
     // P.K
     QSpinBox *params_K = new QSpinBox(this->skyefly_params_table_);
-    params_K->setRange(skyefly::MIN_HORIZON, skyefly::MAX_HORIZON);
+    // TODO(dtsull16): replace with skyenet::MIN_HORIZON
+    params_K->setRange(5, skyenet::MAX_HORIZON);
     params_K->setValue(default_P.K);
     connect(params_K, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -748,7 +749,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     // P.Delta_i
     QDoubleSpinBox *params_delta_i = new QDoubleSpinBox(this->skyefly_params_table_);
-    params_delta_i->setValue(default_P.delta_i);
+    params_delta_i->setValue(default_P.Delta_i);
     connect(params_delta_i, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -871,7 +872,7 @@ void View::initializeFinaltime(MenuPanel *panel) {
     opt_finaltime->setSingleStep(1.0);
     opt_finaltime->setRange(2.0, 20.0);
     opt_finaltime->setSuffix("s");
-    opt_finaltime->setValue(skyefly::getDefaultP().tf);
+    opt_finaltime->setValue(skyenet::getDefaultP().tf);
     opt_finaltime->setToolTip(tr("Set final time"));
     opt_finaltime->setMinimumHeight(40);
     opt_finaltime->setStyleSheet("QDoubleSpinBox::up-button "

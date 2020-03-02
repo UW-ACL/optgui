@@ -51,6 +51,11 @@ class ConstraintModel {
 
     void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF> points);
+    QVector<QPointF> getPathPoints();
+
+    void setPathSentModel(PathModelItem *model);
+    void setPathSentPoints(QVector<QPointF> points);
+    void clearPathSentPoints();
 
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
@@ -58,7 +63,7 @@ class ConstraintModel {
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    skyefly::params getSkyeFlyParams();
+    skyenet::params getSkyeFlyParams();
     void setSkyeFlyParams(QTableWidget *params_table);
 
     qreal getFinaltime();
@@ -83,7 +88,7 @@ class ConstraintModel {
     QMutex model_lock_;
 
     // Skyefly params
-    skyefly::params P_;
+    skyenet::params P_;
     autogen::packet::traj3dof drone_traj3dof_data_;
     bool is_valid_traj;
 
@@ -93,13 +98,14 @@ class ConstraintModel {
     QSet<PlaneModelItem *> *planes_;
     PathModelItem *waypoints_;
     PathModelItem *path_;
+    PathModelItem *path_sent_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
     // Convert constraints to skyefly params
-    quint32 loadEllipseConstraints(double* R, double* c_e, double* c_n);
-    quint32 loadPosConstraints(double* A, double* b);
-    void loadPlaneConstraint(double *A, double *b, quint32 index,
+    void loadEllipseConstraints(skyenet::params &P);
+    void loadPosConstraints(skyenet::params &P);
+    void loadPlaneConstraint(skyenet::params &P, quint32 index,
                                  QPointF p, QPointF q);
 
 };
