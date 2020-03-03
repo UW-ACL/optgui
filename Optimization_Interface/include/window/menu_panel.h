@@ -18,7 +18,7 @@ namespace optgui {
 
 class MenuPanel : public QFrame {
  public:
-    explicit MenuPanel(QWidget *parent, bool isRight,
+    explicit MenuPanel(QWidget *parent, bool isRight, int size = 100,
                        Qt::WindowFlags flags = Qt::Widget);
     ~MenuPanel();
 

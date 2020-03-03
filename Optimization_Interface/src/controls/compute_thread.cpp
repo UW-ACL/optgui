@@ -7,8 +7,6 @@
 
 #include <algorithm>
 
-#include <QDebug>
-
 namespace optgui {
 
 ComputeThread::ComputeThread(ConstraintModel *model) {
@@ -27,13 +25,15 @@ void ComputeThread::stopCompute() {
 
 void ComputeThread::run() {
     while (this->run_loop_) {
-        // Parameters   
+        // Parameters
         double r_i[3] = { 0 };
         double r_f[3] = { 0 };
         this->model_->loadInitialPos(r_i);
         this->model_->loadFinalPos(r_f);
 
         skyenet::params P = this->model_->getSkyeFlyParams();
+
+        // Initialize problem
         this->fly_->init_problem1(P, r_i, r_f);
 
         // Run SCvx algorithm

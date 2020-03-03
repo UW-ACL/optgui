@@ -117,6 +117,16 @@ Controller::~Controller() {
     delete this->freeze_timer_;
 }
 
+// ============ MENU CONTROLS ============
+
+void Controller::setSkyeFlyParams(QTableWidget *params_table) {
+    this->model_->setSkyeFlyParams(params_table);
+}
+
+void Controller::setFinaltime(qreal final_time) {
+    this->model_->setFinaltime(final_time);
+}
+
 // ============ MOUSE CONTROLS ============
 
 void Controller::removeItem(QGraphicsItem *item) {
@@ -159,7 +169,7 @@ void Controller::removeItem(QGraphicsItem *item) {
             if (item->parentItem() &&
                     item->parentItem()->type() == WAYPOINTS_GRAPHIC) {
                 WaypointsResizeHandle *point_handle =
-                        reinterpret_cast<WaypointsResizeHandle *>(item);
+                        dynamic_cast<WaypointsResizeHandle *>(item);
                 quint32 point_model_index = point_handle->index_;
                 qgraphicsitem_cast<WaypointsGraphicsItem *>
                         (point_handle->parentItem())->

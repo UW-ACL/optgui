@@ -11,6 +11,7 @@
 #include <cprs.h>
 #include <algorithm.h>
 #include <QTimer>
+#include <QTableWidget>
 
 #include "include/graphics/canvas.h"
 #include "include/models/constraint_model.h"
@@ -52,6 +53,10 @@ class Controller : public QObject {
     void removeAllWaypoints();
     void removeItem(QGraphicsItem *item);
     void duplicateSelected();
+
+    // Set skyenet params
+    void setSkyeFlyParams(QTableWidget *params_table);
+    void setFinaltime(qreal final_time);
 
     // network functionality
     void setPorts();

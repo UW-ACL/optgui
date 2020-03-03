@@ -207,10 +207,11 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     }
 
     // Expand scene to fit exposed area
-    this->setSceneRect(this->sceneRect().united(rect));
-    if (!this->views().isEmpty()) {
-        this->views().first()->setSceneRect(this->sceneRect().united(rect));
-    }
+    // (dtsull16): Already done in View::expandView ?
+    //    this->setSceneRect(this->sceneRect().united(rect));
+    //    if (!this->views().isEmpty()) {
+    //        this->views().first()->setSceneRect(this->sceneRect().united(rect));
+    //    }
 
     // Add grids proportional to scaling factor
     qint64 segment_size = GRID_SIZE;

@@ -11,9 +11,13 @@
 
 namespace optgui {
 
-MenuPanel::MenuPanel(QWidget *parent, bool isRight, Qt::WindowFlags flags)
+MenuPanel::MenuPanel(QWidget *parent, bool isRight, int size,
+                     Qt::WindowFlags flags)
     : QFrame(parent, flags) {
     this->is_right_ = isRight;
+    this->setSizePolicy(QSizePolicy::Expanding,
+                                     QSizePolicy::Expanding);
+    this->setFixedWidth(size);
     this->initialize();
 }
 

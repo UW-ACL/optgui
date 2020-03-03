@@ -122,9 +122,6 @@ void View::initializeMenuPanel() {
     this->layout()->setAlignment(this->menu_button_, Qt::AlignRight);
 
     // Configure menu panel parameters
-    this->menu_panel_->setSizePolicy(QSizePolicy::Expanding,
-                                     QSizePolicy::Expanding);
-    this->menu_panel_->setFixedWidth(100);
     this->layout()->addWidget(this->menu_panel_);
     this->layout()->setAlignment(this->menu_panel_, Qt::AlignRight);
 
@@ -156,7 +153,7 @@ void View::initializeMenuPanel() {
 }
 
 void View::initializeExpertPanel() {
-    this->expert_panel_ = new MenuPanel(this, false);
+    this->expert_panel_ = new MenuPanel(this, false, 166);
 
     // Create open expert menu button
     this->expert_menu_button_ = new QToolButton(this);
@@ -168,9 +165,6 @@ void View::initializeExpertPanel() {
     this->layout()->setAlignment(this->expert_menu_button_, Qt::AlignLeft);
 
     // Configure expert menu panel parameters
-    this->expert_panel_->setSizePolicy(QSizePolicy::Expanding,
-                                     QSizePolicy::Expanding);
-    this->expert_panel_->setFixedWidth(100);
     this->layout()->addWidget(this->expert_panel_);
     this->layout()->setAlignment(this->expert_panel_, Qt::AlignLeft);
 
@@ -346,11 +340,11 @@ void View::duplicateSelected() {
 }
 
 void View::setFinaltime(qreal final_time) {
-    this->controller_->model_->setFinaltime(final_time);
+    this->controller_->setFinaltime(final_time);
 }
 
 void View::setSkyeFlyParams() {
-    this->controller_->model_->setSkyeFlyParams(this->skyefly_params_table_);
+    this->controller_->setSkyeFlyParams(this->skyefly_params_table_);
 }
 
 void View::clearMarkers() {
@@ -369,11 +363,18 @@ void View::resizeEvent(QResizeEvent *event) {
 }
 
 void View::expandView() {
-    // Expand scene to viewable area
+    // Transpose view
     QRectF oldView = this->viewport()->rect();
     oldView.translate(-oldView.center().x(), -oldView.center().y());
 
-    this->scene()->setSceneRect((this->scene()->sceneRect()).united(oldView));
+    // Scale canvas out to max size
+    QRectF newView = (this->scene()->sceneRect()).united(oldView);
+    qreal width = newView.width() / 2 * 10;
+    qreal height = newView.height() / 2 * 10;
+
+    // set view and canvas rects
+    this->scene()->setSceneRect(
+                newView.marginsAdded(QMarginsF(width, height, width, height)));
     this->setSceneRect(this->scene()->sceneRect());
 }
 
@@ -627,10 +628,15 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->verticalHeader()->setVisible(true);
     this->skyefly_params_table_->verticalHeader()->
             setSectionResizeMode(QHeaderView::Stretch);
+    this->skyefly_params_table_->horizontalHeader()->setVisible(false);
     this->skyefly_params_table_->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->skyefly_params_table_->
             setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->skyefly_params_table_->
+            setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        // set size
+    this->skyefly_params_table_->setMinimumHeight(450);
         // add table to menu panel
     panel->menu_->layout()->addWidget(this->skyefly_params_table_);
     panel->menu_->layout()->setAlignment(this->skyefly_params_table_,
@@ -651,13 +657,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_K);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index,new QTableWidgetItem("K"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("K"));
     row_index++;
 
     // P.dK
     QSpinBox *params_dK = new QSpinBox(this->skyefly_params_table_);
+    params_dK->setRange(-1000, 1000);
     params_dK->setValue(default_P.dK);
     connect(params_dK, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -665,25 +670,25 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_dK);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("dK"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.n_recalcs
     QSpinBox *params_n_recalcs = new QSpinBox(this->skyefly_params_table_);
+    params_n_recalcs->setRange(-1000, 1000);
     params_n_recalcs->setValue(default_P.n_recalcs);
     connect(params_n_recalcs, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_n_recalcs);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("n_recalcs"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
+            setVerticalHeaderItem(row_index,
+                                  new QTableWidgetItem("n_recalcs"));
     row_index++;
 
     // P.a_min
-    QDoubleSpinBox *params_a_min = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_a_min =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_a_min->setRange(-1000, 1000);
     params_a_min->setValue(default_P.a_min);
     connect(params_a_min, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -691,12 +696,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_a_min);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("a_min"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.a_max
-    QDoubleSpinBox *params_a_max = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_a_max =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_a_max->setRange(-1000, 1000);
     params_a_max->setValue(default_P.a_max);
     connect(params_a_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -704,25 +709,26 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_a_max);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("a_max"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.theta_max
-    QDoubleSpinBox *params_theta_max = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_theta_max =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_theta_max->setRange(-1000, 1000);
     params_theta_max->setValue(default_P.theta_max);
     connect(params_theta_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_theta_max);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("theta_max"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
+            setVerticalHeaderItem(row_index,
+                                  new QTableWidgetItem("theta_max"));
     row_index++;
 
     // P.q_max
-    QDoubleSpinBox *params_q_max = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_q_max =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_q_max->setRange(-1000, 1000);
     params_q_max->setValue(default_P.q_max);
     connect(params_q_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -730,12 +736,11 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_q_max);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("q_max"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.max_iter
     QSpinBox *params_max_iter = new QSpinBox(this->skyefly_params_table_);
+    params_max_iter->setRange(-1000, 1000);
     params_max_iter->setValue(default_P.max_iter);
     connect(params_max_iter, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -743,12 +748,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_max_iter);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("max_iter"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.Delta_i
-    QDoubleSpinBox *params_delta_i = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_delta_i =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_delta_i->setRange(-1000, 1000);
     params_delta_i->setValue(default_P.Delta_i);
     connect(params_delta_i, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -756,12 +761,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_delta_i);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("delta_i"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.lambda
-    QDoubleSpinBox *params_lambda = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_lambda =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_lambda->setRange(-1000, 1000);
     params_lambda->setValue(default_P.lambda);
     connect(params_lambda, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -769,12 +774,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_lambda);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("lambda"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.alpha
-    QDoubleSpinBox *params_alpha = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_alpha =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_alpha->setRange(-1000, 1000);
     params_alpha->setValue(default_P.alpha);
     connect(params_alpha, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -782,12 +787,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_alpha);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("alpha"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.dL_tol
-    QDoubleSpinBox *params_dL_tol = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_dL_tol =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_dL_tol->setRange(-1000, 1000);
     params_dL_tol->setValue(default_P.dL_tol);
     connect(params_dL_tol, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -795,12 +800,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_dL_tol);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("dL_tol"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.rho_0
-    QDoubleSpinBox *params_rho_0 = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_rho_0 =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_rho_0->setRange(-1000, 1000);
     params_rho_0->setValue(default_P.rho_0);
     connect(params_rho_0, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -808,12 +813,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_0);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_0"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.rho_1
-    QDoubleSpinBox *params_rho_1 = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_rho_1 =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_rho_1->setRange(-1000, 1000);
     params_rho_1->setValue(default_P.rho_1);
     connect(params_rho_1, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -821,12 +826,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_1);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_1"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.rho_2
-    QDoubleSpinBox *params_rho_2 = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_rho_2 =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_rho_2->setRange(-1000, 1000);
     params_rho_2->setValue(default_P.rho_2);
     connect(params_rho_2, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -834,12 +839,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_2);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_2"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.rirelax
-    QDoubleSpinBox *params_rirelax = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_rirelax =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_rirelax->setRange(-1000, 1000);
     params_rirelax->setValue(default_P.rirelax);
     connect(params_rirelax, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -847,12 +852,12 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_rirelax);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rirelax"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 
     // P.rfrelax
-    QDoubleSpinBox *params_rfrelax = new QDoubleSpinBox(this->skyefly_params_table_);
+    QDoubleSpinBox *params_rfrelax =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_rfrelax->setRange(-1000, 1000);
     params_rfrelax->setValue(default_P.rfrelax);
     connect(params_rfrelax, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -860,8 +865,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_rfrelax);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rfrelax"));
-    this->skyefly_params_table_->item(row_index, 0)->
-            setFlags(Qt::ItemIsEnabled);
     row_index++;
 }
 
@@ -893,6 +896,10 @@ void View::initializeFinaltime(MenuPanel *panel) {
 
     connect(opt_finaltime, SIGNAL(valueChanged(double)),
             this, SLOT(setFinaltime(qreal)));
+
+
+    // Set table size
+    this->skyefly_params_table_->resizeColumnsToContents();
 }
 
 void View::initializeExecButton(MenuPanel *panel) {
