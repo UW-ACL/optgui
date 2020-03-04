@@ -91,7 +91,7 @@ void WaypointsGraphicsItem::removeHandle(quint32 index) {
     this->model_->removePointAt(index);
     qint32 index_label = 0;
     for (WaypointsResizeHandle *handle : *this->resize_handles_) {
-        handle->index_ = index_label + 1;
+        handle->index_ = index_label;
         index_label++;
     }
 }

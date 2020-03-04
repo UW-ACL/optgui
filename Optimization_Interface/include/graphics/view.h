@@ -12,6 +12,10 @@
 #include <QToolButton>
 #include <QMouseEvent>
 #include <QGraphicsItem>
+#include <QTableWidget>
+#include <QHeaderView>
+
+#include "algorithm.h"
 
 #include "include/graphics/canvas.h"
 #include "include/window/menu_panel.h"
@@ -36,26 +40,54 @@ class View : public QGraphicsView {
  private slots:
     void openMenu();
     void closeMenu();
+    void openExpertMenu();
+    void closeExpertMenu();
     void setZoom(qreal value);
     void setState(STATE button_type);
     void setPorts();
     void execute();
-    void setHorizon(int horizon_length);
+    void setSkyeFlyParams();
     void setFinaltime(qreal final_time);
     void duplicateSelected();
 
  private:
     void initialize();
+    void initializeMenuPanel();
+    void initializeExpertPanel();
     void clearMarkers();
     void expandView();
     Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;
+    QToolButton *expert_menu_button_;
+    MenuPanel *expert_panel_;
     STATE state_;
     Canvas *canvas_;
     QVector<QGraphicsItem*> *temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
+    QTableWidget *skyefly_params_table_;
+
+    // keep track of all widgets to delete them
+    QVector<QWidget *> panel_widgets_;
+    // keep track of all toggle buttons to set them to toggled
+    // or untoggled
+    QVector<MenuButton *> toggle_buttons_;
+
+    // Create buttons for menu panels
+    void initializeMessageBox(MenuPanel *panel);
+    void initializeZoom(MenuPanel *panel);
+    void initializeWaypointButton(MenuPanel *panel);
+    void initializeEraserButton(MenuPanel *panel);
+    void initializePlaneButton(MenuPanel *panel);
+    void initializePolygonButton(MenuPanel *panel);
+    void initializeFinalPointButton(MenuPanel *panel);
+    void initializeEllipseButton(MenuPanel *panel);
+    void initializeFlipButton(MenuPanel *panel);
+    void initializeExecButton(MenuPanel *panel);
+    void initializeFinaltime(MenuPanel *panel);
+    void initializeDuplicateButton(MenuPanel *panel);
+    void initializeSkyeFlyParamsTable(MenuPanel *panel);
 };
 
 }  // namespace optgui

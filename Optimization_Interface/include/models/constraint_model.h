@@ -63,8 +63,8 @@ class ConstraintModel {
     void loadFinalPos(double*);
     void loadInitialPos(double*);
 
-    void loadEllipseConstraints(skyenet::params &P);
-    void loadPosConstraints(skyenet::params &P);
+    skyenet::params getSkyeFlyParams();
+    void setSkyeFlyParams(QTableWidget *params_table);
 
     qreal getFinaltime();
     void setFinaltime(qreal finaltime);
@@ -87,11 +87,12 @@ class ConstraintModel {
 
     QMutex model_lock_;
 
-    qreal finaltime_;
-    quint32 horizon_length_;
+    // Skyefly params
+    skyenet::params P_;
     autogen::packet::traj3dof drone_traj3dof_data_;
     bool is_valid_traj;
 
+    // Constraints
     QSet<EllipseModelItem *> *ellipses_;
     QSet<PolygonModelItem *> *polygons_;
     QSet<PlaneModelItem *> *planes_;
@@ -101,8 +102,12 @@ class ConstraintModel {
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
+    // Convert constraints to skyefly params
+    void loadEllipseConstraints(skyenet::params &P);
+    void loadPosConstraints(skyenet::params &P);
     void loadPlaneConstraint(skyenet::params &P, quint32 index,
                                  QPointF p, QPointF q);
+
 };
 
 }  // namespace optgui

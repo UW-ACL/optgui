@@ -11,6 +11,7 @@
 #include <cprs.h>
 #include <algorithm.h>
 #include <QTimer>
+#include <QTableWidget>
 
 #include "include/graphics/canvas.h"
 #include "include/models/constraint_model.h"
@@ -34,6 +35,9 @@ class Controller : public QObject {
 
     ConstraintModel *model_;
 
+    // SkyFly compute thread
+    ComputeThread *compute_thread_;
+
     // add constraints
     void addEllipse(QPointF point, qreal radius = 120);
     void addPolygon(QVector<QPointF> points);
@@ -50,12 +54,14 @@ class Controller : public QObject {
     void removeItem(QGraphicsItem *item);
     void duplicateSelected();
 
+    // Set skyenet params
+    void setSkyeFlyParams(QTableWidget *params_table);
+    void setFinaltime(qreal final_time);
+
     // network functionality
     void setPorts();
 
     // functions for setting optimization problem constraints
-    void setFinaltime(qreal final_time);
-    void setHorizonLength(quint32 horizon_length);
     void updateFinalPosition(QPointF const &pos);
 
     void execute();
@@ -67,18 +73,12 @@ class Controller : public QObject {
 
  private slots:
     void startSockets();
-    void setMessage(QString message);
     void setPathColor(bool isRed);
     void setUnfreeze();
 
  private:
     // QGraphicsScene
     Canvas *canvas_;
-    // Side menu panel
-    MenuPanel *menu_panel_;
-
-    // SkyFly compute thread
-    ComputeThread *compute_thread_;
 
     // Freeze timer
     QTimer *freeze_timer_;

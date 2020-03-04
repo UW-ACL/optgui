@@ -7,20 +7,16 @@
 
 #include <algorithm>
 
-#include <QDebug>
-
 namespace optgui {
 
 ComputeThread::ComputeThread(ConstraintModel *model) {
     this->model_ = model;
     this->run_loop_ = true;
     this->fly_ = new skyenet::SkyeFly();
-    this->P = skyenet::getDefaultP();
 }
 
 ComputeThread::~ComputeThread() {
     delete this->fly_;
-    //delete this->P;
 }
 
 void ComputeThread::stopCompute() {
@@ -29,31 +25,22 @@ void ComputeThread::stopCompute() {
 
 void ComputeThread::run() {
     while (this->run_loop_) {
-        // Parameters   
+        // Parameters
         double r_i[3] = { 0 };
         double r_f[3] = { 0 };
         this->model_->loadInitialPos(r_i);
         this->model_->loadFinalPos(r_f);
-      
-        // Horizon
-        this->P.K = std::max(std::min(
-                this->model_->getHorizon(), skyenet::MAX_HORIZON), 5u);
-        // duration of flight
-        this->P.tf = this->model_->getFinaltime();
-        // 'resolution'
-        // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
-        // circle and R is the radius (H some linear transform)
-        this->model_->loadEllipseConstraints(this->P);
-        // Affine constraints Ax leq b
-        this->model_->loadPosConstraints(this->P);
 
+        skyenet::params P = this->model_->getSkyeFlyParams();
+
+        // Initialize problem
         this->fly_->init_problem1(P, r_i, r_f);
 
         // Run SCvx algorithm
         skyenet::outputs O = this->fly_->update();
 
         // Iterations in resulting trajectory
-        quint32 size = this->P.K;
+        quint32 size = P.K;
         // GUI trajecotry points
         QVector<QPointF> trajectory = QVector<QPointF>();
         // Mikipilot trajectory to send to drone
@@ -68,7 +55,7 @@ void ComputeThread::run() {
 
             // Add data to mikipilot trajectory
             // drone_traj3dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
-            drone_traj3dof_data.time(i) = i * this->P.dt;
+            drone_traj3dof_data.time(i) = i * P.dt;
             drone_traj3dof_data.pos_ned(0, i) = O.r[1][i];
             drone_traj3dof_data.pos_ned(1, i) = O.r[2][i];
             drone_traj3dof_data.pos_ned(2, i) = O.r[0][i];
