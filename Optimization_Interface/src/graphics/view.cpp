@@ -246,7 +246,10 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case WAYPOINT: {
-            this->controller_->addWaypoint(pos);
+            // TODO(dtsull16): support up to skyenet::MAX_WAYPOINTS
+            if (this->controller_->model_->getNumWaypoints() < 1) {
+                this->controller_->addWaypoint(pos);
+            }
             break;
         }
         case ERASER: {

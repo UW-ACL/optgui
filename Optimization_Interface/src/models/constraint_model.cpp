@@ -137,6 +137,16 @@ void ConstraintModel::addWaypoint(QPointF const &pos) {
     this->model_lock_.unlock();
 }
 
+quint32 ConstraintModel::getNumWaypoints() {
+    this->model_lock_.lock();
+    quint32 temp = 0;
+    if (this->waypoints_) {
+        temp = this->waypoints_->getSize();
+    }
+    this->model_lock_.unlock();
+    return temp;
+}
+
 void ConstraintModel::setPathModel(PathModelItem *trajectory) {
     this->model_lock_.lock();
     if (this->path_) {
@@ -225,7 +235,7 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
 }
 
 
-void ConstraintModel::loadFinalPos(double *r_f) {
+void ConstraintModel::loadFinalPos(double r_f[3]) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->final_pos_->getPos());
     r_f[1] = ned_coords.x();
@@ -233,11 +243,21 @@ void ConstraintModel::loadFinalPos(double *r_f) {
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::loadInitialPos(double *r_i) {
+void ConstraintModel::loadInitialPos(double r_i[3]) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->drone_->getPos());
     r_i[1] = ned_coords.x();
     r_i[2] = ned_coords.y();
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::loadWaypoints(double wp[3][skyenet::MAX_WAYPOINTS]) {
+    this->model_lock_.lock();
+    if (this->waypoints_->getSize() > 0) {
+        QPointF ned_coords = guiXyzToNED(this->waypoints_->getPointAt(0));
+        wp[1][0] = ned_coords.x();
+        wp[2][0] = ned_coords.y();
+    }
     this->model_lock_.unlock();
 }
 
@@ -329,6 +349,13 @@ skyenet::params ConstraintModel::getSkyeFlyParams() {
     this->loadEllipseConstraints(this->P_);
     // Affine constraints Ax leq b
     this->loadPosConstraints(this->P_);
+    // Waypoints
+    this->P_.wp_idx[0] = this->P_.K / 2;
+    if (this->waypoints_->getSize() > 0) {
+        this->P_.wprelax[0] = 10;
+    } else {
+        this->P_.wprelax[0] = 0;
+    }
     // time intervals
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
     skyenet::params P = this->P_;
