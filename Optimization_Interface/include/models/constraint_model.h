@@ -48,6 +48,7 @@ class ConstraintModel {
 
     void setWaypointsModel(PathModelItem *model);
     void addWaypoint(QPointF const &pos);
+    quint32 getNumWaypoints();
 
     void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF> points);
@@ -60,8 +61,9 @@ class ConstraintModel {
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
 
-    void loadFinalPos(double*);
-    void loadInitialPos(double*);
+    void loadFinalPos(double r_f[3]);
+    void loadInitialPos(double r_i[3]);
+    void loadWaypoints(double wp[3][skyenet::MAX_WAYPOINTS]);
 
     skyenet::params getSkyeFlyParams();
     void setSkyeFlyParams(QTableWidget *params_table);
