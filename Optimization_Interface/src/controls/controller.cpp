@@ -342,6 +342,9 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
             EllipseSocket *temp = *i;
             i = this->ellipse_sockets_->erase(i);
             delete temp;
+            if (i == this->ellipse_sockets_->end()) {
+                break;
+            }
         }
     }
 }
