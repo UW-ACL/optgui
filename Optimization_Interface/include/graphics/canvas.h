@@ -63,12 +63,10 @@ class Canvas : public QGraphicsScene {
     QFont font_;
     QImage *background_image_;
 
-    double background_bottomleft_x_ = 0;
-    double background_bottomleft_y_ = 0;
-    double background_topright_x_ = 1;
-    double background_topright_y_ = 1;
-    // TODO(bchasnov): fix this...
-    double scale_ = 100;
+    qreal background_bottomleft_x_ = 0;
+    qreal background_bottomleft_y_ = 0;
+    qreal background_topright_x_ = 1;
+    qreal background_topright_y_ = 1;
 };
 
 }  // namespace optgui

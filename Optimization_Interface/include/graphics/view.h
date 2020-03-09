@@ -14,6 +14,8 @@
 #include <QGraphicsItem>
 #include <QTableWidget>
 #include <QHeaderView>
+#include <QGestureEvent>
+#include <QDoubleSpinBox>
 
 #include "algorithm.h"
 
@@ -34,6 +36,7 @@ class View : public QGraphicsView {
     ~View();
 
  protected:
+    bool viewportEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
 
@@ -56,6 +59,9 @@ class View : public QGraphicsView {
     void initializeExpertPanel();
     void clearMarkers();
     void expandView();
+    bool pinchZoom(QGestureEvent *event);
+    qreal currentStepScaleFactor_;  // pinch zoom factor
+    qreal initialZoom_;  // initial scale factor at beginning of pinch
     Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;
@@ -70,6 +76,7 @@ class View : public QGraphicsView {
 
     // keep track of all widgets to delete them
     QVector<QWidget *> panel_widgets_;
+    QDoubleSpinBox *zoom_slider_;
     // keep track of all toggle buttons to set them to toggled
     // or untoggled
     QVector<MenuButton *> toggle_buttons_;

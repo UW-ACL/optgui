@@ -44,6 +44,11 @@ View::View(QWidget * parent)
     // Create poly vector
     this->temp_markers_ = new QVector<QGraphicsItem*>();
 
+    // enable pinch zoom
+    this->viewport()->grabGesture(Qt::PinchGesture);
+    this->currentStepScaleFactor_ = 1;
+    this->initialZoom_ = 1;
+
     // set graphical settings menu panels
     this->initialize();
 }
@@ -70,6 +75,13 @@ View::~View() {
     // Delete controller and canvas
     delete this->controller_;
     delete this->canvas_;
+}
+
+bool View::viewportEvent(QEvent *event) {
+    if (event->type() == QEvent::Gesture) {
+        return this->pinchZoom(static_cast<QGestureEvent *>(event));
+    }
+    return QGraphicsView::viewportEvent(event);
 }
 
 void View::setPorts() {
@@ -136,11 +148,10 @@ void View::initializeMenuPanel() {
     this->initializeMessageBox(this->menu_panel_);
     this->initializeFinaltime(this->menu_panel_);
     this->initializeDuplicateButton(this->menu_panel_);
-    this->initializeExecButton(this->menu_panel_);
     this->initializeZoom(this->menu_panel_);
-
     // add space at the bottom
     this->menu_panel_->menu_layout_->insertStretch(-1, 1);
+    this->initializeExecButton(this->menu_panel_);
 
     // Connect menu open/close
     connect(this->menu_button_, SIGNAL(clicked()),
@@ -303,8 +314,7 @@ void View::openExpertMenu() {
 }
 
 void View::setZoom(qreal value) {
-    this->resetMatrix();
-    this->scale(value, value);
+    this->setTransform(QTransform::fromScale(value, value));
 }
 
 void View::setState(STATE button_type) {
@@ -372,13 +382,33 @@ void View::expandView() {
 
     // Scale canvas out to max size
     QRectF newView = (this->scene()->sceneRect()).united(oldView);
-    qreal width = newView.width() / 2 * 10;
-    qreal height = newView.height() / 2 * 10;
+    qreal width = newView.width() / 2 * 50;
+    qreal height = newView.height() / 2 * 50;
 
     // set view and canvas rects
     this->scene()->setSceneRect(
                 newView.marginsAdded(QMarginsF(width, height, width, height)));
     this->setSceneRect(this->scene()->sceneRect());
+}
+
+bool View::pinchZoom(QGestureEvent *event) {
+    if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
+        QPinchGesture *pinchGesture = static_cast<QPinchGesture *>(pinch);
+
+        if (pinchGesture->state() == Qt::GestureStarted) {
+            this->initialZoom_ = this->transform().m11();
+            event->accept(Qt::PinchGesture);
+        }
+        QPinchGesture::ChangeFlags changeFlags = pinchGesture->changeFlags();
+        if (changeFlags & QPinchGesture::ScaleFactorChanged) {
+            this->currentStepScaleFactor_ = pinchGesture->totalScaleFactor();
+            this->zoom_slider_->setValue(initialZoom_ * this->currentStepScaleFactor_);
+        }
+        if (pinchGesture->state() == Qt::GestureFinished) {
+            this->currentStepScaleFactor_ = 1;
+        }
+    }
+    return true;
 }
 
 void View::initializeMessageBox(MenuPanel *panel) {
@@ -933,25 +963,25 @@ void View::initializeDuplicateButton(MenuPanel *panel) {
 }
 
 void View::initializeZoom(MenuPanel *panel) {
-    QDoubleSpinBox *zoom = new QDoubleSpinBox(panel->menu_);
-    zoom->setSizePolicy(QSizePolicy::Expanding,
+    this->zoom_slider_ = new QDoubleSpinBox(panel->menu_);
+    this->zoom_slider_->setSizePolicy(QSizePolicy::Expanding,
                                       QSizePolicy::Minimum);
-    zoom->setSingleStep(0.1);
-    zoom->setRange(0.1, 2.0);
-    zoom->setSuffix("x");
-    zoom->setValue(1.0);
-    zoom->setToolTip(tr("Set zoom level"));
-    zoom->setMinimumHeight(40);
-    zoom->setStyleSheet("QDoubleSpinBox::up-button "
+    this->zoom_slider_->setSingleStep(0.1);
+    this->zoom_slider_->setRange(0.01, 2.0);
+    this->zoom_slider_->setSuffix("x");
+    this->zoom_slider_->setValue(1.0);
+    this->zoom_slider_->setToolTip(tr("Set zoom level"));
+    this->zoom_slider_->setMinimumHeight(40);
+    this->zoom_slider_->setStyleSheet("QDoubleSpinBox::up-button "
                                "{ width: 35px; height: 20px; } "
                                "QDoubleSpinBox::down-button "
                                "{ width: 35px; height: 20px; }");
-    panel->menu_->layout()->addWidget(zoom);
-    panel->menu_->layout()->setAlignment(zoom, Qt::AlignBottom);
+    panel->menu_->layout()->addWidget(this->zoom_slider_);
+    panel->menu_->layout()->setAlignment(this->zoom_slider_, Qt::AlignBottom);
 
-    this->panel_widgets_.append(zoom);
+    this->panel_widgets_.append(this->zoom_slider_);
 
-    connect(zoom, SIGNAL(valueChanged(double)),
+    connect(this->zoom_slider_, SIGNAL(valueChanged(double)),
             this, SLOT(setZoom(double)));
 }
 
