@@ -115,7 +115,6 @@ class ConstraintModel {
     void loadPosConstraints(skyenet::params &P);
     void loadPlaneConstraint(skyenet::params &P, quint32 index,
                                  QPointF p, QPointF q);
-
 };
 
 }  // namespace optgui

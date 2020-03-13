@@ -201,12 +201,6 @@ void Controller::removeItem(QGraphicsItem *item) {
 
 void Controller::flipDirection(QGraphicsItem *item) {
     switch (item->type()) {
-        case ELLIPSE_GRAPHIC: {
-            EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
-                    EllipseGraphicsItem *>(item);
-            ellipse->flipDirection();
-            break;
-        }
         case POLYGON_GRAPHIC: {
             PolygonGraphicsItem *polygon = qgraphicsitem_cast<
                     PolygonGraphicsItem *>(item);
