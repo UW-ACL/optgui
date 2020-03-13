@@ -19,7 +19,6 @@
 #include "include/network/drone_socket.h"
 #include "include/network/ellipse_socket.h"
 #include "include/network/point_socket.h"
-#include "include/window/menu_panel.h"
 #include "include/controls/compute_thread.h"
 
 namespace optgui {
@@ -28,7 +27,7 @@ class Controller : public QObject {
     Q_OBJECT
 
  public:
-    explicit Controller(Canvas *canvas, MenuPanel *menupanel);
+    explicit Controller(Canvas *canvas);
     ~Controller();
 
     void setCanvas(Canvas *canvas);  // sets up canvas for drawing graphics
@@ -65,6 +64,8 @@ class Controller : public QObject {
     void updateFinalPosition(QPointF const &pos);
 
     void execute();
+    void stageTraj();
+    void unstageTraj();
 
  signals:
     void trajectoryExecuted(autogen::packet::traj3dof data);
@@ -98,6 +99,8 @@ class Controller : public QObject {
     void loadPlane(PlaneModelItem *model);
 
     void setFreeze();
+    void setStagedPath();
+    void unsetStagedPath();
 };
 
 }  // namespace optgui

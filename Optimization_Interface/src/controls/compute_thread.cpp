@@ -74,7 +74,7 @@ void ComputeThread::run() {
         }
         // set points on graphical display
         this->model_->setPathPoints(trajectory);
-        this->model_->setTraj3dof(drone_traj3dof_data);
+        this->model_->setCurrTraj3dof(drone_traj3dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation
         qreal accum = pow(O.r_f_relax[0], 2)

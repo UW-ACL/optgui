@@ -26,7 +26,7 @@
 
 namespace optgui {
 
-Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
+Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
 
@@ -62,13 +62,13 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
 
     // initialize trajectory sent model and graphic
     PathModelItem *trajectory_sent_model = new PathModelItem();
-    this->model_->setPathSentModel(trajectory_sent_model);
-    this->canvas_->path_sent_graphic_ =
+    this->model_->setPathStagedModel(trajectory_sent_model);
+    this->canvas_->path_staged_graphic_ =
             new PathGraphicsItem(trajectory_sent_model);
-    this->canvas_->path_sent_graphic_->setColor(Qt::cyan);
-    this->canvas_->path_sent_graphic_->setZValue(renderLevel);
+    this->canvas_->path_staged_graphic_->setColor(Qt::cyan);
+    this->canvas_->path_staged_graphic_->setZValue(renderLevel);
     renderLevel = std::nextafter(renderLevel, 0);
-    this->canvas_->addItem(this->canvas_->path_sent_graphic_);
+    this->canvas_->addItem(this->canvas_->path_staged_graphic_);
 
     // initialize trajectory model and graphic
     PathModelItem *trajectory_model = new PathModelItem();
@@ -109,7 +109,7 @@ void Controller::setPathColor(bool isRed) {
     if (isRed) {
         this->canvas_->path_graphic_->setColor(Qt::red);
     } else {
-        this->canvas_->path_graphic_->setColor(Qt::green);
+        this->canvas_->path_graphic_->setColor(Qt::yellow);
     }
 }
 
@@ -267,26 +267,46 @@ void Controller::updateFinalPosition(QPointF const &pos) {
 
 void Controller::setFreeze() {
     this->freeze_timer_->start(1000*this->model_->getFinaltime());
-    // set path sent
-    this->model_->setPathSentPoints(this->model_->getPathPoints());
-    this->canvas_->path_sent_graphic_->expandScene();
 }
 
 void Controller::setUnfreeze() {
     this->freeze_timer_->stop();
-    // clear path sent
-    this->model_->clearPathSentPoints();
-    this->canvas_->path_sent_graphic_->expandScene();
+    this->unsetStagedPath();
+}
+
+void Controller::setStagedPath() {
+    this->model_->setPathStagedPoints(this->model_->getPathPoints());
+    this->model_->setIsTrajStaged(true);
+    this->model_->setStagedTraj3dof(this->model_->getCurrTraj3dof());
+    this->canvas_->path_staged_graphic_->setColor(Qt::green);
+    this->canvas_->path_staged_graphic_->expandScene();
+}
+
+void Controller::unsetStagedPath() {
+    this->model_->clearPathStagedPoints();
+    this->model_->setIsTrajStaged(false);
+    this->canvas_->path_staged_graphic_->expandScene();
 }
 
 void Controller::execute() {
-    if (this->freeze_timer_->isActive()) {
-        return;
+    if (!this->freeze_timer_->isActive() &&
+            this->model_->getIsTrajStaged()) {
+        this->setFreeze();
+        this->canvas_->path_staged_graphic_->setColor(Qt::cyan);
+        emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
-    this->setFreeze();
+}
 
-    if (this->model_->getIsValidTraj()) {
-        emit trajectoryExecuted(this->model_->getTraj3dof());
+void Controller::stageTraj() {
+    if (!this->freeze_timer_->isActive() &&
+            this->model_->getIsValidTraj()) {
+        this->setStagedPath();
+    }
+}
+
+void Controller::unstageTraj() {
+    if (!this->freeze_timer_->isActive()) {
+        this->unsetStagedPath();
     }
 }
 
