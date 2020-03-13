@@ -10,6 +10,9 @@
 #include <QTranslator>
 #include <QSet>
 
+#include <cmath>
+#include <limits>
+
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
@@ -27,33 +30,16 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
 
-    // initialize waypoints model and graphic
-    PathModelItem *waypoint_model = new PathModelItem();
-    this->model_->setWaypointsModel(waypoint_model);
-    this->canvas_->waypoints_graphic_ =
-            new WaypointsGraphicsItem(waypoint_model);
-    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
-
-    // initialize trajectory sent model and graphic
-    PathModelItem *trajectory_sent_model = new PathModelItem();
-    this->model_->setPathSentModel(trajectory_sent_model);
-    this->canvas_->path_sent_graphic_ =
-            new PathGraphicsItem(trajectory_sent_model);
-    this->canvas_->path_sent_graphic_->setColor(Qt::blue);
-    this->canvas_->addItem(this->canvas_->path_sent_graphic_);
-
-    // initialize trajectory model and graphic
-    PathModelItem *trajectory_model = new PathModelItem();
-    this->model_->setPathModel(trajectory_model);
-    this->canvas_->path_graphic_ =
-            new PathGraphicsItem(trajectory_model);
-    this->canvas_->addItem(this->canvas_->path_graphic_);
+    // set rendering order
+    qreal renderLevel = std::numeric_limits<qreal>::max();
 
     // initialize drone model and graphic
     DroneModelItem *drone_model = new DroneModelItem();
     this->model_->setDroneModel(drone_model);
     this->canvas_->drone_graphic_ =
             new DroneGraphicsItem(drone_model);
+    this->canvas_->drone_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
     this->canvas_->addItem(this->canvas_->drone_graphic_);
 
     // initialize final point model and graphic
@@ -61,7 +47,37 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->model_->setFinalPointModel(final_point_model);
     this->canvas_->final_point_ =
             new PointGraphicsItem(final_point_model);
+    this->canvas_->final_point_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
     this->canvas_->addItem(this->canvas_->final_point_);
+
+    // initialize waypoints model and graphic
+    PathModelItem *waypoint_model = new PathModelItem();
+    this->model_->setWaypointsModel(waypoint_model);
+    this->canvas_->waypoints_graphic_ =
+            new WaypointsGraphicsItem(waypoint_model);
+    this->canvas_->waypoints_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
+    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
+
+    // initialize trajectory sent model and graphic
+    PathModelItem *trajectory_sent_model = new PathModelItem();
+    this->model_->setPathSentModel(trajectory_sent_model);
+    this->canvas_->path_sent_graphic_ =
+            new PathGraphicsItem(trajectory_sent_model);
+    this->canvas_->path_sent_graphic_->setColor(Qt::cyan);
+    this->canvas_->path_sent_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
+    this->canvas_->addItem(this->canvas_->path_sent_graphic_);
+
+    // initialize trajectory model and graphic
+    PathModelItem *trajectory_model = new PathModelItem();
+    this->model_->setPathModel(trajectory_model);
+    this->canvas_->path_graphic_ =
+            new PathGraphicsItem(trajectory_model);
+    this->canvas_->path_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
+    this->canvas_->addItem(this->canvas_->path_graphic_);
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();

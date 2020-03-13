@@ -109,9 +109,14 @@ QPointF* Canvas::getTopRight() {
 
 void Canvas::bringSelectedToFront() {
     if (!this->selectedItems().isEmpty()) {
-        this->selectedItems().first()->setZValue(this->front_depth_);
-        this->front_depth_ = std::nextafter(this->front_depth_,
-                                            std::numeric_limits<qreal>::max());
+        QGraphicsItem *selected = this->selectedItems().first();
+        if (selected->type() == ELLIPSE_GRAPHIC ||
+                selected->type() == POLYGON_GRAPHIC ||
+                selected->type() == PLANE_GRAPHIC) {
+            this->selectedItems().first()->setZValue(this->front_depth_);
+            this->front_depth_ = std::nextafter(this->front_depth_,
+                    std::numeric_limits<qreal>::max());
+        }
     }
 }
 
@@ -126,9 +131,13 @@ void Canvas::updatePathGraphicsItem() {
 }
 
 void Canvas::bringToFront(QGraphicsItem *item) {
-    item->setZValue(this->front_depth_);
-    this->front_depth_ = std::nextafter(this->front_depth_,
-                                        std::numeric_limits<qreal>::max());
+    if (item->type() == ELLIPSE_GRAPHIC ||
+            item->type() == POLYGON_GRAPHIC ||
+            item->type() == PLANE_GRAPHIC) {
+        item->setZValue(this->front_depth_);
+        this->front_depth_ = std::nextafter(this->front_depth_,
+                                            std::numeric_limits<qreal>::max());
+    }
 }
 
 void Canvas::expandScene() {
