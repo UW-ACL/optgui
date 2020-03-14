@@ -72,19 +72,19 @@ void Canvas::setBackgroundImage(QString filename) {
     }
 
     if (list[1] == "outdoor") {
-//        qDebug() << "Outdoor mode: lat" << list[2].toFloat() << "lon:"
-//                 << list[3].toFloat() << "width:" << list[4].toFloat()
-//                 << "height:" << list[5].toFloat();
+//        qDebug() << "Outdoor mode: lat" << list[2].toDouble() << "lon:"
+//                 << list[3].toDouble() << "width:" << list[4].toDouble()
+//                 << "height:" << list[5].toDouble();
         this->background_bottomleft_x_ = 0;
-        this->background_bottomleft_y_ = 0;  // list[5].toFloat();
-        this->background_topright_x_ = list[4].toFloat();
-        this->background_topright_y_ = list[5].toFloat();
+        this->background_bottomleft_y_ = 0;  // list[5].toDouble();
+        this->background_topright_x_ = list[4].toDouble();
+        this->background_topright_y_ = list[5].toDouble();
         this->indoor_ = false;
     } else if (list[1] == "indoor") {
-        this->background_bottomleft_x_ = list[2].toFloat();
-        this->background_bottomleft_y_ = list[3].toFloat();
-        this->background_topright_x_ = list[4].toFloat();
-        this->background_topright_y_ = list[5].toFloat();
+        this->background_bottomleft_x_ = list[2].toDouble();
+        this->background_bottomleft_y_ = list[3].toDouble();
+        this->background_topright_x_ = list[4].toDouble();
+        this->background_topright_y_ = list[5].toDouble();
 //        qDebug() << "Indoor mode:" << "bottom left"
 //                 << this->background_bottomleft_x_
 //                 << this->background_bottomleft_y_
@@ -98,13 +98,13 @@ void Canvas::setBackgroundImage(QString filename) {
 }
 
 QPointF* Canvas::getBottomLeft() {
-    return new QPointF(this->background_bottomleft_y_*this->scale_,
-                       -this->background_bottomleft_x_*this->scale_);
+    return new QPointF(this->background_bottomleft_y_*GRID_SIZE,
+                       -this->background_bottomleft_x_*GRID_SIZE);
 }
 
 QPointF* Canvas::getTopRight() {
-    return new QPointF(this->background_topright_y_*this->scale_,
-                       -this->background_topright_x_*this->scale_);
+    return new QPointF(this->background_topright_y_*GRID_SIZE,
+                       -this->background_topright_x_*GRID_SIZE);
 }
 
 void Canvas::bringSelectedToFront() {
@@ -257,10 +257,10 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     double height = this->background_topright_x_
             - this->background_bottomleft_x_;
 
-    QRectF bbox(this->background_bottomleft_y_*this->scale_,
-                -this->background_topright_x_*this->scale_,
-                width*this->scale_,
-                height*this->scale_);
+    QRectF bbox(this->background_bottomleft_y_*GRID_SIZE,
+                -this->background_topright_x_*GRID_SIZE,
+                width*GRID_SIZE,
+                height*GRID_SIZE);
 
     painter->drawImage(bbox, *this->background_image_);
 
