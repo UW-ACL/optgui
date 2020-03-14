@@ -153,12 +153,13 @@ void View::initializeMenuPanel() {
     this->initializeFinaltime(this->menu_panel_);
     // zoom
     this->initializeZoom(this->menu_panel_);
-    // stage + exec
+    // stage
     this->initializeStageButton(this->menu_panel_);
-    this->initializeExecButton(this->menu_panel_);
 
     // add space at the bottom
     this->menu_panel_->menu_layout_->insertStretch(-1, 1);
+
+    // exec
     this->initializeExecButton(this->menu_panel_);
 
     // Connect menu open/close
