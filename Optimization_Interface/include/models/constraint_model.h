@@ -56,6 +56,7 @@ class ConstraintModel {
 
     void setPathStagedModel(PathModelItem *model);
     void setPathStagedPoints(QVector<QPointF> points);
+    bool tickPathStaged();
     void clearPathStagedPoints();
 
     void setDroneModel(DroneModelItem *model);
@@ -83,6 +84,10 @@ class ConstraintModel {
 
     bool getIsValidTraj();
     void setIsValidTraj(bool is_valid);
+
+    void setFreeze();
+    void setUnfreeze();
+    bool isFrozen();
 
     void fillTable(QTableWidget *port_table,
                    QTableWidget *drone_table,
@@ -115,6 +120,8 @@ class ConstraintModel {
     void loadPosConstraints(skyenet::params &P);
     void loadPlaneConstraint(skyenet::params &P, quint32 index,
                                  QPointF p, QPointF q);
+
+    bool is_frozen_;
 };
 
 }  // namespace optgui

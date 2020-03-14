@@ -745,7 +745,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_a_min->setRange(-1000, 1000);
     params_a_min->setValue(default_P.a_min);
-    params_a_max->setSingleStep(0.1);
+    params_a_min->setSingleStep(0.1);
     connect(params_a_min, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 

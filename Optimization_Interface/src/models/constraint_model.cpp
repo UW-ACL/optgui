@@ -37,6 +37,7 @@ void ConstraintModel::initialize() {
     this->P_ = skyenet::getDefaultP();
     this->is_valid_traj_ = false;
     this->traj_staged_ = false;
+    this->is_frozen_ = false;
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -193,6 +194,15 @@ void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
     this->model_lock_.unlock();
 }
 
+bool ConstraintModel::tickPathStaged() {
+    this->model_lock_.lock();
+    if (this->path_staged_) {
+        this->path_staged_->removePointAt(0);
+    }
+    this->model_lock_.unlock();
+    return this->path_staged_->getSize() != 0;
+}
+
 void ConstraintModel::clearPathStagedPoints() {
     this->model_lock_.lock();
     if (this->path_staged_) {
@@ -325,6 +335,25 @@ bool ConstraintModel::getIsValidTraj() {
 void ConstraintModel::setIsValidTraj(bool is_valid) {
     this->model_lock_.lock();
     this->is_valid_traj_ = is_valid;
+    this->model_lock_.unlock();
+}
+
+bool ConstraintModel::isFrozen() {
+    this->model_lock_.lock();
+    bool temp = this->is_frozen_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setFreeze() {
+    this->model_lock_.lock();
+    this->is_frozen_ = true;
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::setUnfreeze() {
+    this->model_lock_.lock();
+    this->is_frozen_ = false;
     this->model_lock_.unlock();
 }
 
