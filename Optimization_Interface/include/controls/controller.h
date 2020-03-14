@@ -76,6 +76,7 @@ class Controller : public QObject {
     void startSockets();
     void setPathColor(bool isRed);
     void setUnfreeze();
+    void tickLiveReference();
 
  private:
     // QGraphicsScene
@@ -83,6 +84,7 @@ class Controller : public QObject {
 
     // Freeze timer
     QTimer *freeze_timer_;
+    QTimer *reference_timer_;
 
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;
@@ -101,6 +103,7 @@ class Controller : public QObject {
     void setFreeze();
     void setStagedPath();
     void unsetStagedPath();
+    void startLiveReference();
 };
 
 }  // namespace optgui

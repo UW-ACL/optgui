@@ -94,6 +94,11 @@ Controller::Controller(Canvas *canvas) {
     connect(this->freeze_timer_, SIGNAL(timeout()),
             this, SLOT(setUnfreeze()));
 
+    // Initialize live reference timer
+    this->reference_timer_ = new QTimer();
+    connect(this->reference_timer_, SIGNAL(timeout()),
+            this, SLOT(tickLiveReference()));
+
     // initialize skyfly thread
     this->compute_thread_ = new ComputeThread(this->model_);
     connect(this->compute_thread_, SIGNAL(updateGraphics()), this->canvas_,
@@ -264,11 +269,13 @@ void Controller::updateFinalPosition(QPointF const &pos) {
 
 void Controller::setFreeze() {
     this->freeze_timer_->start(1000*this->model_->getFinaltime());
+    this->model_->setFreeze();
 }
 
 void Controller::setUnfreeze() {
     this->freeze_timer_->stop();
     this->unsetStagedPath();
+    this->model_->setUnfreeze();
 }
 
 void Controller::setStagedPath() {
@@ -285,11 +292,27 @@ void Controller::unsetStagedPath() {
     this->canvas_->path_staged_graphic_->expandScene();
 }
 
+void Controller::startLiveReference() {
+   int msec = 1000*this->model_->getFinaltime()/24;
+   // HACK: FIX THIS. //DEBUG//
+   // TODO(ben): for some reason this->model_->getHorizon()-1 doesn't work as the denominator
+   this->reference_timer_->start(msec);
+}
+
+void Controller::tickLiveReference() {
+    if(!this->model_->tickPathStaged()) {
+        qDebug() << "stop tick reference";
+        this->reference_timer_->stop();
+    }
+
+}
+
 void Controller::execute() {
     if (!this->freeze_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
         this->setFreeze();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
+        this->startLiveReference();
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
 }

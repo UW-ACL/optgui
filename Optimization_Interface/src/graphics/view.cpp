@@ -721,7 +721,8 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     // P.dK
     QSpinBox *params_dK = new QSpinBox(this->skyefly_params_table_);
-    params_dK->setRange(-1000, 1000);
+    params_dK->setRange(0, 1000);
+    params_dK->setSingleStep(0.1);
     params_dK->setValue(default_P.dK);
     connect(params_dK, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -733,7 +734,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     // P.n_recalcs
     QSpinBox *params_n_recalcs = new QSpinBox(this->skyefly_params_table_);
-    params_n_recalcs->setRange(-1000, 1000);
+    params_n_recalcs->setRange(0, 1000);
     params_n_recalcs->setValue(default_P.n_recalcs);
     connect(params_n_recalcs, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -749,6 +750,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_a_min->setRange(-1000, 1000);
     params_a_min->setValue(default_P.a_min);
+    params_a_min->setSingleStep(0.1);
     connect(params_a_min, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -761,6 +763,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     QDoubleSpinBox *params_a_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_a_max->setRange(-1000, 1000);
+    params_a_max->setSingleStep(0.1);
     params_a_max->setValue(default_P.a_max);
     connect(params_a_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -774,6 +777,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     QDoubleSpinBox *params_theta_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_theta_max->setRange(-1000, 1000);
+    params_theta_max->setSingleStep(0.1);
     params_theta_max->setValue(default_P.theta_max);
     connect(params_theta_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -789,6 +793,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_q_max->setRange(-1000, 1000);
     params_q_max->setValue(default_P.q_max);
+    params_q_max->setSingleStep(0.01);
     connect(params_q_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -799,7 +804,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     // P.max_iter
     QSpinBox *params_max_iter = new QSpinBox(this->skyefly_params_table_);
-    params_max_iter->setRange(-1000, 1000);
+    params_max_iter->setRange(0, 1000);
     params_max_iter->setValue(default_P.max_iter);
     connect(params_max_iter, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -812,7 +817,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.Delta_i
     QDoubleSpinBox *params_delta_i =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_delta_i->setRange(-1000, 1000);
+    params_delta_i->setRange(0, 1000);
     params_delta_i->setValue(default_P.Delta_i);
     connect(params_delta_i, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -825,8 +830,9 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.lambda
     QDoubleSpinBox *params_lambda =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_lambda->setRange(-1000, 1000);
+    params_lambda->setRange(0, 1000000);
     params_lambda->setValue(default_P.lambda);
+    params_lambda->setSingleStep(10000);
     connect(params_lambda, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -840,6 +846,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_alpha->setRange(-1000, 1000);
     params_alpha->setValue(default_P.alpha);
+    params_alpha->setSingleStep(0.1);
     connect(params_alpha, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -851,8 +858,9 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.dL_tol
     QDoubleSpinBox *params_dL_tol =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_dL_tol->setRange(-1000, 1000);
+    params_dL_tol->setRange(0, 1000);
     params_dL_tol->setValue(default_P.dL_tol);
+    params_dL_tol->setSingleStep(0.01);
     connect(params_dL_tol, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -903,7 +911,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.rirelax
     QDoubleSpinBox *params_rirelax =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_rirelax->setRange(-1000, 1000);
+    params_rirelax->setRange(0, 10000);
     params_rirelax->setValue(default_P.rirelax);
     connect(params_rirelax, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -916,7 +924,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.rfrelax
     QDoubleSpinBox *params_rfrelax =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_rfrelax->setRange(-1000, 1000);
+    params_rfrelax->setRange(0, 10000);
     params_rfrelax->setValue(default_P.rfrelax);
     connect(params_rfrelax, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));

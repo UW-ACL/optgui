@@ -73,7 +73,9 @@ void ComputeThread::run() {
             drone_traj3dof_data.accl_ned(2, i) = O.a[0][i] - 9.81;
         }
         // set points on graphical display
-        this->model_->setPathPoints(trajectory);
+        if(!this->model_->isFrozen()){
+            this->model_->setPathPoints(trajectory);
+        }
         this->model_->setCurrTraj3dof(drone_traj3dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation
