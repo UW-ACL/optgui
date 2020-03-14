@@ -43,7 +43,7 @@ void Canvas::initialize() {
     this->polygon_graphics_ = new QSet<PolygonGraphicsItem *>();
     this->plane_graphics_ = new QSet<PlaneGraphicsItem *>();
 
-    this->setBackgroundBrush(Qt::black);
+    this->setBackgroundBrush(BLACK);
     // Set background pen
     QColor background_color = Qt::gray;
     background_color.setAlpha(150);
@@ -109,9 +109,14 @@ QPointF* Canvas::getTopRight() {
 
 void Canvas::bringSelectedToFront() {
     if (!this->selectedItems().isEmpty()) {
-        this->selectedItems().first()->setZValue(this->front_depth_);
-        this->front_depth_ = std::nextafter(this->front_depth_,
-                                            std::numeric_limits<qreal>::max());
+        QGraphicsItem *selected = this->selectedItems().first();
+        if (selected->type() == ELLIPSE_GRAPHIC ||
+                selected->type() == POLYGON_GRAPHIC ||
+                selected->type() == PLANE_GRAPHIC) {
+            this->selectedItems().first()->setZValue(this->front_depth_);
+            this->front_depth_ = std::nextafter(this->front_depth_,
+                    std::numeric_limits<qreal>::max());
+        }
     }
 }
 
@@ -126,9 +131,13 @@ void Canvas::updatePathGraphicsItem() {
 }
 
 void Canvas::bringToFront(QGraphicsItem *item) {
-    item->setZValue(this->front_depth_);
-    this->front_depth_ = std::nextafter(this->front_depth_,
-                                        std::numeric_limits<qreal>::max());
+    if (item->type() == ELLIPSE_GRAPHIC ||
+            item->type() == POLYGON_GRAPHIC ||
+            item->type() == PLANE_GRAPHIC) {
+        item->setZValue(this->front_depth_);
+        this->front_depth_ = std::nextafter(this->front_depth_,
+                                            std::numeric_limits<qreal>::max());
+    }
 }
 
 void Canvas::expandScene() {
@@ -200,6 +209,9 @@ qint64 Canvas::roundDownPast(qint64 n, qint64 m) {
 }
 
 void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
+    // Fill background
+    QGraphicsScene::drawBackground(painter, rect);
+
     // Get scaling factor
     qreal scale = 1;
     if (!this->views().isEmpty()) {
@@ -272,7 +284,7 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->drawText(1, -2, "0");
 
     // Debug info
-//    painter->setPen(Qt::red);
+//    painter->setPen(RED);
 //    painter->drawRect(this->sceneRect());
 //    painter->setPen(Qt::blue);
 //    if (!this->views().isEmpty()) {

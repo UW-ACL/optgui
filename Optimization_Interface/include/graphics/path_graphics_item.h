@@ -11,6 +11,7 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
+#include "include/globals.h"
 #include "include/models/path_model_item.h"
 
 namespace optgui {

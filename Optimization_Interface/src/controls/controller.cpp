@@ -10,6 +10,9 @@
 #include <QTranslator>
 #include <QSet>
 
+#include <cmath>
+#include <limits>
+
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
@@ -23,37 +26,20 @@
 
 namespace optgui {
 
-Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
+Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
 
-    // initialize waypoints model and graphic
-    PathModelItem *waypoint_model = new PathModelItem();
-    this->model_->setWaypointsModel(waypoint_model);
-    this->canvas_->waypoints_graphic_ =
-            new WaypointsGraphicsItem(waypoint_model);
-    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
-
-    // initialize trajectory sent model and graphic
-    PathModelItem *trajectory_sent_model = new PathModelItem();
-    this->model_->setPathSentModel(trajectory_sent_model);
-    this->canvas_->path_sent_graphic_ =
-            new PathGraphicsItem(trajectory_sent_model);
-    this->canvas_->path_sent_graphic_->setColor(Qt::blue);
-    this->canvas_->addItem(this->canvas_->path_sent_graphic_);
-
-    // initialize trajectory model and graphic
-    PathModelItem *trajectory_model = new PathModelItem();
-    this->model_->setPathModel(trajectory_model);
-    this->canvas_->path_graphic_ =
-            new PathGraphicsItem(trajectory_model);
-    this->canvas_->addItem(this->canvas_->path_graphic_);
+    // set rendering order
+    qreal renderLevel = std::numeric_limits<qreal>::max();
 
     // initialize drone model and graphic
     DroneModelItem *drone_model = new DroneModelItem();
     this->model_->setDroneModel(drone_model);
     this->canvas_->drone_graphic_ =
             new DroneGraphicsItem(drone_model);
+    this->canvas_->drone_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
     this->canvas_->addItem(this->canvas_->drone_graphic_);
 
     // initialize final point model and graphic
@@ -61,7 +47,37 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
     this->model_->setFinalPointModel(final_point_model);
     this->canvas_->final_point_ =
             new PointGraphicsItem(final_point_model);
+    this->canvas_->final_point_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
     this->canvas_->addItem(this->canvas_->final_point_);
+
+    // initialize waypoints model and graphic
+    PathModelItem *waypoint_model = new PathModelItem();
+    this->model_->setWaypointsModel(waypoint_model);
+    this->canvas_->waypoints_graphic_ =
+            new WaypointsGraphicsItem(waypoint_model);
+    this->canvas_->waypoints_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
+    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
+
+    // initialize trajectory sent model and graphic
+    PathModelItem *trajectory_sent_model = new PathModelItem();
+    this->model_->setPathStagedModel(trajectory_sent_model);
+    this->canvas_->path_staged_graphic_ =
+            new PathGraphicsItem(trajectory_sent_model);
+    this->canvas_->path_staged_graphic_->setColor(GREEN);
+    this->canvas_->path_staged_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
+    this->canvas_->addItem(this->canvas_->path_staged_graphic_);
+
+    // initialize trajectory model and graphic
+    PathModelItem *trajectory_model = new PathModelItem();
+    this->model_->setPathModel(trajectory_model);
+    this->canvas_->path_graphic_ =
+            new PathGraphicsItem(trajectory_model);
+    this->canvas_->path_graphic_->setZValue(renderLevel);
+    renderLevel = std::nextafter(renderLevel, 0);
+    this->canvas_->addItem(this->canvas_->path_graphic_);
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
@@ -91,9 +107,9 @@ Controller::Controller(Canvas *canvas, MenuPanel *menupanel) {
 
 void Controller::setPathColor(bool isRed) {
     if (isRed) {
-        this->canvas_->path_graphic_->setColor(Qt::red);
+        this->canvas_->path_graphic_->setColor(RED);
     } else {
-        this->canvas_->path_graphic_->setColor(Qt::green);
+        this->canvas_->path_graphic_->setColor(YELLOW);
     }
 }
 
@@ -185,12 +201,6 @@ void Controller::removeItem(QGraphicsItem *item) {
 
 void Controller::flipDirection(QGraphicsItem *item) {
     switch (item->type()) {
-        case ELLIPSE_GRAPHIC: {
-            EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
-                    EllipseGraphicsItem *>(item);
-            ellipse->flipDirection();
-            break;
-        }
         case POLYGON_GRAPHIC: {
             PolygonGraphicsItem *polygon = qgraphicsitem_cast<
                     PolygonGraphicsItem *>(item);
@@ -251,26 +261,46 @@ void Controller::updateFinalPosition(QPointF const &pos) {
 
 void Controller::setFreeze() {
     this->freeze_timer_->start(1000*this->model_->getFinaltime());
-    // set path sent
-    this->model_->setPathSentPoints(this->model_->getPathPoints());
-    this->canvas_->path_sent_graphic_->expandScene();
 }
 
 void Controller::setUnfreeze() {
     this->freeze_timer_->stop();
-    // clear path sent
-    this->model_->clearPathSentPoints();
-    this->canvas_->path_sent_graphic_->expandScene();
+    this->unsetStagedPath();
+}
+
+void Controller::setStagedPath() {
+    this->model_->setPathStagedPoints(this->model_->getPathPoints());
+    this->model_->setIsTrajStaged(true);
+    this->model_->setStagedTraj3dof(this->model_->getCurrTraj3dof());
+    this->canvas_->path_staged_graphic_->setColor(GREEN);
+    this->canvas_->path_staged_graphic_->expandScene();
+}
+
+void Controller::unsetStagedPath() {
+    this->model_->clearPathStagedPoints();
+    this->model_->setIsTrajStaged(false);
+    this->canvas_->path_staged_graphic_->expandScene();
 }
 
 void Controller::execute() {
-    if (this->freeze_timer_->isActive()) {
-        return;
+    if (!this->freeze_timer_->isActive() &&
+            this->model_->getIsTrajStaged()) {
+        this->setFreeze();
+        this->canvas_->path_staged_graphic_->setColor(CYAN);
+        emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
-    this->setFreeze();
+}
 
-    if (this->model_->getIsValidTraj()) {
-        emit trajectoryExecuted(this->model_->getTraj3dof());
+void Controller::stageTraj() {
+    if (!this->freeze_timer_->isActive() &&
+            this->model_->getIsValidTraj()) {
+        this->setStagedPath();
+    }
+}
+
+void Controller::unstageTraj() {
+    if (!this->freeze_timer_->isActive()) {
+        this->unsetStagedPath();
     }
 }
 

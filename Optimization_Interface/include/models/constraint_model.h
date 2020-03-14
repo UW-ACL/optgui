@@ -54,9 +54,9 @@ class ConstraintModel {
     void setPathPoints(QVector<QPointF> points);
     QVector<QPointF> getPathPoints();
 
-    void setPathSentModel(PathModelItem *model);
-    void setPathSentPoints(QVector<QPointF> points);
-    void clearPathSentPoints();
+    void setPathStagedModel(PathModelItem *model);
+    void setPathStagedPoints(QVector<QPointF> points);
+    void clearPathStagedPoints();
 
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
@@ -74,8 +74,12 @@ class ConstraintModel {
     quint32 getHorizon();
     void setHorizon(quint32 horizon);
 
-    autogen::packet::traj3dof getTraj3dof();
-    void setTraj3dof(autogen::packet::traj3dof traj3dof_data);
+    autogen::packet::traj3dof getCurrTraj3dof();
+    void setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data);
+    autogen::packet::traj3dof getStagedTraj3dof();
+    void setStagedTraj3dof(autogen::packet::traj3dof traj3dof_data);
+    bool getIsTrajStaged();
+    void setIsTrajStaged(bool is_staged);
 
     bool getIsValidTraj();
     void setIsValidTraj(bool is_valid);
@@ -91,8 +95,10 @@ class ConstraintModel {
 
     // Skyefly params
     skyenet::params P_;
-    autogen::packet::traj3dof drone_traj3dof_data_;
-    bool is_valid_traj;
+    autogen::packet::traj3dof drone_curr_traj3dof_data_;
+    autogen::packet::traj3dof drone_staged_traj3dof_data_;
+    bool is_valid_traj_;
+    bool traj_staged_;
 
     // Constraints
     QSet<EllipseModelItem *> *ellipses_;
@@ -100,7 +106,7 @@ class ConstraintModel {
     QSet<PlaneModelItem *> *planes_;
     PathModelItem *waypoints_;
     PathModelItem *path_;
-    PathModelItem *path_sent_;
+    PathModelItem *path_staged_;
     DroneModelItem *drone_;
     PointModelItem *final_pos_;
 
@@ -109,7 +115,6 @@ class ConstraintModel {
     void loadPosConstraints(skyenet::params &P);
     void loadPlaneConstraint(skyenet::params &P, quint32 index,
                                  QPointF p, QPointF q);
-
 };
 
 }  // namespace optgui

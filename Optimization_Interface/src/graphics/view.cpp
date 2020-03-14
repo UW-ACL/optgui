@@ -32,7 +32,7 @@ View::View(QWidget * parent)
 
     // Create Controller
     // added menu panel to construction
-    this->controller_ = new Controller(this->canvas_, this->menu_panel_);
+    this->controller_ = new Controller(this->canvas_);
 
     // Set State
     this->state_ = IDLE;
@@ -138,6 +138,7 @@ void View::initializeMenuPanel() {
     this->layout()->setAlignment(this->menu_panel_, Qt::AlignRight);
 
     // initialize menu buttons
+    // toggle options
     this->initializeFinalPointButton(this->menu_panel_);
     this->initializeEllipseButton(this->menu_panel_);
     this->initializePolygonButton(this->menu_panel_);
@@ -145,10 +146,17 @@ void View::initializeMenuPanel() {
     this->initializeWaypointButton(this->menu_panel_);
     this->initializeEraserButton(this->menu_panel_);
     this->initializeFlipButton(this->menu_panel_);
+    // duplicate
+    this->initializeDuplicateButton(this->menu_panel_);
+    // feedback + final time
     this->initializeMessageBox(this->menu_panel_);
     this->initializeFinaltime(this->menu_panel_);
-    this->initializeDuplicateButton(this->menu_panel_);
+    // zoom
     this->initializeZoom(this->menu_panel_);
+    // stage + exec
+    this->initializeStageButton(this->menu_panel_);
+    this->initializeExecButton(this->menu_panel_);
+
     // add space at the bottom
     this->menu_panel_->menu_layout_->insertStretch(-1, 1);
     this->initializeExecButton(this->menu_panel_);
@@ -347,6 +355,18 @@ void View::execute() {
     this->controller_->execute();
 }
 
+void View::stageTraj() {
+    this->clearMarkers();
+    this->setState(IDLE);
+    this->controller_->stageTraj();
+}
+
+void View::unstageTraj() {
+    this->clearMarkers();
+    this->setState(IDLE);
+    this->controller_->unstageTraj();
+}
+
 void View::duplicateSelected() {
     this->setState(IDLE);
     this->controller_->duplicateSelected();
@@ -434,7 +454,7 @@ void View::initializeFinalPointButton(MenuPanel *panel) {
     QPen pen(Qt::black);
     pen.setWidth(2);
     painter.setPen(pen);
-    painter.setBrush(Qt::red);
+    painter.setBrush(RED);
     painter.drawEllipse(15, 15, 20, 20);
     point_button->setPixmap(pix);
     point_button->setToolTip(tr("Set final point"));
@@ -570,13 +590,13 @@ void View::initializeWaypointButton(MenuPanel *panel) {
     QPen pen(Qt::black);
     pen.setWidth(1);
     painter.setPen(pen);
-    painter.setBrush(Qt::red);
+    painter.setBrush(RED);
 
     painter.drawEllipse(QPointF(7, 7), 6, 6);
     painter.setBrush(Qt::white);
     painter.drawEllipse(QPointF(19, 19), 6, 6);
     painter.drawEllipse(QPointF(31, 31), 6, 6);
-    painter.setBrush(Qt::green);
+    painter.setBrush(GREEN);
     painter.drawEllipse(QPointF(42, 42), 6, 6);
 
     waypoint_button->setPixmap(pix);
@@ -938,7 +958,8 @@ void View::initializeFinaltime(MenuPanel *panel) {
 void View::initializeExecButton(MenuPanel *panel) {
     QPushButton *exec_button = new QPushButton("Exec", panel->menu_);
     exec_button->
-            setToolTip(tr("Execute optimization with constraints"));
+            setToolTip(tr("Execute staged trajectory"));
+    exec_button->setMinimumHeight(35);
     panel->menu_->layout()->addWidget(exec_button);
     panel->menu_->layout()->setAlignment(exec_button, Qt::AlignBottom);
 
@@ -949,9 +970,36 @@ void View::initializeExecButton(MenuPanel *panel) {
             this, SLOT(execute()));
 }
 
+void View::initializeStageButton(MenuPanel *panel) {
+    QPushButton *stage_button = new QPushButton("Stage", panel->menu_);
+    stage_button->
+            setToolTip(tr("Stage current trajectory"));
+    stage_button->setMinimumHeight(35);
+
+    QPushButton *unstage_button = new QPushButton("Unstage", panel->menu_);
+    unstage_button->
+            setToolTip(tr("Unstage staged trajectory"));
+    unstage_button->setMinimumHeight(35);
+
+    panel->menu_->layout()->addWidget(stage_button);
+    panel->menu_->layout()->setAlignment(stage_button, Qt::AlignBottom);
+    panel->menu_->layout()->addWidget(unstage_button);
+    panel->menu_->layout()->setAlignment(unstage_button, Qt::AlignBottom);
+
+    this->panel_widgets_.append(stage_button);
+    this->panel_widgets_.append(unstage_button);
+
+    // Connect stage + unstage buttons
+    connect(stage_button, SIGNAL(clicked(bool)),
+            this, SLOT(stageTraj()));
+    connect(unstage_button, SIGNAL(clicked(bool)),
+            this, SLOT(unstageTraj()));
+}
+
 void View::initializeDuplicateButton(MenuPanel *panel) {
     QPushButton *duplicate_button = new QPushButton("Duplicate", panel->menu_);
     duplicate_button->setToolTip(tr("Duplicate Selected Constraint"));
+    duplicate_button->setMinimumHeight(35);
     panel->menu_->layout()->addWidget(duplicate_button);
     panel->menu_->layout()->
             setAlignment(duplicate_button, Qt::AlignBottom);

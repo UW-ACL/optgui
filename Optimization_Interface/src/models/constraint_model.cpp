@@ -30,12 +30,13 @@ void ConstraintModel::initialize() {
     this->final_pos_ = nullptr;
     this->waypoints_ = nullptr;
     this->path_ = nullptr;
-    this->path_sent_ = nullptr;
+    this->path_staged_ = nullptr;
     this->drone_ = nullptr;
 
     // initialize algorithm variables
     this->P_ = skyenet::getDefaultP();
-    this->is_valid_traj = false;
+    this->is_valid_traj_ = false;
+    this->traj_staged_ = false;
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -67,8 +68,8 @@ ConstraintModel::~ConstraintModel() {
         delete this->path_;
     }
     // Delete path sent
-    if (this->path_sent_) {
-        delete this->path_sent_;
+    if (this->path_staged_) {
+        delete this->path_staged_;
     }
     // Delete drone
     if (this->drone_) {
@@ -157,12 +158,12 @@ void ConstraintModel::setPathModel(PathModelItem *trajectory) {
 }
 
 
-void ConstraintModel::setPathSentModel(PathModelItem *trajectory) {
+void ConstraintModel::setPathStagedModel(PathModelItem *trajectory) {
     this->model_lock_.lock();
-    if (this->path_sent_) {
-        delete this->path_sent_;
+    if (this->path_staged_) {
+        delete this->path_staged_;
     }
-    this->path_sent_ = trajectory;
+    this->path_staged_ = trajectory;
     this->model_lock_.unlock();
 }
 
@@ -184,18 +185,18 @@ QVector<QPointF> ConstraintModel::getPathPoints() {
     return temp;
 }
 
-void ConstraintModel::setPathSentPoints(QVector<QPointF> points) {
+void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
     this->model_lock_.lock();
-    if (this->path_sent_) {
-        this->path_sent_->setPoints(points);
+    if (this->path_staged_) {
+        this->path_staged_->setPoints(points);
     }
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::clearPathSentPoints() {
+void ConstraintModel::clearPathStagedPoints() {
     this->model_lock_.lock();
-    if (this->path_sent_) {
-        this->path_sent_->clearPoints();
+    if (this->path_staged_) {
+        this->path_staged_->clearPoints();
     }
     this->model_lock_.unlock();
 }
@@ -274,29 +275,56 @@ void ConstraintModel::setFinaltime(qreal finaltime) {
     this->model_lock_.unlock();
 }
 
-autogen::packet::traj3dof ConstraintModel::getTraj3dof() {
+autogen::packet::traj3dof ConstraintModel::getCurrTraj3dof() {
     this->model_lock_.lock();
-    autogen::packet::traj3dof temp = this->drone_traj3dof_data_;
+    autogen::packet::traj3dof temp = this->drone_curr_traj3dof_data_;
     this->model_lock_.unlock();
     return temp;
 }
 
-void ConstraintModel::setTraj3dof(autogen::packet::traj3dof traj3dof_data) {
+void ConstraintModel::setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data) {
     this->model_lock_.lock();
-    this->drone_traj3dof_data_ = traj3dof_data;
+    this->drone_curr_traj3dof_data_ = traj3dof_data;
+    this->model_lock_.unlock();
+}
+
+autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
+    this->model_lock_.lock();
+    autogen::packet::traj3dof temp = this->drone_staged_traj3dof_data_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setStagedTraj3dof(
+        autogen::packet::traj3dof traj3dof_data) {
+    this->model_lock_.lock();
+    this->drone_staged_traj3dof_data_ = traj3dof_data;
+    this->model_lock_.unlock();
+}
+
+bool ConstraintModel::getIsTrajStaged() {
+    this->model_lock_.lock();
+    bool temp = this->traj_staged_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setIsTrajStaged(bool is_staged) {
+    this->model_lock_.lock();
+    this->traj_staged_ = is_staged;
     this->model_lock_.unlock();
 }
 
 bool ConstraintModel::getIsValidTraj() {
     this->model_lock_.lock();
-    bool temp = this->is_valid_traj;
+    bool temp = this->is_valid_traj_;
     this->model_lock_.unlock();
     return temp;
 }
 
 void ConstraintModel::setIsValidTraj(bool is_valid) {
     this->model_lock_.lock();
-    this->is_valid_traj = is_valid;
+    this->is_valid_traj_ = is_valid;
     this->model_lock_.unlock();
 }
 

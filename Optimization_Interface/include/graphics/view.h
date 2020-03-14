@@ -49,6 +49,8 @@ class View : public QGraphicsView {
     void setState(STATE button_type);
     void setPorts();
     void execute();
+    void stageTraj();
+    void unstageTraj();
     void setSkyeFlyParams();
     void setFinaltime(qreal final_time);
     void duplicateSelected();
@@ -92,6 +94,7 @@ class View : public QGraphicsView {
     void initializeEllipseButton(MenuPanel *panel);
     void initializeFlipButton(MenuPanel *panel);
     void initializeExecButton(MenuPanel *panel);
+    void initializeStageButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
     void initializeSkyeFlyParamsTable(MenuPanel *panel);

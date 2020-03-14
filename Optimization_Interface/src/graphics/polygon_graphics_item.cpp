@@ -69,7 +69,7 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     if (this->model_->isConvex()) {
         fill = Qt::gray;
     } else {
-        fill = Qt::red;
+        fill = RED;
     }
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
