@@ -26,7 +26,7 @@ void DroneGraphicsItem::initialize() {
     this->pen_.setWidth(1);
 
     // Set brush
-    this->brush_ = QBrush(Qt::yellow);
+    this->brush_ = QBrush(YELLOW);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);

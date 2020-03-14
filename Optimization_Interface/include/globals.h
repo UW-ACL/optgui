@@ -13,6 +13,13 @@
 namespace optgui {
     static qreal const GRID_SIZE = 100.0;
 
+    static QColor const RED = QColor(0xF6, 0x40, 0x3D);
+    static QColor const ORANGE = QColor(0xFD, 0x85, 0x30);
+    static QColor const YELLOW = QColor(0xE8, 0xC6, 0x38);
+    static QColor const GREEN = QColor(0x37, 0xD2, 0x24);
+    static QColor const CYAN = QColor(0x55, 0xE2, 0xD2);
+    static QColor const BLACK = QColor(0x1B, 0x1B, 0x1B);
+
     enum STATE {
         IDLE,
         ERASER,

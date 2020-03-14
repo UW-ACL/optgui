@@ -65,7 +65,7 @@ Controller::Controller(Canvas *canvas) {
     this->model_->setPathStagedModel(trajectory_sent_model);
     this->canvas_->path_staged_graphic_ =
             new PathGraphicsItem(trajectory_sent_model);
-    this->canvas_->path_staged_graphic_->setColor(Qt::cyan);
+    this->canvas_->path_staged_graphic_->setColor(GREEN);
     this->canvas_->path_staged_graphic_->setZValue(renderLevel);
     renderLevel = std::nextafter(renderLevel, 0);
     this->canvas_->addItem(this->canvas_->path_staged_graphic_);
@@ -107,9 +107,9 @@ Controller::Controller(Canvas *canvas) {
 
 void Controller::setPathColor(bool isRed) {
     if (isRed) {
-        this->canvas_->path_graphic_->setColor(Qt::red);
+        this->canvas_->path_graphic_->setColor(RED);
     } else {
-        this->canvas_->path_graphic_->setColor(Qt::yellow);
+        this->canvas_->path_graphic_->setColor(YELLOW);
     }
 }
 
@@ -272,7 +272,7 @@ void Controller::setStagedPath() {
     this->model_->setPathStagedPoints(this->model_->getPathPoints());
     this->model_->setIsTrajStaged(true);
     this->model_->setStagedTraj3dof(this->model_->getCurrTraj3dof());
-    this->canvas_->path_staged_graphic_->setColor(Qt::green);
+    this->canvas_->path_staged_graphic_->setColor(GREEN);
     this->canvas_->path_staged_graphic_->expandScene();
 }
 
@@ -286,7 +286,7 @@ void Controller::execute() {
     if (!this->freeze_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
         this->setFreeze();
-        this->canvas_->path_staged_graphic_->setColor(Qt::cyan);
+        this->canvas_->path_staged_graphic_->setColor(CYAN);
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
 }

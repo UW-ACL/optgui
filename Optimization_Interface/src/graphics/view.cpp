@@ -422,7 +422,7 @@ void View::initializeFinalPointButton(MenuPanel *panel) {
     QPen pen(Qt::black);
     pen.setWidth(2);
     painter.setPen(pen);
-    painter.setBrush(Qt::red);
+    painter.setBrush(RED);
     painter.drawEllipse(15, 15, 20, 20);
     point_button->setPixmap(pix);
     point_button->setToolTip(tr("Set final point"));
@@ -558,13 +558,13 @@ void View::initializeWaypointButton(MenuPanel *panel) {
     QPen pen(Qt::black);
     pen.setWidth(1);
     painter.setPen(pen);
-    painter.setBrush(Qt::red);
+    painter.setBrush(RED);
 
     painter.drawEllipse(QPointF(7, 7), 6, 6);
     painter.setBrush(Qt::white);
     painter.drawEllipse(QPointF(19, 19), 6, 6);
     painter.drawEllipse(QPointF(31, 31), 6, 6);
-    painter.setBrush(Qt::green);
+    painter.setBrush(GREEN);
     painter.drawEllipse(QPointF(42, 42), 6, 6);
 
     waypoint_button->setPixmap(pix);
