@@ -19,8 +19,13 @@ qreal const DEFAULT_RAD = 100;
 
 class EllipseModelItem : public DataModel {
  public:
-    explicit EllipseModelItem(QPointF pos, qreal radius = DEFAULT_RAD) :
-        mutex_(), radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
+    explicit EllipseModelItem(QPointF pos, qreal *clearance,
+                              qreal radius = DEFAULT_RAD) :
+        mutex_(), radius_(radius), direction_(false), clearance_(clearance) {
+        pos_ = pos;
+        port_ = 0;
+    }
+
     ~EllipseModelItem() {
         this->mutex_.lock();
         this->mutex_.unlock();
@@ -66,11 +71,19 @@ class EllipseModelItem : public DataModel {
         this->mutex_.unlock();
     }
 
+    qreal getClearance() {
+        this->mutex_.lock();
+        qreal temp = *this->clearance_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
  private:
     QMutex mutex_;
     qreal radius_;
     QPointF pos_;
     bool direction_;
+    qreal *clearance_;
 };
 
 }  // namespace optgui

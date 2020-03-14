@@ -12,6 +12,7 @@
 
 namespace optgui {
     static qreal const GRID_SIZE = 100.0;
+    static qreal const INIT_CLEARANCE = 0.5;
 
     static QColor const RED = QColor(0xF6, 0x40, 0x3D);
     static QColor const ORANGE = QColor(0xFD, 0x85, 0x30);

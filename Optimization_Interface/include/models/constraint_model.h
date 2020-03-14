@@ -76,8 +76,10 @@ class ConstraintModel {
 
     autogen::packet::traj3dof getCurrTraj3dof();
     void setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data);
+
     autogen::packet::traj3dof getStagedTraj3dof();
     void setStagedTraj3dof(autogen::packet::traj3dof traj3dof_data);
+
     bool getIsTrajStaged();
     void setIsTrajStaged(bool is_staged);
 
@@ -87,6 +89,9 @@ class ConstraintModel {
     void fillTable(QTableWidget *port_table,
                    QTableWidget *drone_table,
                    QSet<quint16> *ports);
+
+    qreal *getClearancePtr();
+    void setClearance(qreal clearance);
 
  private:
     void initialize();
@@ -99,6 +104,9 @@ class ConstraintModel {
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
     bool is_valid_traj_;
     bool traj_staged_;
+
+    // Clearance around ellipses in meters
+    qreal *clearance_;
 
     // Constraints
     QSet<EllipseModelItem *> *ellipses_;

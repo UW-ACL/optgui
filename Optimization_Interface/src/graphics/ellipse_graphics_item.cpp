@@ -22,14 +22,17 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
 }
 
 void EllipseGraphicsItem::initialize() {
-    // Set pen
+    // Set brush
     QColor fill = Qt::gray;
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 
-    // Set brush
+    // Set pen
     this->pen_ = QPen(Qt::black);
     this->pen_.setWidth(3);
+
+    // Set clearance pen
+    this->clearance_pen_ = QPen(fill, 3, Qt::DashLine);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemIsMovable |
@@ -50,7 +53,8 @@ EllipseGraphicsItem::~EllipseGraphicsItem() {
 }
 
 QRectF EllipseGraphicsItem::boundingRect() const {
-    qreal rad = this->model_->getRadius();
+    qreal rad = this->model_->getRadius() +
+            (this->model_->getClearance() * GRID_SIZE);
     // Add exterior border if direction flipped
     if (this->model_->getDirection()) {
         // scale with view
@@ -89,6 +93,13 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     painter->fillPath(this->shape(), this->brush_);
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
+    // Draw clearance boundry
+    this->clearance_pen_.setWidthF(3.0 / scaling_factor);
+    qreal clearance_rad = rad + (this->model_->getClearance() * GRID_SIZE);
+    painter->setPen(this->clearance_pen_);
+    painter->drawEllipse(QRectF(-clearance_rad, -clearance_rad,
+                                clearance_rad * 2, clearance_rad * 2));
+
     // Label with port
     if (this->model_->port_ != 0) {
         QPointF text_pos(this->mapFromScene(pos));
@@ -110,12 +121,8 @@ int EllipseGraphicsItem::type() const {
 
 QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
-    path.addEllipse(this->boundingRect());
-    // Add exterior border if direction flipped
-    if (this->model_->getDirection()) {
-        qreal rad = this->model_->getRadius();
-        path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-    }
+    qreal rad = this->model_->getRadius();
+    path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
     return path;
 }
 

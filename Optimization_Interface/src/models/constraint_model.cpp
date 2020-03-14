@@ -37,6 +37,9 @@ void ConstraintModel::initialize() {
     this->P_ = skyenet::getDefaultP();
     this->is_valid_traj_ = false;
     this->traj_staged_ = false;
+
+    // initialize clearance
+    this->clearance_ = new double(INIT_CLEARANCE);
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -80,6 +83,10 @@ ConstraintModel::~ConstraintModel() {
     if (this->final_pos_) {
         delete this->final_pos_;
     }
+
+    // Delete clearance pointer
+    delete this->clearance_;
+
     this->model_lock_.unlock();
 }
 
@@ -328,6 +335,23 @@ void ConstraintModel::setIsValidTraj(bool is_valid) {
     this->model_lock_.unlock();
 }
 
+qreal *ConstraintModel::getClearancePtr() {
+    // This doesn't really need locking since only the
+    // GUI uses it
+    this->model_lock_.lock();
+    qreal *temp = this->clearance_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setClearance(qreal clearance) {
+    // This doesn't really need locking since only the
+    // GUI uses it
+    this->model_lock_.lock();
+    *this->clearance_ = clearance;
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     this->model_lock_.lock();
 
@@ -494,7 +518,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
     quint32 index = 0;
     for (EllipseModelItem *ellipse : *this->ellipses_) {
-        P.obs.R[index] = ellipse->getRadius() / GRID_SIZE;
+        P.obs.R[index] = (ellipse->getRadius() / GRID_SIZE) + *this->clearance_;
         QPointF ned_coords = guiXyzToNED(ellipse->getPos());
         // TODO(mceowen): c_e and c_n are backward in Skyefly
         P.obs.c_e[index] = ned_coords.x();

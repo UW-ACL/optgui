@@ -64,6 +64,7 @@ View::~View() {
     }
     this->skyefly_params_table_->clear();
     delete this->skyefly_params_table_;
+    delete this->model_params_table_;
 
     // Delete layout components
     delete this->menu_button_;
@@ -173,7 +174,7 @@ void View::initializeMenuPanel() {
 }
 
 void View::initializeExpertPanel() {
-    this->expert_panel_ = new MenuPanel(this, false, 166);
+    this->expert_panel_ = new MenuPanel(this, false, 180);
 
     // Create open expert menu button
     this->expert_menu_button_ = new QToolButton(this);
@@ -190,9 +191,8 @@ void View::initializeExpertPanel() {
 
     // initialize menu buttons
     this->initializeSkyeFlyParamsTable(this->expert_panel_);
-
-    // add space at the bottom
     this->expert_panel_->menu_layout_->insertStretch(-1, 1);
+    this->initializeModelParamsTable(this->expert_panel_);
 
     // Connect menu open/close
     connect(this->expert_menu_button_, SIGNAL(clicked()),
@@ -377,6 +377,10 @@ void View::setFinaltime(qreal final_time) {
     this->controller_->setFinaltime(final_time);
 }
 
+void View::setClearance(qreal clearance) {
+    this->controller_->model_->setClearance(clearance);
+}
+
 void View::setSkyeFlyParams() {
     this->controller_->setSkyeFlyParams(this->skyefly_params_table_);
 }
@@ -423,7 +427,8 @@ bool View::pinchZoom(QGestureEvent *event) {
         QPinchGesture::ChangeFlags changeFlags = pinchGesture->changeFlags();
         if (changeFlags & QPinchGesture::ScaleFactorChanged) {
             this->currentStepScaleFactor_ = pinchGesture->totalScaleFactor();
-            this->zoom_slider_->setValue(initialZoom_ * this->currentStepScaleFactor_);
+            this->zoom_slider_->setValue(initialZoom_
+                                         * this->currentStepScaleFactor_);
         }
         if (pinchGesture->state() == Qt::GestureFinished) {
             this->currentStepScaleFactor_ = 1;
@@ -919,6 +924,45 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_rfrelax);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rfrelax"));
+    row_index++;
+}
+
+void View::initializeModelParamsTable(MenuPanel *panel) {
+    // Create table
+    this->model_params_table_ = new QTableWidget(panel->menu_);
+    this->model_params_table_->setColumnCount(1);  // fill with spinboxes
+    this->model_params_table_->setRowCount(1);  // how many params to edit
+        // vertical headers are spinbox labels
+    this->model_params_table_->verticalHeader()->setVisible(true);
+    this->model_params_table_->verticalHeader()->
+            setSectionResizeMode(QHeaderView::Stretch);
+    this->model_params_table_->horizontalHeader()->setVisible(false);
+    this->model_params_table_->setSizePolicy(QSizePolicy::Expanding,
+                                     QSizePolicy::Fixed);
+    this->model_params_table_->
+            setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->model_params_table_->
+            setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        // set size
+    this->model_params_table_->setMaximumHeight(30);
+        // add table to menu panel
+    panel->menu_->layout()->addWidget(this->model_params_table_);
+    panel->menu_->layout()->setAlignment(this->model_params_table_,
+                                        Qt::AlignBottom|Qt::AlignCenter);
+
+    quint32 row_index = 0;
+
+    // ellipse clearance
+    QDoubleSpinBox *clearance = new QDoubleSpinBox(this->model_params_table_);
+    clearance->setRange(0, 10);
+    clearance->setSingleStep(0.1);
+    clearance->setValue(INIT_CLEARANCE);
+    connect(clearance, SIGNAL(valueChanged(double)),
+            this, SLOT(setClearance(double)));
+
+    this->model_params_table_->setCellWidget(row_index, 0, clearance);
+    this->model_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("clearance"));
     row_index++;
 }
 

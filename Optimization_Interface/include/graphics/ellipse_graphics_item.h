@@ -41,6 +41,7 @@ class EllipseGraphicsItem : public QGraphicsItem {
  private:
     void initialize();
     QPen pen_;
+    QPen clearance_pen_;
     QBrush brush_;
     EllipseResizeHandle *resize_handle_;
     qreal getScalingFactor() const;

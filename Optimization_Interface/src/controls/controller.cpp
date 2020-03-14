@@ -217,7 +217,9 @@ void Controller::flipDirection(QGraphicsItem *item) {
 }
 
 void Controller::addEllipse(QPointF point, qreal radius) {
-    EllipseModelItem *item_model = new EllipseModelItem(point, radius);
+    EllipseModelItem *item_model = new EllipseModelItem(point,
+        this->model_->getClearancePtr(),
+        radius);
     this->loadEllipse(item_model);
 }
 
@@ -245,6 +247,7 @@ void Controller::duplicateSelected() {
                 QPointF new_pos = QPointF(ellipse->model_->getPos());
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
+                                             this->model_->getClearancePtr(),
                                              ellipse->model_->getRadius());
                 this->loadEllipse(new_model);
                 break;
@@ -383,7 +386,7 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic =
-            new EllipseGraphicsItem(item_model, nullptr);
+            new EllipseGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->ellipse_graphics_->insert(item_graphic);
     this->model_->addEllipse(item_model);
@@ -393,7 +396,7 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
 
 void Controller::loadPolygon(PolygonModelItem *item_model) {
     PolygonGraphicsItem *item_graphic =
-            new PolygonGraphicsItem(item_model, nullptr);
+            new PolygonGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->polygon_graphics_->insert(item_graphic);
     this->model_->addPolygon(item_model);
@@ -403,7 +406,7 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
 
 void Controller::loadPlane(PlaneModelItem *item_model) {
     PlaneGraphicsItem *item_graphic =
-            new PlaneGraphicsItem(item_model, nullptr);
+            new PlaneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->plane_graphics_->insert(item_graphic);
     this->model_->addPlane(item_model);
