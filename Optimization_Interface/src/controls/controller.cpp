@@ -92,11 +92,6 @@ Controller::Controller(Canvas *canvas) {
     // Initialize freeze timer
     this->freeze_timer_ = new QTimer();
     connect(this->freeze_timer_, SIGNAL(timeout()),
-            this, SLOT(setUnfreeze()));
-
-    // Initialize live reference timer
-    this->reference_timer_ = new QTimer();
-    connect(this->reference_timer_, SIGNAL(timeout()),
             this, SLOT(tickLiveReference()));
 
     // initialize skyfly thread
@@ -267,15 +262,11 @@ void Controller::updateFinalPosition(QPointF const &pos) {
     this->model_->setFinalPointPos(pos);
 }
 
-void Controller::setFreeze() {
-    this->freeze_timer_->start(1000*this->model_->getFinaltime());
-    this->model_->setFreeze();
-}
-
-void Controller::setUnfreeze() {
-    this->freeze_timer_->stop();
-    this->unsetStagedPath();
-    this->model_->setUnfreeze();
+void Controller::freeze() {
+    int msec = (1000 * this->model_->getFinaltime()) /
+            (this->model_->getHorizon() - 1);
+    this->freeze_timer_->start(msec);
+    this->model_->setLiveReferenceMode(true);
 }
 
 void Controller::setStagedPath() {
@@ -292,27 +283,21 @@ void Controller::unsetStagedPath() {
     this->canvas_->path_staged_graphic_->expandScene();
 }
 
-void Controller::startLiveReference() {
-   int msec = 1000*this->model_->getFinaltime()/24;
-   // HACK: FIX THIS. //DEBUG//
-   // TODO(ben): for some reason this->model_->getHorizon()-1 doesn't work as the denominator
-   this->reference_timer_->start(msec);
-}
-
 void Controller::tickLiveReference() {
+    this->canvas_->path_staged_graphic_->expandScene();
     if(!this->model_->tickPathStaged()) {
-        qDebug() << "stop tick reference";
-        this->reference_timer_->stop();
+        this->freeze_timer_->stop();
+        this->model_->setLiveReferenceMode(false);
+        this->unsetStagedPath();
     }
-
 }
 
 void Controller::execute() {
     if (!this->freeze_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
-        this->setFreeze();
+        this->freeze();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
-        this->startLiveReference();
+        this->model_->setPathPoints(this->model_->getPathStagedPoints());
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
 }

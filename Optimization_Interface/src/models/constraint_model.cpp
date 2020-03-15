@@ -38,11 +38,13 @@ void ConstraintModel::initialize() {
     this->is_valid_traj_ = false;
     this->traj_staged_ = false;
 
-    // initialize clearance
+    // initialize clearance around ellipse constriants
+    // in meters
     this->clearance_ = new double(INIT_CLEARANCE);
 
-    // initialize frozen
-    this->is_frozen_ = false;
+    // initialize live reference mode to disable updating
+    // current trajectory
+    this->is_live_reference_ = false;
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -195,6 +197,14 @@ QVector<QPointF> ConstraintModel::getPathPoints() {
     return temp;
 }
 
+void ConstraintModel::clearPathPoints() {
+    this->model_lock_.lock();
+    if (this->path_) {
+        this->path_->clearPoints();
+    }
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
     this->model_lock_.lock();
     if (this->path_staged_) {
@@ -218,6 +228,16 @@ void ConstraintModel::clearPathStagedPoints() {
         this->path_staged_->clearPoints();
     }
     this->model_lock_.unlock();
+}
+
+QVector<QPointF> ConstraintModel::getPathStagedPoints() {
+    this->model_lock_.lock();
+    QVector<QPointF> temp;
+    if (this->path_staged_) {
+        temp = this->path_staged_->getPoints();
+    }
+    this->model_lock_.unlock();
+    return temp;
 }
 
 void ConstraintModel::setDroneModel(DroneModelItem *drone_model) {
@@ -364,22 +384,29 @@ void ConstraintModel::setClearance(qreal clearance) {
     this->model_lock_.unlock();
 }
 
-bool ConstraintModel::isFrozen() {
+quint32 ConstraintModel::getHorizon() {
     this->model_lock_.lock();
-    bool temp = this->is_frozen_;
+    quint32 temp = this->P_.K;
     this->model_lock_.unlock();
     return temp;
 }
 
-void ConstraintModel::setFreeze() {
+void ConstraintModel::setHorizon(quint32 horizon) {
     this->model_lock_.lock();
-    this->is_frozen_ = true;
+    this->P_.K = horizon;
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::setUnfreeze() {
+bool ConstraintModel::isLiveReference() {
     this->model_lock_.lock();
-    this->is_frozen_ = false;
+    bool temp = this->is_live_reference_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
+    this->model_lock_.lock();
+    this->is_live_reference_ = reference_mode;
     this->model_lock_.unlock();
 }
 

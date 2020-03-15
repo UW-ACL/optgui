@@ -53,11 +53,13 @@ class ConstraintModel {
     void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF> points);
     QVector<QPointF> getPathPoints();
+    void clearPathPoints();
 
     void setPathStagedModel(PathModelItem *model);
     void setPathStagedPoints(QVector<QPointF> points);
     bool tickPathStaged();
     void clearPathStagedPoints();
+    QVector<QPointF> getPathStagedPoints();
 
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
@@ -87,16 +89,15 @@ class ConstraintModel {
     bool getIsValidTraj();
     void setIsValidTraj(bool is_valid);
 
-    void setFreeze();
-    void setUnfreeze();
-    bool isFrozen();
-
     void fillTable(QTableWidget *port_table,
                    QTableWidget *drone_table,
                    QSet<quint16> *ports);
 
     qreal *getClearancePtr();
     void setClearance(qreal clearance);
+
+    void setLiveReferenceMode(bool reference_mode);
+    bool isLiveReference();
 
  private:
     void initialize();
@@ -109,6 +110,7 @@ class ConstraintModel {
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
     bool is_valid_traj_;
     bool traj_staged_;
+    bool is_live_reference_;
 
     // Clearance around ellipses in meters
     qreal *clearance_;
