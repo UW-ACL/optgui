@@ -35,6 +35,10 @@ void ConstraintModel::initialize() {
 
     // initialize algorithm variables
     this->P_ = skyenet::getDefaultP();
+    // TODO(bchasnov): need default wp_idx and wprelax in params
+    this->P_.wp_idx[0] = 10;
+    this->P_.wprelax[0] = this->P_.K / 2;
+
     this->is_valid_traj_ = false;
     this->traj_staged_ = false;
 
@@ -414,40 +418,45 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     this->model_lock_.lock();
 
     // load skyenet::params from  expert panel table
+    uint32 row_index = 0;
     this->P_.K = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(0, 0))->value();
-    this->P_.dK = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(1, 0))->value();
-    this->P_.n_recalcs = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(2, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.dK = qobject_cast<QSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.n_recalcs = qobject_cast<QSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_min = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(3, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_max = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(4, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.theta_max = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(5, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.q_max = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(6, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.max_iter = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(7, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.Delta_i = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(8, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.lambda = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(9, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.alpha = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(10, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.dL_tol = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(11, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rho_0 = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(12, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rho_1 = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(13, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rho_2 = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(14, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rirelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(15, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rfrelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(16, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.wprelax[0] = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
 
     this->model_lock_.unlock();
 }
@@ -459,16 +468,13 @@ skyenet::params ConstraintModel::getSkyeFlyParams() {
     this->loadEllipseConstraints(this->P_);
     // Affine constraints Ax leq b
     this->loadPosConstraints(this->P_);
-    // Waypoints
-    this->P_.wp_idx[0] = this->P_.K / 2;
-    if (this->waypoints_->getSize() > 0) {
-        this->P_.wprelax[0] = 10;
-    } else {
-        this->P_.wprelax[0] = 0;
-    }
     // time intervals
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
     skyenet::params P = this->P_;
+    // set waypoint relax to 0 if no waypoints
+    if (this->waypoints_->getSize() < 1) {
+        P.wprelax[0] = 0;
+    }
     this->model_lock_.unlock();
     return P;
 }

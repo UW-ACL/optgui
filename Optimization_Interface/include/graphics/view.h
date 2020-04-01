@@ -55,8 +55,10 @@ class View : public QGraphicsView {
     void setFinaltime(qreal final_time);
     void duplicateSelected();
     void setClearance(qreal clearance);
+    void constrainWpIdx(int value);
+    void constrainAccel();
 
- private:
+private:
     void initialize();
     void initializeMenuPanel();
     void initializeExpertPanel();
@@ -76,6 +78,9 @@ class View : public QGraphicsView {
     QPen dot_pen_;
     QBrush dot_brush_;
     QTableWidget *skyefly_params_table_;
+    quint32 a_min_row;
+    quint32 a_max_row;
+    quint32 wp_idx_row;
     QTableWidget *model_params_table_;
 
     // keep track of all widgets to delete them

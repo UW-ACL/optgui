@@ -720,30 +720,33 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     row_index++;
 
     // P.dK
-    QSpinBox *params_dK = new QSpinBox(this->skyefly_params_table_);
-    params_dK->setRange(0, 1000);
-    params_dK->setSingleStep(0.1);
-    params_dK->setValue(default_P.dK);
-    connect(params_dK, SIGNAL(valueChanged(int)),
-            this, SLOT(setSkyeFlyParams()));
+    // Testing param, no longer needed
+//    QSpinBox *params_dK = new QSpinBox(this->skyefly_params_table_);
+//    params_dK->setRange(0, 1000);
+//    params_dK->setSingleStep(0.1);
+//    params_dK->setValue(default_P.dK);
+//    connect(params_dK, SIGNAL(valueChanged(int)),
+//            this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_dK);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("dK"));
-    row_index++;
+//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_dK);
+//    this->skyefly_params_table_->
+//            setVerticalHeaderItem(row_index, new QTableWidgetItem("dK"));
+//    row_index++;
 
     // P.n_recalcs
-    QSpinBox *params_n_recalcs = new QSpinBox(this->skyefly_params_table_);
-    params_n_recalcs->setRange(0, 1000);
-    params_n_recalcs->setValue(default_P.n_recalcs);
-    connect(params_n_recalcs, SIGNAL(valueChanged(int)),
-            this, SLOT(setSkyeFlyParams()));
+    // Testing param, no longer needed
+//    QSpinBox *params_n_recalcs = new QSpinBox(this->skyefly_params_table_);
+//    params_n_recalcs->setRange(0, 1000);
+//    params_n_recalcs->setValue(default_P.n_recalcs);
+//    connect(params_n_recalcs, SIGNAL(valueChanged(int)),
+//            this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_n_recalcs);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index,
-                                  new QTableWidgetItem("n_recalcs"));
-    row_index++;
+//    this->skyefly_params_table_->setCellWidget(
+//      row_index, 0, params_n_recalcs);
+//    this->skyefly_params_table_->
+//            setVerticalHeaderItem(row_index,
+//                                  new QTableWidgetItem("n_recalcs"));
+//    row_index++;
 
     // P.a_min
     QDoubleSpinBox *params_a_min =
@@ -753,6 +756,10 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     params_a_min->setSingleStep(0.1);
     connect(params_a_min, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
+
+    connect(params_a_min, SIGNAL(valueChanged(double)),
+            this, SLOT(constrainAccel()));
+    this->a_min_row = row_index;
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_a_min);
     this->skyefly_params_table_->
@@ -767,6 +774,10 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     params_a_max->setValue(default_P.a_max);
     connect(params_a_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
+
+    connect(params_a_max, SIGNAL(valueChanged(double)),
+            this, SLOT(constrainAccel()));
+    this->a_max_row = row_index;
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_a_max);
     this->skyefly_params_table_->
@@ -933,6 +944,51 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rfrelax"));
     row_index++;
+
+    // P.wprelax
+    QDoubleSpinBox *params_wprelax =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_wprelax->setRange(0, 10000);
+    params_wprelax->setValue(10);
+    connect(params_wprelax, SIGNAL(valueChanged(double)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_wprelax);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("wprelax"));
+    row_index++;
+
+    // P.wp_idx
+    QSpinBox *params_wp_idx = new QSpinBox(this->skyefly_params_table_);
+    // TODO(dtsull16): replace with skyenet::MIN_HORIZON
+    params_wp_idx->setRange(1, params_K->value() - 1);
+    params_wp_idx->setValue(default_P.K / 2);
+    connect(params_wp_idx, SIGNAL(valueChanged(int)),
+            this, SLOT(setSkyeFlyParams()));
+
+    connect(params_K, SIGNAL(valueChanged(int)),  // constrain to max K
+            this, SLOT(constrainWpIdx(int)));
+    this->wp_idx_row = row_index;
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_wp_idx);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("wp_idx"));
+    row_index++;
+}
+
+void View::constrainWpIdx(int value) {
+    QSpinBox *params_wp_idx = qobject_cast<QSpinBox *>(
+                this->skyefly_params_table_->cellWidget(this->wp_idx_row, 0));
+    params_wp_idx->setMaximum(value - 1);
+}
+
+void View::constrainAccel() {
+    QDoubleSpinBox *params_a_min = qobject_cast<QDoubleSpinBox *>(
+                this->skyefly_params_table_->cellWidget(this->a_min_row, 0));
+    QDoubleSpinBox *params_a_max = qobject_cast<QDoubleSpinBox *>(
+                this->skyefly_params_table_->cellWidget(this->a_max_row, 0));
+    params_a_min->setMaximum(params_a_max->value());
+    params_a_max->setMinimum(params_a_min->value());
 }
 
 void View::initializeModelParamsTable(MenuPanel *panel) {
