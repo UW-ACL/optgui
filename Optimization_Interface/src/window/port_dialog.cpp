@@ -88,9 +88,9 @@ void PortDialog::initializeTable() {
     this->drone_table_->verticalHeader()->setVisible(false);
     this->drone_table_->horizontalHeader()->setVisible(false);
     this->drone_table_->setMinimumSize(
-                this->drone_table_->minimumSize().rwidth(), 61);
+                this->drone_table_->minimumSize().rwidth(), 30);
     this->drone_table_->setMaximumSize(
-                this->drone_table_->maximumSize().rwidth(), 62);
+                this->drone_table_->maximumSize().rwidth(), 32);
 
     // Set color
     this->port_table_->setAutoFillBackground(true);

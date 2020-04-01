@@ -21,7 +21,7 @@ class DroneModelItem : public DataModel {
     DroneModelItem() : mutex_() {
         this->pos_ = QPointF(0, 0);
         port_ = 0;
-        destination_port_ = 0;
+        destination_port_ = 6000;
         ip_addr_ = "0.0.0.0";
     }
     ~DroneModelItem() {

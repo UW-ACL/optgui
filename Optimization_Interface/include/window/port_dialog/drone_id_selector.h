@@ -1,12 +1,12 @@
-// TITLE:   Optimization_Interface/include/window/drone_ip_selector.h
+// TITLE:   Optimization_Interface/include/window/drone_id_selector.h
 // AUTHORS: Daniel Sullivan
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2020, All Rights Reserved
 
 // Entry box for setting drone destination ipv4 address
 
-#ifndef DRONE_IP_SELECTOR_H_
-#define DRONE_IP_SELECTOR_H_
+#ifndef DRONE_ID_SELECTOR_H_
+#define DRONE_ID_SELECTOR_H_
 
 #include <QLineEdit>
 
@@ -14,11 +14,11 @@
 
 namespace optgui {
 
-class DroneIpSelector : public QLineEdit {
+class DroneIdSelector : public QLineEdit {
     Q_OBJECT
 
  public:
-    explicit DroneIpSelector(DroneModelItem *model, QWidget *parent);
+    explicit DroneIdSelector(DroneModelItem *model, QWidget *parent);
 
  protected:
     void focusInEvent(QFocusEvent *event) override;
@@ -33,4 +33,4 @@ class DroneIpSelector : public QLineEdit {
 
 }  // namespace optgui
 
-#endif  // DRONE_IP_SELECTOR_H_
+#endif  // DRONE_ID_SELECTOR_H_
