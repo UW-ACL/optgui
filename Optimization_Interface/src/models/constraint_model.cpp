@@ -13,8 +13,7 @@
 #include <algorithm>
 
 #include "include/window/port_dialog/port_selector.h"
-#include "include/window/port_dialog/drone_port_selector.h"
-#include "include/window/port_dialog/drone_ip_selector.h"
+#include "include/window/port_dialog/drone_id_selector.h"
 
 namespace optgui {
 
@@ -484,33 +483,27 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
                                 QSet<quint16> *ports) {
     this->model_lock_.lock();
 
+    // Set drone table
+    drone_table->setRowCount(1);
+
+    // Set drone id
+    drone_table->setItem(0, 0, new QTableWidgetItem("Drone ID"));
+    drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
+    ports->insert(this->drone_->port_);
+    drone_table->setCellWidget(0, 1,
+            new DroneIdSelector(this->drone_, drone_table));
+
     // Configure port table
-    port_table->setRowCount(3 + this->ellipses_->size() +
+    port_table->setRowCount(1 + this->ellipses_->size() +
                                    this->polygons_->size() +
                                    this->planes_->size());
 
-    // Set drone
-    port_table->setItem(0, 0, new QTableWidgetItem("Drone"));
-    port_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    ports->insert(this->drone_->port_);
-    port_table->setCellWidget(0, 1,
-            new PortSelector(ports, this->drone_,
-                             port_table));
-
     // Set final point
-    port_table->setItem(1, 0, new QTableWidgetItem("Final Point"));
-    port_table->item(1, 0)->setFlags(Qt::ItemIsEnabled);
+    port_table->setItem(0, 0, new QTableWidgetItem("Final Point"));
+    port_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
     ports->insert(this->final_pos_->port_);
-    port_table->setCellWidget(1, 1,
+    port_table->setCellWidget(0, 1,
             new PortSelector(ports, this->final_pos_,
-                             port_table));
-
-    // Set waypoints
-    port_table->setItem(2, 0, new QTableWidgetItem("Waypoints"));
-    port_table->item(2, 0)->setFlags(Qt::ItemIsEnabled);
-    ports->insert(this->waypoints_->port_);
-    port_table->setCellWidget(2, 1,
-            new PortSelector(ports, this->waypoints_,
                              port_table));
 
     quint16 row = 3;
@@ -559,21 +552,6 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         count++;
     }
 
-    // Set drone table
-    drone_table->setRowCount(2);
-
-    // Set drone ip
-    drone_table->setItem(0, 0,
-                                new QTableWidgetItem("Drone Ip Addr"));
-    drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    drone_table->setCellWidget(0, 1,
-            new DroneIpSelector(this->drone_, drone_table));
-
-    // Set drone destination port
-    drone_table->setItem(1, 0, new QTableWidgetItem("Drone Port"));
-    drone_table->item(1, 0)->setFlags(Qt::ItemIsEnabled);
-    drone_table->setCellWidget(1, 1,
-            new DronePortSelector(this->drone_, drone_table));
     this->model_lock_.unlock();
 }
 
