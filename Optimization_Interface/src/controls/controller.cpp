@@ -285,7 +285,7 @@ void Controller::unsetStagedPath() {
 
 void Controller::tickLiveReference() {
     this->canvas_->path_staged_graphic_->expandScene();
-    if(!this->model_->tickPathStaged()) {
+    if (!this->model_->tickPathStaged()) {
         this->freeze_timer_->stop();
         this->model_->setLiveReferenceMode(false);
         this->unsetStagedPath();
