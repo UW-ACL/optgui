@@ -14,6 +14,7 @@ namespace optgui {
 
 EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
                                          QGraphicsItem *parent,
+                                         quint8 type,
                                          qreal size)
     : QGraphicsEllipseItem(parent) {
     this->model_ = model;
@@ -21,6 +22,7 @@ EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
     this->size_ = size;
+    this->type_ = type;
     this->setRect(-this->size_, -this->size_,
                   this->size_ * 2, this->size_ * 2);
 }
@@ -39,8 +41,29 @@ void EllipseResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void EllipseResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
-        this->model_->setRadius(qFabs(event->scenePos().x() -
-                                parentItem()->scenePos().x()));
+        QLineF vector(event->scenePos(),
+                      parentItem()->scenePos());
+
+        qreal rotation = 360 - vector.angle();
+        if (this->type_ == 0) {
+            this->model_->setWidth(vector.length());
+        } else if (this->type_ == 1) {
+            this->model_->setHeight(vector.length());
+            rotation -= 90;
+            if (rotation < 0) {
+                rotation += 360;
+            }
+        } else {
+            this->model_->setWidth(vector.length());
+            this->model_->setHeight(vector.length());
+            rotation -= 45;
+            if (rotation < 0) {
+                rotation += 360;
+            }
+        }
+        this->model_->setRot(rotation);
+        this->parentItem()->setRotation(rotation);
+
         this->expandScene();
     }
 }
