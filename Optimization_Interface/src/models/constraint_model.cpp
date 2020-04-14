@@ -286,11 +286,17 @@ void ConstraintModel::loadFinalPos(double r_f[3]) {
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::loadInitialPos(double r_i[3]) {
+void ConstraintModel::loadInitialTelem(double r_i[3], double v_i[3], double a_i[3]) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->drone_->getPos());
     r_i[1] = ned_coords.x();
     r_i[2] = ned_coords.y();
+    QPointF ned_vel = guiXyzToNED(this->drone_->getVel());
+    v_i[1] = ned_vel.x();
+    v_i[2] = ned_vel.y();
+    QPointF ned_accel = guiXyzToNED(this->drone_->getAccel());
+    a_i[1] = ned_accel.x();
+    a_i[2] = ned_accel.y();
     this->model_lock_.unlock();
 }
 

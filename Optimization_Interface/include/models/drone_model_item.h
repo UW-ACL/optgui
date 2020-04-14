@@ -20,10 +20,13 @@ class DroneModelItem : public DataModel {
  public:
     DroneModelItem() : mutex_() {
         this->pos_ = QPointF(0, 0);
+        this->vel_ = QPointF(0, 0);
+        this->accel_ = QPointF(0, 0);
         port_ = 0;
         destination_port_ = 6000;
         ip_addr_ = "0.0.0.0";
     }
+
     ~DroneModelItem() {
         this->mutex_.lock();
         this->mutex_.unlock();
@@ -43,12 +46,42 @@ class DroneModelItem : public DataModel {
         this->mutex_.unlock();
     }
 
+    QPointF getVel() {
+        this->mutex_.lock();
+        QPointF temp = this->vel_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void setVel(QPointF vel) {
+        this->mutex_.lock();
+        this->vel_.setX(vel.x());
+        this->vel_.setY(vel.y());
+        this->mutex_.unlock();
+    }
+
+    QPointF getAccel() {
+        this->mutex_.lock();
+        QPointF temp = this->accel_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void setAccel(QPointF accel) {
+        this->mutex_.lock();
+        this->accel_.setX(accel.x());
+        this->accel_.setY(accel.y());
+        this->mutex_.unlock();
+    }
+
     QString ip_addr_;
     quint16 destination_port_;
 
  private:
     QMutex mutex_;
     QPointF pos_;
+    QPointF vel_;
+    QPointF accel_;
 };
 
 }  // namespace optgui

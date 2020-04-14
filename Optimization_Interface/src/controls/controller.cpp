@@ -267,6 +267,7 @@ void Controller::freeze() {
             (this->model_->getHorizon() - 1);
     this->freeze_timer_->start(msec);
     this->model_->setLiveReferenceMode(true);
+    this->traj_index_ = 1;
 }
 
 void Controller::setStagedPath() {
@@ -285,7 +286,22 @@ void Controller::unsetStagedPath() {
 
 void Controller::tickLiveReference() {
     this->canvas_->path_staged_graphic_->expandScene();
-    if (!this->model_->tickPathStaged()) {
+
+    if (this->model_->tickPathStaged()) {
+        autogen::packet::traj3dof traj = this->model_->getCurrTraj3dof();
+//        this->canvas_->drone_graphic_->model_->
+//                setPos(nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
+//                                   traj.pos_ned(1, this->traj_index_)));
+        this->canvas_->drone_graphic_->model_->
+                setVel(nedToGuiXyz(traj.vel_ned(0, this->traj_index_),
+                                   traj.vel_ned(1, this->traj_index_)));
+        this->canvas_->drone_graphic_->model_->
+                setAccel(nedToGuiXyz(traj.accl_ned(0, this->traj_index_),
+                                     traj.accl_ned(1, this->traj_index_)));
+        this->traj_index_++;
+
+        this->canvas_->drone_graphic_->expandScene();
+    } else {
         this->freeze_timer_->stop();
         this->model_->setLiveReferenceMode(false);
         this->unsetStagedPath();
