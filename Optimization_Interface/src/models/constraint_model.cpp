@@ -580,9 +580,8 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
         P.obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
 
         QPointF ned_coords = guiXyzToNED(ellipse->getPos());
-        // TODO(mceowen): c_e and c_n are backward in Skyefly
-        P.obs.c_e[index] = ned_coords.x();
-        P.obs.c_n[index] = ned_coords.y();
+        P.obs.c_n[index] = ned_coords.x();
+        P.obs.c_e[index] = ned_coords.y();
         index++;
         if (index >= skyenet::MAX_OBS) {
             P.obs.n = index;
