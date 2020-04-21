@@ -258,7 +258,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                     }
 
                     // if poly is "inside out" reverse it
-                    if (tot_angle > 0){
+                    if (tot_angle <= 0){
                         std::reverse(poly.begin(), poly.end());
                     }
 
