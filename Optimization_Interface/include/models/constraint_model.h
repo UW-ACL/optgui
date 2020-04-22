@@ -65,7 +65,7 @@ class ConstraintModel {
     void setDroneModelPos(QPointF const &pos);
 
     void loadFinalPos(double r_f[3]);
-    void loadInitialPos(double r_i[3]);
+    void loadInitialTelem(double r_i[3], double v_i[3], double a_i[3]);
     void loadWaypoints(double wp[3][skyenet::MAX_WAYPOINTS]);
 
     skyenet::params getSkyeFlyParams();

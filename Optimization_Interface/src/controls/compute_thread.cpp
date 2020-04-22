@@ -31,10 +31,11 @@ void ComputeThread::run() {
 
         // Parameters
         double r_i[3] = { 0 };
+        double v_i[3] = { 0 };
+        double a_i[3] = { 0 };
         double r_f[3] = { 0 };
-        this->model_->loadInitialPos(r_i);
+        this->model_->loadInitialTelem(r_i, v_i, a_i);
         this->model_->loadFinalPos(r_f);
-
 
         double wp[3][skyenet::MAX_WAYPOINTS] = { 0 };
         this->model_->loadWaypoints(wp);
@@ -42,7 +43,7 @@ void ComputeThread::run() {
         skyenet::params P = this->model_->getSkyeFlyParams();
 
         // Initialize problem
-        this->fly_->init_problem1(P, r_i, r_f, wp);
+        this->fly_->init_problem1(P, r_i, v_i, a_i, r_f, wp);
 
         // Run SCvx algorithm
         skyenet::outputs O = this->fly_->update();

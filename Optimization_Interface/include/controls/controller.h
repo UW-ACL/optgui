@@ -83,6 +83,7 @@ class Controller : public QObject {
 
     // Freeze timer
     QTimer *freeze_timer_;
+    quint32 traj_index_;
 
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;
