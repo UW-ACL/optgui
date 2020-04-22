@@ -218,8 +218,7 @@ void Controller::flipDirection(QGraphicsItem *item) {
 
 void Controller::addEllipse(QPointF point, qreal radius) {
     EllipseModelItem *item_model = new EllipseModelItem(point,
-        this->model_->getClearancePtr(),
-        radius);
+        this->model_->getClearancePtr(), radius, radius, 0);
     this->loadEllipse(item_model);
 }
 
@@ -248,7 +247,9 @@ void Controller::duplicateSelected() {
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
                                              this->model_->getClearancePtr(),
-                                             ellipse->model_->getRadius());
+                                             ellipse->model_->getHeight(),
+                                             ellipse->model_->getWidth(),
+                                             ellipse->model_->getRot());
                 this->loadEllipse(new_model);
                 break;
             }
@@ -398,6 +399,7 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
     this->canvas_->addItem(item_graphic);
     this->canvas_->ellipse_graphics_->insert(item_graphic);
     this->model_->addEllipse(item_model);
+    item_graphic->setRotation(item_model->getRot());
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
 }
