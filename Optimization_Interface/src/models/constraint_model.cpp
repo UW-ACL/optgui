@@ -494,20 +494,22 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     drone_table->setCellWidget(0, 1,
             new DroneIdSelector(this->drone_, drone_table));
 
+
     // Configure port table
+    quint16 row = 0;
     port_table->setRowCount(1 + this->ellipses_->size() +
                                    this->polygons_->size() +
                                    this->planes_->size());
 
     // Set final point
-    port_table->setItem(0, 0, new QTableWidgetItem("Final Point"));
-    port_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
+    port_table->setItem(row, 0, new QTableWidgetItem("Final Point"));
+    port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
     ports->insert(this->final_pos_->port_);
-    port_table->setCellWidget(0, 1,
+    port_table->setCellWidget(row, 1,
             new PortSelector(ports, this->final_pos_,
                              port_table));
+    row++;
 
-    quint16 row = 3;
     // Set ellipses
     quint16 count = 1;
     for (EllipseModelItem *model : *this->ellipses_) {
