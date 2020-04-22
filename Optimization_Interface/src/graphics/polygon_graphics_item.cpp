@@ -65,12 +65,14 @@ void PolygonGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Change color based on convexity
-    QColor fill;
+    QColor fill = Qt::gray;
+    /*
     if (this->model_->isConvex()) {
         fill = Qt::gray;
     } else {
         fill = RED;
     }
+    */
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 

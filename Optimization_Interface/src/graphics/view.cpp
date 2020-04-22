@@ -230,6 +230,38 @@ void View::mousePressEvent(QMouseEvent *event) {
                     for (QGraphicsItem *dot : *this->temp_markers_) {
                         poly.append(QPointF(dot->pos()));
                     }
+
+                    /*
+                     * detect if polygon is "inside out" and reverse order of points if so
+                     * (philosophical question: should this go in the PolygonModelItem constructor?)
+                     */
+
+                    // first get list of edge vectors
+                    QVector<QPointF> edge_vecs;
+                    for (int i = 0; i < poly.length(); ++i) {
+                        edge_vecs.append(poly[(i+1) % poly.length()] - poly[i]);
+                    }
+
+                    // compute sum of angles of internal angles; should be negative
+                    qreal tot_angle = 0;
+                    for (int i = 0; i < edge_vecs.length(); ++i) {
+                        QPointF ahead = edge_vecs[(i+1) % edge_vecs.length()];
+                        QPointF behind = edge_vecs[i];
+
+                        // take 2D "pseudo cross product" (behind x ahead)
+                        qreal cross_product = behind.rx() * ahead.ry() - behind.ry() * ahead.rx();
+
+                        qreal norm_ahead = sqrt(QPointF::dotProduct(ahead, ahead));
+                        qreal norm_behind = sqrt(QPointF::dotProduct(behind, behind));
+
+                        tot_angle += qAsin(cross_product/(norm_ahead * norm_behind));
+                    }
+
+                    // if poly is "inside out" reverse it
+                    if (tot_angle <= 0){
+                        std::reverse(poly.begin(), poly.end());
+                    }
+
                     this->controller_->addPolygon(poly);
                 }
                 // Clean up markers
