@@ -54,8 +54,11 @@ class View : public QGraphicsView {
     void setSkyeFlyParams();
     void setFinaltime(qreal final_time);
     void duplicateSelected();
+    void setClearance(qreal clearance);
+    void constrainWpIdx(int value);
+    void constrainAccel();
 
- private:
+private:
     void initialize();
     void initializeMenuPanel();
     void initializeExpertPanel();
@@ -75,6 +78,10 @@ class View : public QGraphicsView {
     QPen dot_pen_;
     QBrush dot_brush_;
     QTableWidget *skyefly_params_table_;
+    quint32 a_min_row;
+    quint32 a_max_row;
+    quint32 wp_idx_row;
+    QTableWidget *model_params_table_;
 
     // keep track of all widgets to delete them
     QVector<QWidget *> panel_widgets_;
@@ -97,7 +104,10 @@ class View : public QGraphicsView {
     void initializeStageButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
+    // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
+    // expert panel constraint_model params not in skyefly
+    void initializeModelParamsTable(MenuPanel *panel);
 };
 
 }  // namespace optgui

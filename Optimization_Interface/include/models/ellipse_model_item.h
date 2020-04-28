@@ -19,23 +19,56 @@ qreal const DEFAULT_RAD = 100;
 
 class EllipseModelItem : public DataModel {
  public:
-    explicit EllipseModelItem(QPointF pos, qreal radius = DEFAULT_RAD) :
-        mutex_(), radius_(radius), direction_(false) { pos_ = pos; port_ = 0; }
+    explicit EllipseModelItem(QPointF pos, qreal *clearance,
+                qreal height = DEFAULT_RAD,
+                qreal width = DEFAULT_RAD, qreal rot = 0) :
+        mutex_(), height_(height), width_(width), rot_(rot),
+        direction_(false), clearance_(clearance) {
+        pos_ = pos;
+        port_ = 0;
+    }
+
     ~EllipseModelItem() {
         this->mutex_.lock();
         this->mutex_.unlock();
     }
 
-    qreal getRadius() {
+    qreal getWidth() {
         this->mutex_.lock();
-        qreal temp = this->radius_;
+        qreal temp = this->width_;
         this->mutex_.unlock();
         return temp;
     }
 
-    void setRadius(qreal radius) {
+    void setWidth(qreal width) {
         this->mutex_.lock();
-        this->radius_ = radius;
+        this->width_ = width;
+        this->mutex_.unlock();
+    }
+
+    qreal getHeight() {
+        this->mutex_.lock();
+        qreal temp = this->height_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void setHeight(qreal height) {
+        this->mutex_.lock();
+        this->height_ = height;
+        this->mutex_.unlock();
+    }
+
+    qreal getRot() {
+        this->mutex_.lock();
+        qreal temp = this->rot_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
+    void setRot(qreal rot) {
+        this->mutex_.lock();
+        this->rot_ = rot;
         this->mutex_.unlock();
     }
 
@@ -66,11 +99,21 @@ class EllipseModelItem : public DataModel {
         this->mutex_.unlock();
     }
 
+    qreal getClearance() {
+        this->mutex_.lock();
+        qreal temp = *this->clearance_;
+        this->mutex_.unlock();
+        return temp;
+    }
+
  private:
     QMutex mutex_;
-    qreal radius_;
+    qreal height_;
+    qreal width_;
+    qreal rot_;
     QPointF pos_;
     bool direction_;
+    qreal *clearance_;
 };
 
 }  // namespace optgui

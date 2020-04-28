@@ -75,7 +75,7 @@ class Controller : public QObject {
  private slots:
     void startSockets();
     void setPathColor(bool isRed);
-    void setUnfreeze();
+    void tickLiveReference();
 
  private:
     // QGraphicsScene
@@ -98,7 +98,7 @@ class Controller : public QObject {
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
 
-    void setFreeze();
+    void freeze();
     void setStagedPath();
     void unsetStagedPath();
 };

@@ -21,6 +21,7 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
  public:
     explicit EllipseResizeHandle(EllipseModelItem *model,
                                  QGraphicsItem *parent,
+                                 quint8 type,
                                  qreal size = ELLIPSE_HANDLE_SIZE);
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
@@ -35,6 +36,7 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
     EllipseModelItem *model_;
     bool resize_;
     qreal size_;
+    quint8 type_;
     qreal getScalingFactor();
 };
 

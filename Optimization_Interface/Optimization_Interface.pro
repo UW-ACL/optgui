@@ -54,8 +54,6 @@ SOURCES += \
     src/graphics/plane_resize_handle.cpp \
     src/graphics/waypoints_resize_handle.cpp \
     src/main.cpp \
-    src/window/port_dialog/drone_ip_selector.cpp \
-    src/window/port_dialog/drone_port_selector.cpp \
     src/window/main_window.cpp \
     src/graphics/canvas.cpp \
     src/graphics/view.cpp \
@@ -71,6 +69,7 @@ SOURCES += \
     src/graphics/waypoints_graphics_item.cpp \
     src/graphics/path_graphics_item.cpp \
     src/window/port_dialog.cpp \
+    src/window/port_dialog/drone_id_selector.cpp \
     src/window/port_dialog/port_selector.cpp \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
@@ -81,8 +80,6 @@ HEADERS += \
     include/controls/compute_thread.h \
     include/graphics/plane_resize_handle.h \
     include/graphics/waypoints_resize_handle.h \
-    include/window/port_dialog/drone_ip_selector.h \
-    include/window/port_dialog/drone_port_selector.h \
     include/window/main_window.h \
     include/graphics/canvas.h \
     include/graphics/view.h \
@@ -105,6 +102,7 @@ HEADERS += \
     include/graphics/waypoints_graphics_item.h \
     include/graphics/path_graphics_item.h \
     include/window/port_dialog.h \
+    include/window/port_dialog/drone_id_selector.h \
     include/window/port_dialog/port_selector.h \
     include/models/data_model.h \
     include/network/ellipse_socket.h \

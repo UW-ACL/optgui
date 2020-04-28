@@ -9,12 +9,12 @@
 #include <QLineF>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
+#include <QtMath>
 
 #include <algorithm>
 
 #include "include/window/port_dialog/port_selector.h"
-#include "include/window/port_dialog/drone_port_selector.h"
-#include "include/window/port_dialog/drone_ip_selector.h"
+#include "include/window/port_dialog/drone_id_selector.h"
 
 namespace optgui {
 
@@ -35,8 +35,20 @@ void ConstraintModel::initialize() {
 
     // initialize algorithm variables
     this->P_ = skyenet::getDefaultP();
+    // TODO(bchasnov): need default wp_idx and wprelax in params
+    this->P_.wp_idx[0] = 10;
+    this->P_.wprelax[0] = this->P_.K / 2;
+
     this->is_valid_traj_ = false;
     this->traj_staged_ = false;
+
+    // initialize clearance around ellipse constriants
+    // in meters
+    this->clearance_ = new double(INIT_CLEARANCE);
+
+    // initialize live reference mode to disable updating
+    // current trajectory
+    this->is_live_reference_ = false;
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -80,6 +92,10 @@ ConstraintModel::~ConstraintModel() {
     if (this->final_pos_) {
         delete this->final_pos_;
     }
+
+    // Delete clearance pointer
+    delete this->clearance_;
+
     this->model_lock_.unlock();
 }
 
@@ -185,6 +201,14 @@ QVector<QPointF> ConstraintModel::getPathPoints() {
     return temp;
 }
 
+void ConstraintModel::clearPathPoints() {
+    this->model_lock_.lock();
+    if (this->path_) {
+        this->path_->clearPoints();
+    }
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
     this->model_lock_.lock();
     if (this->path_staged_) {
@@ -193,12 +217,31 @@ void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
     this->model_lock_.unlock();
 }
 
+bool ConstraintModel::tickPathStaged() {
+    this->model_lock_.lock();
+    if (this->path_staged_) {
+        this->path_staged_->removePointAt(0);
+    }
+    this->model_lock_.unlock();
+    return this->path_staged_->getSize() != 0;
+}
+
 void ConstraintModel::clearPathStagedPoints() {
     this->model_lock_.lock();
     if (this->path_staged_) {
         this->path_staged_->clearPoints();
     }
     this->model_lock_.unlock();
+}
+
+QVector<QPointF> ConstraintModel::getPathStagedPoints() {
+    this->model_lock_.lock();
+    QVector<QPointF> temp;
+    if (this->path_staged_) {
+        temp = this->path_staged_->getPoints();
+    }
+    this->model_lock_.unlock();
+    return temp;
 }
 
 void ConstraintModel::setDroneModel(DroneModelItem *drone_model) {
@@ -328,44 +371,92 @@ void ConstraintModel::setIsValidTraj(bool is_valid) {
     this->model_lock_.unlock();
 }
 
+qreal *ConstraintModel::getClearancePtr() {
+    // This doesn't really need locking since only the
+    // GUI uses it
+    this->model_lock_.lock();
+    qreal *temp = this->clearance_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setClearance(qreal clearance) {
+    // This doesn't really need locking since only the
+    // GUI uses it
+    this->model_lock_.lock();
+    *this->clearance_ = clearance;
+    this->model_lock_.unlock();
+}
+
+quint32 ConstraintModel::getHorizon() {
+    this->model_lock_.lock();
+    quint32 temp = this->P_.K;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setHorizon(quint32 horizon) {
+    this->model_lock_.lock();
+    this->P_.K = horizon;
+    this->model_lock_.unlock();
+}
+
+bool ConstraintModel::isLiveReference() {
+    this->model_lock_.lock();
+    bool temp = this->is_live_reference_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
+    this->model_lock_.lock();
+    this->is_live_reference_ = reference_mode;
+    this->model_lock_.unlock();
+}
+
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     this->model_lock_.lock();
 
     // load skyenet::params from  expert panel table
+    uint32 row_index = 0;
     this->P_.K = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(0, 0))->value();
-    this->P_.dK = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(1, 0))->value();
-    this->P_.n_recalcs = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(2, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.dK = qobject_cast<QSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.n_recalcs = qobject_cast<QSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_min = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(3, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_max = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(4, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.theta_max = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(5, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.q_max = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(6, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.max_iter = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(7, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.Delta_i = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(8, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.lambda = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(9, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.alpha = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(10, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.dL_tol = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(11, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rho_0 = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(12, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rho_1 = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(13, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rho_2 = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(14, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rirelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(15, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rfrelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(16, 0))->value();
+            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.wprelax[0] = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
 
     this->model_lock_.unlock();
 }
@@ -377,16 +468,13 @@ skyenet::params ConstraintModel::getSkyeFlyParams() {
     this->loadEllipseConstraints(this->P_);
     // Affine constraints Ax leq b
     this->loadPosConstraints(this->P_);
-    // Waypoints
-    this->P_.wp_idx[0] = this->P_.K / 2;
-    if (this->waypoints_->getSize() > 0) {
-        this->P_.wprelax[0] = 10;
-    } else {
-        this->P_.wprelax[0] = 0;
-    }
     // time intervals
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
     skyenet::params P = this->P_;
+    // set waypoint relax to 0 if no waypoints
+    if (this->waypoints_->getSize() < 1) {
+        P.wprelax[0] = 0;
+    }
     this->model_lock_.unlock();
     return P;
 }
@@ -396,36 +484,32 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
                                 QSet<quint16> *ports) {
     this->model_lock_.lock();
 
+    // Set drone table
+    drone_table->setRowCount(1);
+
+    // Set drone id
+    drone_table->setItem(0, 0, new QTableWidgetItem("Drone ID"));
+    drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
+    ports->insert(this->drone_->port_);
+    drone_table->setCellWidget(0, 1,
+            new DroneIdSelector(this->drone_, drone_table));
+
+
     // Configure port table
-    port_table->setRowCount(3 + this->ellipses_->size() +
+    quint16 row = 0;
+    port_table->setRowCount(1 + this->ellipses_->size() +
                                    this->polygons_->size() +
                                    this->planes_->size());
 
-    // Set drone
-    port_table->setItem(0, 0, new QTableWidgetItem("Drone"));
-    port_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    ports->insert(this->drone_->port_);
-    port_table->setCellWidget(0, 1,
-            new PortSelector(ports, this->drone_,
-                             port_table));
-
     // Set final point
-    port_table->setItem(1, 0, new QTableWidgetItem("Final Point"));
-    port_table->item(1, 0)->setFlags(Qt::ItemIsEnabled);
+    port_table->setItem(row, 0, new QTableWidgetItem("Final Point"));
+    port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
     ports->insert(this->final_pos_->port_);
-    port_table->setCellWidget(1, 1,
+    port_table->setCellWidget(row, 1,
             new PortSelector(ports, this->final_pos_,
                              port_table));
+    row++;
 
-    // Set waypoints
-    port_table->setItem(2, 0, new QTableWidgetItem("Waypoints"));
-    port_table->item(2, 0)->setFlags(Qt::ItemIsEnabled);
-    ports->insert(this->waypoints_->port_);
-    port_table->setCellWidget(2, 1,
-            new PortSelector(ports, this->waypoints_,
-                             port_table));
-
-    quint16 row = 3;
     // Set ellipses
     quint16 count = 1;
     for (EllipseModelItem *model : *this->ellipses_) {
@@ -471,21 +555,6 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         count++;
     }
 
-    // Set drone table
-    drone_table->setRowCount(2);
-
-    // Set drone ip
-    drone_table->setItem(0, 0,
-                                new QTableWidgetItem("Drone Ip Addr"));
-    drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    drone_table->setCellWidget(0, 1,
-            new DroneIpSelector(this->drone_, drone_table));
-
-    // Set drone destination port
-    drone_table->setItem(1, 0, new QTableWidgetItem("Drone Port"));
-    drone_table->item(1, 0)->setFlags(Qt::ItemIsEnabled);
-    drone_table->setCellWidget(1, 1,
-            new DronePortSelector(this->drone_, drone_table));
     this->model_lock_.unlock();
 }
 
@@ -494,11 +563,27 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
     quint32 index = 0;
     for (EllipseModelItem *ellipse : *this->ellipses_) {
-        P.obs.R[index] = ellipse->getRadius() / GRID_SIZE;
+        P.obs.R[index] = 1;
+        qreal a = (ellipse->getHeight() / GRID_SIZE) + *this->clearance_;
+        qreal inv_a = 1.0 / a;
+
+        qreal b = (ellipse->getWidth() / GRID_SIZE) + *this->clearance_;
+        qreal inv_b = 1.0 / b;
+        // qreal c = qSqrt(qPow(a, 2) - qPow(b, 2));
+        qreal t = ellipse->getRot();
+        qreal sin_t = qSin(qDegreesToRadians(t));
+        qreal cos_t = qCos(qDegreesToRadians(t));
+        qreal cos_t_2 = qPow(cos_t, 2);
+        qreal sin_t_2 = qPow(sin_t, 2);
+
+        P.obs.M0[0][index] = (inv_a * cos_t_2) + (inv_b * sin_t_2);
+        P.obs.M0[1][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
+        P.obs.M1[0][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
+        P.obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
+
         QPointF ned_coords = guiXyzToNED(ellipse->getPos());
-        // TODO(mceowen): c_e and c_n are backward in Skyefly
-        P.obs.c_e[index] = ned_coords.x();
-        P.obs.c_n[index] = ned_coords.y();
+        P.obs.c_n[index] = ned_coords.x();
+        P.obs.c_e[index] = ned_coords.y();
         index++;
         if (index >= skyenet::MAX_OBS) {
             P.obs.n = index;

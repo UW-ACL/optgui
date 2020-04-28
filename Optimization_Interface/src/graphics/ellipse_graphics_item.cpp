@@ -22,14 +22,17 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
 }
 
 void EllipseGraphicsItem::initialize() {
-    // Set pen
+    // Set brush
     QColor fill = Qt::gray;
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 
-    // Set brush
+    // Set pen
     this->pen_ = QPen(Qt::black);
     this->pen_.setWidth(3);
+
+    // Set clearance pen
+    this->clearance_pen_ = QPen(fill, 3, Qt::DashLine);
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemIsMovable |
@@ -39,24 +42,36 @@ void EllipseGraphicsItem::initialize() {
     // Set position
     this->setPos(this->model_->getPos());
 
-    // Set resize handle
-    this->resize_handle_ =
-            new EllipseResizeHandle(this->model_, this);
-    this->resize_handle_->hide();
+    // Set resize handles
+    this->width_handle_ =
+            new EllipseResizeHandle(this->model_, this, 0);
+    this->height_handle_ =
+            new EllipseResizeHandle(this->model_, this, 1);
+    this->radius_handle_ =
+            new EllipseResizeHandle(this->model_, this, 2);
+    this->width_handle_->hide();
+    this->height_handle_->hide();
+    this->radius_handle_->hide();
 }
 
 EllipseGraphicsItem::~EllipseGraphicsItem() {
-    delete this->resize_handle_;
+    delete this->width_handle_;
+    delete this->height_handle_;
+    delete this->radius_handle_;
 }
 
 QRectF EllipseGraphicsItem::boundingRect() const {
-    qreal rad = this->model_->getRadius();
+    qreal height = this->model_->getHeight() +
+            (this->model_->getClearance() * GRID_SIZE);
+    qreal width = this->model_->getWidth() +
+            (this->model_->getClearance() * GRID_SIZE);
     // Add exterior border if direction flipped
     if (this->model_->getDirection()) {
         // scale with view
-        rad += ELLIPSE_BORDER / this->getScalingFactor();
+        height += ELLIPSE_BORDER / this->getScalingFactor();
+        width += ELLIPSE_BORDER / this->getScalingFactor();
     }
-    return QRectF(-rad, -rad, rad * 2, rad * 2);
+    return QRectF(-width, -height, width * 2, height * 2);
 }
 
 void EllipseGraphicsItem::paint(QPainter *painter,
@@ -66,28 +81,46 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     qreal scaling_factor = this->getScalingFactor();
-    qreal rad = this->model_->getRadius();
+    qreal width = this->model_->getWidth();
+    qreal height = this->model_->getHeight();
     QPointF pos = this->model_->getPos();
 
     this->setPos(pos);
 
     // Show handles if selected
     if (this->isSelected()) {
-        this->resize_handle_->setPos(-rad, 0);
-        this->resize_handle_->show();
+        this->width_handle_->setPos(-width, 0);
+        this->height_handle_->setPos(0, -height);
+        this->radius_handle_->setPos(-width * qCos(qDegreesToRadians(45.0)),
+                                     -height * qSin(qDegreesToRadians(45.0)));
+
+        this->width_handle_->show();
+        this->height_handle_->show();
+        this->radius_handle_->show();
 
         this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
-        this->resize_handle_->hide();
+        this->width_handle_->hide();
+        this->height_handle_->hide();
+        this->radius_handle_->hide();
 
         this->pen_.setWidthF(1.0 / scaling_factor);
     }
-
     painter->setPen(this->pen_);
 
     // Draw shape
     painter->fillPath(this->shape(), this->brush_);
-    painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
+    painter->drawEllipse(QRectF(-width, -height, width * 2, height * 2));
+
+    // Draw clearance boundry
+    this->clearance_pen_.setWidthF(3.0 / scaling_factor);
+    qreal clearance_height =
+            height + (this->model_->getClearance() * GRID_SIZE);
+    qreal clearance_width =
+            width + (this->model_->getClearance() * GRID_SIZE);
+    painter->setPen(this->clearance_pen_);
+    painter->drawEllipse(QRectF(-clearance_width, -clearance_height,
+                                    clearance_width * 2, clearance_height * 2));
 
     // Label with port
     if (this->model_->port_ != 0) {
@@ -110,17 +143,14 @@ int EllipseGraphicsItem::type() const {
 
 QPainterPath EllipseGraphicsItem::shape() const {
     QPainterPath path;
-    path.addEllipse(this->boundingRect());
-    // Add exterior border if direction flipped
-    if (this->model_->getDirection()) {
-        qreal rad = this->model_->getRadius();
-        path.addEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
-    }
+    qreal height = this->model_->getHeight();
+    qreal width = this->model_->getWidth();
+    path.addEllipse(QRectF(-width, -height, width * 2, height * 2));
     return path;
 }
 
 void EllipseGraphicsItem::expandScene() {
-    if (scene()) {
+    if (this->scene()) {
         // expand scene if item goes out of bounds
         QRectF newRect = this->sceneBoundingRect();
         QRectF rect = this->scene()->sceneRect();
@@ -143,8 +173,8 @@ void EllipseGraphicsItem::flipDirection() {
 
 QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
                                          const QVariant &value) {
-    if (change == ItemPositionChange && scene()) {
-        // value is the new position.
+    if (change == ItemPositionChange && this->scene()) {
+        // value is the new position
         QPointF newPos = value.toPointF();
 
         // update model

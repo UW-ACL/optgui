@@ -25,6 +25,10 @@ void ComputeThread::stopCompute() {
 
 void ComputeThread::run() {
     while (this->run_loop_) {
+        // Do not compute new trajectories if executing
+        // sent trajectory
+        if (this->model_->isLiveReference()) continue;
+
         // Parameters
         double r_i[3] = { 0 };
         double r_f[3] = { 0 };
@@ -72,6 +76,12 @@ void ComputeThread::run() {
             drone_traj3dof_data.accl_ned(1, i) = O.a[2][i];
             drone_traj3dof_data.accl_ned(2, i) = O.a[0][i] - 9.81;
         }
+
+        // Do not display new trajectories if executing
+        // sent trajectory. Needed because sometimes compute
+        // overlaps with setting live reference mode
+        if (this->model_->isLiveReference()) continue;
+
         // set points on graphical display
         this->model_->setPathPoints(trajectory);
         this->model_->setCurrTraj3dof(drone_traj3dof_data);

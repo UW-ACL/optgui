@@ -92,7 +92,7 @@ Controller::Controller(Canvas *canvas) {
     // Initialize freeze timer
     this->freeze_timer_ = new QTimer();
     connect(this->freeze_timer_, SIGNAL(timeout()),
-            this, SLOT(setUnfreeze()));
+            this, SLOT(tickLiveReference()));
 
     // initialize skyfly thread
     this->compute_thread_ = new ComputeThread(this->model_);
@@ -217,7 +217,8 @@ void Controller::flipDirection(QGraphicsItem *item) {
 }
 
 void Controller::addEllipse(QPointF point, qreal radius) {
-    EllipseModelItem *item_model = new EllipseModelItem(point, radius);
+    EllipseModelItem *item_model = new EllipseModelItem(point,
+        this->model_->getClearancePtr(), radius, radius, 0);
     this->loadEllipse(item_model);
 }
 
@@ -245,7 +246,10 @@ void Controller::duplicateSelected() {
                 QPointF new_pos = QPointF(ellipse->model_->getPos());
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
-                                             ellipse->model_->getRadius());
+                                             this->model_->getClearancePtr(),
+                                             ellipse->model_->getHeight(),
+                                             ellipse->model_->getWidth(),
+                                             ellipse->model_->getRot());
                 this->loadEllipse(new_model);
                 break;
             }
@@ -259,13 +263,11 @@ void Controller::updateFinalPosition(QPointF const &pos) {
     this->model_->setFinalPointPos(pos);
 }
 
-void Controller::setFreeze() {
-    this->freeze_timer_->start(1000*this->model_->getFinaltime());
-}
-
-void Controller::setUnfreeze() {
-    this->freeze_timer_->stop();
-    this->unsetStagedPath();
+void Controller::freeze() {
+    int msec = (1000 * this->model_->getFinaltime()) /
+            (this->model_->getHorizon() - 1);
+    this->freeze_timer_->start(msec);
+    this->model_->setLiveReferenceMode(true);
 }
 
 void Controller::setStagedPath() {
@@ -282,11 +284,21 @@ void Controller::unsetStagedPath() {
     this->canvas_->path_staged_graphic_->expandScene();
 }
 
+void Controller::tickLiveReference() {
+    this->canvas_->path_staged_graphic_->expandScene();
+    if (!this->model_->tickPathStaged()) {
+        this->freeze_timer_->stop();
+        this->model_->setLiveReferenceMode(false);
+        this->unsetStagedPath();
+    }
+}
+
 void Controller::execute() {
     if (!this->freeze_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
-        this->setFreeze();
+        this->freeze();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
+        this->model_->setPathPoints(this->model_->getPathStagedPoints());
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
 }
@@ -383,17 +395,18 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic =
-            new EllipseGraphicsItem(item_model, nullptr);
+            new EllipseGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->ellipse_graphics_->insert(item_graphic);
     this->model_->addEllipse(item_model);
+    item_graphic->setRotation(item_model->getRot());
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
 }
 
 void Controller::loadPolygon(PolygonModelItem *item_model) {
     PolygonGraphicsItem *item_graphic =
-            new PolygonGraphicsItem(item_model, nullptr);
+            new PolygonGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->polygon_graphics_->insert(item_graphic);
     this->model_->addPolygon(item_model);
@@ -403,7 +416,7 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
 
 void Controller::loadPlane(PlaneModelItem *item_model) {
     PlaneGraphicsItem *item_graphic =
-            new PlaneGraphicsItem(item_model, nullptr);
+            new PlaneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->plane_graphics_->insert(item_graphic);
     this->model_->addPlane(item_model);
