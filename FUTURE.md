@@ -9,24 +9,27 @@ can make the "best" decisions
 with the most "relevant" information.
 (Other definitions are welcome.)
 Towards making a user friendly interface, one great test case involves decision amongst trajectories to choose from.
-* Offer multiple trajectories
-* displays on the screen its advantages/disadvanges: e.g. where is the steepest bank angle, fastest point, 
-reaches target, etc.
+* Displays multiple trajectories and their advantages/disadvangaes
 * Select trajectory 
 * Click and drag trajectory
 
+For example, we can visualize state changes over time, or some experiments in
+* steepest bank angle display 
+* fastest point 
+* does it reach target, etc.
+
 ## Dynamics
 We should provide a suite of agent dynamics.
-[x] double integrator
-[ ] linear system
-[ ] 6-dof vehicle dynamics (i.e. rocket)
-[ ] orbital dynamics
-[ ] robotic arm (lie groups)
+- [x]  double integrator
+- [ ] linear system
+- [ ] 6-dof vehicle dynamics (i.e. rocket)
+- [ ] orbital dynamics
+- [ ] robotic arm (lie groups)
 
 Other test cases for the "reinforcement learning" crowd.
-[ ] cart pole
-[ ] contact dynamics (legged)
-[ ] etc...
+- [ ] cart pole
+- [ ] contact dynamics (legged)
+- [ ] etc...
 
 
 ## Python and MATLAB integration
