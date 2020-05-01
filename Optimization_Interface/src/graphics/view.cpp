@@ -507,7 +507,7 @@ bool View::pinchZoom(QGestureEvent *event) {
 
 void View::initializeMessageBox(MenuPanel *panel) {
     this->user_msg_label_ = new QLabel();
-    this->user_msg_label_->setText("User dialogue box output.");
+    this->user_msg_label_->setText("Feasibility feedback.");
     this->user_msg_label_->setWordWrap(true);
     this->user_msg_label_->setContentsMargins(2, 2, 2, 2);
     this->user_msg_label_->setStyleSheet(
@@ -515,9 +515,8 @@ void View::initializeMessageBox(MenuPanel *panel) {
     panel->menu_->layout()->addWidget(this->user_msg_label_);
     this->panel_widgets_.append(this->user_msg_label_);
 
-    this->user_feedback_code_ = FEEDBACK_CODE::FEASIBLE;
-    connect(this->controller_->compute_thread_, SIGNAL(setMessage(int)),
-            this, SLOT(setFeedbackMessage(int)));
+    connect(this->controller_->compute_thread_, SIGNAL(updateMessage()),
+            this, SLOT(updateFeedbackMessage()));
 }
 
 void View::initializeFinalPointButton(MenuPanel *panel) {
@@ -1211,39 +1210,36 @@ void View::initializeZoom(MenuPanel *panel) {
             this, SLOT(setZoom(double)));
 }
 
-void View::setFeedbackMessage(int code) {
-    this->user_feedback_lock_.lock();
-    if (this->user_feedback_code_ != FEEDBACK_CODE::OBS_OVERLAP) {
-        this->user_feedback_code_ = (FEEDBACK_CODE)code;
-        switch (this->user_feedback_code_) {
-            case OBS_OVERLAP: {
-                this->user_msg_label_->setText("Obstacles cannot overlap");
-                break;
-            }
-            case FEASIBLE: {
-                this->user_msg_label_->setText("Trajectory remains feasible");
-                break;
-            }
-            case GENERIC_INFEASIBLE: {
-                this->user_msg_label_->
-                    setText("Increase final time to regain feasibility");
-                break;
-            }
-        }
+void View::updateFeedbackMessage() {
+    FEASIBILITY_CODE code = this->controller_->model_->getIsValidTraj();
+
+    switch (code) {
+    case OBS_OVERLAP: {
+        this->user_msg_label_->setText("Obstacles cannot overlap");
+        break;
     }
-    this->user_feedback_lock_.unlock();
+    case FEASIBLE: {
+        this->user_msg_label_->setText("Trajectory remains feasible");
+        break;
+    }
+    case GENERIC_INFEASIBLE: {
+        this->user_msg_label_->
+            setText("Increase final time to regain feasibility");
+        break;
+    }
+    }
 }
 
 void View::checkValidObstacles(EllipseGraphicsItem* ellipse) {
     if (this->isObstaclesOverlap(ellipse)) {
-        this->controller_->model_->setIsObsOverlap(true);
-        this->controller_->model_->setIsValidTraj(false);
+        this->controller_->model_->
+                setIsValidTraj(FEASIBILITY_CODE::OBS_OVERLAP);
         this->unstageTraj();
-        this->setFeedbackMessage(FEEDBACK_CODE::OBS_OVERLAP);
+        this->updateFeedbackMessage();
     } else {
-        this->controller_->model_->setIsObsOverlap(false);
-        this->user_feedback_code_ = FEEDBACK_CODE::FEASIBLE;
-        this->setFeedbackMessage(FEEDBACK_CODE::FEASIBLE);
+        this->controller_->model_->
+                setIsValidTraj(FEASIBILITY_CODE::OBS_NOT_OVERLAP);
+        this->updateFeedbackMessage();
     }
 }
 

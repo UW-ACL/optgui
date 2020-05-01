@@ -58,7 +58,8 @@ class View : public QGraphicsView {
     void setClearance(qreal clearance);
     void constrainWpIdx(int value);
     void constrainAccel();
-    void setFeedbackMessage(int code);
+    void updateFeedbackMessage();
+
   private:
     void initialize();
     void initializeMenuPanel();
@@ -91,9 +92,6 @@ class View : public QGraphicsView {
     // keep track of all toggle buttons to set them to toggled
     // or untoggled
     QVector<MenuButton *> toggle_buttons_;
-
-    FEEDBACK_CODE user_feedback_code_;
-    QMutex user_feedback_lock_;
 
     // Create buttons for menu panels
     void initializeMessageBox(MenuPanel *panel);

@@ -31,7 +31,7 @@ protected:
  signals:
     void updateGraphics();
     void setPathColor(bool isRed);
-    void setMessage(int code);
+    void updateMessage();
 
  public slots:
     void stopCompute();

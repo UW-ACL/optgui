@@ -86,11 +86,8 @@ class ConstraintModel {
     bool getIsTrajStaged();
     void setIsTrajStaged(bool is_staged);
 
-    bool getIsValidTraj();
-    void setIsValidTraj(bool is_valid);
-
-    bool getIsObsOverlap();
-    void setIsObsOverlap(bool is_overlap);
+    FEASIBILITY_CODE getIsValidTraj();
+    void setIsValidTraj(FEASIBILITY_CODE code);
 
     void fillTable(QTableWidget *port_table,
                    QTableWidget *drone_table,
@@ -113,8 +110,7 @@ class ConstraintModel {
     skyenet::params P_;
     autogen::packet::traj3dof drone_curr_traj3dof_data_;
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
-    bool is_valid_traj_;
-    bool is_obs_overlap_;
+    FEASIBILITY_CODE code_;
     bool traj_staged_;
     bool is_live_reference_;
 

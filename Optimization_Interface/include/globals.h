@@ -43,10 +43,11 @@ namespace optgui {
         POINT_GRAPHIC = QGraphicsItem::UserType + 8
     };
 
-    enum FEEDBACK_CODE {
+    enum FEASIBILITY_CODE {
         FEASIBLE,
+        GENERIC_INFEASIBLE,
         OBS_OVERLAP,
-        GENERIC_INFEASIBLE
+        OBS_NOT_OVERLAP
     };
 
     static QPointF nedToGuiXyz(qreal n, qreal e) {

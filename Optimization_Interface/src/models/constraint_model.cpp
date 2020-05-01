@@ -39,8 +39,7 @@ void ConstraintModel::initialize() {
     this->P_.wp_idx[0] = 10;
     this->P_.wprelax[0] = this->P_.K / 2;
 
-    this->is_obs_overlap_ = false;
-    this->is_valid_traj_ = false;
+    this->code_ = FEASIBILITY_CODE::GENERIC_INFEASIBLE;
     this->traj_staged_ = false;
 
     // initialize clearance around ellipse constriants
@@ -366,32 +365,21 @@ void ConstraintModel::setIsTrajStaged(bool is_staged) {
     this->model_lock_.unlock();
 }
 
-bool ConstraintModel::getIsValidTraj() {
+FEASIBILITY_CODE ConstraintModel::getIsValidTraj() {
     this->model_lock_.lock();
-    bool temp = this->is_valid_traj_;
+    FEASIBILITY_CODE temp = this->code_;
     this->model_lock_.unlock();
     return temp;
 }
 
-void ConstraintModel::setIsValidTraj(bool is_valid) {
+void ConstraintModel::setIsValidTraj(FEASIBILITY_CODE code_) {
     this->model_lock_.lock();
-    // cant set is_valid_traj to true if obs overlap
-    if (!(this->is_obs_overlap_ && is_valid)) {
-        this->is_valid_traj_ = is_valid;
+    // cant set traj to valid if obs overlap
+    if (this->code_ != FEASIBILITY_CODE::OBS_OVERLAP) {
+        this->code_ = code_;
+    } else if (code_ == FEASIBILITY_CODE::OBS_NOT_OVERLAP) {
+        this->code_ = FEASIBILITY_CODE::GENERIC_INFEASIBLE;
     }
-    this->model_lock_.unlock();
-}
-
-bool ConstraintModel::getIsObsOverlap() {
-    this->model_lock_.lock();
-    bool temp = this->is_valid_traj_;
-    this->model_lock_.unlock();
-    return temp;
-}
-
-void ConstraintModel::setIsObsOverlap(bool is_overlap) {
-    this->model_lock_.lock();
-    this->is_obs_overlap_ = is_overlap;
     this->model_lock_.unlock();
 }
 

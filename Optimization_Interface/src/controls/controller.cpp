@@ -318,7 +318,7 @@ void Controller::execute() {
 
 void Controller::stageTraj() {
     if (!this->freeze_timer_->isActive() &&
-            this->model_->getIsValidTraj()) {
+            this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
         this->setStagedPath();
     }
 }

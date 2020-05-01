@@ -93,14 +93,13 @@ void ComputeThread::run() {
                 + pow(O.r_f_relax[2], 2);
 
         if (accum > 0.25) {
-            this->model_->setIsValidTraj(false);
+            this->model_->setIsValidTraj(FEASIBILITY_CODE::GENERIC_INFEASIBLE);
             emit this->setPathColor(true);
-            emit this->setMessage(FEEDBACK_CODE::GENERIC_INFEASIBLE);
         } else {
-            this->model_->setIsValidTraj(true);
+            this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
             emit this->setPathColor(false);
-            emit this->setMessage(FEEDBACK_CODE::FEASIBLE);
         }
+        emit updateMessage();
         emit updateGraphics();
     }
 }
