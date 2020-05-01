@@ -24,11 +24,6 @@ Canvas::Canvas(QObject *parent, QString background_file)
 }
 
 Canvas::~Canvas() {
-    // Do not need to delete contents, handled by
-    // QGraphicsScene destructor
-    delete this->ellipse_graphics_;
-    delete this->polygon_graphics_;
-    delete this->plane_graphics_;
 }
 
 void Canvas::initialize() {
@@ -37,11 +32,6 @@ void Canvas::initialize() {
     this->path_graphic_ = nullptr;
     this->drone_graphic_ = nullptr;
     this->final_point_ = nullptr;
-
-    // initialize graphical types
-    this->ellipse_graphics_ = new QSet<EllipseGraphicsItem *>();
-    this->polygon_graphics_ = new QSet<PolygonGraphicsItem *>();
-    this->plane_graphics_ = new QSet<PlaneGraphicsItem *>();
 
     this->setBackgroundBrush(BLACK);
     // Set background pen

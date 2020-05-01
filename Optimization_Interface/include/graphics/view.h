@@ -39,6 +39,7 @@ class View : public QGraphicsView {
     bool viewportEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
  private slots:
     void openMenu();
@@ -57,8 +58,8 @@ class View : public QGraphicsView {
     void setClearance(qreal clearance);
     void constrainWpIdx(int value);
     void constrainAccel();
-
-private:
+    void setFeedbackMessage(int code);
+  private:
     void initialize();
     void initializeMenuPanel();
     void initializeExpertPanel();
@@ -70,6 +71,7 @@ private:
     Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;
+    QLabel *user_msg_label_;
     QToolButton *expert_menu_button_;
     MenuPanel *expert_panel_;
     STATE state_;
@@ -90,6 +92,9 @@ private:
     // or untoggled
     QVector<MenuButton *> toggle_buttons_;
 
+    FEEDBACK_CODE user_feedback_code_;
+    QMutex user_feedback_lock_;
+
     // Create buttons for menu panels
     void initializeMessageBox(MenuPanel *panel);
     void initializeZoom(MenuPanel *panel);
@@ -108,6 +113,9 @@ private:
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
     // expert panel constraint_model params not in skyefly
     void initializeModelParamsTable(MenuPanel *panel);
+
+    bool isObstaclesOverlap(EllipseGraphicsItem* ellipse);
+    void checkValidObstacles(EllipseGraphicsItem *ellipse);
 };
 
 }  // namespace optgui

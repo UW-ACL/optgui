@@ -96,10 +96,6 @@ void WaypointsGraphicsItem::removeHandle(quint32 index) {
     }
 }
 
-int WaypointsGraphicsItem::type() const {
-    return WAYPOINTS_GRAPHIC;
-}
-
 QPainterPath WaypointsGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;

@@ -84,7 +84,7 @@ void PolygonResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 int PolygonResizeHandle::type() const {
-    return HANDLE_GRAPHIC;
+    return POLYGON_HANDLE_GRAPHIC;
 }
 
 QPointF PolygonResizeHandle::getPoint() {

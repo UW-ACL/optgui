@@ -31,7 +31,6 @@ class WaypointsGraphicsItem : public QGraphicsItem {
 
     void expandScene();
     void removeHandle(quint32 index);
-    int type() const override;
 
  protected:
     QPainterPath shape() const override;

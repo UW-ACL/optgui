@@ -31,7 +31,7 @@ protected:
  signals:
     void updateGraphics();
     void setPathColor(bool isRed);
-    void setMessage(QString message);
+    void setMessage(int code);
 
  public slots:
     void stopCompute();

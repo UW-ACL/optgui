@@ -95,11 +95,11 @@ void ComputeThread::run() {
         if (accum > 0.25) {
             this->model_->setIsValidTraj(false);
             emit this->setPathColor(true);
-            emit this->setMessage("Increase final time to regain feasibility!");
+            emit this->setMessage(FEEDBACK_CODE::GENERIC_INFEASIBLE);
         } else {
             this->model_->setIsValidTraj(true);
             emit this->setPathColor(false);
-            emit this->setMessage("Trajectory remains feasible!");
+            emit this->setMessage(FEEDBACK_CODE::FEASIBLE);
         }
         emit updateGraphics();
     }

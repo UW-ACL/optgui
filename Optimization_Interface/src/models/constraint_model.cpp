@@ -39,6 +39,7 @@ void ConstraintModel::initialize() {
     this->P_.wp_idx[0] = 10;
     this->P_.wprelax[0] = this->P_.K / 2;
 
+    this->is_obs_overlap_ = false;
     this->is_valid_traj_ = false;
     this->traj_staged_ = false;
 
@@ -287,7 +288,8 @@ void ConstraintModel::loadFinalPos(double r_f[3]) {
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::loadInitialTelem(double r_i[3], double v_i[3], double a_i[3]) {
+void ConstraintModel::loadInitialTelem(double r_i[3],
+        double v_i[3], double a_i[3]) {
     this->model_lock_.lock();
     QPointF ned_coords = guiXyzToNED(this->drone_->getPos());
     r_i[1] = ned_coords.x();
@@ -373,7 +375,23 @@ bool ConstraintModel::getIsValidTraj() {
 
 void ConstraintModel::setIsValidTraj(bool is_valid) {
     this->model_lock_.lock();
-    this->is_valid_traj_ = is_valid;
+    // cant set is_valid_traj to true if obs overlap
+    if (!(this->is_obs_overlap_ && is_valid)) {
+        this->is_valid_traj_ = is_valid;
+    }
+    this->model_lock_.unlock();
+}
+
+bool ConstraintModel::getIsObsOverlap() {
+    this->model_lock_.lock();
+    bool temp = this->is_valid_traj_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
+void ConstraintModel::setIsObsOverlap(bool is_overlap) {
+    this->model_lock_.lock();
+    this->is_obs_overlap_ = is_overlap;
     this->model_lock_.unlock();
 }
 
@@ -564,6 +582,13 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     this->model_lock_.unlock();
 }
 
+qreal ConstraintModel::getClearance() {
+    this->model_lock_.lock();
+    qreal temp = *this->clearance_;
+    this->model_lock_.unlock();
+    return temp;
+}
+
 // ====== Private functions, should not lock =======
 
 void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
@@ -572,10 +597,8 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
         P.obs.R[index] = 1;
         qreal a = (ellipse->getHeight() / GRID_SIZE) + *this->clearance_;
         qreal inv_a = 1.0 / a;
-
         qreal b = (ellipse->getWidth() / GRID_SIZE) + *this->clearance_;
         qreal inv_b = 1.0 / b;
-        // qreal c = qSqrt(qPow(a, 2) - qPow(b, 2));
         qreal t = ellipse->getRot();
         qreal sin_t = qSin(qDegreesToRadians(t));
         qreal cos_t = qCos(qDegreesToRadians(t));

@@ -89,6 +89,9 @@ class ConstraintModel {
     bool getIsValidTraj();
     void setIsValidTraj(bool is_valid);
 
+    bool getIsObsOverlap();
+    void setIsObsOverlap(bool is_overlap);
+
     void fillTable(QTableWidget *port_table,
                    QTableWidget *drone_table,
                    QSet<quint16> *ports);
@@ -98,6 +101,8 @@ class ConstraintModel {
 
     void setLiveReferenceMode(bool reference_mode);
     bool isLiveReference();
+
+    qreal getClearance();
 
  private:
     void initialize();
@@ -109,6 +114,7 @@ class ConstraintModel {
     autogen::packet::traj3dof drone_curr_traj3dof_data_;
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
     bool is_valid_traj_;
+    bool is_obs_overlap_;
     bool traj_staged_;
     bool is_live_reference_;
 

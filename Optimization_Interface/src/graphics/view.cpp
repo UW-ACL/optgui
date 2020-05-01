@@ -242,23 +242,29 @@ void View::mousePressEvent(QMouseEvent *event) {
                         edge_vecs.append(poly[(i+1) % poly.length()] - poly[i]);
                     }
 
-                    // compute sum of angles of internal angles; should be negative
+                    // compute sum of angles of internal angles,
+                    // should be negative
                     qreal tot_angle = 0;
                     for (int i = 0; i < edge_vecs.length(); ++i) {
                         QPointF ahead = edge_vecs[(i+1) % edge_vecs.length()];
                         QPointF behind = edge_vecs[i];
 
                         // take 2D "pseudo cross product" (behind x ahead)
-                        qreal cross_product = behind.rx() * ahead.ry() - behind.ry() * ahead.rx();
+                        qreal cross_product = behind.rx() * ahead.ry()
+                                - behind.ry() * ahead.rx();
 
-                        qreal norm_ahead = sqrt(QPointF::dotProduct(ahead, ahead));
-                        qreal norm_behind = sqrt(QPointF::dotProduct(behind, behind));
+                        qreal norm_ahead =
+                                sqrt(QPointF::dotProduct(ahead, ahead));
+                        qreal norm_behind =
+                                sqrt(QPointF::dotProduct(behind, behind));
 
-                        tot_angle += qAsin(cross_product/(norm_ahead * norm_behind));
+                        tot_angle +=
+                                qAsin(cross_product /
+                                      (norm_ahead * norm_behind));
                     }
 
                     // if poly is "inside out" reverse it
-                    if (tot_angle <= 0){
+                    if (tot_angle <= 0) {
                         std::reverse(poly.begin(), poly.end());
                     }
 
@@ -319,9 +325,39 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         default: {
+            if (itemAt(event->pos())) {
+                QGraphicsItem *item = itemAt(event->pos());
+                if (item->type() == ELLIPSE_GRAPHIC) {
+                    EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
+                            EllipseGraphicsItem *>(item);
+                    this->checkValidObstacles(ellipse);
+                } else if (item->type() == ELLIPSE_HANDLE_GRAPHIC) {
+                    EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
+                            EllipseGraphicsItem *>(item->parentItem());
+                    this->checkValidObstacles(ellipse);
+                }
+            }
+
             QGraphicsView::mousePressEvent(event);
         }
     }
+}
+
+void View::mouseReleaseEvent(QMouseEvent *event) {
+    if (itemAt(event->pos())) {
+        QGraphicsItem *item = itemAt(event->pos());
+        if (item->type() == ELLIPSE_GRAPHIC) {
+            EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
+                    EllipseGraphicsItem *>(item);
+            this->checkValidObstacles(ellipse);
+        } else if (item->type() == ELLIPSE_HANDLE_GRAPHIC) {
+            EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
+                    EllipseGraphicsItem *>(item->parentItem());
+            this->checkValidObstacles(ellipse);
+        }
+    }
+
+    QGraphicsView::mouseReleaseEvent(event);
 }
 
 void View::closeMenu() {
@@ -470,17 +506,18 @@ bool View::pinchZoom(QGestureEvent *event) {
 }
 
 void View::initializeMessageBox(MenuPanel *panel) {
-    QLabel *user_msg_label = new QLabel();
-    user_msg_label->setText("User dialogue box output.");
-    user_msg_label->setWordWrap(true);
-    user_msg_label->setContentsMargins(2, 2, 2, 2);
-    user_msg_label->setStyleSheet(
+    this->user_msg_label_ = new QLabel();
+    this->user_msg_label_->setText("User dialogue box output.");
+    this->user_msg_label_->setWordWrap(true);
+    this->user_msg_label_->setContentsMargins(2, 2, 2, 2);
+    this->user_msg_label_->setStyleSheet(
             "QLabel { background-color : black; color : white; }");
-    panel->menu_->layout()->addWidget(user_msg_label);
-    this->panel_widgets_.append(user_msg_label);
+    panel->menu_->layout()->addWidget(this->user_msg_label_);
+    this->panel_widgets_.append(this->user_msg_label_);
 
-    connect(this->controller_->compute_thread_, SIGNAL(setMessage(QString)),
-            user_msg_label, SLOT(setText(QString)));
+    this->user_feedback_code_ = FEEDBACK_CODE::FEASIBLE;
+    connect(this->controller_->compute_thread_, SIGNAL(setMessage(int)),
+            this, SLOT(setFeedbackMessage(int)));
 }
 
 void View::initializeFinalPointButton(MenuPanel *panel) {
@@ -1172,6 +1209,88 @@ void View::initializeZoom(MenuPanel *panel) {
 
     connect(this->zoom_slider_, SIGNAL(valueChanged(double)),
             this, SLOT(setZoom(double)));
+}
+
+void View::setFeedbackMessage(int code) {
+    this->user_feedback_lock_.lock();
+    if (this->user_feedback_code_ != FEEDBACK_CODE::OBS_OVERLAP) {
+        this->user_feedback_code_ = (FEEDBACK_CODE)code;
+        switch (this->user_feedback_code_) {
+            case OBS_OVERLAP: {
+                this->user_msg_label_->setText("Obstacles cannot overlap");
+                break;
+            }
+            case FEASIBLE: {
+                this->user_msg_label_->setText("Trajectory remains feasible");
+                break;
+            }
+            case GENERIC_INFEASIBLE: {
+                this->user_msg_label_->
+                    setText("Increase final time to regain feasibility");
+                break;
+            }
+        }
+    }
+    this->user_feedback_lock_.unlock();
+}
+
+void View::checkValidObstacles(EllipseGraphicsItem* ellipse) {
+    if (this->isObstaclesOverlap(ellipse)) {
+        this->controller_->model_->setIsObsOverlap(true);
+        this->controller_->model_->setIsValidTraj(false);
+        this->unstageTraj();
+        this->setFeedbackMessage(FEEDBACK_CODE::OBS_OVERLAP);
+    } else {
+        this->controller_->model_->setIsObsOverlap(false);
+        this->user_feedback_code_ = FEEDBACK_CODE::FEASIBLE;
+        this->setFeedbackMessage(FEEDBACK_CODE::FEASIBLE);
+    }
+}
+
+bool View::isObstaclesOverlap(EllipseGraphicsItem* ellipse) {
+    qreal clearance = this->controller_->model_->getClearance() * GRID_SIZE;
+    QPointF coords = ellipse->model_->getPos();
+    qreal width = ellipse->model_->getWidth() + clearance;
+    qreal height = ellipse->model_->getHeight() + clearance;
+    QRegion region = QRegion(QRect(-width, -height,
+                                   width * 2, height * 2),
+                             QRegion::Ellipse);
+    QTransform rotation;
+    rotation.rotate(ellipse->model_->getRot());
+    region = rotation.map(region);
+    region.translate(coords.x(), coords.y());
+
+    for (EllipseGraphicsItem* compare_ellipse :
+         this->canvas_->ellipse_graphics_) {
+        if (ellipse != compare_ellipse) {
+            QPointF compare_coords = compare_ellipse->model_->getPos();
+            qreal compare_height = compare_ellipse->model_->getHeight()
+                    + clearance;
+            qreal compare_width = compare_ellipse->model_->getWidth()
+                    + clearance;
+            QRegion compare_region = QRegion(QRect(-compare_width,
+                                                   -compare_height,
+                                                   compare_width * 2,
+                                                   compare_height * 2),
+                                             QRegion::Ellipse);
+            QTransform compare_rotation;
+            compare_rotation.rotate(compare_ellipse->model_->getRot());
+            compare_region = compare_rotation.map(compare_region);
+            compare_region.translate(compare_coords.x(), compare_coords.y());
+
+            if (region.intersects(compare_region)) {
+                ellipse->setRed(true);
+                compare_ellipse->setRed(true);
+                ellipse->expandScene();
+                return true;
+            } else {
+                ellipse->setRed(false);
+                compare_ellipse->setRed(false);
+            }
+        }
+    }
+    ellipse->expandScene();
+    return false;
 }
 
 }  // namespace optgui

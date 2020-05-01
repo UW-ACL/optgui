@@ -10,6 +10,8 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
+#include "include/globals.h"
+
 namespace optgui {
 
 EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
@@ -98,6 +100,10 @@ void EllipseResizeHandle::expandScene() {
         }
         this->update(this->boundingRect());
     }
+}
+
+int EllipseResizeHandle::type() const {
+    return ELLIPSE_HANDLE_GRAPHIC;
 }
 
 qreal EllipseResizeHandle::getScalingFactor() {
