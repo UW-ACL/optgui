@@ -37,6 +37,9 @@ class ConstraintModel {
     void setFinalPointModel(PointModelItem *model);
     void setFinalPointPos(QPointF const &pos);
 
+    void addPoint(PointModelItem *item);
+    void removePoint(PointModelItem *item);
+
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
 
@@ -99,6 +102,9 @@ class ConstraintModel {
     void setLiveReferenceMode(bool reference_mode);
     bool isLiveReference();
 
+    void setCurrFinalPoint(PointModelItem *point);
+    bool hasCurrFinalPoint();
+
  private:
     void initialize();
 
@@ -123,7 +129,8 @@ class ConstraintModel {
     PathModelItem *path_;
     PathModelItem *path_staged_;
     DroneModelItem *drone_;
-    PointModelItem *final_pos_;
+    QSet<PointModelItem *> final_points_;
+    PointModelItem * curr_final_point_;
 
     // Convert constraints to skyefly params
     void loadEllipseConstraints(skyenet::params &P);

@@ -38,16 +38,17 @@ class Controller : public QObject {
     ComputeThread *compute_thread_;
 
     // add constraints
-    void addEllipse(QPointF point, qreal radius = 120);
+    void addEllipse(QPointF const &point, qreal radius = 120);
     void addPolygon(QVector<QPointF> points);
-    void addPlane(QPointF p1, QPointF p2);
+    void addPlane(QPointF const &p1, QPointF const &p2);
 
     // flip constraint direction
     void flipDirection(QGraphicsItem *item);
 
     // functions to add points for vehicle, obstacle, and waypoint locations
-    void addWaypoint(QPointF point);
-    void addPathPoint(QPointF point);
+    void addWaypoint(QPointF const &point);
+    void addPathPoint(QPointF const &point);
+    void addFinalPoint(QPointF const &pos);
     void clearPathPoints();
     void removeAllWaypoints();
     void removeItem(QGraphicsItem *item);
@@ -59,9 +60,6 @@ class Controller : public QObject {
 
     // network functionality
     void setPorts();
-
-    // functions for setting optimization problem constraints
-    void updateFinalPosition(QPointF const &pos);
 
     void execute();
     void stageTraj();
@@ -80,6 +78,7 @@ class Controller : public QObject {
  private:
     // QGraphicsScene
     Canvas *canvas_;
+    qreal final_point_render_level_;
 
     // Freeze timer
     QTimer *freeze_timer_;

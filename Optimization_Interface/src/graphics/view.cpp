@@ -210,7 +210,7 @@ void View::mousePressEvent(QMouseEvent *event) {
 
     switch (this->state_) {
         case POINT: {
-            this->controller_->updateFinalPosition(pos);
+            this->controller_->addFinalPoint(pos);
             break;
         }
         case ELLIPSE: {

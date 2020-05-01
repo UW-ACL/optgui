@@ -27,7 +27,7 @@ void ConstraintModel::initialize() {
     this->ellipses_ = new QSet<EllipseModelItem *>();
     this->polygons_ = new QSet<PolygonModelItem *>();
     this->planes_ = new QSet<PlaneModelItem *>();
-    this->final_pos_ = nullptr;
+    this->curr_final_point_ = nullptr;
     this->waypoints_ = nullptr;
     this->path_ = nullptr;
     this->path_staged_ = nullptr;
@@ -100,6 +100,21 @@ ConstraintModel::~ConstraintModel() {
 }
 
 // Public functions, need to lock
+
+void ConstraintModel::addPoint(PointModelItem *item) {
+    this->model_lock_.lock();
+    this->final_points_.insert(item);
+    this->model_lock_.unlock();
+}
+
+void ConstraintModel::removePoint(PointModelItem *item) {
+    this->model_lock_.lock();
+    if (item == this->curr_final_point_) {
+        this->curr_final_point_ = nullptr;
+    }
+    this->final_points_.remove(item);
+    this->model_lock_.unlock();
+}
 
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     this->model_lock_.lock();
@@ -261,29 +276,13 @@ void ConstraintModel::setDroneModelPos(QPointF const &pos) {
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::setFinalPointModel(PointModelItem *final_point) {
-    this->model_lock_.lock();
-    if (this->final_pos_) {
-        delete this->final_pos_;
-    }
-    this->final_pos_ = final_point;
-    this->model_lock_.unlock();
-}
-
-void ConstraintModel::setFinalPointPos(QPointF const &pos) {
-    this->model_lock_.lock();
-    if (this->final_pos_) {
-        this->final_pos_->setPos(pos);
-    }
-    this->model_lock_.unlock();
-}
-
-
 void ConstraintModel::loadFinalPos(double r_f[3]) {
     this->model_lock_.lock();
-    QPointF ned_coords = guiXyzToNED(this->final_pos_->getPos());
-    r_f[1] = ned_coords.x();
-    r_f[2] = ned_coords.y();
+    if (this->curr_final_point_ != nullptr) {
+        QPointF ned_coords = guiXyzToNED(this->curr_final_point_->getPos());
+        r_f[1] = ned_coords.x();
+        r_f[2] = ned_coords.y();
+    }
     this->model_lock_.unlock();
 }
 
@@ -418,6 +417,19 @@ void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
     this->model_lock_.lock();
     this->is_live_reference_ = reference_mode;
     this->model_lock_.unlock();
+}
+
+void ConstraintModel::setCurrFinalPoint(PointModelItem *point) {
+    this->model_lock_.lock();
+    this->curr_final_point_ = point;
+    this->model_lock_.unlock();
+}
+
+bool ConstraintModel::hasCurrFinalPoint() {
+    this->model_lock_.lock();
+    bool temp = (this->curr_final_point_ != nullptr);
+    this->model_lock_.unlock();
+    return temp;
 }
 
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {

@@ -42,14 +42,9 @@ Controller::Controller(Canvas *canvas) {
     renderLevel = std::nextafter(renderLevel, 0);
     this->canvas_->addItem(this->canvas_->drone_graphic_);
 
-    // initialize final point model and graphic
-    PointModelItem *final_point_model = new PointModelItem();
-    this->model_->setFinalPointModel(final_point_model);
-    this->canvas_->final_point_ =
-            new PointGraphicsItem(final_point_model);
-    this->canvas_->final_point_->setZValue(renderLevel);
+    // initialize final point graphic render level
     renderLevel = std::nextafter(renderLevel, 0);
-    this->canvas_->addItem(this->canvas_->final_point_);
+    this->final_point_render_level_ = renderLevel;
 
     // initialize waypoints model and graphic
     PathModelItem *waypoint_model = new PathModelItem();
@@ -216,7 +211,7 @@ void Controller::flipDirection(QGraphicsItem *item) {
     }
 }
 
-void Controller::addEllipse(QPointF point, qreal radius) {
+void Controller::addEllipse(QPointF const &point, qreal radius) {
     EllipseModelItem *item_model = new EllipseModelItem(point,
         this->model_->getClearancePtr(), radius, radius, 0);
     this->loadEllipse(item_model);
@@ -227,14 +222,19 @@ void Controller::addPolygon(QVector<QPointF> points) {
     this->loadPolygon(item_model);
 }
 
-void Controller::addPlane(QPointF p1, QPointF p2) {
+void Controller::addPlane(QPointF const &p1, QPointF const &p2) {
     PlaneModelItem *item_model = new PlaneModelItem(p1, p2);
     this->loadPlane(item_model);
 }
 
-void Controller::addWaypoint(QPointF point) {
+void Controller::addWaypoint(QPointF const &point) {
     this->model_->addWaypoint(point);
     this->canvas_->update();
+}
+
+void Controller::addFinalPoint(const QPointF &pos) {
+    PointModelItem *item_model = new PointModelItem(pos);
+    this->loadPoint(item_model);
 }
 
 void Controller::duplicateSelected() {
@@ -258,10 +258,6 @@ void Controller::duplicateSelected() {
 }
 
 // ============ BACK END CONTROLS ============
-
-void Controller::updateFinalPosition(QPointF const &pos) {
-    this->model_->setFinalPointPos(pos);
-}
 
 void Controller::freeze() {
     int msec = (1000 * this->model_->getFinaltime()) /
@@ -437,6 +433,16 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     this->canvas_->plane_graphics_->insert(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);
+    item_graphic->expandScene();
+}
+
+void Controller::loadPoint(PointModelItem *item_model) {
+    PointGraphicsItem *item_graphic =
+            new PointGraphicsItem(item_model);
+    this->canvas_->addItem(item_graphic);
+    this->canvas_->final_points_->insert(item_graphic);
+    this->model_->addPoint(item_model);
+    item_graphic->setZValue(this->final_point_render_level_);
     item_graphic->expandScene();
 }
 
