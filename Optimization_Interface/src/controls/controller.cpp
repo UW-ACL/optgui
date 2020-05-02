@@ -81,7 +81,6 @@ Controller::Controller(Canvas *canvas) {
 
     // Initialize network
     this->drone_socket_ = nullptr;
-    this->final_point_socket_ = nullptr;
     this->ellipse_sockets_ = new QVector<EllipseSocket *>();
 
     // Initialize freeze timer
@@ -142,6 +141,19 @@ void Controller::setFinaltime(qreal final_time) {
 
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
+        case POINT_GRAPHIC: {
+            PointGraphicsItem *point = qgraphicsitem_cast<
+                    PointGraphicsItem *>(item);
+            PointModelItem *model = point->model_;
+            this->model_->setCurrFinalPoint(nullptr);
+            this->removePointSocket(model);
+            this->canvas_->removeItem(point);
+            this->canvas_->final_points_.remove(point);
+            delete point;
+            this->model_->removePoint(model);
+            delete model;
+            break;
+        }
         case ELLIPSE_GRAPHIC: {
             EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
                     EllipseGraphicsItem *>(item);
@@ -356,11 +368,13 @@ void Controller::startSockets() {
     }
 
     // create final pos socket
-    if (this->canvas_->final_point_->model_->port_ > 0) {
-        this->final_point_socket_ = new PointSocket(
-                    this->canvas_->final_point_->model_);
-        connect(this->final_point_socket_, SIGNAL(refresh_graphics()),
-                this->canvas_, SLOT(update()));
+    for (PointGraphicsItem *graphic : this->canvas_->final_points_) {
+        if (graphic->model_->port_ > 0) {
+            PointSocket *temp = new PointSocket(graphic->model_);
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(update()));
+            this->final_point_sockets_.append(temp);
+        }
     }
 
     // create ellipse sockets
@@ -379,9 +393,9 @@ void Controller::closeSockets() {
         delete this->drone_socket_;
         this->drone_socket_ = nullptr;
     }
-    if (this->final_point_socket_) {
-        delete this->final_point_socket_;
-        this->final_point_socket_ = nullptr;
+    // close final point sockets
+    while (!this->final_point_sockets_.isEmpty()) {
+        delete this->final_point_sockets_.takeFirst();
     }
     // close ellipse sockets
     while (!this->ellipse_sockets_->isEmpty()) {
@@ -397,6 +411,20 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
             i = this->ellipse_sockets_->erase(i);
             delete temp;
             if (i == this->ellipse_sockets_->end()) {
+                break;
+            }
+        }
+    }
+}
+
+void Controller::removePointSocket(PointModelItem *model) {
+    for (QVector<PointSocket *>::iterator i = this->final_point_sockets_.begin();
+         i != this->final_point_sockets_.end(); i++) {
+        if ((*i)->point_model_ == model) {
+            PointSocket *temp = *i;
+            i = this->final_point_sockets_.erase(i);
+            delete temp;
+            if (i == this->final_point_sockets_.end()) {
                 break;
             }
         }
@@ -440,7 +468,7 @@ void Controller::loadPoint(PointModelItem *item_model) {
     PointGraphicsItem *item_graphic =
             new PointGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
-    this->canvas_->final_points_->insert(item_graphic);
+    this->canvas_->final_points_.insert(item_graphic);
     this->model_->addPoint(item_model);
     item_graphic->setZValue(this->final_point_render_level_);
     item_graphic->expandScene();

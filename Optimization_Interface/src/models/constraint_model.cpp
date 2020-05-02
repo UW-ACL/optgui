@@ -89,9 +89,10 @@ ConstraintModel::~ConstraintModel() {
     }
 
     // Delete final point
-    if (this->final_pos_) {
-        delete this->final_pos_;
+    for (PointModelItem * model : this->final_points_) {
+        delete model;
     }
+    this->final_points_.clear();
 
     // Delete clearance pointer
     delete this->clearance_;
@@ -515,21 +516,27 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Configure port table
     quint16 row = 0;
-    port_table->setRowCount(1 + this->ellipses_->size() +
-                                   this->polygons_->size() +
-                                   this->planes_->size());
+    port_table->setRowCount(this->final_points_.size() +
+                            this->ellipses_->size() +
+                            this->polygons_->size() +
+                            this->planes_->size());
 
-    // Set final point
-    port_table->setItem(row, 0, new QTableWidgetItem("Final Point"));
-    port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
-    ports->insert(this->final_pos_->port_);
-    port_table->setCellWidget(row, 1,
-            new PortSelector(ports, this->final_pos_,
-                             port_table));
-    row++;
+    // Set final points
+    quint16 count = 1;
+    for (PointModelItem * model : this->final_points_) {
+        port_table->setItem(row, 0,
+                new QTableWidgetItem("Final Point " + QString::number(count)));
+        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+        ports->insert(model->port_);
+        port_table->setCellWidget(row, 1,
+                new PortSelector(ports, model,
+                                 port_table));
+        row++;
+        count++;
+    }
 
     // Set ellipses
-    quint16 count = 1;
+    count = 1;
     for (EllipseModelItem *model : *this->ellipses_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Ellipse " + QString::number(count)));

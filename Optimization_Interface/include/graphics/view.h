@@ -57,6 +57,7 @@ class View : public QGraphicsView {
     void setClearance(qreal clearance);
     void constrainWpIdx(int value);
     void constrainAccel();
+    void setCurrFinalPoint();
 
 private:
     void initialize();

@@ -87,10 +87,11 @@ class Controller : public QObject {
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;
     DroneSocket *drone_socket_;
-    PointSocket *final_point_socket_;
+    QVector<PointSocket *> final_point_sockets_;
     QVector<EllipseSocket *> *ellipse_sockets_;
 
     void removeEllipseSocket(EllipseModelItem *model);
+    void removePointSocket(PointModelItem *model);
     void closeSockets();
 
     void loadPoint(PointModelItem *model);
