@@ -85,6 +85,8 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    this->setRed(this->model_->getIsOverlap());
+
     qreal scaling_factor = this->getScalingFactor();
     qreal width = this->model_->getWidth();
     qreal height = this->model_->getHeight();

@@ -29,17 +29,60 @@ void ComputeThread::run() {
         // sent trajectory
         if (this->model_->isLiveReference()) continue;
 
-        // Parameters
+        // Validate inputs
+        QPointF initial_pos = this->model_->getInitialPos();
+        QPointF final_pos = this->model_->getFinalPos();
+        QVector<QRegion> ellipse_regions = this->model_->getEllipseRegions();
+        INPUT_CODE input_code = this->validateInputs(ellipse_regions,
+                                                     initial_pos, final_pos);
+        // set valid input and update message if changed
+        if (this->model_->setIsValidInput(input_code)) {
+            this->model_->updateEllipseColors();
+            emit updateMessage();
+        }
+        // Dont compute if invalid input
+        if (input_code != INPUT_CODE::VALID_INPUT) {
+            continue;
+        }
+
+        // Input is valid, get additional inputs
+        QPointF initial_vel = this->model_->getInitialVel();
+        QPointF initial_acc = this->model_->getInitialAcc();
+        QPointF wp_pos = this->model_->getWpPos();
+
+        // Set input values
         double r_i[3] = { 0 };
         double v_i[3] = { 0 };
         double a_i[3] = { 0 };
         double r_f[3] = { 0 };
-        this->model_->loadInitialTelem(r_i, v_i, a_i);
-        this->model_->loadFinalPos(r_f);
-
         double wp[3][skyenet::MAX_WAYPOINTS] = { 0 };
-        this->model_->loadWaypoints(wp);
 
+        // set initial drone pos
+        QPointF ned_drone_pos = guiXyzToNED(initial_pos.x(), initial_pos.y());
+        r_i[1] = ned_drone_pos.x();
+        r_i[2] = ned_drone_pos.y();
+
+        // set initial drone vel
+        QPointF ned_drone_vel = guiXyzToNED(initial_vel.x(), initial_vel.y());
+        v_i[1] = ned_drone_vel.x();
+        v_i[2] = ned_drone_vel.y();
+
+        // set iniital drone accel
+        QPointF ned_drone_acc = guiXyzToNED(initial_acc.x(), initial_acc.y());
+        a_i[1] = ned_drone_acc.x();
+        a_i[2] = ned_drone_acc.y();
+
+        // set final pos
+        QPointF ned_final_pos = guiXyzToNED(final_pos.x(), final_pos.y());
+        r_f[1] = ned_final_pos.x();
+        r_f[2] = ned_final_pos.y();
+
+        // set waypoint
+        QPointF ned_wp_pos = guiXyzToNED(wp_pos.x(), wp_pos.y());
+        wp[1][0] = ned_wp_pos.x();
+        wp[2][0] = ned_wp_pos.y();
+
+        // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();
 
         // Initialize problem
@@ -93,7 +136,7 @@ void ComputeThread::run() {
                 + pow(O.r_f_relax[2], 2);
 
         if (accum > 0.25) {
-            this->model_->setIsValidTraj(FEASIBILITY_CODE::GENERIC_INFEASIBLE);
+            this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
             emit this->setPathColor(true);
         } else {
             this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
@@ -102,6 +145,52 @@ void ComputeThread::run() {
         emit updateMessage();
         emit updateGraphics();
     }
+}
+
+INPUT_CODE ComputeThread::validateInputs(
+        QVector<QRegion> const &ellipse_regions,
+        QPointF const &initial_pos,
+        QPointF const &final_pos) {
+    // get truncated drone pos
+    QPoint trunc_intial_pos(initial_pos.x(), initial_pos.y());
+    // get truncated final pos
+    QPoint trunc_final_pos(final_pos.x(), final_pos.y());
+
+    // Note: coords are still in cm so QPoint instead
+    // of QPointF should be fine
+
+    for (int i = 0; i < ellipse_regions.size(); i++) {
+        QRegion const &region = ellipse_regions.at(i);
+
+        // check if contains drone
+        if (region.boundingRect().contains(trunc_intial_pos)) {
+            // check cheaply in rect, then in ellipse
+            if (region.contains(trunc_intial_pos)) {
+                return INPUT_CODE::DRONE_OVERLAP;
+            }
+        }
+
+        // check if contains final point
+        if (region.boundingRect().contains(trunc_final_pos)) {
+            // check cheaply in rect, then in ellipse
+            if (region.contains(trunc_final_pos)) {
+                return INPUT_CODE::FINAL_POS_OVERLAP;
+            }
+        }
+
+        // check if overlapping with any other ellipses
+        for (int j = i+1; j < ellipse_regions.size(); j++) {
+            // First look at intersection of boundingRects (cheaper to do)
+            if (region.boundingRect().intersects(
+                        ellipse_regions.at(j).boundingRect())) {
+                // If bounding rect overlaps, then check fine intersection
+                if (region.intersects(ellipse_regions.at(j))) {
+                    return INPUT_CODE::OBS_OVERLAP;
+                }
+            }
+        }
+    }
+    return INPUT_CODE::VALID_INPUT;
 }
 
 }  // namespace optgui

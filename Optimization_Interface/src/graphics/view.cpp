@@ -325,39 +325,9 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         default: {
-            if (itemAt(event->pos())) {
-                QGraphicsItem *item = itemAt(event->pos());
-                if (item->type() == ELLIPSE_GRAPHIC) {
-                    EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
-                            EllipseGraphicsItem *>(item);
-                    this->checkValidObstacles(ellipse);
-                } else if (item->type() == ELLIPSE_HANDLE_GRAPHIC) {
-                    EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
-                            EllipseGraphicsItem *>(item->parentItem());
-                    this->checkValidObstacles(ellipse);
-                }
-            }
-
             QGraphicsView::mousePressEvent(event);
         }
     }
-}
-
-void View::mouseReleaseEvent(QMouseEvent *event) {
-    if (itemAt(event->pos())) {
-        QGraphicsItem *item = itemAt(event->pos());
-        if (item->type() == ELLIPSE_GRAPHIC) {
-            EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
-                    EllipseGraphicsItem *>(item);
-            this->checkValidObstacles(ellipse);
-        } else if (item->type() == ELLIPSE_HANDLE_GRAPHIC) {
-            EllipseGraphicsItem *ellipse = qgraphicsitem_cast<
-                    EllipseGraphicsItem *>(item->parentItem());
-            this->checkValidObstacles(ellipse);
-        }
-    }
-
-    QGraphicsView::mouseReleaseEvent(event);
 }
 
 void View::closeMenu() {
@@ -1211,82 +1181,37 @@ void View::initializeZoom(MenuPanel *panel) {
 }
 
 void View::updateFeedbackMessage() {
-    FEASIBILITY_CODE code = this->controller_->model_->getIsValidTraj();
+    FEASIBILITY_CODE feasibility_code = this->controller_->model_->getIsValidTraj();
+    INPUT_CODE input_code = this->controller_->model_->getIsValidInput();
 
-    switch (code) {
-    case OBS_OVERLAP: {
-        this->user_msg_label_->setText("Obstacles cannot overlap");
-        break;
-    }
-    case FEASIBLE: {
-        this->user_msg_label_->setText("Trajectory remains feasible");
-        break;
-    }
-    case GENERIC_INFEASIBLE: {
-        this->user_msg_label_->
-            setText("Increase final time to regain feasibility");
-        break;
-    }
-    }
-}
-
-void View::checkValidObstacles(EllipseGraphicsItem* ellipse) {
-    if (this->isObstaclesOverlap(ellipse)) {
-        this->controller_->model_->
-                setIsValidTraj(FEASIBILITY_CODE::OBS_OVERLAP);
-        this->unstageTraj();
-        this->updateFeedbackMessage();
+    if (input_code == INPUT_CODE::VALID_INPUT) {
+        switch (feasibility_code) {
+        case FEASIBLE: {
+            this->user_msg_label_->setText("Trajectory remains feasible");
+            break;
+        }
+        case INFEASIBLE: {
+            this->user_msg_label_->
+                setText("Increase final time to regain feasibility");
+            break;
+        }
+        }
     } else {
-        this->controller_->model_->
-                setIsValidTraj(FEASIBILITY_CODE::OBS_NOT_OVERLAP);
-        this->updateFeedbackMessage();
-    }
-}
-
-bool View::isObstaclesOverlap(EllipseGraphicsItem* ellipse) {
-    qreal clearance = this->controller_->model_->getClearance() * GRID_SIZE;
-    QPointF coords = ellipse->model_->getPos();
-    qreal width = ellipse->model_->getWidth() + clearance;
-    qreal height = ellipse->model_->getHeight() + clearance;
-    QRegion region = QRegion(QRect(-width, -height,
-                                   width * 2, height * 2),
-                             QRegion::Ellipse);
-    QTransform rotation;
-    rotation.rotate(ellipse->model_->getRot());
-    region = rotation.map(region);
-    region.translate(coords.x(), coords.y());
-
-    for (EllipseGraphicsItem* compare_ellipse :
-         this->canvas_->ellipse_graphics_) {
-        if (ellipse != compare_ellipse) {
-            QPointF compare_coords = compare_ellipse->model_->getPos();
-            qreal compare_height = compare_ellipse->model_->getHeight()
-                    + clearance;
-            qreal compare_width = compare_ellipse->model_->getWidth()
-                    + clearance;
-            QRegion compare_region = QRegion(QRect(-compare_width,
-                                                   -compare_height,
-                                                   compare_width * 2,
-                                                   compare_height * 2),
-                                             QRegion::Ellipse);
-            QTransform compare_rotation;
-            compare_rotation.rotate(compare_ellipse->model_->getRot());
-            compare_region = compare_rotation.map(compare_region);
-            compare_region.translate(compare_coords.x(), compare_coords.y());
-
-            if (region.intersects(compare_region)) {
-                ellipse->setRed(true);
-                compare_ellipse->setRed(true);
-                ellipse->expandScene();
-                return true;
-            } else {
-                ellipse->setRed(false);
-                compare_ellipse->setRed(false);
-            }
+        switch (input_code) {
+        case OBS_OVERLAP: {
+            this->user_msg_label_->setText("Obstacles cannot overlap");
+            break;
+        }
+        case DRONE_OVERLAP: {
+            this->user_msg_label_->setText("Drone cannot be in obstacle");
+            break;
+        }
+        case FINAL_POS_OVERLAP: {
+            this->user_msg_label_->setText("Final point cannot be in obstacle");
+            break;
+        }
         }
     }
-    ellipse->expandScene();
-    return false;
 }
 
 }  // namespace optgui

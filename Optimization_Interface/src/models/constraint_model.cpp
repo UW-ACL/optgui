@@ -39,12 +39,13 @@ void ConstraintModel::initialize() {
     this->P_.wp_idx[0] = 10;
     this->P_.wprelax[0] = this->P_.K / 2;
 
-    this->code_ = FEASIBILITY_CODE::GENERIC_INFEASIBLE;
+    this->input_code_ = INPUT_CODE::VALID_INPUT;
+    this->feasible_code_ = FEASIBILITY_CODE::INFEASIBLE;
     this->traj_staged_ = false;
 
     // initialize clearance around ellipse constriants
     // in meters
-    this->clearance_ = new double(INIT_CLEARANCE);
+    this->clearance_ = INIT_CLEARANCE;
 
     // initialize live reference mode to disable updating
     // current trajectory
@@ -92,9 +93,6 @@ ConstraintModel::~ConstraintModel() {
     if (this->final_pos_) {
         delete this->final_pos_;
     }
-
-    // Delete clearance pointer
-    delete this->clearance_;
 
     this->model_lock_.unlock();
 }
@@ -279,37 +277,32 @@ void ConstraintModel::setFinalPointPos(QPointF const &pos) {
 }
 
 
-void ConstraintModel::loadFinalPos(double r_f[3]) {
-    this->model_lock_.lock();
-    QPointF ned_coords = guiXyzToNED(this->final_pos_->getPos());
-    r_f[1] = ned_coords.x();
-    r_f[2] = ned_coords.y();
-    this->model_lock_.unlock();
+QPointF ConstraintModel::getFinalPos() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->final_pos_->getPos();
 }
 
-void ConstraintModel::loadInitialTelem(double r_i[3],
-        double v_i[3], double a_i[3]) {
-    this->model_lock_.lock();
-    QPointF ned_coords = guiXyzToNED(this->drone_->getPos());
-    r_i[1] = ned_coords.x();
-    r_i[2] = ned_coords.y();
-    QPointF ned_vel = guiXyzToNED(this->drone_->getVel());
-    v_i[1] = ned_vel.x();
-    v_i[2] = ned_vel.y();
-    QPointF ned_accel = guiXyzToNED(this->drone_->getAccel());
-    a_i[1] = ned_accel.x();
-    a_i[2] = ned_accel.y();
-    this->model_lock_.unlock();
+QPointF ConstraintModel::getInitialPos() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->drone_->getPos();
 }
 
-void ConstraintModel::loadWaypoints(double wp[3][skyenet::MAX_WAYPOINTS]) {
-    this->model_lock_.lock();
+QPointF ConstraintModel::getInitialVel() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->drone_->getVel();
+}
+
+QPointF ConstraintModel::getInitialAcc() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->drone_->getAccel();
+}
+
+QPointF ConstraintModel::getWpPos() {
+    QMutexLocker locker(&this->model_lock_);
     if (this->waypoints_->getSize() > 0) {
-        QPointF ned_coords = guiXyzToNED(this->waypoints_->getPointAt(0));
-        wp[1][0] = ned_coords.x();
-        wp[2][0] = ned_coords.y();
+        return this->waypoints_->getPointAt(0);
     }
-    this->model_lock_.unlock();
+    return QPointF();
 }
 
 qreal ConstraintModel::getFinaltime() {
@@ -366,38 +359,21 @@ void ConstraintModel::setIsTrajStaged(bool is_staged) {
 }
 
 FEASIBILITY_CODE ConstraintModel::getIsValidTraj() {
-    this->model_lock_.lock();
-    FEASIBILITY_CODE temp = this->code_;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->feasible_code_;
 }
 
-void ConstraintModel::setIsValidTraj(FEASIBILITY_CODE code_) {
-    this->model_lock_.lock();
-    // cant set traj to valid if obs overlap
-    if (this->code_ != FEASIBILITY_CODE::OBS_OVERLAP) {
-        this->code_ = code_;
-    } else if (code_ == FEASIBILITY_CODE::OBS_NOT_OVERLAP) {
-        this->code_ = FEASIBILITY_CODE::GENERIC_INFEASIBLE;
-    }
-    this->model_lock_.unlock();
-}
-
-qreal *ConstraintModel::getClearancePtr() {
-    // This doesn't really need locking since only the
-    // GUI uses it
-    this->model_lock_.lock();
-    qreal *temp = this->clearance_;
-    this->model_lock_.unlock();
-    return temp;
+void ConstraintModel::setIsValidTraj(FEASIBILITY_CODE code) {
+    QMutexLocker locker(&this->model_lock_);
+    this->feasible_code_ = code;
 }
 
 void ConstraintModel::setClearance(qreal clearance) {
-    // This doesn't really need locking since only the
-    // GUI uses it
-    this->model_lock_.lock();
-    *this->clearance_ = clearance;
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    for (EllipseModelItem *ellipse : *this->ellipses_) {
+        ellipse->setClearance(clearance);
+    }
+    this->clearance_ = clearance;
 }
 
 quint32 ConstraintModel::getHorizon() {
@@ -571,10 +547,45 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 }
 
 qreal ConstraintModel::getClearance() {
-    this->model_lock_.lock();
-    qreal temp = *this->clearance_;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->clearance_;
+}
+
+INPUT_CODE ConstraintModel::getIsValidInput() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->input_code_;
+}
+
+bool ConstraintModel::setIsValidInput(INPUT_CODE code) {
+    QMutexLocker locker(&this->model_lock_);
+    bool new_code = code != this->input_code_;
+    this->input_code_ = code;
+    return new_code;
+}
+
+QVector<QRegion> ConstraintModel::getEllipseRegions() {
+    QMutexLocker locker(&this->model_lock_);
+    QVector<QRegion> regions;
+    for (EllipseModelItem *ellipse : *this->ellipses_) {
+        regions.append(ellipse->getRegion());
+    }
+    return regions;
+}
+
+void ConstraintModel::updateEllipseColors() {
+    QMutexLocker locker(&this->model_lock_);
+
+    if (this->input_code_ == INPUT_CODE::VALID_INPUT) {
+        // show ellipses as valid
+        for (EllipseModelItem *ellipse : *this->ellipses_) {
+            ellipse->setIsOverlap(false);
+        }
+    } else {
+        // show ellipses as invalid
+        for (EllipseModelItem *ellipse : *this->ellipses_) {
+            ellipse->setIsOverlap(true);
+        }
+    }
 }
 
 // ====== Private functions, should not lock =======
@@ -583,9 +594,9 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
     quint32 index = 0;
     for (EllipseModelItem *ellipse : *this->ellipses_) {
         P.obs.R[index] = 1;
-        qreal a = (ellipse->getHeight() / GRID_SIZE) + *this->clearance_;
+        qreal a = (ellipse->getHeight() / GRID_SIZE) + this->clearance_;
         qreal inv_a = 1.0 / a;
-        qreal b = (ellipse->getWidth() / GRID_SIZE) + *this->clearance_;
+        qreal b = (ellipse->getWidth() / GRID_SIZE) + this->clearance_;
         qreal inv_b = 1.0 / b;
         qreal t = ellipse->getRot();
         qreal sin_t = qSin(qDegreesToRadians(t));

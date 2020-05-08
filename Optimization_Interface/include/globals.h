@@ -45,9 +45,14 @@ namespace optgui {
 
     enum FEASIBILITY_CODE {
         FEASIBLE,
-        GENERIC_INFEASIBLE,
+        INFEASIBLE
+    };
+
+    enum INPUT_CODE {
+        VALID_INPUT,
         OBS_OVERLAP,
-        OBS_NOT_OVERLAP
+        DRONE_OVERLAP,
+        FINAL_POS_OVERLAP
     };
 
     static QPointF nedToGuiXyz(qreal n, qreal e) {

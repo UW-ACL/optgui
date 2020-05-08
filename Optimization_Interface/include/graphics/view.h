@@ -39,7 +39,6 @@ class View : public QGraphicsView {
     bool viewportEvent(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
 
  private slots:
     void openMenu();
@@ -111,9 +110,6 @@ class View : public QGraphicsView {
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
     // expert panel constraint_model params not in skyefly
     void initializeModelParamsTable(MenuPanel *panel);
-
-    bool isObstaclesOverlap(EllipseGraphicsItem* ellipse);
-    void checkValidObstacles(EllipseGraphicsItem *ellipse);
 };
 
 }  // namespace optgui

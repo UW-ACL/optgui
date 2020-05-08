@@ -215,8 +215,9 @@ void Controller::flipDirection(QGraphicsItem *item) {
 
 void Controller::addEllipse(QPointF point, qreal radius) {
     EllipseModelItem *item_model = new EllipseModelItem(point,
-        this->model_->getClearancePtr(), radius, radius, 0);
+        this->model_->getClearance(), radius, radius, 0);
     this->loadEllipse(item_model);
+    this->model_->updateEllipseColors();
 }
 
 void Controller::addPolygon(QVector<QPointF> points) {
@@ -243,7 +244,7 @@ void Controller::duplicateSelected() {
                 QPointF new_pos = QPointF(ellipse->model_->getPos());
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
-                                             this->model_->getClearancePtr(),
+                                             this->model_->getClearance(),
                                              ellipse->model_->getHeight(),
                                              ellipse->model_->getWidth(),
                                              ellipse->model_->getRot());
