@@ -29,6 +29,8 @@ View::View(QWidget * parent)
 
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
+    // connect canvas selection change to detect curr final point
+    connect(this->scene(), SIGNAL(selectionChanged()), this, SLOT(setCurrFinalPoint()));
 
     // Create Controller
     // added menu panel to construction
@@ -210,7 +212,7 @@ void View::mousePressEvent(QMouseEvent *event) {
 
     switch (this->state_) {
         case POINT: {
-            this->controller_->updateFinalPosition(pos);
+            this->controller_->addFinalPoint(pos);
             break;
         }
         case ELLIPSE: {
@@ -1021,6 +1023,16 @@ void View::constrainAccel() {
                 this->skyefly_params_table_->cellWidget(this->a_max_row, 0));
     params_a_min->setMaximum(params_a_max->value());
     params_a_max->setMinimum(params_a_min->value());
+}
+
+void View::setCurrFinalPoint() {
+    QList<QGraphicsItem *> items = this->scene()->selectedItems();
+    for (QGraphicsItem * item : items) {
+        if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC) {
+            this->controller_->model_->setCurrFinalPoint(
+                        qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
+        }
+    }
 }
 
 void View::initializeModelParamsTable(MenuPanel *panel) {

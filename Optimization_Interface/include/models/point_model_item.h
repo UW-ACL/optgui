@@ -15,11 +15,9 @@
 
 namespace optgui {
 
-const double DEFAULT_RAD2 = 5;
-
 class PointModelItem : public DataModel {
  public:
-    PointModelItem() : mutex_() { pos_ = QPointF(0, 0); port_ = 0; }
+    PointModelItem(QPointF pos) : mutex_() { pos_ = pos; port_ = 0; }
     ~PointModelItem() {
         this->mutex_.lock();
         this->mutex_.unlock();

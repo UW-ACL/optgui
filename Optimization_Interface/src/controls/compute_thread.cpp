@@ -29,6 +29,14 @@ void ComputeThread::run() {
         // sent trajectory
         if (this->model_->isLiveReference()) continue;
 
+        // Do not compute trajectory if no final point selected
+        if (!this->model_->hasCurrFinalPoint()) {
+            // clear current trajectory
+            this->model_->setPathPoints(QVector<QPointF>());
+            autogen::packet::traj3dof empty_traj;
+            this->model_->setCurrTraj3dof(empty_traj);
+        }
+
         // Parameters
         double r_i[3] = { 0 };
         double v_i[3] = { 0 };
