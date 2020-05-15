@@ -31,7 +31,6 @@ void Canvas::initialize() {
     this->waypoints_graphic_ = nullptr;
     this->path_graphic_ = nullptr;
     this->drone_graphic_ = nullptr;
-    this->final_point_ = nullptr;
 
     this->setBackgroundBrush(BLACK);
     // Set background pen

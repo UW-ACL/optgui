@@ -58,6 +58,7 @@ class View : public QGraphicsView {
     void constrainWpIdx(int value);
     void constrainAccel();
     void updateFeedbackMessage();
+    void setCurrFinalPoint();
 
   private:
     void initialize();

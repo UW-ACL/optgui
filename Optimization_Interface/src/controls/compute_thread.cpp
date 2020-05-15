@@ -28,6 +28,15 @@ void ComputeThread::run() {
         // Do not compute new trajectories if executing
         // sent trajectory
         if (this->model_->isLiveReference()) continue;
+      
+        // Do not compute trajectory if no final point selected
+        if (!this->model_->hasCurrFinalPoint()) {
+            // clear current trajectory
+            this->model_->setPathPoints(QVector<QPointF>());
+            autogen::packet::traj3dof empty_traj;
+            this->model_->setCurrTraj3dof(empty_traj);
+            continue;
+        }
 
         // Validate inputs
         QPointF initial_pos = this->model_->getInitialPos();
@@ -50,7 +59,9 @@ void ComputeThread::run() {
         QPointF initial_acc = this->model_->getInitialAcc();
         QPointF wp_pos = this->model_->getWpPos();
 
-        // Set input values
+        
+
+        // Parameters
         double r_i[3] = { 0 };
         double v_i[3] = { 0 };
         double a_i[3] = { 0 };
