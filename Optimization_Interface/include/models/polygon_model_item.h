@@ -21,50 +21,41 @@ class PolygonModelItem : public DataModel {
     explicit PolygonModelItem(QVector<QPointF> points) :
         mutex_(), direction_(false) { points_ = points; port_ = 0;}
     ~PolygonModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        QMutexLocker locker(&this->mutex_);
     }
 
     quint32 getSize() {
-        this->mutex_.lock();
-        quint32 size = this->points_.size();
-        this->mutex_.unlock();
-        return size;
+        QMutexLocker locker(&this->mutex_);
+        return this->points_.size();
     }
 
     void setPointAt(QPointF point, quint32 index) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         QPointF &temp = this->points_[index];
         temp.setX(point.x());
         temp.setY(point.y());
-        this->mutex_.unlock();
     }
 
     QPointF getPointAt(quint32 index) {
-        this->mutex_.lock();
-        QPointF temp = this->points_.value(index);
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->points_.value(index);
     }
 
     bool getDirection() {
-        this->mutex_.lock();
-        qreal temp = this->direction_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->direction_;
     }
 
     void flipDirection() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->direction_ = !this->direction_;
-        this->mutex_.unlock();
     }
 
     bool isConvex() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         quint32 n = this->points_.size();
         if (n < 4) {
-            this->mutex_.unlock();
+            
             return true;
         }
 
@@ -83,11 +74,9 @@ class PolygonModelItem : public DataModel {
             if (i == 0) {
                 sign = z_cross_product > 0;
             } else if (sign != (z_cross_product > 0)) {
-                this->mutex_.unlock();
                 return false;
             }
         }
-        this->mutex_.unlock();
         return true;
     }
 

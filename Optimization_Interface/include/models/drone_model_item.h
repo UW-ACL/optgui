@@ -28,50 +28,40 @@ class DroneModelItem : public DataModel {
     }
 
     ~DroneModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        QMutexLocker locker(&this->mutex_);
     }
 
     QPointF getPos() {
-        this->mutex_.lock();
-        QPointF temp = this->pos_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->pos_;
     }
 
     void setPos(QPointF pos) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->pos_.setX(pos.x());
         this->pos_.setY(pos.y());
-        this->mutex_.unlock();
     }
 
     QPointF getVel() {
-        this->mutex_.lock();
-        QPointF temp = this->vel_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->vel_;
     }
 
     void setVel(QPointF vel) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->vel_.setX(vel.x());
         this->vel_.setY(vel.y());
-        this->mutex_.unlock();
     }
 
     QPointF getAccel() {
-        this->mutex_.lock();
-        QPointF temp = this->accel_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->accel_;
     }
 
     void setAccel(QPointF accel) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->accel_.setX(accel.x());
         this->accel_.setY(accel.y());
-        this->mutex_.unlock();
     }
 
     QString ip_addr_;
