@@ -55,7 +55,6 @@ class PolygonModelItem : public DataModel {
         QMutexLocker locker(&this->mutex_);
         quint32 n = this->points_.size();
         if (n < 4) {
-            
             return true;
         }
 

@@ -421,16 +421,20 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
 }
 
 void Controller::removePointSocket(PointModelItem *model) {
-    for (QVector<PointSocket *>::iterator i = this->final_point_sockets_.begin();
-         i != this->final_point_sockets_.end(); i++) {
-        if ((*i)->point_model_ == model) {
-            PointSocket *temp = *i;
-            i = this->final_point_sockets_.erase(i);
-            delete temp;
-            if (i == this->final_point_sockets_.end()) {
-                break;
-            }
+    int index = 0;
+    bool found = false;
+
+    for (PointSocket *socket : this->final_point_sockets_) {
+        if (socket->point_model_ == model) {
+            delete socket;
+            found = true;
+            break;
         }
+        index++;
+    }
+
+    if (found) {
+        this->final_point_sockets_.removeAt(index);
     }
 }
 

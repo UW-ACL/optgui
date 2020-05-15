@@ -27,8 +27,10 @@ void ComputeThread::run() {
     while (this->run_loop_) {
         // Do not compute new trajectories if executing
         // sent trajectory
-        if (this->model_->isLiveReference()) continue;
-      
+        if (this->model_->isLiveReference()) {
+            continue;
+        }
+
         // Do not compute trajectory if no final point selected
         if (!this->model_->hasCurrFinalPoint()) {
             // clear current trajectory
@@ -58,8 +60,6 @@ void ComputeThread::run() {
         QPointF initial_vel = this->model_->getInitialVel();
         QPointF initial_acc = this->model_->getInitialAcc();
         QPointF wp_pos = this->model_->getWpPos();
-
-        
 
         // Parameters
         double r_i[3] = { 0 };

@@ -141,9 +141,9 @@ class ConstraintModel {
     PointModelItem *curr_final_point_;
 
     // Convert constraints to skyefly params
-    void loadEllipseConstraints(skyenet::params &P);
-    void loadPosConstraints(skyenet::params &P);
-    void loadPlaneConstraint(skyenet::params &P, quint32 index,
+    void loadEllipseConstraints(skyenet::params *P);
+    void loadPosConstraints(skyenet::params *P);
+    void loadPlaneConstraint(skyenet::params *P, quint32 index,
                                  QPointF p, QPointF q);
 
     bool is_frozen_;

@@ -21,7 +21,6 @@ class PlaneModelItem : public DataModel {
         mutex_(), direction_(false) { p1_ = p1; p2_ = p2; port_ = 0;}
     ~PlaneModelItem() {
         QMutexLocker locker(&this->mutex_);
-        
     }
 
     QPointF getP1() {

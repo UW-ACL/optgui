@@ -30,7 +30,8 @@ View::View(QWidget * parent)
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
     // connect canvas selection change to detect curr final point
-    connect(this->scene(), SIGNAL(selectionChanged()), this, SLOT(setCurrFinalPoint()));
+    connect(this->scene(), SIGNAL(selectionChanged()),
+            this, SLOT(setCurrFinalPoint()));
 
     // Create Controller
     // added menu panel to construction
@@ -1189,8 +1190,10 @@ void View::initializeZoom(MenuPanel *panel) {
 }
 
 void View::updateFeedbackMessage() {
-    FEASIBILITY_CODE feasibility_code = this->controller_->model_->getIsValidTraj();
-    INPUT_CODE input_code = this->controller_->model_->getIsValidInput();
+    FEASIBILITY_CODE feasibility_code =
+            this->controller_->model_->getIsValidTraj();
+    INPUT_CODE input_code =
+            this->controller_->model_->getIsValidInput();
 
     if (input_code == INPUT_CODE::VALID_INPUT) {
         switch (feasibility_code) {

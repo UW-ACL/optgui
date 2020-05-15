@@ -60,6 +60,7 @@ SOURCES += \
     src/window/menu_panel.cpp \
     src/window/menu_button.cpp \
     src/models/constraint_model.cpp \
+    src/globals.cpp \
     src/graphics/ellipse_graphics_item.cpp \
     src/graphics/ellipse_resize_handle.cpp \
     src/graphics/polygon_graphics_item.cpp \

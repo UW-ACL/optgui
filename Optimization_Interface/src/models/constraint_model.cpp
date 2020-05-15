@@ -338,34 +338,27 @@ void ConstraintModel::setClearance(qreal clearance) {
 
 quint32 ConstraintModel::getHorizon() {
     QMutexLocker locker(&this->model_lock_);
-    quint32 temp = this->P_.K;
-
-    return temp;
+    return this->P_.K;
 }
 
 void ConstraintModel::setHorizon(quint32 horizon) {
     QMutexLocker locker(&this->model_lock_);
     this->P_.K = horizon;
-
 }
 
 bool ConstraintModel::isLiveReference() {
     QMutexLocker locker(&this->model_lock_);
-    bool temp = this->is_live_reference_;
-
-    return temp;
+    return this->is_live_reference_;
 }
 
 void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
     QMutexLocker locker(&this->model_lock_);
     this->is_live_reference_ = reference_mode;
-
 }
 
 void ConstraintModel::setCurrFinalPoint(PointModelItem *point) {
     QMutexLocker locker(&this->model_lock_);
     this->curr_final_point_ = point;
-
 }
 
 bool ConstraintModel::hasCurrFinalPoint() {
@@ -416,17 +409,15 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-
-
 }
 
 skyenet::params ConstraintModel::getSkyeFlyParams() {
     QMutexLocker locker(&this->model_lock_);
     // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
     // circle and R is the radius (H some linear transform)
-    this->loadEllipseConstraints(this->P_);
+    this->loadEllipseConstraints(&this->P_);
     // Affine constraints Ax leq b
-    this->loadPosConstraints(this->P_);
+    this->loadPosConstraints(&this->P_);
     // time intervals
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
     skyenet::params P = this->P_;
@@ -564,10 +555,10 @@ void ConstraintModel::updateEllipseColors() {
 
 // ====== Private functions, should not lock =======
 
-void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
+void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
     quint32 index = 0;
     for (EllipseModelItem *ellipse : this->ellipses_) {
-        P.obs.R[index] = 1;
+        P->obs.R[index] = 1;
         qreal a = (ellipse->getHeight() / GRID_SIZE) + this->clearance_;
         qreal inv_a = 1.0 / a;
         qreal b = (ellipse->getWidth() / GRID_SIZE) + this->clearance_;
@@ -578,24 +569,24 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
         qreal cos_t_2 = qPow(cos_t, 2);
         qreal sin_t_2 = qPow(sin_t, 2);
 
-        P.obs.M0[0][index] = (inv_a * cos_t_2) + (inv_b * sin_t_2);
-        P.obs.M0[1][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
-        P.obs.M1[0][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
-        P.obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
+        P->obs.M0[0][index] = (inv_a * cos_t_2) + (inv_b * sin_t_2);
+        P->obs.M0[1][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
+        P->obs.M1[0][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
+        P->obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
 
         QPointF ned_coords = guiXyzToNED(ellipse->getPos());
-        P.obs.c_n[index] = ned_coords.x();
-        P.obs.c_e[index] = ned_coords.y();
+        P->obs.c_n[index] = ned_coords.x();
+        P->obs.c_e[index] = ned_coords.y();
         index++;
         if (index >= skyenet::MAX_OBS) {
-            P.obs.n = index;
+            P->obs.n = index;
             return;
         }
     }
-    P.obs.n = index;
+    P->obs.n = index;
 }
 
-void ConstraintModel::loadPosConstraints(skyenet::params &P) {
+void ConstraintModel::loadPosConstraints(skyenet::params *P) {
     quint32 index = 0;
     for (PolygonModelItem *polygon : this->polygons_) {
         quint32 size = polygon->getSize();
@@ -609,7 +600,7 @@ void ConstraintModel::loadPosConstraints(skyenet::params &P) {
             }
             index++;
             if (index >= skyenet::MAX_CPOS) {
-                P.cpos.n = index;
+                P->cpos.n = index;
                 return;
             }
         }
@@ -626,14 +617,14 @@ void ConstraintModel::loadPosConstraints(skyenet::params &P) {
         }
         index++;
         if (index >= skyenet::MAX_CPOS) {
-            P.cpos.n = index;
+            P->cpos.n = index;
             return;
         }
     }
-    P.cpos.n = index;
+    P->cpos.n = index;
 }
 
-void ConstraintModel::loadPlaneConstraint(skyenet::params &P, quint32 index,
+void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
                                               QPointF ned_p, QPointF ned_q) {
     qreal c = ((ned_p.y() * ned_q.x()) - (ned_p.x() * ned_q.y()));
 
@@ -644,9 +635,9 @@ void ConstraintModel::loadPlaneConstraint(skyenet::params &P, quint32 index,
     QPointF normal = line.normalVector().p2();
     qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? -1 : 1;
 
-    P.cpos.A[2 * index] = flip * a1;
-    P.cpos.A[(2 * index) + 1] = flip * a2;
-    P.cpos.b[index] = flip;
+    P->cpos.A[2 * index] = flip * a1;
+    P->cpos.A[(2 * index) + 1] = flip * a2;
+    P->cpos.b[index] = flip;
 }
 
 }  // namespace optgui

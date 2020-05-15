@@ -18,7 +18,7 @@ namespace optgui {
 
 class DroneModelItem : public DataModel {
  public:
-    DroneModelItem() : mutex_() {
+    explicit DroneModelItem() : mutex_() {
         this->pos_ = QPointF(0, 0);
         this->vel_ = QPointF(0, 0);
         this->accel_ = QPointF(0, 0);
