@@ -244,23 +244,29 @@ void View::mousePressEvent(QMouseEvent *event) {
                         edge_vecs.append(poly[(i+1) % poly.length()] - poly[i]);
                     }
 
-                    // compute sum of angles of internal angles; should be negative
+                    // compute sum of angles of internal angles,
+                    // should be negative
                     qreal tot_angle = 0;
                     for (int i = 0; i < edge_vecs.length(); ++i) {
                         QPointF ahead = edge_vecs[(i+1) % edge_vecs.length()];
                         QPointF behind = edge_vecs[i];
 
                         // take 2D "pseudo cross product" (behind x ahead)
-                        qreal cross_product = behind.rx() * ahead.ry() - behind.ry() * ahead.rx();
+                        qreal cross_product = behind.rx() * ahead.ry()
+                                - behind.ry() * ahead.rx();
 
-                        qreal norm_ahead = sqrt(QPointF::dotProduct(ahead, ahead));
-                        qreal norm_behind = sqrt(QPointF::dotProduct(behind, behind));
+                        qreal norm_ahead =
+                                sqrt(QPointF::dotProduct(ahead, ahead));
+                        qreal norm_behind =
+                                sqrt(QPointF::dotProduct(behind, behind));
 
-                        tot_angle += qAsin(cross_product/(norm_ahead * norm_behind));
+                        tot_angle +=
+                                qAsin(cross_product /
+                                      (norm_ahead * norm_behind));
                     }
 
                     // if poly is "inside out" reverse it
-                    if (tot_angle <= 0){
+                    if (tot_angle <= 0) {
                         std::reverse(poly.begin(), poly.end());
                     }
 
@@ -472,17 +478,17 @@ bool View::pinchZoom(QGestureEvent *event) {
 }
 
 void View::initializeMessageBox(MenuPanel *panel) {
-    QLabel *user_msg_label = new QLabel();
-    user_msg_label->setText("User dialogue box output.");
-    user_msg_label->setWordWrap(true);
-    user_msg_label->setContentsMargins(2, 2, 2, 2);
-    user_msg_label->setStyleSheet(
+    this->user_msg_label_ = new QLabel();
+    this->user_msg_label_->setText("Feasibility feedback.");
+    this->user_msg_label_->setWordWrap(true);
+    this->user_msg_label_->setContentsMargins(2, 2, 2, 2);
+    this->user_msg_label_->setStyleSheet(
             "QLabel { background-color : black; color : white; }");
-    panel->menu_->layout()->addWidget(user_msg_label);
-    this->panel_widgets_.append(user_msg_label);
+    panel->menu_->layout()->addWidget(this->user_msg_label_);
+    this->panel_widgets_.append(this->user_msg_label_);
 
-    connect(this->controller_->compute_thread_, SIGNAL(setMessage(QString)),
-            user_msg_label, SLOT(setText(QString)));
+    connect(this->controller_->compute_thread_, SIGNAL(updateMessage()),
+            this, SLOT(updateFeedbackMessage()));
 }
 
 void View::initializeFinalPointButton(MenuPanel *panel) {
@@ -1184,6 +1190,40 @@ void View::initializeZoom(MenuPanel *panel) {
 
     connect(this->zoom_slider_, SIGNAL(valueChanged(double)),
             this, SLOT(setZoom(double)));
+}
+
+void View::updateFeedbackMessage() {
+    FEASIBILITY_CODE feasibility_code = this->controller_->model_->getIsValidTraj();
+    INPUT_CODE input_code = this->controller_->model_->getIsValidInput();
+
+    if (input_code == INPUT_CODE::VALID_INPUT) {
+        switch (feasibility_code) {
+        case FEASIBLE: {
+            this->user_msg_label_->setText("Trajectory remains feasible");
+            break;
+        }
+        case INFEASIBLE: {
+            this->user_msg_label_->
+                setText("Increase final time to regain feasibility");
+            break;
+        }
+        }
+    } else {
+        switch (input_code) {
+        case OBS_OVERLAP: {
+            this->user_msg_label_->setText("Obstacles cannot overlap");
+            break;
+        }
+        case DRONE_OVERLAP: {
+            this->user_msg_label_->setText("Drone cannot be in obstacle");
+            break;
+        }
+        case FINAL_POS_OVERLAP: {
+            this->user_msg_label_->setText("Final point cannot be in obstacle");
+            break;
+        }
+        }
+    }
 }
 
 }  // namespace optgui

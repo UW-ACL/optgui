@@ -37,8 +37,22 @@ namespace optgui {
         POLYGON_GRAPHIC = QGraphicsItem::UserType + 2,
         PLANE_GRAPHIC = QGraphicsItem::UserType + 3,
         WAYPOINTS_GRAPHIC = QGraphicsItem::UserType + 4,
-        HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
-        POINT_GRAPHIC = QGraphicsItem::UserType + 6
+        ELLIPSE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
+        PLANE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 6,
+        POLYGON_HANDLE_GRAPHIC = QGraphicsItem::UserType + 7,
+        POINT_GRAPHIC = QGraphicsItem::UserType + 8
+    };
+
+    enum FEASIBILITY_CODE {
+        FEASIBLE,
+        INFEASIBLE
+    };
+
+    enum INPUT_CODE {
+        VALID_INPUT,
+        OBS_OVERLAP,
+        DRONE_OVERLAP,
+        FINAL_POS_OVERLAP
     };
 
     static QPointF nedToGuiXyz(qreal n, qreal e) {

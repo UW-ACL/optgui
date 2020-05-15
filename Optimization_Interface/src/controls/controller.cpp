@@ -160,7 +160,7 @@ void Controller::removeItem(QGraphicsItem *item) {
             EllipseModelItem *model = ellipse->model_;
             this->removeEllipseSocket(model);
             this->canvas_->removeItem(ellipse);
-            this->canvas_->ellipse_graphics_->remove(ellipse);
+            this->canvas_->ellipse_graphics_.remove(ellipse);
             delete ellipse;
             this->model_->removeEllipse(model);
             delete model;
@@ -171,7 +171,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PolygonGraphicsItem *>(item);
             PolygonModelItem *model = polygon->model_;
             this->canvas_->removeItem(polygon);
-            this->canvas_->polygon_graphics_->remove(polygon);
+            this->canvas_->polygon_graphics_.remove(polygon);
             delete polygon;
             this->model_->removePolygon(model);
             delete model;
@@ -182,25 +182,22 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PlaneGraphicsItem *>(item);
             PlaneModelItem *model = plane->model_;
             this->canvas_->removeItem(plane);
-            this->canvas_->plane_graphics_->remove(plane);
+            this->canvas_->plane_graphics_.remove(plane);
             delete plane;
             this->model_->removePlane(model);
             delete model;
             break;
         }
-        case HANDLE_GRAPHIC: {
-            if (item->parentItem() &&
-                    item->parentItem()->type() == WAYPOINTS_GRAPHIC) {
-                WaypointsResizeHandle *point_handle =
-                        dynamic_cast<WaypointsResizeHandle *>(item);
-                quint32 point_model_index = point_handle->index_;
-                qgraphicsitem_cast<WaypointsGraphicsItem *>
-                        (point_handle->parentItem())->
-                        removeHandle(point_model_index);
-                this->canvas_->removeItem(point_handle);
-                delete point_handle;
-                this->canvas_->waypoints_graphic_->expandScene();
-            }
+        case WAYPOINTS_GRAPHIC: {
+            WaypointsResizeHandle *point_handle =
+                    dynamic_cast<WaypointsResizeHandle *>(item);
+            quint32 point_model_index = point_handle->index_;
+            qgraphicsitem_cast<WaypointsGraphicsItem *>
+                    (point_handle->parentItem())->
+                    removeHandle(point_model_index);
+            this->canvas_->removeItem(point_handle);
+            delete point_handle;
+            this->canvas_->waypoints_graphic_->expandScene();
             break;
         }
     }
@@ -225,8 +222,9 @@ void Controller::flipDirection(QGraphicsItem *item) {
 
 void Controller::addEllipse(QPointF const &point, qreal radius) {
     EllipseModelItem *item_model = new EllipseModelItem(point,
-        this->model_->getClearancePtr(), radius, radius, 0);
+        this->model_->getClearance(), radius, radius, 0);
     this->loadEllipse(item_model);
+    this->model_->updateEllipseColors();
 }
 
 void Controller::addPolygon(QVector<QPointF> points) {
@@ -258,7 +256,7 @@ void Controller::duplicateSelected() {
                 QPointF new_pos = QPointF(ellipse->model_->getPos());
                 EllipseModelItem *new_model =
                         new EllipseModelItem(new_pos,
-                                             this->model_->getClearancePtr(),
+                                             this->model_->getClearance(),
                                              ellipse->model_->getHeight(),
                                              ellipse->model_->getWidth(),
                                              ellipse->model_->getRot());
@@ -329,7 +327,7 @@ void Controller::execute() {
 
 void Controller::stageTraj() {
     if (!this->freeze_timer_->isActive() &&
-            this->model_->getIsValidTraj()) {
+            this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
         this->setStagedPath();
     }
 }
@@ -378,7 +376,7 @@ void Controller::startSockets() {
     }
 
     // create ellipse sockets
-    for (EllipseGraphicsItem *graphic : *this->canvas_->ellipse_graphics_) {
+    for (EllipseGraphicsItem *graphic : this->canvas_->ellipse_graphics_) {
         if (graphic->model_->port_ > 0) {
             EllipseSocket *temp = new EllipseSocket(graphic->model_);
             connect(temp, SIGNAL(refresh_graphics()),
@@ -437,7 +435,7 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
     EllipseGraphicsItem *item_graphic =
             new EllipseGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
-    this->canvas_->ellipse_graphics_->insert(item_graphic);
+    this->canvas_->ellipse_graphics_.insert(item_graphic);
     this->model_->addEllipse(item_model);
     item_graphic->setRotation(item_model->getRot());
     this->canvas_->bringToFront(item_graphic);
@@ -448,7 +446,7 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
     PolygonGraphicsItem *item_graphic =
             new PolygonGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
-    this->canvas_->polygon_graphics_->insert(item_graphic);
+    this->canvas_->polygon_graphics_.insert(item_graphic);
     this->model_->addPolygon(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();
@@ -458,7 +456,7 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     PlaneGraphicsItem *item_graphic =
             new PlaneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
-    this->canvas_->plane_graphics_->insert(item_graphic);
+    this->canvas_->plane_graphics_.insert(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);
     item_graphic->expandScene();

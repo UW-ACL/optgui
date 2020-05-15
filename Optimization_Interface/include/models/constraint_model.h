@@ -67,10 +67,6 @@ class ConstraintModel {
     void setDroneModel(DroneModelItem *model);
     void setDroneModelPos(QPointF const &pos);
 
-    void loadFinalPos(double r_f[3]);
-    void loadInitialTelem(double r_i[3], double v_i[3], double a_i[3]);
-    void loadWaypoints(double wp[3][skyenet::MAX_WAYPOINTS]);
-
     skyenet::params getSkyeFlyParams();
     void setSkyeFlyParams(QTableWidget *params_table);
 
@@ -89,18 +85,29 @@ class ConstraintModel {
     bool getIsTrajStaged();
     void setIsTrajStaged(bool is_staged);
 
-    bool getIsValidTraj();
-    void setIsValidTraj(bool is_valid);
+    FEASIBILITY_CODE getIsValidTraj();
+    void setIsValidTraj(FEASIBILITY_CODE code);
 
     void fillTable(QTableWidget *port_table,
                    QTableWidget *drone_table,
                    QSet<quint16> *ports);
 
-    qreal *getClearancePtr();
+    qreal getClearance();
     void setClearance(qreal clearance);
 
     void setLiveReferenceMode(bool reference_mode);
     bool isLiveReference();
+
+    INPUT_CODE getIsValidInput();
+    bool setIsValidInput(INPUT_CODE code);
+    QVector<QRegion> getEllipseRegions();
+    void updateEllipseColors();
+
+    QPointF getFinalPos();
+    QPointF getInitialPos();
+    QPointF getInitialVel();
+    QPointF getInitialAcc();
+    QPointF getWpPos();
 
     void setCurrFinalPoint(PointModelItem *point);
     bool hasCurrFinalPoint();
@@ -114,12 +121,13 @@ class ConstraintModel {
     skyenet::params P_;
     autogen::packet::traj3dof drone_curr_traj3dof_data_;
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
-    bool is_valid_traj_;
+    INPUT_CODE input_code_;
+    FEASIBILITY_CODE feasible_code_;
     bool traj_staged_;
     bool is_live_reference_;
 
     // Clearance around ellipses in meters
-    qreal *clearance_;
+    qreal clearance_;
 
     // Constraints
     QSet<EllipseModelItem *> *ellipses_;

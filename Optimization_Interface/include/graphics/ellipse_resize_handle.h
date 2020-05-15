@@ -23,6 +23,7 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
                                  QGraphicsItem *parent,
                                  quint8 type,
                                  qreal size = ELLIPSE_HANDLE_SIZE);
+    int type() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 

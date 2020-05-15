@@ -91,7 +91,7 @@ void WaypointsResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 int WaypointsResizeHandle::type() const {
-    return HANDLE_GRAPHIC;
+    return WAYPOINTS_GRAPHIC;
 }
 
 QPointF WaypointsResizeHandle::getPoint() {

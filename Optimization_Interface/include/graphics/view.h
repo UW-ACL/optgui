@@ -57,9 +57,10 @@ class View : public QGraphicsView {
     void setClearance(qreal clearance);
     void constrainWpIdx(int value);
     void constrainAccel();
+    void updateFeedbackMessage();
     void setCurrFinalPoint();
 
-private:
+  private:
     void initialize();
     void initializeMenuPanel();
     void initializeExpertPanel();
@@ -71,6 +72,7 @@ private:
     Controller *controller_;
     QToolButton *menu_button_;
     MenuPanel *menu_panel_;
+    QLabel *user_msg_label_;
     QToolButton *expert_menu_button_;
     MenuPanel *expert_panel_;
     STATE state_;

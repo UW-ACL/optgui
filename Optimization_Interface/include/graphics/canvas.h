@@ -38,10 +38,10 @@ class Canvas : public QGraphicsScene {
     PathGraphicsItem *path_staged_graphic_;
     DroneGraphicsItem *drone_graphic_;
 
+    QSet<EllipseGraphicsItem *> ellipse_graphics_;
+    QSet<PolygonGraphicsItem *> polygon_graphics_;
+    QSet<PlaneGraphicsItem *> plane_graphics_;
     QSet<PointGraphicsItem *> final_points_;
-    QSet<EllipseGraphicsItem *> *ellipse_graphics_;
-    QSet<PolygonGraphicsItem *> *polygon_graphics_;
-    QSet<PlaneGraphicsItem *> *plane_graphics_;
 
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;

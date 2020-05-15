@@ -52,6 +52,11 @@ void EllipseGraphicsItem::initialize() {
     this->width_handle_->hide();
     this->height_handle_->hide();
     this->radius_handle_->hide();
+
+    // set granularity for collision detection
+    // collision detection is iterative, value between
+    // 0 and 1 balances precision with performance
+    this->setBoundingRegionGranularity(0.9);
 }
 
 EllipseGraphicsItem::~EllipseGraphicsItem() {
@@ -79,6 +84,8 @@ void EllipseGraphicsItem::paint(QPainter *painter,
                                 QWidget *widget) {
     Q_UNUSED(option);
     Q_UNUSED(widget);
+
+    this->setRed(this->model_->getIsOverlap());
 
     qreal scaling_factor = this->getScalingFactor();
     qreal width = this->model_->getWidth();
@@ -163,6 +170,18 @@ void EllipseGraphicsItem::expandScene() {
             }
         }
         this->update(this->boundingRect());
+    }
+}
+
+void EllipseGraphicsItem::setRed(bool isOverlap) {
+    if (isOverlap) {
+        QColor fill = Qt::red;
+        fill.setAlpha(200);
+        this->brush_ = QBrush(fill);
+    } else {
+        QColor fill = Qt::gray;
+        fill.setAlpha(200);
+        this->brush_ = QBrush(fill);
     }
 }
 

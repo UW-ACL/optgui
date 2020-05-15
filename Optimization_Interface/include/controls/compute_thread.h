@@ -31,7 +31,7 @@ protected:
  signals:
     void updateGraphics();
     void setPathColor(bool isRed);
-    void setMessage(QString message);
+    void updateMessage();
 
  public slots:
     void stopCompute();
@@ -40,6 +40,9 @@ protected:
     ConstraintModel *model_;
     skyenet::SkyeFly *fly_;
     bool run_loop_;
+    INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
+                              QPointF const &initial_pos,
+                              QPointF const &final_pos);
 };
 
 }  // namespace optgui

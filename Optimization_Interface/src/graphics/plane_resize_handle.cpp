@@ -98,7 +98,7 @@ void PlaneResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 int PlaneResizeHandle::type() const {
-    return HANDLE_GRAPHIC;
+    return PLANE_HANDLE_GRAPHIC;
 }
 
 QPointF PlaneResizeHandle::getPoint() {
