@@ -24,9 +24,6 @@ ConstraintModel::ConstraintModel() : model_lock_() {
 
 void ConstraintModel::initialize() {
     // Set model containers
-    this->ellipses_ = new QSet<EllipseModelItem *>();
-    this->polygons_ = new QSet<PolygonModelItem *>();
-    this->planes_ = new QSet<PlaneModelItem *>();
     this->curr_final_point_ = nullptr;
     this->waypoints_ = nullptr;
     this->path_ = nullptr;
@@ -55,22 +52,19 @@ void ConstraintModel::initialize() {
 ConstraintModel::~ConstraintModel() {
     QMutexLocker locker(&this->model_lock_);
     // Delete ellipses
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         delete ellipse;
     }
-    delete this->ellipses_;
 
     // Delete polygons
-    for (PolygonModelItem *polygon : *this->polygons_) {
+    for (PolygonModelItem *polygon : this->polygons_) {
         delete polygon;
     }
-    delete this->polygons_;
 
     // Delete planes
-    for (PlaneModelItem *plane : *this->planes_) {
+    for (PlaneModelItem *plane : this->planes_) {
         delete plane;
     }
-    delete this->planes_;
 
     // Delete waypoints
     if (this->waypoints_) {
@@ -113,32 +107,32 @@ void ConstraintModel::removePoint(PointModelItem *item) {
 
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->ellipses_->insert(item);
+    this->ellipses_.insert(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->ellipses_->remove(item);
+    this->ellipses_.remove(item);
 }
 
 void ConstraintModel::addPolygon(PolygonModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->polygons_->insert(item);
+    this->polygons_.insert(item);
 }
 
 void ConstraintModel::removePolygon(PolygonModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->polygons_->remove(item);
+    this->polygons_.remove(item);
 }
 
 void ConstraintModel::addPlane(PlaneModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->planes_->insert(item);
+    this->planes_.insert(item);
 }
 
 void ConstraintModel::removePlane(PlaneModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->planes_->remove(item);
+    this->planes_.remove(item);
 }
 
 void ConstraintModel::setWaypointsModel(PathModelItem *waypoints) {
@@ -336,7 +330,7 @@ void ConstraintModel::setIsValidTraj(FEASIBILITY_CODE code) {
 
 void ConstraintModel::setClearance(qreal clearance) {
     QMutexLocker locker(&this->model_lock_);
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         ellipse->setClearance(clearance);
     }
     this->clearance_ = clearance;
@@ -462,9 +456,9 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     // Configure port table
     quint16 row = 0;
     port_table->setRowCount(this->final_points_.size() +
-                            this->ellipses_->size() +
-                            this->polygons_->size() +
-                            this->planes_->size());
+                            this->ellipses_.size() +
+                            this->polygons_.size() +
+                            this->planes_.size());
 
     // Set final points
     quint16 count = 1;
@@ -482,7 +476,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set ellipses
     count = 1;
-    for (EllipseModelItem *model : *this->ellipses_) {
+    for (EllipseModelItem *model : this->ellipses_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Ellipse " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -497,7 +491,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set polygons
     count = 1;
-    for (PolygonModelItem *model : *this->polygons_) {
+    for (PolygonModelItem *model : this->polygons_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Polygon " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -512,7 +506,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set planes
     count = 1;
-    for (PlaneModelItem *model : *this->planes_) {
+    for (PlaneModelItem *model : this->planes_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Plane " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -546,7 +540,7 @@ bool ConstraintModel::setIsValidInput(INPUT_CODE code) {
 QVector<QRegion> ConstraintModel::getEllipseRegions() {
     QMutexLocker locker(&this->model_lock_);
     QVector<QRegion> regions;
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         regions.append(ellipse->getRegion());
     }
     return regions;
@@ -557,12 +551,12 @@ void ConstraintModel::updateEllipseColors() {
 
     if (this->input_code_ == INPUT_CODE::VALID_INPUT) {
         // show ellipses as valid
-        for (EllipseModelItem *ellipse : *this->ellipses_) {
+        for (EllipseModelItem *ellipse : this->ellipses_) {
             ellipse->setIsOverlap(false);
         }
     } else {
         // show ellipses as invalid
-        for (EllipseModelItem *ellipse : *this->ellipses_) {
+        for (EllipseModelItem *ellipse : this->ellipses_) {
             ellipse->setIsOverlap(true);
         }
     }
@@ -572,7 +566,7 @@ void ConstraintModel::updateEllipseColors() {
 
 void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
     quint32 index = 0;
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         P.obs.R[index] = 1;
         qreal a = (ellipse->getHeight() / GRID_SIZE) + this->clearance_;
         qreal inv_a = 1.0 / a;
@@ -603,7 +597,7 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
 
 void ConstraintModel::loadPosConstraints(skyenet::params &P) {
     quint32 index = 0;
-    for (PolygonModelItem *polygon : *this->polygons_) {
+    for (PolygonModelItem *polygon : this->polygons_) {
         quint32 size = polygon->getSize();
         for (quint32 i = 1; i < size + 1; i++) {
             QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
@@ -621,7 +615,7 @@ void ConstraintModel::loadPosConstraints(skyenet::params &P) {
         }
     }
 
-    for (PlaneModelItem *plane : *this->planes_) {
+    for (PlaneModelItem *plane : this->planes_) {
         QPointF ned_p = guiXyzToNED(plane->getP1());
         QPointF ned_q = guiXyzToNED(plane->getP2());
 

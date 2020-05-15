@@ -77,7 +77,7 @@ class View : public QGraphicsView {
     MenuPanel *expert_panel_;
     STATE state_;
     Canvas *canvas_;
-    QVector<QGraphicsItem*> *temp_markers_;
+    QVector<QGraphicsItem*> temp_markers_;
     QPen dot_pen_;
     QBrush dot_brush_;
     QTableWidget *skyefly_params_table_;

@@ -40,7 +40,7 @@ class WaypointsGraphicsItem : public QGraphicsItem {
  private:
     void initialize();
     PathModelItem *model_;
-    QVector<WaypointsResizeHandle *> *resize_handles_;
+    QVector<WaypointsResizeHandle *> resize_handles_;
     qreal line_width_;
     qreal size_;
     qreal getScalingFactor();

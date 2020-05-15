@@ -27,17 +27,13 @@ WaypointsGraphicsItem::WaypointsGraphicsItem(PathModelItem *model,
 void WaypointsGraphicsItem::initialize() {
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsGeometryChanges);
-
-    // Initialize resize handles
-    this->resize_handles_ = new QVector<WaypointsResizeHandle *>();
 }
 
 WaypointsGraphicsItem::~WaypointsGraphicsItem() {
     // Delete resize handles
-    for (WaypointsResizeHandle *handle : *this->resize_handles_) {
+    for (WaypointsResizeHandle *handle : this->resize_handles_) {
         delete handle;
     }
-    delete this->resize_handles_;
 }
 
 QRectF WaypointsGraphicsItem::boundingRect() const {
@@ -51,19 +47,19 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    quint32 size = this->model_->getSize();
-    for (quint32 i = 0; i < size; i++) {
+    int size = this->model_->getSize();
+    for (int i = 0; i < size; i++) {
         // Create new handles if necessary
-        if (i+1 > this->resize_handles_->size()) {
+        if (i+1 > this->resize_handles_.size()) {
             WaypointsResizeHandle *handle =
                     new WaypointsResizeHandle(
                         this->model_, i, this, this->size_);
-            this->resize_handles_->append(handle);
+            this->resize_handles_.append(handle);
             handle->show();
             this->expandScene();
         } else {
             // update handle pos
-            this->resize_handles_->at(i)->updatePos();
+            this->resize_handles_.at(i)->updatePos();
         }
     }
 
@@ -87,10 +83,10 @@ void WaypointsGraphicsItem::paint(QPainter *painter,
 }
 
 void WaypointsGraphicsItem::removeHandle(quint32 index) {
-    this->resize_handles_->removeAt(index);
+    this->resize_handles_.removeAt(index);
     this->model_->removePointAt(index);
     qint32 index_label = 0;
-    for (WaypointsResizeHandle *handle : *this->resize_handles_) {
+    for (WaypointsResizeHandle *handle : this->resize_handles_) {
         handle->index_ = index_label;
         index_label++;
     }

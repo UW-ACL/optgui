@@ -43,9 +43,6 @@ View::View(QWidget * parent)
     dot_pen_ = QPen(Qt::black);
     dot_brush_ = QBrush(Qt::white);
 
-    // Create poly vector
-    this->temp_markers_ = new QVector<QGraphicsItem*>();
-
     // enable pinch zoom
     this->viewport()->grabGesture(Qt::PinchGesture);
     this->currentStepScaleFactor_ = 1;
@@ -58,7 +55,6 @@ View::View(QWidget * parent)
 View::~View() {
     // Delete temporary markers
     this->clearMarkers();
-    delete this->temp_markers_;
 
     // Clear menu widgets
     for (QWidget *button : this->panel_widgets_) {
@@ -225,11 +221,11 @@ void View::mousePressEvent(QMouseEvent *event) {
         }
         case POLYGON: {
             // Add markers until polygon is completed
-            if (!this->temp_markers_->isEmpty() &&
-                    itemAt(event->pos()) == this->temp_markers_->first()) {
-                if (this->temp_markers_->size() >= 3) {
+            if (!this->temp_markers_.isEmpty() &&
+                    itemAt(event->pos()) == this->temp_markers_.first()) {
+                if (this->temp_markers_.size() >= 3) {
                     QVector<QPointF> poly = QVector<QPointF>();
-                    for (QGraphicsItem *dot : *this->temp_markers_) {
+                    for (QGraphicsItem *dot : this->temp_markers_) {
                         poly.append(QPointF(dot->pos()));
                     }
 
@@ -281,15 +277,15 @@ void View::mousePressEvent(QMouseEvent *event) {
                         this->scene()->addEllipse(-dotSize, -dotSize,
                                                   dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
-                temp_markers_->append(dot);
+                temp_markers_.append(dot);
                 dot->setPos(pos);
             }
             break;
         }
         case PLANE: {
             // Add markers to define line
-            if (!this->temp_markers_->isEmpty()) {
-                QPointF p1 = QPointF(temp_markers_->first()->pos());
+            if (!this->temp_markers_.isEmpty()) {
+                QPointF p1 = QPointF(temp_markers_.first()->pos());
                 this->controller_->addPlane(p1, pos);
                 // Clean up markers
                 this->clearMarkers();
@@ -300,7 +296,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                         this->scene()->addEllipse(-dotSize, -dotSize,
                                                   dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
-                temp_markers_->append(dot);
+                temp_markers_.append(dot);
                 dot->setPos(pos);
             }
             break;
@@ -427,11 +423,11 @@ void View::setSkyeFlyParams() {
 
 void View::clearMarkers() {
     // Clear all temporary markers
-    for (QGraphicsItem *dot : *this->temp_markers_) {
+    for (QGraphicsItem *dot : this->temp_markers_) {
         this->scene()->removeItem(dot);
         delete dot;
     }
-    this->temp_markers_->clear();
+    this->temp_markers_.clear();
 }
 
 void View::resizeEvent(QResizeEvent *event) {

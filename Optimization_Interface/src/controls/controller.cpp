@@ -81,7 +81,6 @@ Controller::Controller(Canvas *canvas) {
 
     // Initialize network
     this->drone_socket_ = nullptr;
-    this->ellipse_sockets_ = new QVector<EllipseSocket *>();
 
     // Initialize freeze timer
     this->freeze_timer_ = new QTimer();
@@ -118,7 +117,6 @@ Controller::~Controller() {
 
     // deinitialize network
     this->closeSockets();
-    delete this->ellipse_sockets_;
 
     // clean up model
     delete this->model_;
@@ -381,7 +379,7 @@ void Controller::startSockets() {
             EllipseSocket *temp = new EllipseSocket(graphic->model_);
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(updateEllipseGraphicsItem(graphic)));
-            this->ellipse_sockets_->append(temp);
+            this->ellipse_sockets_.append(temp);
         }
     }
 }
@@ -392,26 +390,33 @@ void Controller::closeSockets() {
         this->drone_socket_ = nullptr;
     }
     // close final point sockets
-    while (!this->final_point_sockets_.isEmpty()) {
-        delete this->final_point_sockets_.takeFirst();
+    for (PointSocket * socket : this->final_point_sockets_) {
+        delete socket;
     }
+    this->final_point_sockets_.clear();
+
     // close ellipse sockets
-    while (!this->ellipse_sockets_->isEmpty()) {
-        delete this->ellipse_sockets_->takeFirst();
+    for (EllipseSocket * socket : this->ellipse_sockets_) {
+        delete socket;
     }
+    this->ellipse_sockets_.clear();
 }
 
 void Controller::removeEllipseSocket(EllipseModelItem *model) {
-    for (QVector<EllipseSocket *>::iterator i = this->ellipse_sockets_->begin();
-         i != this->ellipse_sockets_->end(); i++) {
-        if ((*i)->ellipse_model_ == model) {
-            EllipseSocket *temp = *i;
-            i = this->ellipse_sockets_->erase(i);
-            delete temp;
-            if (i == this->ellipse_sockets_->end()) {
-                break;
-            }
+    int index = 0;
+    bool found = false;
+
+    for (EllipseSocket *socket : this->ellipse_sockets_) {
+        if (socket->ellipse_model_ == model) {
+            delete socket;
+            found = true;
+            break;
         }
+        index++;
+    }
+
+    if (found) {
+        this->ellipse_sockets_.removeAt(index);
     }
 }
 

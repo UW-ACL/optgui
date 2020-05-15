@@ -130,15 +130,15 @@ class ConstraintModel {
     qreal clearance_;
 
     // Constraints
-    QSet<EllipseModelItem *> *ellipses_;
-    QSet<PolygonModelItem *> *polygons_;
-    QSet<PlaneModelItem *> *planes_;
+    QSet<EllipseModelItem *> ellipses_;
+    QSet<PolygonModelItem *> polygons_;
+    QSet<PlaneModelItem *> planes_;
     PathModelItem *waypoints_;
     PathModelItem *path_;
     PathModelItem *path_staged_;
     DroneModelItem *drone_;
     QSet<PointModelItem *> final_points_;
-    PointModelItem * curr_final_point_;
+    PointModelItem *curr_final_point_;
 
     // Convert constraints to skyefly params
     void loadEllipseConstraints(skyenet::params &P);
