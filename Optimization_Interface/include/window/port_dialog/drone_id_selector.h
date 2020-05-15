@@ -18,7 +18,8 @@ class DroneIdSelector : public QLineEdit {
     Q_OBJECT
 
  public:
-    explicit DroneIdSelector(DroneModelItem *model, QWidget *parent);
+    explicit DroneIdSelector(DroneModelItem *model, QWidget *parent,
+                             QSet<quint16> *ports);
 
  protected:
     void focusInEvent(QFocusEvent *event) override;
@@ -27,8 +28,9 @@ class DroneIdSelector : public QLineEdit {
     void updateIp();
 
  private:
+    QSet<quint16> *ports_;
     DroneModelItem *model_;
-    bool isIpValid();
+    quint16 isIpValid();
 };
 
 }  // namespace optgui

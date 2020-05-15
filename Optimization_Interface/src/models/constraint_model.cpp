@@ -366,6 +366,11 @@ bool ConstraintModel::hasCurrFinalPoint() {
     return (this->curr_final_point_ != nullptr);
 }
 
+bool ConstraintModel::isCurrFinalPoint(PointModelItem *model) {
+    QMutexLocker locker(&this->model_lock_);
+    return (model == this->curr_final_point_);
+}
+
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     QMutexLocker locker(&this->model_lock_);
 
@@ -441,7 +446,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
     ports->insert(this->drone_->port_);
     drone_table->setCellWidget(0, 1,
-            new DroneIdSelector(this->drone_, drone_table));
+            new DroneIdSelector(this->drone_, drone_table, ports));
 
 
     // Configure port table

@@ -111,6 +111,7 @@ class ConstraintModel {
 
     void setCurrFinalPoint(PointModelItem *point);
     bool hasCurrFinalPoint();
+    bool isCurrFinalPoint(PointModelItem *model);
 
  private:
     void initialize();

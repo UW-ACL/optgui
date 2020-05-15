@@ -143,7 +143,9 @@ void Controller::removeItem(QGraphicsItem *item) {
             PointGraphicsItem *point = qgraphicsitem_cast<
                     PointGraphicsItem *>(item);
             PointModelItem *model = point->model_;
-            this->model_->setCurrFinalPoint(nullptr);
+            if (this->model_->isCurrFinalPoint(model)) {
+                this->model_->setCurrFinalPoint(nullptr);
+            }
             this->removePointSocket(model);
             this->canvas_->removeItem(point);
             this->canvas_->final_points_.remove(point);

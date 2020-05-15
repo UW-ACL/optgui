@@ -6,6 +6,7 @@
 #include "include/network/point_socket.h"
 
 #include "include/globals.h"
+#include <QDebug>
 
 namespace optgui {
 
@@ -13,6 +14,7 @@ PointSocket::PointSocket(PointModelItem *model, QObject *parent)
     : QUdpSocket(parent) {
     point_model_ = model;
     this->bind(QHostAddress::AnyIPv4, point_model_->port_);
+    qDebug() << "created socked at port " << point_model_->port_;
 
     connect(this, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 }
