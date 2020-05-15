@@ -275,26 +275,13 @@ void ConstraintModel::setDroneModelPos(QPointF const &pos) {
     this->model_lock_.unlock();
 }
 
-void ConstraintModel::setFinalPointModel(PointModelItem *final_point) {
-    this->model_lock_.lock();
-    if (this->final_pos_) {
-        delete this->final_pos_;
-    }
-    this->final_pos_ = final_point;
-    this->model_lock_.unlock();
-}
-
-void ConstraintModel::setFinalPointPos(QPointF const &pos) {
-    this->model_lock_.lock();
-    if (this->final_pos_) {
-        this->final_pos_->setPos(pos);
-    }
-    this->model_lock_.unlock();
-}
-
 QPointF ConstraintModel::getFinalPos() {
     QMutexLocker locker(&this->model_lock_);
-    return this->final_pos_->getPos();
+    if (this->curr_final_point_ != nullptr) {
+        return this->curr_final_point_->getPos();
+    } else {
+        return QPointF();
+    }
 }
 
 QPointF ConstraintModel::getInitialPos() {
