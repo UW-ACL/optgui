@@ -49,8 +49,8 @@ class ConstraintModel {
     void addPlane(PlaneModelItem *item);
     void removePlane(PlaneModelItem *item);
 
-    void setWaypointsModel(PathModelItem *model);
-    void addWaypoint(QPointF const &pos);
+    void addWaypoint(PointModelItem *item);
+    void removeWaypoint(PointModelItem *item);
     quint32 getNumWaypoints();
 
     void setPathModel(PathModelItem *model);
@@ -134,7 +134,7 @@ class ConstraintModel {
     QSet<EllipseModelItem *> ellipses_;
     QSet<PolygonModelItem *> polygons_;
     QSet<PlaneModelItem *> planes_;
-    PathModelItem *waypoints_;
+    QVector<PointModelItem *> waypoints_;
     PathModelItem *path_;
     PathModelItem *path_staged_;
     DroneModelItem *drone_;

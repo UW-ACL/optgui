@@ -28,7 +28,6 @@ Canvas::~Canvas() {
 
 void Canvas::initialize() {
     // initialized by controller
-    this->waypoints_graphic_ = nullptr;
     this->path_graphic_ = nullptr;
     this->drone_graphic_ = nullptr;
 

@@ -36,7 +36,7 @@ namespace optgui {
         ELLIPSE_GRAPHIC = QGraphicsItem::UserType + 1,
         POLYGON_GRAPHIC = QGraphicsItem::UserType + 2,
         PLANE_GRAPHIC = QGraphicsItem::UserType + 3,
-        WAYPOINTS_GRAPHIC = QGraphicsItem::UserType + 4,
+        WAYPOINT_GRAPHIC = QGraphicsItem::UserType + 4,
         ELLIPSE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
         PLANE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 6,
         POLYGON_HANDLE_GRAPHIC = QGraphicsItem::UserType + 7,

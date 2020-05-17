@@ -52,7 +52,7 @@ SOURCES += \
     src/controls/compute_thread.cpp \
     src/controls/controller.cpp \
     src/graphics/plane_resize_handle.cpp \
-    src/graphics/waypoints_resize_handle.cpp \
+    src/graphics/waypoint_graphics_item.cpp \
     src/main.cpp \
     src/window/main_window.cpp \
     src/graphics/canvas.cpp \
@@ -67,7 +67,6 @@ SOURCES += \
     src/graphics/polygon_resize_handle.cpp \
     src/graphics/plane_graphics_item.cpp \
     src/graphics/drone_graphics_item.cpp \
-    src/graphics/waypoints_graphics_item.cpp \
     src/graphics/path_graphics_item.cpp \
     src/window/port_dialog.cpp \
     src/window/port_dialog/drone_id_selector.cpp \
@@ -80,7 +79,7 @@ SOURCES += \
 HEADERS += \
     include/controls/compute_thread.h \
     include/graphics/plane_resize_handle.h \
-    include/graphics/waypoints_resize_handle.h \
+    include/graphics/waypoint_graphics_item.h \
     include/window/main_window.h \
     include/graphics/canvas.h \
     include/graphics/view.h \
@@ -100,7 +99,6 @@ HEADERS += \
     include/graphics/drone_graphics_item.h \
     include/models/path_model_item.h \
     include/models/drone_model_item.h \
-    include/graphics/waypoints_graphics_item.h \
     include/graphics/path_graphics_item.h \
     include/window/port_dialog.h \
     include/window/port_dialog/drone_id_selector.h \

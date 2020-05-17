@@ -25,7 +25,6 @@ ConstraintModel::ConstraintModel() : model_lock_() {
 void ConstraintModel::initialize() {
     // Set model containers
     this->curr_final_point_ = nullptr;
-    this->waypoints_ = nullptr;
     this->path_ = nullptr;
     this->path_staged_ = nullptr;
     this->drone_ = nullptr;
@@ -67,9 +66,10 @@ ConstraintModel::~ConstraintModel() {
     }
 
     // Delete waypoints
-    if (this->waypoints_) {
-        delete this->waypoints_;
+    for (PointModelItem *waypoint : this->waypoints_) {
+        delete waypoint;
     }
+
     // Delete path
     if (this->path_) {
         delete this->path_;
@@ -87,7 +87,6 @@ ConstraintModel::~ConstraintModel() {
     for (PointModelItem * model : this->final_points_) {
         delete model;
     }
-    this->final_points_.clear();
 }
 
 // Public functions, need to lock
@@ -135,28 +134,20 @@ void ConstraintModel::removePlane(PlaneModelItem *item) {
     this->planes_.remove(item);
 }
 
-void ConstraintModel::setWaypointsModel(PathModelItem *waypoints) {
+void ConstraintModel::addWaypoint(PointModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    if (this->waypoints_) {
-        delete this->waypoints_;
-    }
-    this->waypoints_ = waypoints;
+    this->waypoints_.append(item);
 }
 
-void ConstraintModel::addWaypoint(QPointF const &pos) {
+void ConstraintModel::removeWaypoint(PointModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    if (this->waypoints_) {
-        this->waypoints_->addPoint(pos);
-    }
+    this->waypoints_.removeOne(item);
+    delete item;
 }
 
 quint32 ConstraintModel::getNumWaypoints() {
     QMutexLocker locker(&this->model_lock_);
-    quint32 temp = 0;
-    if (this->waypoints_) {
-        temp = this->waypoints_->getSize();
-    }
-    return temp;
+    return this->waypoints_.size();
 }
 
 void ConstraintModel::setPathModel(PathModelItem *trajectory) {
@@ -271,8 +262,8 @@ QPointF ConstraintModel::getInitialAcc() {
 
 QPointF ConstraintModel::getWpPos() {
     QMutexLocker locker(&this->model_lock_);
-    if (this->waypoints_->getSize() > 0) {
-        return this->waypoints_->getPointAt(0);
+    if (this->waypoints_.size() > 0) {
+        return this->waypoints_.first()->getPos();
     }
     return QPointF();
 }
@@ -427,7 +418,7 @@ skyenet::params ConstraintModel::getSkyeFlyParams() {
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
     skyenet::params P = this->P_;
     // set waypoint relax to 0 if no waypoints
-    if (this->waypoints_->getSize() < 1) {
+    if (this->waypoints_.size() < 1) {
         P.wprelax[0] = 0;
     }
     return P;
@@ -452,6 +443,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     // Configure port table
     quint16 row = 0;
     port_table->setRowCount(this->final_points_.size() +
+                            this->waypoints_.size() +
                             this->ellipses_.size() +
                             this->polygons_.size() +
                             this->planes_.size());
@@ -461,6 +453,20 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     for (PointModelItem * model : this->final_points_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Final Point " + QString::number(count)));
+        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+        ports->insert(model->port_);
+        port_table->setCellWidget(row, 1,
+                new PortSelector(ports, model,
+                                 port_table));
+        row++;
+        count++;
+    }
+
+    // Set waypoints
+    count = 1;
+    for (PointModelItem * model : this->waypoints_) {
+        port_table->setItem(row, 0,
+                new QTableWidgetItem("Waypoint " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
         ports->insert(model->port_);
         port_table->setCellWidget(row, 1,

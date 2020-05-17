@@ -106,7 +106,7 @@ int EllipseResizeHandle::type() const {
     return ELLIPSE_HANDLE_GRAPHIC;
 }
 
-qreal EllipseResizeHandle::getScalingFactor() {
+qreal EllipseResizeHandle::getScalingFactor() const {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

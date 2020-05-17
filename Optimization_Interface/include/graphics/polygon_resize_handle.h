@@ -40,7 +40,7 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
     quint32 index_;
     bool resize_;
     qreal size_;
-    qreal getScalingFactor();
+    qreal getScalingFactor() const;
 };
 
 }  // namespace optgui

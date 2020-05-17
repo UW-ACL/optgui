@@ -15,13 +15,11 @@
 
 namespace optgui {
 
-qreal const POINT_SIZE = 14;
-
 class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qreal size = POINT_SIZE);
+                               qreal radius = 14);
     PointModelItem *model_;
 
     QRectF boundingRect() const override;

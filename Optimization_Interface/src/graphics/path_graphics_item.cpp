@@ -92,7 +92,7 @@ QVariant PathGraphicsItem::itemChange(GraphicsItemChange change,
     return QGraphicsItem::itemChange(change, value);
 }
 
-qreal PathGraphicsItem::getScalingFactor() {
+qreal PathGraphicsItem::getScalingFactor() const {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

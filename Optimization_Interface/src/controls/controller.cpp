@@ -20,8 +20,7 @@
 #include "include/graphics/polygon_resize_handle.h"
 #include "include/graphics/path_graphics_item.h"
 #include "include/graphics/drone_graphics_item.h"
-#include "include/graphics/waypoints_graphics_item.h"
-#include "include/graphics/waypoints_resize_handle.h"
+#include "include/graphics/waypoint_graphics_item.h"
 #include "include/globals.h"
 
 namespace optgui {
@@ -43,17 +42,12 @@ Controller::Controller(Canvas *canvas) {
     this->canvas_->addItem(this->canvas_->drone_graphic_);
 
     // initialize final point graphic render level
-    renderLevel = std::nextafter(renderLevel, 0);
     this->final_point_render_level_ = renderLevel;
-
-    // initialize waypoints model and graphic
-    PathModelItem *waypoint_model = new PathModelItem();
-    this->model_->setWaypointsModel(waypoint_model);
-    this->canvas_->waypoints_graphic_ =
-            new WaypointsGraphicsItem(waypoint_model);
-    this->canvas_->waypoints_graphic_->setZValue(renderLevel);
     renderLevel = std::nextafter(renderLevel, 0);
-    this->canvas_->addItem(this->canvas_->waypoints_graphic_);
+
+    // initialize waypoint graphics render level
+    this->waypoints_render_level_ = renderLevel;
+    renderLevel = std::nextafter(renderLevel, 0);
 
     // initialize trajectory sent model and graphic
     PathModelItem *trajectory_sent_model = new PathModelItem();
@@ -188,16 +182,18 @@ void Controller::removeItem(QGraphicsItem *item) {
             delete model;
             break;
         }
-        case WAYPOINTS_GRAPHIC: {
-            WaypointsResizeHandle *point_handle =
-                    dynamic_cast<WaypointsResizeHandle *>(item);
-            quint32 point_model_index = point_handle->index_;
-            qgraphicsitem_cast<WaypointsGraphicsItem *>
-                    (point_handle->parentItem())->
-                    removeHandle(point_model_index);
-            this->canvas_->removeItem(point_handle);
-            delete point_handle;
-            this->canvas_->waypoints_graphic_->expandScene();
+        case WAYPOINT_GRAPHIC: {
+            WaypointGraphicsItem *waypoint =
+                    dynamic_cast<WaypointGraphicsItem *>(item);
+            PointModelItem *model = waypoint->model_;
+            this->removePointSocket(model);
+            this->canvas_->removeItem(waypoint);
+            this->canvas_->waypoint_graphics_.removeOne(waypoint);
+            delete waypoint;
+            this->model_->removeWaypoint(model);
+            for (int i = 0; i < this->canvas_->waypoint_graphics_.size(); i++) {
+                this->canvas_->waypoint_graphics_.at(i)->setIndex(i);
+            }
             break;
         }
     }
@@ -238,8 +234,8 @@ void Controller::addPlane(QPointF const &p1, QPointF const &p2) {
 }
 
 void Controller::addWaypoint(QPointF const &point) {
-    this->model_->addWaypoint(point);
-    this->canvas_->update();
+    PointModelItem *item_model = new PointModelItem(point);
+    this->loadWaypoint(item_model);
 }
 
 void Controller::addFinalPoint(const QPointF &pos) {
@@ -365,13 +361,23 @@ void Controller::startSockets() {
                 this->canvas_, SLOT(update()));
     }
 
-    // create final pos socket
+    // create final pos sockets
     for (PointGraphicsItem *graphic : this->canvas_->final_points_) {
         if (graphic->model_->port_ > 0) {
             PointSocket *temp = new PointSocket(graphic->model_);
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(update()));
             this->final_point_sockets_.append(temp);
+        }
+    }
+
+    // create waypoint sockets
+    for (WaypointGraphicsItem *graphic : this->canvas_->waypoint_graphics_) {
+        if (graphic->model_->port_ > 0) {
+            PointSocket *temp = new PointSocket(graphic->model_);
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(update()));
+            this->waypoint_sockets_.append(temp);
         }
     }
 
@@ -392,13 +398,19 @@ void Controller::closeSockets() {
         this->drone_socket_ = nullptr;
     }
     // close final point sockets
-    for (PointSocket * socket : this->final_point_sockets_) {
+    for (PointSocket *socket : this->final_point_sockets_) {
         delete socket;
     }
     this->final_point_sockets_.clear();
 
+    // close waypoint sockets
+    for (PointSocket *socket : this->waypoint_sockets_) {
+        delete socket;
+    }
+    this->waypoint_sockets_.clear();
+
     // close ellipse sockets
-    for (EllipseSocket * socket : this->ellipse_sockets_) {
+    for (EllipseSocket *socket : this->ellipse_sockets_) {
         delete socket;
     }
     this->ellipse_sockets_.clear();
@@ -437,6 +449,24 @@ void Controller::removePointSocket(PointModelItem *model) {
 
     if (found) {
         this->final_point_sockets_.removeAt(index);
+    }
+}
+
+void Controller::removeWaypointSocket(PointModelItem *model) {
+    int index = 0;
+    bool found = false;
+
+    for (PointSocket *socket : this->waypoint_sockets_) {
+        if (socket->point_model_ == model) {
+            delete socket;
+            found = true;
+            break;
+        }
+        index++;
+    }
+
+    if (found) {
+        this->waypoint_sockets_.removeAt(index);
     }
 }
 
@@ -480,6 +510,17 @@ void Controller::loadPoint(PointModelItem *item_model) {
     this->canvas_->final_points_.insert(item_graphic);
     this->model_->addPoint(item_model);
     item_graphic->setZValue(this->final_point_render_level_);
+    item_graphic->expandScene();
+}
+
+void Controller::loadWaypoint(PointModelItem *item_model) {
+    quint32 index = this->canvas_->waypoint_graphics_.size();
+    WaypointGraphicsItem *item_graphic =
+            new WaypointGraphicsItem(item_model, index);
+    this->canvas_->addItem(item_graphic);
+    this->canvas_->waypoint_graphics_.append(item_graphic);
+    this->model_->addWaypoint(item_model);
+    item_graphic->setZValue(this->waypoints_render_level_);
     item_graphic->expandScene();
 }
 

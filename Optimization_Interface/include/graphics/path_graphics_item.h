@@ -37,7 +37,7 @@ class PathGraphicsItem : public QGraphicsItem {
     PathModelItem *model_;
     QPen pen_;
     quint32 width_;
-    qreal getScalingFactor();
+    qreal getScalingFactor() const;
 };
 
 }  // namespace optgui
