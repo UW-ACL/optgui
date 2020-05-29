@@ -42,7 +42,7 @@ class PolygonGraphicsItem : public QGraphicsItem {
     void initialize();
     QPen pen_;
     QBrush brush_;
-    QVector<PolygonResizeHandle *> *resize_handles_;
+    QVector<PolygonResizeHandle *> resize_handles_;
     qreal getScalingFactor() const;
 };
 

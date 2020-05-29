@@ -36,22 +36,20 @@ void PolygonGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set resize handles
-    this->resize_handles_ = new QVector<PolygonResizeHandle *>();
     quint32 size = this->model_->getSize();
     for (quint32 i = 0; i < size; i++) {
         PolygonResizeHandle *handle =
                 new PolygonResizeHandle(this->model_, i, this);
-        this->resize_handles_->append(handle);
+        this->resize_handles_.append(handle);
         handle->hide();
     }
 }
 
 PolygonGraphicsItem::~PolygonGraphicsItem() {
     // Delete resize handles
-    for (PolygonResizeHandle *handle : *this->resize_handles_) {
+    for (PolygonResizeHandle *handle : this->resize_handles_) {
         delete handle;
     }
-    delete this->resize_handles_;
 }
 
 QRectF PolygonGraphicsItem::boundingRect() const {
@@ -84,14 +82,14 @@ void PolygonGraphicsItem::paint(QPainter *painter,
 
     // Show handles if selected
     if (this->isSelected()) {
-        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        for (PolygonResizeHandle *handle : this->resize_handles_) {
             handle->updatePos();
             handle->show();
         }
 
         this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
-        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        for (PolygonResizeHandle *handle : this->resize_handles_) {
             handle->hide();
         }
 
@@ -191,7 +189,7 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
 
         // update model
         QPointF diff = newPos - this->scenePos();
-        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        for (PolygonResizeHandle *handle : this->resize_handles_) {
             handle->updateModel(diff);
         }
 

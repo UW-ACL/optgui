@@ -18,71 +18,60 @@ namespace optgui {
 
 class PathModelItem : public DataModel {
  public:
-    PathModelItem() : mutex_()
+    explicit PathModelItem() : mutex_()
         { this->points_ = QVector<QPointF>(); port_ = 0; }
     ~PathModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        QMutexLocker locker(&this->mutex_);
     }
 
     quint32 getSize() {
-        this->mutex_.lock();
-        quint32 size = this->points_.size();
-        this->mutex_.unlock();
-        return size;
+        QMutexLocker locker(&this->mutex_);
+        return this->points_.size();
     }
 
-    void setPointAt(QPointF point, quint32 index) {
-        this->mutex_.lock();
+    void setPointAt(QPointF point, int index) {
+        QMutexLocker locker(&this->mutex_);
         if (index < this->points_.size()) {
             QPointF &temp = this->points_[index];
             temp.setX(point.x());
             temp.setY(point.y());
         }
-        this->mutex_.unlock();
     }
 
-    QPointF getPointAt(quint32 index) {
-        this->mutex_.lock();
+    QPointF getPointAt(int index) {
+        QMutexLocker locker(&this->mutex_);
         QPointF temp = QPointF();
         if (index < this->points_.size()) {
             temp = this->points_.value(index);
         }
-        this->mutex_.unlock();
         return temp;
     }
 
     void setPoints(QVector<QPointF> points) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->points_ = points;
-        this->mutex_.unlock();
     }
 
     void addPoint(QPointF point) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->points_.append(point);
-        this->mutex_.unlock();
     }
 
-    void removePointAt(quint32 index) {
-        this->mutex_.lock();
+    void removePointAt(int index) {
+        QMutexLocker locker(&this->mutex_);
         if (index < this->points_.size()) {
             this->points_.removeAt(index);
         }
-        this->mutex_.unlock();
     }
 
     void clearPoints() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->points_.clear();
-        this->mutex_.unlock();
     }
 
     QVector<QPointF> getPoints() {
-        this->mutex_.lock();
-        QVector<QPointF> temp = this->points_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->points_;
     }
 
  private:

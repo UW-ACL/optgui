@@ -31,7 +31,7 @@ class PortSelector : public QLineEdit {
  private:
     QSet<quint16> *ports_;
     DataModel *model_;
-    bool isPortValid();
+    quint16 isPortValid();
 };
 
 }  // namespace optgui

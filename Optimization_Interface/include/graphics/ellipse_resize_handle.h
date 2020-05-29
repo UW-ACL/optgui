@@ -15,14 +15,12 @@
 
 namespace optgui {
 
-qreal const ELLIPSE_HANDLE_SIZE = 14;
-
 class EllipseResizeHandle : public QGraphicsEllipseItem {
  public:
     explicit EllipseResizeHandle(EllipseModelItem *model,
                                  QGraphicsItem *parent,
                                  quint8 type,
-                                 qreal size = ELLIPSE_HANDLE_SIZE);
+                                 qreal size = 14);
     int type() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
@@ -38,7 +36,7 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
     bool resize_;
     qreal size_;
     quint8 type_;
-    qreal getScalingFactor();
+    qreal getScalingFactor() const;
 };
 
 }  // namespace optgui

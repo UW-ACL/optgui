@@ -30,7 +30,8 @@ View::View(QWidget * parent)
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
     // connect canvas selection change to detect curr final point
-    connect(this->scene(), SIGNAL(selectionChanged()), this, SLOT(setCurrFinalPoint()));
+    connect(this->scene(), SIGNAL(selectionChanged()),
+            this, SLOT(setCurrFinalPoint()));
 
     // Create Controller
     // added menu panel to construction
@@ -42,9 +43,6 @@ View::View(QWidget * parent)
     // Set pen and brush
     dot_pen_ = QPen(Qt::black);
     dot_brush_ = QBrush(Qt::white);
-
-    // Create poly vector
-    this->temp_markers_ = new QVector<QGraphicsItem*>();
 
     // enable pinch zoom
     this->viewport()->grabGesture(Qt::PinchGesture);
@@ -58,7 +56,6 @@ View::View(QWidget * parent)
 View::~View() {
     // Delete temporary markers
     this->clearMarkers();
-    delete this->temp_markers_;
 
     // Clear menu widgets
     for (QWidget *button : this->panel_widgets_) {
@@ -225,11 +222,11 @@ void View::mousePressEvent(QMouseEvent *event) {
         }
         case POLYGON: {
             // Add markers until polygon is completed
-            if (!this->temp_markers_->isEmpty() &&
-                    itemAt(event->pos()) == this->temp_markers_->first()) {
-                if (this->temp_markers_->size() >= 3) {
+            if (!this->temp_markers_.isEmpty() &&
+                    itemAt(event->pos()) == this->temp_markers_.first()) {
+                if (this->temp_markers_.size() >= 3) {
                     QVector<QPointF> poly = QVector<QPointF>();
-                    for (QGraphicsItem *dot : *this->temp_markers_) {
+                    for (QGraphicsItem *dot : this->temp_markers_) {
                         poly.append(QPointF(dot->pos()));
                     }
 
@@ -281,15 +278,15 @@ void View::mousePressEvent(QMouseEvent *event) {
                         this->scene()->addEllipse(-dotSize, -dotSize,
                                                   dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
-                temp_markers_->append(dot);
+                temp_markers_.append(dot);
                 dot->setPos(pos);
             }
             break;
         }
         case PLANE: {
             // Add markers to define line
-            if (!this->temp_markers_->isEmpty()) {
-                QPointF p1 = QPointF(temp_markers_->first()->pos());
+            if (!this->temp_markers_.isEmpty()) {
+                QPointF p1 = QPointF(temp_markers_.first()->pos());
                 this->controller_->addPlane(p1, pos);
                 // Clean up markers
                 this->clearMarkers();
@@ -300,7 +297,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                         this->scene()->addEllipse(-dotSize, -dotSize,
                                                   dotSize * 2, dotSize * 2,
                                                   dot_pen_, dot_brush_);
-                temp_markers_->append(dot);
+                temp_markers_.append(dot);
                 dot->setPos(pos);
             }
             break;
@@ -427,11 +424,11 @@ void View::setSkyeFlyParams() {
 
 void View::clearMarkers() {
     // Clear all temporary markers
-    for (QGraphicsItem *dot : *this->temp_markers_) {
+    for (QGraphicsItem *dot : this->temp_markers_) {
         this->scene()->removeItem(dot);
         delete dot;
     }
-    this->temp_markers_->clear();
+    this->temp_markers_.clear();
 }
 
 void View::resizeEvent(QResizeEvent *event) {
@@ -1193,8 +1190,10 @@ void View::initializeZoom(MenuPanel *panel) {
 }
 
 void View::updateFeedbackMessage() {
-    FEASIBILITY_CODE feasibility_code = this->controller_->model_->getIsValidTraj();
-    INPUT_CODE input_code = this->controller_->model_->getIsValidInput();
+    FEASIBILITY_CODE feasibility_code =
+            this->controller_->model_->getIsValidTraj();
+    INPUT_CODE input_code =
+            this->controller_->model_->getIsValidInput();
 
     if (input_code == INPUT_CODE::VALID_INPUT) {
         switch (feasibility_code) {

@@ -16,13 +16,11 @@
 
 namespace optgui {
 
-qreal const DRONE_SIZE = 20;
-
 class DroneGraphicsItem : public QGraphicsItem {
  public:
     explicit DroneGraphicsItem(DroneModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qreal size = DRONE_SIZE);
+                               qreal size = 20);
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;

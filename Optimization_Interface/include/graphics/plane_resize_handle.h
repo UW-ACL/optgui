@@ -40,7 +40,7 @@ class PlaneResizeHandle : public QGraphicsEllipseItem {
     bool isP2_;
     bool resize_;
     qreal size_;
-    qreal getScalingFactor();
+    qreal getScalingFactor() const;
 };
 
 }  // namespace optgui

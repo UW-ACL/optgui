@@ -33,85 +33,67 @@ class EllipseModelItem : public DataModel {
     }
 
     ~EllipseModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        QMutexLocker locker(&this->mutex_);
     }
 
     qreal getWidth() {
-        this->mutex_.lock();
-        qreal temp = this->width_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->width_;
     }
 
     void setWidth(qreal width) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->width_ = width;
         this->region_ = this->generateRegion();
-        this->mutex_.unlock();
     }
 
     qreal getHeight() {
-        this->mutex_.lock();
-        qreal temp = this->height_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->height_;
     }
 
     void setHeight(qreal height) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->height_ = height;
         this->region_ = this->generateRegion();
-        this->mutex_.unlock();
     }
 
     qreal getRot() {
-        this->mutex_.lock();
-        qreal temp = this->rot_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->rot_;
     }
 
     void setRot(qreal rot) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->rot_ = rot;
         this->region_ = this->generateRegion();
-        this->mutex_.unlock();
     }
 
     QPointF getPos() {
-        this->mutex_.lock();
-        QPointF temp = this->pos_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->pos_;
     }
 
     void setPos(QPointF pos) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->pos_.setX(pos.x());
         this->pos_.setY(pos.y());
         this->region_ = this->generateRegion();
-        this->mutex_.unlock();
     }
 
     bool getDirection() {
-        this->mutex_.lock();
-        qreal temp = this->direction_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->direction_;
     }
 
     void flipDirection() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->direction_ = !this->direction_;
-        this->mutex_.unlock();
     }
 
     qreal getClearance() {
-        this->mutex_.lock();
-        qreal temp = this->clearance_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->clearance_;
     }
 
     void setClearance(qreal clearance) {

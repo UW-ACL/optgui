@@ -20,49 +20,39 @@ class PlaneModelItem : public DataModel {
     explicit PlaneModelItem(QPointF p1, QPointF p2) :
         mutex_(), direction_(false) { p1_ = p1; p2_ = p2; port_ = 0;}
     ~PlaneModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        QMutexLocker locker(&this->mutex_);
     }
 
     QPointF getP1() {
-        this->mutex_.lock();
-        QPointF temp = this->p1_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->p1_;
     }
 
     void setP1(QPointF pos) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->p1_.setX(pos.x());
         this->p1_.setY(pos.y());
-        this->mutex_.unlock();
     }
 
     QPointF getP2() {
-        this->mutex_.lock();
-        QPointF temp = this->p2_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->p2_;
     }
 
     void setP2(QPointF pos) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->p2_.setX(pos.x());
         this->p2_.setY(pos.y());
-        this->mutex_.unlock();
     }
 
     bool getDirection() {
-        this->mutex_.lock();
-        qreal temp = this->direction_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        return this->direction_;
     }
 
     void flipDirection() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->direction_ = !this->direction_;
-        this->mutex_.unlock();
     }
 
  private:

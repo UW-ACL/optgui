@@ -24,11 +24,7 @@ ConstraintModel::ConstraintModel() : model_lock_() {
 
 void ConstraintModel::initialize() {
     // Set model containers
-    this->ellipses_ = new QSet<EllipseModelItem *>();
-    this->polygons_ = new QSet<PolygonModelItem *>();
-    this->planes_ = new QSet<PlaneModelItem *>();
     this->curr_final_point_ = nullptr;
-    this->waypoints_ = nullptr;
     this->path_ = nullptr;
     this->path_staged_ = nullptr;
     this->drone_ = nullptr;
@@ -53,29 +49,27 @@ void ConstraintModel::initialize() {
 }
 
 ConstraintModel::~ConstraintModel() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     // Delete ellipses
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         delete ellipse;
     }
-    delete this->ellipses_;
 
     // Delete polygons
-    for (PolygonModelItem *polygon : *this->polygons_) {
+    for (PolygonModelItem *polygon : this->polygons_) {
         delete polygon;
     }
-    delete this->polygons_;
 
     // Delete planes
-    for (PlaneModelItem *plane : *this->planes_) {
+    for (PlaneModelItem *plane : this->planes_) {
         delete plane;
     }
-    delete this->planes_;
 
     // Delete waypoints
-    if (this->waypoints_) {
-        delete this->waypoints_;
+    for (PointModelItem *waypoint : this->waypoints_) {
+        delete waypoint;
     }
+
     // Delete path
     if (this->path_) {
         delete this->path_;
@@ -93,186 +87,153 @@ ConstraintModel::~ConstraintModel() {
     for (PointModelItem * model : this->final_points_) {
         delete model;
     }
-    this->final_points_.clear();
-
-    this->model_lock_.unlock();
 }
 
 // Public functions, need to lock
 
 void ConstraintModel::addPoint(PointModelItem *item) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->final_points_.insert(item);
-    this->model_lock_.unlock();
 }
 
 void ConstraintModel::removePoint(PointModelItem *item) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (item == this->curr_final_point_) {
         this->curr_final_point_ = nullptr;
     }
     this->final_points_.remove(item);
-    this->model_lock_.unlock();
 }
 
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
-    this->model_lock_.lock();
-    this->ellipses_->insert(item);
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    this->ellipses_.insert(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
-    this->model_lock_.lock();
-    this->ellipses_->remove(item);
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    this->ellipses_.remove(item);
 }
 
 void ConstraintModel::addPolygon(PolygonModelItem *item) {
-    this->model_lock_.lock();
-    this->polygons_->insert(item);
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    this->polygons_.insert(item);
 }
 
 void ConstraintModel::removePolygon(PolygonModelItem *item) {
-    this->model_lock_.lock();
-    this->polygons_->remove(item);
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    this->polygons_.remove(item);
 }
 
 void ConstraintModel::addPlane(PlaneModelItem *item) {
-    this->model_lock_.lock();
-    this->planes_->insert(item);
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    this->planes_.insert(item);
 }
 
 void ConstraintModel::removePlane(PlaneModelItem *item) {
-    this->model_lock_.lock();
-    this->planes_->remove(item);
-    this->model_lock_.unlock();
+    QMutexLocker locker(&this->model_lock_);
+    this->planes_.remove(item);
 }
 
-void ConstraintModel::setWaypointsModel(PathModelItem *waypoints) {
-    this->model_lock_.lock();
-    if (this->waypoints_) {
-        delete this->waypoints_;
-    }
-    this->waypoints_ = waypoints;
-    this->model_lock_.unlock();
+void ConstraintModel::addWaypoint(PointModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->waypoints_.append(item);
 }
 
-void ConstraintModel::addWaypoint(QPointF const &pos) {
-    this->model_lock_.lock();
-    if (this->waypoints_) {
-        this->waypoints_->addPoint(pos);
-    }
-    this->model_lock_.unlock();
+void ConstraintModel::removeWaypoint(PointModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->waypoints_.removeOne(item);
+    delete item;
 }
 
 quint32 ConstraintModel::getNumWaypoints() {
-    this->model_lock_.lock();
-    quint32 temp = 0;
-    if (this->waypoints_) {
-        temp = this->waypoints_->getSize();
-    }
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->waypoints_.size();
 }
 
 void ConstraintModel::setPathModel(PathModelItem *trajectory) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_) {
         delete this->path_;
     }
     this->path_ = trajectory;
-    this->model_lock_.unlock();
 }
 
 
 void ConstraintModel::setPathStagedModel(PathModelItem *trajectory) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_staged_) {
         delete this->path_staged_;
     }
     this->path_staged_ = trajectory;
-    this->model_lock_.unlock();
 }
 
 void ConstraintModel::setPathPoints(QVector<QPointF> points) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_) {
         this->path_->setPoints(points);
     }
-    this->model_lock_.unlock();
 }
 
 QVector<QPointF> ConstraintModel::getPathPoints() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     QVector<QPointF> temp;
     if (this->path_) {
         temp = this->path_->getPoints();
     }
-    this->model_lock_.unlock();
     return temp;
 }
 
 void ConstraintModel::clearPathPoints() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_) {
         this->path_->clearPoints();
     }
-    this->model_lock_.unlock();
 }
 
 void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_staged_) {
         this->path_staged_->setPoints(points);
     }
-    this->model_lock_.unlock();
 }
 
 bool ConstraintModel::tickPathStaged() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_staged_) {
         this->path_staged_->removePointAt(0);
     }
-    this->model_lock_.unlock();
     return this->path_staged_->getSize() != 0;
 }
 
 void ConstraintModel::clearPathStagedPoints() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->path_staged_) {
         this->path_staged_->clearPoints();
     }
-    this->model_lock_.unlock();
 }
 
 QVector<QPointF> ConstraintModel::getPathStagedPoints() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     QVector<QPointF> temp;
     if (this->path_staged_) {
         temp = this->path_staged_->getPoints();
     }
-    this->model_lock_.unlock();
     return temp;
 }
 
 void ConstraintModel::setDroneModel(DroneModelItem *drone_model) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->drone_) {
         delete this->drone_;
     }
     this->drone_ = drone_model;
-    this->model_lock_.unlock();
 }
 
 void ConstraintModel::setDroneModelPos(QPointF const &pos) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     if (this->drone_) {
         this->drone_->setPos(pos);
     }
-    this->model_lock_.unlock();
 }
 
 QPointF ConstraintModel::getFinalPos() {
@@ -301,63 +262,51 @@ QPointF ConstraintModel::getInitialAcc() {
 
 QPointF ConstraintModel::getWpPos() {
     QMutexLocker locker(&this->model_lock_);
-    if (this->waypoints_->getSize() > 0) {
-        return this->waypoints_->getPointAt(0);
+    if (this->waypoints_.size() > 0) {
+        return this->waypoints_.first()->getPos();
     }
     return QPointF();
 }
 
 qreal ConstraintModel::getFinaltime() {
-    this->model_lock_.lock();
-    qreal temp = this->P_.tf;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->P_.tf;
 }
 
 void ConstraintModel::setFinaltime(qreal finaltime) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->P_.tf = finaltime;
-    this->model_lock_.unlock();
 }
 
 autogen::packet::traj3dof ConstraintModel::getCurrTraj3dof() {
-    this->model_lock_.lock();
-    autogen::packet::traj3dof temp = this->drone_curr_traj3dof_data_;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->drone_curr_traj3dof_data_;
 }
 
 void ConstraintModel::setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->drone_curr_traj3dof_data_ = traj3dof_data;
-    this->model_lock_.unlock();
 }
 
 autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
-    this->model_lock_.lock();
-    autogen::packet::traj3dof temp = this->drone_staged_traj3dof_data_;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->drone_staged_traj3dof_data_;
 }
 
 void ConstraintModel::setStagedTraj3dof(
         autogen::packet::traj3dof traj3dof_data) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->drone_staged_traj3dof_data_ = traj3dof_data;
-    this->model_lock_.unlock();
 }
 
 bool ConstraintModel::getIsTrajStaged() {
-    this->model_lock_.lock();
-    bool temp = this->traj_staged_;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->traj_staged_;
 }
 
 void ConstraintModel::setIsTrajStaged(bool is_staged) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->traj_staged_ = is_staged;
-    this->model_lock_.unlock();
 }
 
 FEASIBILITY_CODE ConstraintModel::getIsValidTraj() {
@@ -372,53 +321,49 @@ void ConstraintModel::setIsValidTraj(FEASIBILITY_CODE code) {
 
 void ConstraintModel::setClearance(qreal clearance) {
     QMutexLocker locker(&this->model_lock_);
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         ellipse->setClearance(clearance);
     }
     this->clearance_ = clearance;
 }
 
 quint32 ConstraintModel::getHorizon() {
-    this->model_lock_.lock();
-    quint32 temp = this->P_.K;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->P_.K;
 }
 
 void ConstraintModel::setHorizon(quint32 horizon) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->P_.K = horizon;
-    this->model_lock_.unlock();
 }
 
 bool ConstraintModel::isLiveReference() {
-    this->model_lock_.lock();
-    bool temp = this->is_live_reference_;
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return this->is_live_reference_;
 }
 
 void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->is_live_reference_ = reference_mode;
-    this->model_lock_.unlock();
 }
 
 void ConstraintModel::setCurrFinalPoint(PointModelItem *point) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     this->curr_final_point_ = point;
-    this->model_lock_.unlock();
 }
 
 bool ConstraintModel::hasCurrFinalPoint() {
-    this->model_lock_.lock();
-    bool temp = (this->curr_final_point_ != nullptr);
-    this->model_lock_.unlock();
-    return temp;
+    QMutexLocker locker(&this->model_lock_);
+    return (this->curr_final_point_ != nullptr);
+}
+
+bool ConstraintModel::isCurrFinalPoint(PointModelItem *model) {
+    QMutexLocker locker(&this->model_lock_);
+    return (model == this->curr_final_point_);
 }
 
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
 
     // load skyenet::params from  expert panel table
     uint32 row_index = 0;
@@ -460,32 +405,29 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-
-    this->model_lock_.unlock();
 }
 
 skyenet::params ConstraintModel::getSkyeFlyParams() {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
     // Circle constraints | H(r - p) |^2 > R^2 where p is the center of the
     // circle and R is the radius (H some linear transform)
-    this->loadEllipseConstraints(this->P_);
+    this->loadEllipseConstraints(&this->P_);
     // Affine constraints Ax leq b
-    this->loadPosConstraints(this->P_);
+    this->loadPosConstraints(&this->P_);
     // time intervals
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
     skyenet::params P = this->P_;
     // set waypoint relax to 0 if no waypoints
-    if (this->waypoints_->getSize() < 1) {
+    if (this->waypoints_.size() < 1) {
         P.wprelax[0] = 0;
     }
-    this->model_lock_.unlock();
     return P;
 }
 
 void ConstraintModel::fillTable(QTableWidget *port_table,
                                 QTableWidget *drone_table,
                                 QSet<quint16> *ports) {
-    this->model_lock_.lock();
+    QMutexLocker locker(&this->model_lock_);
 
     // Set drone table
     drone_table->setRowCount(1);
@@ -495,15 +437,16 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
     ports->insert(this->drone_->port_);
     drone_table->setCellWidget(0, 1,
-            new DroneIdSelector(this->drone_, drone_table));
+            new DroneIdSelector(this->drone_, drone_table, ports));
 
 
     // Configure port table
     quint16 row = 0;
     port_table->setRowCount(this->final_points_.size() +
-                            this->ellipses_->size() +
-                            this->polygons_->size() +
-                            this->planes_->size());
+                            this->waypoints_.size() +
+                            this->ellipses_.size() +
+                            this->polygons_.size() +
+                            this->planes_.size());
 
     // Set final points
     quint16 count = 1;
@@ -519,9 +462,23 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         count++;
     }
 
+    // Set waypoints
+    count = 1;
+    for (PointModelItem * model : this->waypoints_) {
+        port_table->setItem(row, 0,
+                new QTableWidgetItem("Waypoint " + QString::number(count)));
+        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+        ports->insert(model->port_);
+        port_table->setCellWidget(row, 1,
+                new PortSelector(ports, model,
+                                 port_table));
+        row++;
+        count++;
+    }
+
     // Set ellipses
     count = 1;
-    for (EllipseModelItem *model : *this->ellipses_) {
+    for (EllipseModelItem *model : this->ellipses_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Ellipse " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -536,7 +493,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set polygons
     count = 1;
-    for (PolygonModelItem *model : *this->polygons_) {
+    for (PolygonModelItem *model : this->polygons_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Polygon " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -551,7 +508,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set planes
     count = 1;
-    for (PlaneModelItem *model : *this->planes_) {
+    for (PlaneModelItem *model : this->planes_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Plane " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -563,8 +520,6 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         row++;
         count++;
     }
-
-    this->model_lock_.unlock();
 }
 
 qreal ConstraintModel::getClearance() {
@@ -587,7 +542,7 @@ bool ConstraintModel::setIsValidInput(INPUT_CODE code) {
 QVector<QRegion> ConstraintModel::getEllipseRegions() {
     QMutexLocker locker(&this->model_lock_);
     QVector<QRegion> regions;
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
+    for (EllipseModelItem *ellipse : this->ellipses_) {
         regions.append(ellipse->getRegion());
     }
     return regions;
@@ -598,12 +553,12 @@ void ConstraintModel::updateEllipseColors() {
 
     if (this->input_code_ == INPUT_CODE::VALID_INPUT) {
         // show ellipses as valid
-        for (EllipseModelItem *ellipse : *this->ellipses_) {
+        for (EllipseModelItem *ellipse : this->ellipses_) {
             ellipse->setIsOverlap(false);
         }
     } else {
         // show ellipses as invalid
-        for (EllipseModelItem *ellipse : *this->ellipses_) {
+        for (EllipseModelItem *ellipse : this->ellipses_) {
             ellipse->setIsOverlap(true);
         }
     }
@@ -611,10 +566,10 @@ void ConstraintModel::updateEllipseColors() {
 
 // ====== Private functions, should not lock =======
 
-void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
+void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
     quint32 index = 0;
-    for (EllipseModelItem *ellipse : *this->ellipses_) {
-        P.obs.R[index] = 1;
+    for (EllipseModelItem *ellipse : this->ellipses_) {
+        P->obs.R[index] = 1;
         qreal a = (ellipse->getHeight() / GRID_SIZE) + this->clearance_;
         qreal inv_a = 1.0 / a;
         qreal b = (ellipse->getWidth() / GRID_SIZE) + this->clearance_;
@@ -625,26 +580,26 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params &P) {
         qreal cos_t_2 = qPow(cos_t, 2);
         qreal sin_t_2 = qPow(sin_t, 2);
 
-        P.obs.M0[0][index] = (inv_a * cos_t_2) + (inv_b * sin_t_2);
-        P.obs.M0[1][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
-        P.obs.M1[0][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
-        P.obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
+        P->obs.M0[0][index] = (inv_a * cos_t_2) + (inv_b * sin_t_2);
+        P->obs.M0[1][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
+        P->obs.M1[0][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
+        P->obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
 
         QPointF ned_coords = guiXyzToNED(ellipse->getPos());
-        P.obs.c_n[index] = ned_coords.x();
-        P.obs.c_e[index] = ned_coords.y();
+        P->obs.c_n[index] = ned_coords.x();
+        P->obs.c_e[index] = ned_coords.y();
         index++;
         if (index >= skyenet::MAX_OBS) {
-            P.obs.n = index;
+            P->obs.n = index;
             return;
         }
     }
-    P.obs.n = index;
+    P->obs.n = index;
 }
 
-void ConstraintModel::loadPosConstraints(skyenet::params &P) {
+void ConstraintModel::loadPosConstraints(skyenet::params *P) {
     quint32 index = 0;
-    for (PolygonModelItem *polygon : *this->polygons_) {
+    for (PolygonModelItem *polygon : this->polygons_) {
         quint32 size = polygon->getSize();
         for (quint32 i = 1; i < size + 1; i++) {
             QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
@@ -656,13 +611,13 @@ void ConstraintModel::loadPosConstraints(skyenet::params &P) {
             }
             index++;
             if (index >= skyenet::MAX_CPOS) {
-                P.cpos.n = index;
+                P->cpos.n = index;
                 return;
             }
         }
     }
 
-    for (PlaneModelItem *plane : *this->planes_) {
+    for (PlaneModelItem *plane : this->planes_) {
         QPointF ned_p = guiXyzToNED(plane->getP1());
         QPointF ned_q = guiXyzToNED(plane->getP2());
 
@@ -673,14 +628,14 @@ void ConstraintModel::loadPosConstraints(skyenet::params &P) {
         }
         index++;
         if (index >= skyenet::MAX_CPOS) {
-            P.cpos.n = index;
+            P->cpos.n = index;
             return;
         }
     }
-    P.cpos.n = index;
+    P->cpos.n = index;
 }
 
-void ConstraintModel::loadPlaneConstraint(skyenet::params &P, quint32 index,
+void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
                                               QPointF ned_p, QPointF ned_q) {
     qreal c = ((ned_p.y() * ned_q.x()) - (ned_p.x() * ned_q.y()));
 
@@ -691,9 +646,9 @@ void ConstraintModel::loadPlaneConstraint(skyenet::params &P, quint32 index,
     QPointF normal = line.normalVector().p2();
     qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? -1 : 1;
 
-    P.cpos.A[2 * index] = flip * a1;
-    P.cpos.A[(2 * index) + 1] = flip * a2;
-    P.cpos.b[index] = flip;
+    P->cpos.A[2 * index] = flip * a1;
+    P->cpos.A[(2 * index) + 1] = flip * a2;
+    P->cpos.b[index] = flip;
 }
 
 }  // namespace optgui

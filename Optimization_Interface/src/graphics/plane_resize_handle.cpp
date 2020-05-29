@@ -125,7 +125,7 @@ void PlaneResizeHandle::expandScene() {
     }
 }
 
-qreal PlaneResizeHandle::getScalingFactor() {
+qreal PlaneResizeHandle::getScalingFactor() const {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

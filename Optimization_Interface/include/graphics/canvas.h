@@ -13,7 +13,7 @@
 
 #include "include/graphics/path_graphics_item.h"
 #include "include/graphics/drone_graphics_item.h"
-#include "include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/waypoint_graphics_item.h"
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
@@ -33,7 +33,6 @@ class Canvas : public QGraphicsScene {
     QPointF* getTopRight();
     bool indoor_ = true;
 
-    WaypointsGraphicsItem *waypoints_graphic_;
     PathGraphicsItem *path_graphic_;
     PathGraphicsItem *path_staged_graphic_;
     DroneGraphicsItem *drone_graphic_;
@@ -42,6 +41,7 @@ class Canvas : public QGraphicsScene {
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
     QSet<PointGraphicsItem *> final_points_;
+    QVector<WaypointGraphicsItem *> waypoint_graphics_;
 
  protected:
     void drawBackground(QPainter *painter, const QRectF &rect) override;

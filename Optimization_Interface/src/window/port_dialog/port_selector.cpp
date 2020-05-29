@@ -29,24 +29,25 @@ void PortSelector::updatePort() {
     this->ports_->remove(this->model_->port_);
 
     // check that port is in valid range and unused
-    if (this->isPortValid()) {
-        quint32 value = this->text().toUShort();
-        this->ports_->insert((quint16)value);
-        this->model_->port_ = (quint16)value;
+    quint16 value = this->isPortValid();
+    if (value != 0) {
+        this->ports_->insert(value);
+        this->model_->port_ = value;
     } else {
         this->setText("0");
         this->model_->port_ = 0;
     }
 }
 
-bool PortSelector::isPortValid() {
+quint16 PortSelector::isPortValid() {
     bool ok = false;
-    quint32 value = this->text().toUShort(&ok);
+    quint16 value = this->text().toUShort(&ok);
 
-    if (!ok || 1024 > value || value > 65535) {
-        return false;
+    if (ok && 1023 < value && value <= 65535 &&
+            !this->ports_->contains(value)) {
+        return value;
     }
-    return true;
+    return 0;
 }
 
 }  // namespace optgui

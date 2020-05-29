@@ -79,6 +79,7 @@ class Controller : public QObject {
     // QGraphicsScene
     Canvas *canvas_;
     qreal final_point_render_level_;
+    qreal waypoints_render_level_;
 
     // Freeze timer
     QTimer *freeze_timer_;
@@ -88,16 +89,19 @@ class Controller : public QObject {
     PortDialog *port_dialog_;
     DroneSocket *drone_socket_;
     QVector<PointSocket *> final_point_sockets_;
-    QVector<EllipseSocket *> *ellipse_sockets_;
+    QVector<PointSocket *> waypoint_sockets_;
+    QVector<EllipseSocket *> ellipse_sockets_;
 
     void removeEllipseSocket(EllipseModelItem *model);
     void removePointSocket(PointModelItem *model);
+    void removeWaypointSocket(PointModelItem *model);
     void closeSockets();
 
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
+    void loadWaypoint(PointModelItem *model);
 
     void freeze();
     void setStagedPath();
