@@ -107,11 +107,15 @@ class ConstraintModel {
     QPointF getInitialPos();
     QPointF getInitialVel();
     QPointF getInitialAcc();
-    QPointF getWpPos();
+    QPointF getWpPos(int index);
 
     void setCurrFinalPoint(PointModelItem *point);
     bool hasCurrFinalPoint();
     bool isCurrFinalPoint(PointModelItem *model);
+
+    void loadWaypointConstraints(skyenet::params *P, double wp[3][skyenet::MAX_WAYPOINTS]);
+    void loadEllipseConstraints(skyenet::params *P);
+    void loadPosConstraints(skyenet::params *P);
 
  private:
     void initialize();
@@ -142,10 +146,10 @@ class ConstraintModel {
     PointModelItem *curr_final_point_;
 
     // Convert constraints to skyefly params
-    void loadEllipseConstraints(skyenet::params *P);
-    void loadPosConstraints(skyenet::params *P);
     void loadPlaneConstraint(skyenet::params *P, quint32 index,
                                  QPointF p, QPointF q);
+    int distributeWpEvenly(skyenet::params *P, int index, int remaining,
+                         int low, int high);
 
     bool is_frozen_;
 };

@@ -59,9 +59,14 @@ void ComputeThread::run() {
         // Input is valid, get additional inputs
         QPointF initial_vel = this->model_->getInitialVel();
         QPointF initial_acc = this->model_->getInitialAcc();
-        QPointF wp_pos = this->model_->getWpPos();
 
         // Parameters
+
+        // Get params
+        skyenet::params P = this->model_->getSkyeFlyParams();
+        this->model_->loadEllipseConstraints(&P);
+        this->model_->loadPosConstraints(&P);
+
         double r_i[3] = { 0 };
         double v_i[3] = { 0 };
         double a_i[3] = { 0 };
@@ -88,13 +93,8 @@ void ComputeThread::run() {
         r_f[1] = ned_final_pos.x();
         r_f[2] = ned_final_pos.y();
 
-        // set waypoint
-        QPointF ned_wp_pos = guiXyzToNED(wp_pos.x(), wp_pos.y());
-        wp[1][0] = ned_wp_pos.x();
-        wp[2][0] = ned_wp_pos.y();
-
-        // Get params
-        skyenet::params P = this->model_->getSkyeFlyParams();
+        // set waypoints
+        this->model_->loadWaypointConstraints(&P, wp);
 
         // Initialize problem
         this->fly_->init_problem1(P, r_i, v_i, a_i, r_f, wp);
