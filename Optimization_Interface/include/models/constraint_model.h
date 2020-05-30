@@ -30,8 +30,7 @@ namespace optgui {
 
 class ConstraintModel {
  public:
-    explicit ConstraintModel();
-
+    ConstraintModel();
     ~ConstraintModel();
 
     void setFinalPointModel(PointModelItem *model);
@@ -76,14 +75,14 @@ class ConstraintModel {
     quint32 getHorizon();
     void setHorizon(quint32 horizon);
 
+    void stageTraj();
+    void unstageTraj();
+
     autogen::packet::traj3dof getCurrTraj3dof();
     void setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data);
 
     autogen::packet::traj3dof getStagedTraj3dof();
-    void setStagedTraj3dof(autogen::packet::traj3dof traj3dof_data);
-
     bool getIsTrajStaged();
-    void setIsTrajStaged(bool is_staged);
 
     FEASIBILITY_CODE getIsValidTraj();
     void setIsValidTraj(FEASIBILITY_CODE code);
@@ -113,7 +112,8 @@ class ConstraintModel {
     bool hasCurrFinalPoint();
     bool isCurrFinalPoint(PointModelItem *model);
 
-    void loadWaypointConstraints(skyenet::params *P, double wp[3][skyenet::MAX_WAYPOINTS]);
+    void loadWaypointConstraints(skyenet::params *P,
+                                 double wp[3][skyenet::MAX_WAYPOINTS]);
     void loadEllipseConstraints(skyenet::params *P);
     void loadPosConstraints(skyenet::params *P);
 
@@ -150,8 +150,6 @@ class ConstraintModel {
                                  QPointF p, QPointF q);
     int distributeWpEvenly(skyenet::params *P, int index, int remaining,
                          int low, int high);
-
-    bool is_frozen_;
 };
 
 }  // namespace optgui

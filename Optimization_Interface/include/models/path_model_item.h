@@ -18,8 +18,11 @@ namespace optgui {
 
 class PathModelItem : public DataModel {
  public:
-    explicit PathModelItem() : mutex_()
-        { this->points_ = QVector<QPointF>(); port_ = 0; }
+    PathModelItem() : mutex_() {
+        this->points_ = QVector<QPointF>();
+        port_ = 0;
+    }
+
     ~PathModelItem() {
         QMutexLocker locker(&this->mutex_);
     }

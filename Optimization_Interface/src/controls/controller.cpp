@@ -76,10 +76,11 @@ Controller::Controller(Canvas *canvas) {
     // Initialize network
     this->drone_socket_ = nullptr;
 
-    // Initialize freeze timer
-    this->freeze_timer_ = new QTimer();
-    connect(this->freeze_timer_, SIGNAL(timeout()),
+    // Initialize freeze_traj timer
+    this->freeze_traj_timer_ = new QTimer();
+    connect(this->freeze_traj_timer_, SIGNAL(timeout()),
             this, SLOT(tickLiveReference()));
+    this->is_simulated_ = false;
 
     // initialize skyfly thread
     this->compute_thread_ = new ComputeThread(this->model_);
@@ -116,7 +117,7 @@ Controller::~Controller() {
     delete this->model_;
 
     // clean up timer
-    delete this->freeze_timer_;
+    delete this->freeze_traj_timer_;
 }
 
 // ============ MENU CONTROLS ============
@@ -265,25 +266,22 @@ void Controller::duplicateSelected() {
 
 // ============ BACK END CONTROLS ============
 
-void Controller::freeze() {
+void Controller::freeze_traj() {
     int msec = (1000 * this->model_->getFinaltime()) /
             (this->model_->getHorizon() - 1);
-    this->freeze_timer_->start(msec);
+    this->freeze_traj_timer_->start(msec);
     this->model_->setLiveReferenceMode(true);
     this->traj_index_ = 1;
 }
 
 void Controller::setStagedPath() {
-    this->model_->setPathStagedPoints(this->model_->getPathPoints());
-    this->model_->setIsTrajStaged(true);
-    this->model_->setStagedTraj3dof(this->model_->getCurrTraj3dof());
+    this->model_->stageTraj();
     this->canvas_->path_staged_graphic_->setColor(GREEN);
     this->canvas_->path_staged_graphic_->expandScene();
 }
 
 void Controller::unsetStagedPath() {
-    this->model_->clearPathStagedPoints();
-    this->model_->setIsTrajStaged(false);
+    this->model_->unstageTraj();
     this->canvas_->path_staged_graphic_->expandScene();
 }
 
@@ -291,10 +289,12 @@ void Controller::tickLiveReference() {
     this->canvas_->path_staged_graphic_->expandScene();
 
     if (this->model_->tickPathStaged()) {
-        autogen::packet::traj3dof traj = this->model_->getCurrTraj3dof();
-//        this->canvas_->drone_graphic_->model_->
-//                setPos(nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
-//                                   traj.pos_ned(1, this->traj_index_)));
+        autogen::packet::traj3dof traj = this->model_->getStagedTraj3dof();
+        if (this->is_simulated_) {
+            this->canvas_->drone_graphic_->model_->
+                    setPos(nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
+                                       traj.pos_ned(1, this->traj_index_)));
+        }
         this->canvas_->drone_graphic_->model_->
                 setVel(nedToGuiXyz(traj.vel_ned(0, this->traj_index_),
                                    traj.vel_ned(1, this->traj_index_)));
@@ -305,16 +305,16 @@ void Controller::tickLiveReference() {
 
         this->canvas_->drone_graphic_->expandScene();
     } else {
-        this->freeze_timer_->stop();
+        this->freeze_traj_timer_->stop();
         this->model_->setLiveReferenceMode(false);
         this->unsetStagedPath();
     }
 }
 
 void Controller::execute() {
-    if (!this->freeze_timer_->isActive() &&
+    if (!this->freeze_traj_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
-        this->freeze();
+        this->freeze_traj();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
         this->model_->setPathPoints(this->model_->getPathStagedPoints());
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
@@ -322,16 +322,20 @@ void Controller::execute() {
 }
 
 void Controller::stageTraj() {
-    if (!this->freeze_timer_->isActive() &&
+    if (!this->freeze_traj_timer_->isActive() &&
             this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
         this->setStagedPath();
     }
 }
 
 void Controller::unstageTraj() {
-    if (!this->freeze_timer_->isActive()) {
+    if (!this->freeze_traj_timer_->isActive()) {
         this->unsetStagedPath();
     }
+}
+
+void Controller::setSimulated(bool state) {
+    this->is_simulated_ = state;
 }
 
 void Controller::setPorts() {

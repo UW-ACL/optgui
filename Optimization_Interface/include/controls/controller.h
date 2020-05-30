@@ -65,6 +65,8 @@ class Controller : public QObject {
     void stageTraj();
     void unstageTraj();
 
+    void setSimulated(bool state);
+
  signals:
     void trajectoryExecuted(autogen::packet::traj3dof data);
     void startComputeWorker();
@@ -81,8 +83,10 @@ class Controller : public QObject {
     qreal final_point_render_level_;
     qreal waypoints_render_level_;
 
-    // Freeze timer
-    QTimer *freeze_timer_;
+    bool is_simulated_;
+
+    // freeze traj timer
+    QTimer *freeze_traj_timer_;
     quint32 traj_index_;
 
     // Port setting dialog and network sockets
@@ -103,7 +107,7 @@ class Controller : public QObject {
     void loadPlane(PlaneModelItem *model);
     void loadWaypoint(PointModelItem *model);
 
-    void freeze();
+    void freeze_traj();
     void setStagedPath();
     void unsetStagedPath();
 };
