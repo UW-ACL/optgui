@@ -59,6 +59,7 @@ class View : public QGraphicsView {
     void constrainAccel();
     void updateFeedbackMessage();
     void setCurrFinalPoint();
+    void toggleSim(int);
 
   private:
     void initialize();
@@ -107,6 +108,7 @@ class View : public QGraphicsView {
     void initializeStageButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
+    void initializeSimToggle(MenuPanel *panel);
     // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
     // expert panel constraint_model params not in skyefly

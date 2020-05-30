@@ -11,6 +11,7 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QMessageBox>
 
 #include "include/controls/compute_thread.h"
@@ -159,6 +160,9 @@ void View::initializeMenuPanel() {
     // add space at the bottom
     this->menu_panel_->menu_layout_->insertStretch(-1, 1);
 
+    // simulation toggle
+    this->initializeSimToggle(this->menu_panel_);
+
     // exec
     this->initializeExecButton(this->menu_panel_);
 
@@ -303,8 +307,8 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case WAYPOINT: {
-            // TODO(dtsull16): support up to skyenet::MAX_WAYPOINTS
-            if (this->controller_->model_->getNumWaypoints() < skyenet::MAX_WAYPOINTS) {
+            if (this->controller_->model_->getNumWaypoints()
+                    < skyenet::MAX_WAYPOINTS) {
                 this->controller_->addWaypoint(pos);
             }
             break;
@@ -1041,6 +1045,10 @@ void View::setCurrFinalPoint() {
     }
 }
 
+void View::toggleSim(int state) {
+    this->controller_->setSimulated(state == Qt::Checked);
+}
+
 void View::initializeModelParamsTable(MenuPanel *panel) {
     // Create table
     this->model_params_table_ = new QTableWidget(panel->menu_);
@@ -1112,6 +1120,22 @@ void View::initializeFinaltime(MenuPanel *panel) {
 
     // Set table size
     this->skyefly_params_table_->resizeColumnsToContents();
+}
+
+void View::initializeSimToggle(MenuPanel *panel) {
+    QCheckBox *sim_toggle = new QCheckBox("Simulate", panel->menu_);
+    sim_toggle->
+            setToolTip(tr("Toggle simulate trajectory"));
+    sim_toggle->setMinimumHeight(35);
+    sim_toggle->setCheckState(Qt::Unchecked);
+    panel->menu_->layout()->addWidget(sim_toggle);
+    panel->menu_->layout()->setAlignment(sim_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(sim_toggle);
+
+    // Connect execute button
+    connect(sim_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleSim(int)));
 }
 
 void View::initializeExecButton(MenuPanel *panel) {

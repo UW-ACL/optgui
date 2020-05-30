@@ -290,20 +290,22 @@ autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
     return this->drone_staged_traj3dof_data_;
 }
 
-void ConstraintModel::setStagedTraj3dof(
-        autogen::packet::traj3dof traj3dof_data) {
+void ConstraintModel::stageTraj() {
     QMutexLocker locker(&this->model_lock_);
-    this->drone_staged_traj3dof_data_ = traj3dof_data;
+    this->drone_staged_traj3dof_data_ = this->drone_curr_traj3dof_data_;
+    this->path_staged_->setPoints(this->path_->getPoints());
+    this->traj_staged_ = true;
+}
+
+void ConstraintModel::unstageTraj() {
+    QMutexLocker locker(&this->model_lock_);
+    this->path_staged_->clearPoints();
+    this->traj_staged_ = false;
 }
 
 bool ConstraintModel::getIsTrajStaged() {
     QMutexLocker locker(&this->model_lock_);
     return this->traj_staged_;
-}
-
-void ConstraintModel::setIsTrajStaged(bool is_staged) {
-    QMutexLocker locker(&this->model_lock_);
-    this->traj_staged_ = is_staged;
 }
 
 FEASIBILITY_CODE ConstraintModel::getIsValidTraj() {
@@ -558,7 +560,9 @@ void ConstraintModel::updateEllipseColors() {
     }
 }
 
-void ConstraintModel::loadWaypointConstraints(skyenet::params *P, double wp[3][skyenet::MAX_WAYPOINTS]) {
+void ConstraintModel::loadWaypointConstraints(
+            skyenet::params *P,
+            double wp[3][skyenet::MAX_WAYPOINTS]) {
     QMutexLocker locker(&this->model_lock_);
 
     P->n_wp = this->waypoints_.size();
@@ -674,8 +678,9 @@ void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
     P->cpos.b[index] = flip;
 }
 
-int ConstraintModel::distributeWpEvenly(skyenet::params *P, int index, int remaining,
-                                      int low, int high) {
+int ConstraintModel::distributeWpEvenly(skyenet::params *P,
+                                        int index, int remaining,
+                                        int low, int high) {
     if (remaining != 0) {
         int mid = (low + high + 1) / 2;
 
