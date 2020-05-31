@@ -51,6 +51,7 @@ class ConstraintModel {
     void addWaypoint(PointModelItem *item);
     void removeWaypoint(PointModelItem *item);
     quint32 getNumWaypoints();
+    void reverseWaypoints();
 
     void setPathModel(PathModelItem *model);
     void setPathPoints(QVector<QPointF> points);
@@ -117,7 +118,7 @@ class ConstraintModel {
     void loadEllipseConstraints(skyenet::params *P);
     void loadPosConstraints(skyenet::params *P);
 
- private:
+private:
     void initialize();
 
     QMutex model_lock_;
