@@ -147,6 +147,12 @@ quint32 ConstraintModel::getNumWaypoints() {
     return this->waypoints_.size();
 }
 
+
+void ConstraintModel::reverseWaypoints() {
+    QMutexLocker locker(&this->model_lock_);
+    std::reverse(this->waypoints_.begin(), this->waypoints_.end());
+}
+
 void ConstraintModel::setPathModel(PathModelItem *trajectory) {
     QMutexLocker locker(&this->model_lock_);
     if (this->path_) {

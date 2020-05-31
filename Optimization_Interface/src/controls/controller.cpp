@@ -214,6 +214,18 @@ void Controller::flipDirection(QGraphicsItem *item) {
             plane->flipDirection();
             break;
         }
+        case WAYPOINT_GRAPHIC: {
+            this->model_->reverseWaypoints();  // reorder back-end
+            // reorder front end
+            std::reverse(this->canvas_->waypoint_graphics_.begin(),
+                         this->canvas_->waypoint_graphics_.end());
+            // label with new indicies
+            for (int i = 0; i < this->canvas_->waypoint_graphics_.size(); i++) {
+                this->canvas_->waypoint_graphics_.at(i)->setIndex(i);
+            }
+
+            break;
+        }
     }
 }
 

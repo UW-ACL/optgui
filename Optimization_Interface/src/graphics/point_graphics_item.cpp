@@ -74,6 +74,7 @@ void PointGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
+        painter->setPen(BLACK);
         QPointF text_pos(this->mapFromScene(this->model_->getPos()));
         QFont font = painter->font();
         font.setPointSizeF(10 / scaling_factor);
