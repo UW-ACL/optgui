@@ -13,7 +13,7 @@
 
 #include "autogen/lib.h"
 
-#include "include/models/point_model_item.h"
+#include "include/graphics/point_graphics_item.h"
 
 namespace optgui {
 
@@ -21,9 +21,10 @@ class PointSocket : public QUdpSocket {
     Q_OBJECT
 
  public:
-    explicit PointSocket(PointModelItem *model, QObject *parent = nullptr);
+    explicit PointSocket(PointGraphicsItem *item,
+                         QObject *parent = nullptr);
     ~PointSocket();
-    PointModelItem *point_model_;
+    PointGraphicsItem *point_item_;
 
  signals:
     void refresh_graphics();

@@ -35,7 +35,6 @@ class PlaneResizeHandle : public QGraphicsEllipseItem {
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
-    void expandScene();
     PlaneModelItem *model_;
     bool isP2_;
     bool resize_;

@@ -109,13 +109,11 @@ void Canvas::bringSelectedToFront() {
 }
 
 void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
-    // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
-    graphic->expandScene();
+    graphic->update(graphic->boundingRect());
 }
 
 void Canvas::updatePathGraphicsItem() {
-    // TODO(dtsull16): Also try paint, prepareGeometryChange, and update
-    this->path_graphic_->expandScene();
+    this->path_graphic_->update(this->path_graphic_->boundingRect());
 }
 
 void Canvas::bringToFront(QGraphicsItem *item) {
@@ -125,21 +123,6 @@ void Canvas::bringToFront(QGraphicsItem *item) {
         item->setZValue(this->front_depth_);
         this->front_depth_ = std::nextafter(this->front_depth_,
                                             std::numeric_limits<qreal>::max());
-    }
-}
-
-void Canvas::expandScene() {
-    for (QGraphicsItem *item : this->items()) {
-        QRectF newRect = item->sceneBoundingRect();
-        QRectF rect = this->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->setSceneRect(this->sceneRect().united(newRect));
-            if (!this->views().isEmpty()) {
-                this->views().first()->setSceneRect(
-                            this->sceneRect());
-            }
-            this->update();
-        }
     }
 }
 

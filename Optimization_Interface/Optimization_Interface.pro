@@ -54,6 +54,7 @@ SOURCES += \
     src/graphics/plane_resize_handle.cpp \
     src/graphics/waypoint_graphics_item.cpp \
     src/main.cpp \
+    src/network/waypoint_socket.cpp \
     src/window/main_window.cpp \
     src/graphics/canvas.cpp \
     src/graphics/view.cpp \
@@ -80,6 +81,7 @@ HEADERS += \
     include/controls/compute_thread.h \
     include/graphics/plane_resize_handle.h \
     include/graphics/waypoint_graphics_item.h \
+    include/network/waypoint_socket.h \
     include/window/main_window.h \
     include/graphics/canvas.h \
     include/graphics/view.h \

@@ -31,7 +31,6 @@ class EllipseGraphicsItem : public QGraphicsItem {
     int type() const override;
 
     void flipDirection();
-    void expandScene();
     void setRed(bool isOverlap);
 
  protected:

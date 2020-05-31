@@ -13,7 +13,7 @@
 
 #include "autogen/lib.h"
 
-#include "include/models/ellipse_model_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
 
 namespace optgui {
 
@@ -21,9 +21,10 @@ class EllipseSocket : public QUdpSocket {
     Q_OBJECT
 
  public:
-    explicit EllipseSocket(EllipseModelItem *model, QObject *parent = nullptr);
+    explicit EllipseSocket(EllipseGraphicsItem *item,
+                           QObject *parent = nullptr);
     ~EllipseSocket();
-    EllipseModelItem *ellipse_model_;
+    EllipseGraphicsItem *ellipse_item_;
 
  signals:
     void refresh_graphics();

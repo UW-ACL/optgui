@@ -156,23 +156,6 @@ QPainterPath EllipseGraphicsItem::shape() const {
     return path;
 }
 
-void EllipseGraphicsItem::expandScene() {
-    if (this->scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 void EllipseGraphicsItem::setRed(bool isOverlap) {
     if (isOverlap) {
         QColor fill = Qt::red;
@@ -187,7 +170,7 @@ void EllipseGraphicsItem::setRed(bool isOverlap) {
 
 void EllipseGraphicsItem::flipDirection() {
     this->model_->flipDirection();
-    this->expandScene();
+    this->update(this->boundingRect());
 }
 
 QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
@@ -200,7 +183,7 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
         this->model_->setPos(newPos);
 
         // check to expand the scene
-        this->expandScene();
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }

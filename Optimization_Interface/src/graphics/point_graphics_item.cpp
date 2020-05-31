@@ -97,23 +97,6 @@ QPainterPath PointGraphicsItem::shape() const {
     return path;
 }
 
-void PointGraphicsItem::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
@@ -123,8 +106,8 @@ QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
         // update model
         this->model_->setPos(newPos);
 
-        // check to expand the scene
-        this->expandScene();
+        // check to redraw
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }

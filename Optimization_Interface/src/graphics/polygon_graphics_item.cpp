@@ -159,26 +159,9 @@ QPainterPath PolygonGraphicsItem::shape() const {
     return path;
 }
 
-void PolygonGraphicsItem::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(
-                        this->scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 void PolygonGraphicsItem::flipDirection() {
     this->model_->flipDirection();
-    this->expandScene();
+    this->update(this->boundingRect());
 }
 
 QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
@@ -194,7 +177,7 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
         }
 
         // check to expand the scene
-        this->expandScene();
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }

@@ -93,7 +93,7 @@ void PlaneResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         } else {
             this->model_->setP1(eventPos);
         }
-        this->expandScene();
+        this->update(this->boundingRect());
     }
 }
 
@@ -106,22 +106,6 @@ QPointF PlaneResizeHandle::getPoint() {
         return this->model_->getP2();
     } else {
         return this->model_->getP1();
-    }
-}
-
-void PlaneResizeHandle::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->parentItem()->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
     }
 }
 

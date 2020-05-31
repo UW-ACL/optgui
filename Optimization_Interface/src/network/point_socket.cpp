@@ -9,10 +9,10 @@
 
 namespace optgui {
 
-PointSocket::PointSocket(PointModelItem *model, QObject *parent)
+PointSocket::PointSocket(PointGraphicsItem *item, QObject *parent)
     : QUdpSocket(parent) {
-    point_model_ = model;
-    this->bind(QHostAddress::AnyIPv4, point_model_->port_);
+    this->point_item_ = item;
+    this->bind(QHostAddress::AnyIPv4, this->point_item_->model_->port_);
 
     connect(this, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 }
@@ -38,8 +38,11 @@ void PointSocket::readPendingDatagrams() {
                 QPointF gui_coords =
                         nedToGuiXyz(telemetry_data.pos_ned(0),
                                     telemetry_data.pos_ned(1));
-                this->point_model_->setPos(gui_coords);
-              emit refresh_graphics();
+                // set model coords
+                this->point_item_->model_->setPos(gui_coords);
+                // set graphics coords so view knows to render it
+                this->point_item_->setPos(gui_coords);
+                emit refresh_graphics();
             }
         }
     }

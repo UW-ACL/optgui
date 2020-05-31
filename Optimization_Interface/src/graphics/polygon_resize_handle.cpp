@@ -79,7 +79,7 @@ void PolygonResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
         QPointF eventPos = event->scenePos();
         this->model_->setPointAt(eventPos, this->index_);
-        this->expandScene();
+        this->update(this->boundingRect());
     }
 }
 
@@ -89,22 +89,6 @@ int PolygonResizeHandle::type() const {
 
 QPointF PolygonResizeHandle::getPoint() {
     return this->model_->getPointAt(this->index_);
-}
-
-void PolygonResizeHandle::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->parentItem()->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
 }
 
 qreal PolygonResizeHandle::getScalingFactor() const {
