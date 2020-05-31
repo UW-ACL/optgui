@@ -66,16 +66,18 @@ void WaypointGraphicsItem::paint(QPainter *painter,
     qreal rad = this->radius_ / scaling_factor;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
-    // Draw index
-    painter->setPen(Qt::black);
+    // Draw label
+    painter->setPen(BLACK);
     QFont font = painter->font();
-    font.setPointSizeF(14 / scaling_factor);
-    painter->setFont(font);
-    painter->drawText(this->boundingRect(), Qt::AlignCenter,
-                      QString::number(this->index_ + 1));
 
-    // Label with port
-    if (this->model_->port_ != 0) {
+    if (this->model_->port_ == 0) {
+        // label with index
+        font.setPointSizeF(14 / scaling_factor);
+        painter->setFont(font);
+        painter->drawText(this->boundingRect(), Qt::AlignCenter,
+                          QString::number(this->index_ + 1));
+    } else {
+        // Or label with port
         QPointF text_pos(this->mapFromScene(this->model_->getPos()));
         QFont font = painter->font();
         font.setPointSizeF(10 / scaling_factor);

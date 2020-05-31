@@ -131,6 +131,7 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
+        painter->setPen(Qt::black);
         QPointF text_pos(this->mapFromScene(pos));
         QFont font = painter->font();
         font.setPointSizeF(12 / scaling_factor);
