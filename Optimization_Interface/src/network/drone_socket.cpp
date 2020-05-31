@@ -9,10 +9,10 @@
 
 namespace optgui {
 
-DroneSocket::DroneSocket(DroneModelItem *model, QObject *parent)
+DroneSocket::DroneSocket(DroneGraphicsItem *model, QObject *parent)
     : QUdpSocket(parent) {
-    drone_model_ = model;
-    this->bind(QHostAddress::AnyIPv4, drone_model_->port_);
+    this->drone_item_ = model;
+    this->bind(QHostAddress::AnyIPv4, this->drone_item_->model_->port_);
 
     connect(this, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 }
@@ -38,7 +38,10 @@ void DroneSocket::readPendingDatagrams() {
                 QPointF gui_coords =
                         nedToGuiXyz(telemetry_data.pos_ned(0),
                                     telemetry_data.pos_ned(1));
-                this->drone_model_->setPos(gui_coords);
+                // set model coords
+                this->drone_item_->model_->setPos(gui_coords);
+                // set graphics coords so view knows whether to paint it
+                this->drone_item_->setPos(gui_coords);
                 emit refresh_graphics();
             }
         }
@@ -55,14 +58,15 @@ void DroneSocket::rx_trajectory(const autogen::packet::traj3dof data) {
     // TODO(dtsull16): use config IP address
     if (this->isDestinationAddrValid()) {
         this->writeDatagram(buffer, ser_data.size(),
-                            QHostAddress(this->drone_model_->ip_addr_),
-                            this->drone_model_->destination_port_);
+                            QHostAddress(this->drone_item_->model_->ip_addr_),
+                            this->drone_item_->model_->destination_port_);
     }
 }
 
 bool DroneSocket::isDestinationAddrValid() {
     // validate ip address is long enough
-    QStringList ip_addr_sections_ = this->drone_model_->ip_addr_.split(".");
+    QStringList ip_addr_sections_ =
+            this->drone_item_->model_->ip_addr_.split(".");
     if (ip_addr_sections_.size() != 4) {
         return false;
     }
@@ -77,7 +81,7 @@ bool DroneSocket::isDestinationAddrValid() {
     }
 
     // validate destination port is valid
-    quint16 value = this->drone_model_->destination_port_;
+    quint16 value = this->drone_item_->model_->destination_port_;
     if (1024 > value || value > 65535) {
         return false;
     }

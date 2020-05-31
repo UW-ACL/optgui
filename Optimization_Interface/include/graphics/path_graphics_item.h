@@ -24,7 +24,6 @@ class PathGraphicsItem : public QGraphicsItem {
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
-    void expandScene();
     void setColor(QColor);
 
  protected:

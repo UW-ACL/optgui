@@ -12,7 +12,7 @@
 
 #include "autogen/lib.h"
 
-#include "include/models/drone_model_item.h"
+#include "include/graphics/drone_graphics_item.h"
 
 namespace optgui {
 
@@ -20,9 +20,9 @@ class DroneSocket : public QUdpSocket {
     Q_OBJECT
 
  public:
-    explicit DroneSocket(DroneModelItem *model, QObject *parent = nullptr);
+    explicit DroneSocket(DroneGraphicsItem *item, QObject *parent = nullptr);
     ~DroneSocket();
-    DroneModelItem *drone_model_;
+    DroneGraphicsItem *drone_item_;
 
  private slots:
     void readPendingDatagrams();

@@ -28,7 +28,6 @@ class Canvas : public QGraphicsScene {
     explicit Canvas(QObject *parent = nullptr, QString background_file = "");
     ~Canvas();
     void bringToFront(QGraphicsItem *item);
-    void expandScene();
     QPointF* getBottomLeft();
     QPointF* getTopRight();
     bool indoor_ = true;

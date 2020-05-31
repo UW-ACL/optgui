@@ -18,6 +18,7 @@
 #include "include/window/port_dialog.h"
 #include "include/network/drone_socket.h"
 #include "include/network/ellipse_socket.h"
+#include "include/network/waypoint_socket.h"
 #include "include/network/point_socket.h"
 #include "include/controls/compute_thread.h"
 
@@ -93,7 +94,7 @@ class Controller : public QObject {
     PortDialog *port_dialog_;
     DroneSocket *drone_socket_;
     QVector<PointSocket *> final_point_sockets_;
-    QVector<PointSocket *> waypoint_sockets_;
+    QVector<WaypointSocket *> waypoint_sockets_;
     QVector<EllipseSocket *> ellipse_sockets_;
 
     void removeEllipseSocket(EllipseModelItem *model);

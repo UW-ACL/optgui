@@ -35,7 +35,6 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
-    void expandScene();
     PolygonModelItem *model_;
     quint32 index_;
     bool resize_;

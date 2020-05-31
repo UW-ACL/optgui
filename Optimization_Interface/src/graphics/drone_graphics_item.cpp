@@ -71,23 +71,6 @@ void DroneGraphicsItem::paint(QPainter *painter,
     }
 }
 
-void DroneGraphicsItem::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(
-                        this->scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 QPainterPath DroneGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
@@ -105,7 +88,7 @@ QVariant DroneGraphicsItem::itemChange(GraphicsItemChange change,
                                         const QVariant &value) {
     if (change == ItemScenePositionHasChanged && scene()) {
         // check to expand the scene
-        this->expandScene();
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }

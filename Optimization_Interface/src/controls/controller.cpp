@@ -289,23 +289,26 @@ void Controller::freeze_traj() {
 void Controller::setStagedPath() {
     this->model_->stageTraj();
     this->canvas_->path_staged_graphic_->setColor(GREEN);
-    this->canvas_->path_staged_graphic_->expandScene();
+    this->canvas_->path_staged_graphic_->update(
+                this->canvas_->path_staged_graphic_->boundingRect());
 }
 
 void Controller::unsetStagedPath() {
     this->model_->unstageTraj();
-    this->canvas_->path_staged_graphic_->expandScene();
+    this->canvas_->path_staged_graphic_->update(
+                this->canvas_->path_staged_graphic_->boundingRect());
 }
 
 void Controller::tickLiveReference() {
-    this->canvas_->path_staged_graphic_->expandScene();
-
     if (this->model_->tickPathStaged()) {
         autogen::packet::traj3dof traj = this->model_->getStagedTraj3dof();
         if (this->is_simulated_) {
-            this->canvas_->drone_graphic_->model_->
-                    setPos(nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
-                                       traj.pos_ned(1, this->traj_index_)));
+            QPointF coords = nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
+                                         traj.pos_ned(1, this->traj_index_));
+            // set model pos
+            this->canvas_->drone_graphic_->model_->setPos(coords);
+            // set graphic pos so view knows to draw offscreen
+            this->canvas_->drone_graphic_->setPos(coords);
         }
         this->canvas_->drone_graphic_->model_->
                 setVel(nedToGuiXyz(traj.vel_ned(0, this->traj_index_),
@@ -314,13 +317,14 @@ void Controller::tickLiveReference() {
                 setAccel(nedToGuiXyz(traj.accl_ned(0, this->traj_index_),
                                      traj.accl_ned(1, this->traj_index_)));
         this->traj_index_++;
-
-        this->canvas_->drone_graphic_->expandScene();
     } else {
         this->freeze_traj_timer_->stop();
         this->model_->setLiveReferenceMode(false);
         this->unsetStagedPath();
     }
+
+    this->canvas_->path_staged_graphic_->update(
+                this->canvas_->path_staged_graphic_->boundingRect());
 }
 
 void Controller::execute() {
@@ -368,7 +372,7 @@ void Controller::startSockets() {
     // create drone socket
     if (this->canvas_->drone_graphic_->model_->port_ > 0) {
         this->drone_socket_ = new DroneSocket(
-                    this->canvas_->drone_graphic_->model_);
+                    this->canvas_->drone_graphic_);
         connect(this,
                 SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof)),
                 this->drone_socket_,
@@ -380,7 +384,7 @@ void Controller::startSockets() {
     // create final pos sockets
     for (PointGraphicsItem *graphic : this->canvas_->final_points_) {
         if (graphic->model_->port_ > 0) {
-            PointSocket *temp = new PointSocket(graphic->model_);
+            PointSocket *temp = new PointSocket(graphic);
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(update()));
             this->final_point_sockets_.append(temp);
@@ -390,7 +394,7 @@ void Controller::startSockets() {
     // create waypoint sockets
     for (WaypointGraphicsItem *graphic : this->canvas_->waypoint_graphics_) {
         if (graphic->model_->port_ > 0) {
-            PointSocket *temp = new PointSocket(graphic->model_);
+            WaypointSocket *temp = new WaypointSocket(graphic);
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(update()));
             this->waypoint_sockets_.append(temp);
@@ -400,7 +404,7 @@ void Controller::startSockets() {
     // create ellipse sockets
     for (EllipseGraphicsItem *graphic : this->canvas_->ellipse_graphics_) {
         if (graphic->model_->port_ > 0) {
-            EllipseSocket *temp = new EllipseSocket(graphic->model_);
+            EllipseSocket *temp = new EllipseSocket(graphic);
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(updateEllipseGraphicsItem(graphic)));
             this->ellipse_sockets_.append(temp);
@@ -420,7 +424,7 @@ void Controller::closeSockets() {
     this->final_point_sockets_.clear();
 
     // close waypoint sockets
-    for (PointSocket *socket : this->waypoint_sockets_) {
+    for (WaypointSocket *socket : this->waypoint_sockets_) {
         delete socket;
     }
     this->waypoint_sockets_.clear();
@@ -437,7 +441,7 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
     bool found = false;
 
     for (EllipseSocket *socket : this->ellipse_sockets_) {
-        if (socket->ellipse_model_ == model) {
+        if (socket->ellipse_item_->model_ == model) {
             delete socket;
             found = true;
             break;
@@ -455,7 +459,7 @@ void Controller::removePointSocket(PointModelItem *model) {
     bool found = false;
 
     for (PointSocket *socket : this->final_point_sockets_) {
-        if (socket->point_model_ == model) {
+        if (socket->point_item_->model_ == model) {
             delete socket;
             found = true;
             break;
@@ -472,8 +476,8 @@ void Controller::removeWaypointSocket(PointModelItem *model) {
     int index = 0;
     bool found = false;
 
-    for (PointSocket *socket : this->waypoint_sockets_) {
-        if (socket->point_model_ == model) {
+    for (WaypointSocket *socket : this->waypoint_sockets_) {
+        if (socket->waypoint_item_->model_ == model) {
             delete socket;
             found = true;
             break;
@@ -496,7 +500,7 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
     this->model_->addEllipse(item_model);
     item_graphic->setRotation(item_model->getRot());
     this->canvas_->bringToFront(item_graphic);
-    item_graphic->expandScene();
+    item_graphic->update(item_graphic->boundingRect());
 }
 
 void Controller::loadPolygon(PolygonModelItem *item_model) {
@@ -506,7 +510,7 @@ void Controller::loadPolygon(PolygonModelItem *item_model) {
     this->canvas_->polygon_graphics_.insert(item_graphic);
     this->model_->addPolygon(item_model);
     this->canvas_->bringToFront(item_graphic);
-    item_graphic->expandScene();
+    item_graphic->update(item_graphic->boundingRect());
 }
 
 void Controller::loadPlane(PlaneModelItem *item_model) {
@@ -516,7 +520,7 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
     this->canvas_->plane_graphics_.insert(item_graphic);
     this->model_->addPlane(item_model);
     this->canvas_->bringToFront(item_graphic);
-    item_graphic->expandScene();
+    item_graphic->update(item_graphic->boundingRect());
 }
 
 void Controller::loadPoint(PointModelItem *item_model) {
@@ -526,7 +530,7 @@ void Controller::loadPoint(PointModelItem *item_model) {
     this->canvas_->final_points_.insert(item_graphic);
     this->model_->addPoint(item_model);
     item_graphic->setZValue(this->final_point_render_level_);
-    item_graphic->expandScene();
+    item_graphic->update(item_graphic->boundingRect());
 }
 
 void Controller::loadWaypoint(PointModelItem *item_model) {
@@ -537,7 +541,7 @@ void Controller::loadWaypoint(PointModelItem *item_model) {
     this->canvas_->waypoint_graphics_.append(item_graphic);
     this->model_->addWaypoint(item_model);
     item_graphic->setZValue(this->waypoints_render_level_);
-    item_graphic->expandScene();
+    item_graphic->update(item_graphic->boundingRect());
 }
 
 }  // namespace optgui

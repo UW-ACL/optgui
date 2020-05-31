@@ -55,23 +55,6 @@ void PathGraphicsItem::paint(QPainter *painter,
     }
 }
 
-void PathGraphicsItem::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(
-                        this->scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 QPainterPath PathGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
@@ -86,8 +69,8 @@ QPainterPath PathGraphicsItem::shape() const {
 QVariant PathGraphicsItem::itemChange(GraphicsItemChange change,
                                         const QVariant &value) {
     if (change == ItemScenePositionHasChanged && scene()) {
-        // check to expand the scene
-        this->expandScene();
+        // check redraw
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }

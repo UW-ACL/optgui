@@ -27,7 +27,6 @@ class WaypointGraphicsItem : public QGraphicsItem {
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
     int type() const override;
-    void expandScene();
     void setIndex(quint32 index);
 
  protected:

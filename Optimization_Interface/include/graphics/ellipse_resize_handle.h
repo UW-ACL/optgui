@@ -31,7 +31,6 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
-    void expandScene();
     EllipseModelItem *model_;
     bool resize_;
     qreal size_;

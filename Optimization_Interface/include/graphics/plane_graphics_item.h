@@ -30,7 +30,6 @@ class PlaneGraphicsItem : public QGraphicsItem {
                QWidget *widget = nullptr) override;
     int type() const override;
 
-    void expandScene();
     void flipDirection();
 
  protected:

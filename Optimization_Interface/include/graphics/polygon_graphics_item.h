@@ -30,7 +30,6 @@ class PolygonGraphicsItem : public QGraphicsItem {
                QWidget *widget = 0) override;
     int type() const override;
 
-    void expandScene();
     void flipDirection();
 
  protected:

@@ -66,7 +66,7 @@ void EllipseResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         this->model_->setRot(rotation);
         this->parentItem()->setRotation(rotation);
 
-        this->expandScene();
+        this->update(this->boundingRect());
     }
 }
 
@@ -83,23 +83,6 @@ void EllipseResizeHandle::paint(QPainter *painter,
 
     // paint
     QGraphicsEllipseItem::paint(painter, option, widget);
-}
-
-void EllipseResizeHandle::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = parentItem()->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
 }
 
 int EllipseResizeHandle::type() const {
