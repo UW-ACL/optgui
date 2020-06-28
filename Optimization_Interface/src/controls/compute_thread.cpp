@@ -12,11 +12,9 @@ namespace optgui {
 ComputeThread::ComputeThread(ConstraintModel *model) {
     this->model_ = model;
     this->run_loop_ = true;
-    this->fly_ = new skyenet::SkyeFly();
 }
 
 ComputeThread::~ComputeThread() {
-    delete this->fly_;
 }
 
 void ComputeThread::stopCompute() {
@@ -97,10 +95,10 @@ void ComputeThread::run() {
         this->model_->loadWaypointConstraints(&P, wp);
 
         // Initialize problem
-        this->fly_->setParams(P, r_i, v_i, a_i, r_f, wp);
+        this->fly_.setParams(P, r_i, v_i, a_i, r_f, wp);
 
         // Run SCvx algorithm
-        skyenet::outputs O = this->fly_->update();
+        skyenet::outputs O = this->fly_.update();
 
         // Iterations in resulting trajectory
         quint32 size = P.K;
