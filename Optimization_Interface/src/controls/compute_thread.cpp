@@ -97,7 +97,7 @@ void ComputeThread::run() {
         this->model_->loadWaypointConstraints(&P, wp);
 
         // Initialize problem
-        this->fly_->init_problem1(P, r_i, v_i, a_i, r_f, wp);
+        this->fly_->setParams(P, r_i, v_i, a_i, r_f, wp);
 
         // Run SCvx algorithm
         skyenet::outputs O = this->fly_->update();
