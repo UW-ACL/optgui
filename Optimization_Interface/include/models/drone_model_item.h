@@ -18,21 +18,25 @@ namespace optgui {
 
 class DroneModelItem : public DataModel {
  public:
-    DroneModelItem() : mutex_() {
+    DroneModelItem() : DataModel(), mutex_() {
+        // initialize to 0
         this->pos_ = QPointF(0, 0);
         this->vel_ = QPointF(0, 0);
         this->accel_ = QPointF(0, 0);
-        port_ = 0;
+
+        // default listening port on mikipilot drones
         destination_port_ = 6000;
         ip_addr_ = "0.0.0.0";
     }
 
     ~DroneModelItem() {
+        // acquire lock to destroy it
         QMutexLocker locker(&this->mutex_);
     }
 
     QPointF getPos() {
         QMutexLocker locker(&this->mutex_);
+        // get copy of pos
         return this->pos_;
     }
 
@@ -44,6 +48,7 @@ class DroneModelItem : public DataModel {
 
     QPointF getVel() {
         QMutexLocker locker(&this->mutex_);
+        // get copy of velocity
         return this->vel_;
     }
 
@@ -55,6 +60,7 @@ class DroneModelItem : public DataModel {
 
     QPointF getAccel() {
         QMutexLocker locker(&this->mutex_);
+        // get copy of acceleration
         return this->accel_;
     }
 
@@ -64,11 +70,16 @@ class DroneModelItem : public DataModel {
         this->accel_.setY(accel.y());
     }
 
+    // IP addr of drone
     QString ip_addr_;
+    // listening port on drone
     quint16 destination_port_;
 
  private:
+    // mutex lock for getters/setters
     QMutex mutex_;
+
+    // coords in xyz, pos in pixels
     QPointF pos_;
     QPointF vel_;
     QPointF accel_;

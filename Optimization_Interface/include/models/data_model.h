@@ -14,8 +14,11 @@ namespace optgui {
 
 class DataModel {
  public:
-    DataModel() {}
+    // default initialize port to 0
+    DataModel() : port_(0) {}
     virtual ~DataModel() {}
+
+    // network port
     quint16 port_;
 };
 

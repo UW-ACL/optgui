@@ -11,9 +11,10 @@
 #include <QGraphicsItem>
 
 namespace optgui {
-    extern qreal const GRID_SIZE;
-    extern qreal const INIT_CLEARANCE;
+    extern qreal const GRID_SIZE;  // scale from meters to pixels
+    extern qreal const INIT_CLEARANCE;  // clearance around obs in meters
 
+    // Color scheme constants
     extern QColor const RED;
     extern QColor const ORANGE;
     extern QColor const YELLOW;
@@ -21,6 +22,7 @@ namespace optgui {
     extern QColor const CYAN;
     extern QColor const BLACK;
 
+    // Toggle button state
     enum STATE {
         IDLE,
         ERASER,
@@ -32,6 +34,7 @@ namespace optgui {
         POINT
     };
 
+    // Unique graphics object types
     enum GRAPHICS_TYPE {
         ELLIPSE_GRAPHIC = QGraphicsItem::UserType + 1,
         POLYGON_GRAPHIC = QGraphicsItem::UserType + 2,
@@ -43,11 +46,13 @@ namespace optgui {
         POINT_GRAPHIC = QGraphicsItem::UserType + 8
     };
 
+    // Traj feasibility
     enum FEASIBILITY_CODE {
         FEASIBLE,
         INFEASIBLE
     };
 
+    // Input validation
     enum INPUT_CODE {
         VALID_INPUT,
         OBS_OVERLAP,
@@ -55,9 +60,13 @@ namespace optgui {
         FINAL_POS_OVERLAP
     };
 
+    // scale from meters to pixels and transform from ned to xyz
     QPointF nedToGuiXyz(qreal n, qreal e);
+
+    // scale from pixels to meters and transform from xyz to ned
     QPointF guiXyzToNED(qreal x, qreal y);
     QPointF guiXyzToNED(QPointF const &gui_coords);
+
 }  // namespace optgui
 
 #endif  // GLOBALS_H_

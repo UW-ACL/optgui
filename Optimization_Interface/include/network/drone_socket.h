@@ -22,18 +22,24 @@ class DroneSocket : public QUdpSocket {
  public:
     explicit DroneSocket(DroneGraphicsItem *item, QObject *parent = nullptr);
     ~DroneSocket();
+
+    // graphic item to manipulate over network
     DroneGraphicsItem *drone_item_;
 
  private slots:
+    // automatically read incoming data with slots
     void readPendingDatagrams();
 
  signals:
+    // signal to re-render vehicle
     void refresh_graphics();
 
  public slots:
+    // send trajectory to drone
     void rx_trajectory(const autogen::packet::traj3dof data);
 
  private:
+    // check if destination address is valid
     bool isDestinationAddrValid();
 };
 

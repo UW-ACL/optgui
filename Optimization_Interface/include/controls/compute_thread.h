@@ -25,21 +25,32 @@ class ComputeThread : public QThread {
     explicit ComputeThread(ConstraintModel *model);
     ~ComputeThread();
 
-protected:
+ protected:
+    // main thread loop
     void run() override;
 
+ // slots for signals from thread are run in parent thread
  signals:
+    // render graphics
     void updateGraphics();
+    // set color of traj
     void setPathColor(bool isRed);
+    // update feasibility message box
     void updateMessage();
 
  public slots:
+    // stop main loop from continuing to execute
+    // so thread can close
     void stopCompute();
 
  private:
+    // pointer to model
     ConstraintModel *model_;
+    // solver
     skyenet::SkyeFly *fly_;
+    // flag to continue running loop
     bool run_loop_;
+    // validate inputs from model
     INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
                               QPointF const &initial_pos,
                               QPointF const &final_pos);

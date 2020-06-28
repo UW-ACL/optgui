@@ -16,24 +16,29 @@ DroneIdSelector::DroneIdSelector(DroneModelItem *model, QWidget *parent,
     this->ports_ = ports;
     this->model_ = model;
 
+    // display current IP address
     this->setText(this->model_->ip_addr_.split(".").last());
 
     this->connect(this, SIGNAL(editingFinished()), this, SLOT(updateIp()));
 }
 
 void DroneIdSelector::focusInEvent(QFocusEvent *event) {
+    // select all text when clicked
     QLineEdit::focusInEvent(event);
     QTimer::singleShot(0, this, SLOT(selectAll()));
 }
 
 void DroneIdSelector::updateIp() {
+    // remove old port from used ports list
     this->ports_->remove(this->model_->port_);
 
     // check that ip addr is valid ipv4 form
     quint16 value = this->isIpValid();
     if (value != 0) {
+        // generate IP address and port from drone ID
         this->model_->ip_addr_ = "192.168.1." + this->text();
         this->model_->port_ = 8000 + value;
+        // add new port to list
         this->ports_->insert(8000 + value);
     } else {
         this->setText("0");

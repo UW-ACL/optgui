@@ -20,10 +20,7 @@ PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
     // Set model
     this->model_ = model;
     this->radius_ = radius;
-    this->initialize();
-}
 
-void PointGraphicsItem::initialize() {
     // Set pen
     QColor fill = RED;
     this->brush_ = QBrush(fill);
@@ -42,6 +39,7 @@ void PointGraphicsItem::initialize() {
 }
 
 QRectF PointGraphicsItem::boundingRect() const {
+    // return area of point scaled by zoom factor
     qreal scaling_factor = this->getScalingFactor();
     qreal rad = this->radius_ / scaling_factor;
     return QRectF(-rad, -rad, rad * 2, rad * 2);
@@ -50,6 +48,7 @@ QRectF PointGraphicsItem::boundingRect() const {
 void PointGraphicsItem::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options error
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -89,10 +88,12 @@ void PointGraphicsItem::paint(QPainter *painter,
 }
 
 int PointGraphicsItem::type() const {
+    // return unique graphics type
     return POINT_GRAPHIC;
 }
 
 QPainterPath PointGraphicsItem::shape() const {
+    // return shape of point
     QPainterPath path;
     path.addEllipse(this->boundingRect());
     return path;
@@ -114,6 +115,7 @@ QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
 }
 
 qreal PointGraphicsItem::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Main menu panel
+// menu panel template
 
 #ifndef MENU_PANEL_H_
 #define MENU_PANEL_H_
@@ -22,14 +22,19 @@ class MenuPanel : public QFrame {
                        Qt::WindowFlags flags = Qt::Widget);
     ~MenuPanel();
 
+    // widget to hold all the buttons
     QWidget *menu_;
+    // formatting layout
     QVBoxLayout *menu_layout_;
+    // button to close window
     QToolButton *close_button_;
 
  private:
-    void initialize();
+    // flag for panel on left or right side of window
     bool is_right_;
+    // set up close menu button
     void initializeCloseButton();
+    // set up layout and buttons
     void initializeMenuwidget();
 };
 

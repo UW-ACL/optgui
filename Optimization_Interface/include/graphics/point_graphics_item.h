@@ -20,24 +20,34 @@ class PointGraphicsItem : public QGraphicsItem {
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
                                qreal radius = 14);
+    // data model
     PointModelItem *model_;
 
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+    // unique type of graphic class
     int type() const override;
 
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
+    // size of graphic
     qreal radius_;
+
+    // graphical info
     QPen pen_;
     QBrush brush_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
-    void initialize();
 };
 
 }  // namespace optgui

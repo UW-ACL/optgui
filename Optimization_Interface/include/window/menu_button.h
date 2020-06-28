@@ -16,15 +16,21 @@ namespace optgui {
 
 class MenuButton : public QLabel {
     Q_OBJECT
+
  public:
     explicit MenuButton(STATE button_type, QWidget *parent);
     STATE getButtonType();
+
  signals:
+    // signal to change toggle state
     void changeState(STATE button_type);
+
  protected:
+    // handle mouse clicks
     void mousePressEvent(QMouseEvent *event) override;
+
  private:
-    void initialize();
+    // toggle button type
     STATE button_type_;
 };
 

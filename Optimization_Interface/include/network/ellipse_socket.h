@@ -4,7 +4,7 @@
 // LICENSE: Copyright 2018, All Rights Reserved
 
 // UDP Socket for interacting with ellipse
-// constraint model over network
+// obstacle over network
 
 #ifndef ELLIPSE_SOCKET_H_
 #define ELLIPSE_SOCKET_H_
@@ -24,12 +24,16 @@ class EllipseSocket : public QUdpSocket {
     explicit EllipseSocket(EllipseGraphicsItem *item,
                            QObject *parent = nullptr);
     ~EllipseSocket();
+
+    // ellipse obstacle to manipulate over network
     EllipseGraphicsItem *ellipse_item_;
 
  signals:
+    // signal to re-render ellipse
     void refresh_graphics();
 
  private slots:
+    // automatically read incoming data with slots
     void readPendingDatagrams();
 };
 

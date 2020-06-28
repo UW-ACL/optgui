@@ -18,10 +18,7 @@ PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void PolygonGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -53,12 +50,14 @@ PolygonGraphicsItem::~PolygonGraphicsItem() {
 }
 
 QRectF PolygonGraphicsItem::boundingRect() const {
+    // get rough area of polygon
     return this->shape().boundingRect();
 }
 
 void PolygonGraphicsItem::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -160,6 +159,7 @@ QPainterPath PolygonGraphicsItem::shape() const {
 }
 
 void PolygonGraphicsItem::flipDirection() {
+    // flip direction of keep out zone and re-render
     this->model_->flipDirection();
     this->update(this->boundingRect());
 }
@@ -183,6 +183,7 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
 }
 
 qreal PolygonGraphicsItem::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

@@ -19,17 +19,13 @@
 namespace optgui {
 
 ConstraintModel::ConstraintModel() : model_lock_() {
-    this->initialize();
-}
-
-void ConstraintModel::initialize() {
     // Set model containers
     this->curr_final_point_ = nullptr;
     this->path_ = nullptr;
     this->path_staged_ = nullptr;
     this->drone_ = nullptr;
 
-    // initialize algorithm variables
+    // initialize algorithm params to default values
     this->P_ = skyenet::getDefaultP();
 
     this->input_code_ = INPUT_CODE::VALID_INPUT;
@@ -139,7 +135,6 @@ void ConstraintModel::addWaypoint(PointModelItem *item) {
 void ConstraintModel::removeWaypoint(PointModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
     this->waypoints_.removeOne(item);
-    delete item;
 }
 
 quint32 ConstraintModel::getNumWaypoints() {
@@ -202,9 +197,11 @@ void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
 
 bool ConstraintModel::tickPathStaged() {
     QMutexLocker locker(&this->model_lock_);
+    // remove first point
     if (this->path_staged_) {
         this->path_staged_->removePointAt(0);
     }
+    // return whether there are more points
     return this->path_staged_->getSize() != 0;
 }
 
@@ -374,6 +371,7 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     uint32 row_index = 0;
     this->P_.K = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
+    // no longer in expert panel table
 //    this->P_.dK = qobject_cast<QSpinBox *>
 //            (params_table->cellWidget(row_index++, 0))->value();
 //    this->P_.n_recalcs = qobject_cast<QSpinBox *>
@@ -408,19 +406,18 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     int wprelax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    for (int i = 0; i < skyenet::MAX_WAYPOINTS; i++) {
+    for (quint32 i = 0; i < skyenet::MAX_WAYPOINTS; i++) {
         this->P_.wprelax[i] = wprelax;
     }
-    /*
-    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    */
+    // now automatically set by evenlyDistributeWp
+//    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
 }
 
 skyenet::params ConstraintModel::getSkyeFlyParams() {
     QMutexLocker locker(&this->model_lock_);
 
-    // time intervals
+    // calculate time intervals
     this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
 
     return this->P_;
@@ -598,6 +595,8 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
 
     quint32 index = 0;
     for (EllipseModelItem *ellipse : this->ellipses_) {
+        // calculate ellipse matrix in meters
+
         P->obs.R[index] = 1;
         qreal a = (ellipse->getHeight() / GRID_SIZE) + this->clearance_;
         qreal inv_a = 1.0 / a;
@@ -618,6 +617,7 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
         P->obs.c_n[index] = ned_coords.x();
         P->obs.c_e[index] = ned_coords.y();
         index++;
+        // dont go over max
         if (index >= skyenet::MAX_OBS) {
             P->obs.n = index;
             return;
@@ -633,14 +633,17 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
     for (PolygonModelItem *polygon : this->polygons_) {
         quint32 size = polygon->getSize();
         for (quint32 i = 1; i < size + 1; i++) {
+            // load a plane constraint for each side of the polygon
             QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
             QPointF ned_q = guiXyzToNED(polygon->getPointAt(i % size));
+            // choose direction of constraint
             if (polygon->getDirection()) {
                 this->loadPlaneConstraint(P, index, ned_q, ned_p);
             } else {
                 this->loadPlaneConstraint(P, index, ned_p, ned_q);
             }
             index++;
+            // dont go over max
             if (index >= skyenet::MAX_CPOS) {
                 P->cpos.n = index;
                 return;
@@ -652,12 +655,14 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
         QPointF ned_p = guiXyzToNED(plane->getP1());
         QPointF ned_q = guiXyzToNED(plane->getP2());
 
+        // choose direction of constraint
         if (plane->getDirection()) {
             this->loadPlaneConstraint(P, index, ned_q, ned_p);
         } else {
             this->loadPlaneConstraint(P, index, ned_p, ned_q);
         }
         index++;
+        // dont go over max
         if (index >= skyenet::MAX_CPOS) {
             P->cpos.n = index;
             return;
@@ -670,6 +675,7 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
 
 void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
                                               QPointF ned_p, QPointF ned_q) {
+    // calculate plane constraint in meters
     qreal c = ((ned_p.y() * ned_q.x()) - (ned_p.x() * ned_q.y()));
 
     qreal a1 = (ned_p.y() - ned_q.y()) / c;
@@ -687,6 +693,7 @@ void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
 int ConstraintModel::distributeWpEvenly(skyenet::params *P,
                                         int index, int remaining,
                                         int low, int high) {
+    // recursively fill P->wp_index with evenly spaced indicies
     if (remaining != 0) {
         int mid = (low + high + 1) / 2;
 

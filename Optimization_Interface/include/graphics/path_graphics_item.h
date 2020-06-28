@@ -21,21 +21,30 @@ class PathGraphicsItem : public QGraphicsItem {
     explicit PathGraphicsItem(PathModelItem *model,
                               QGraphicsItem *parent = nullptr,
                               quint32 size = 4);
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+    // set color of traj
     void setColor(QColor);
 
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
-    void initialize();
+    // data model
     PathModelItem *model_;
+
+    // graphical info
     QPen pen_;
     quint32 width_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

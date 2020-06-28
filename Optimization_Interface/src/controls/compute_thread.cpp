@@ -10,8 +10,11 @@
 namespace optgui {
 
 ComputeThread::ComputeThread(ConstraintModel *model) {
+    // set model
     this->model_ = model;
+    // start running compute loop on construction
     this->run_loop_ = true;
+    // params, input, output state
     this->fly_ = new skyenet::SkyeFly();
 }
 
@@ -20,10 +23,12 @@ ComputeThread::~ComputeThread() {
 }
 
 void ComputeThread::stopCompute() {
+    // flag loop to stop after the next iteration
     this->run_loop_ = false;
 }
 
 void ComputeThread::run() {
+    // run compute loop until flagged to stop
     while (this->run_loop_) {
         // Do not compute new trajectories if executing
         // sent trajectory
@@ -40,10 +45,12 @@ void ComputeThread::run() {
             continue;
         }
 
-        // Validate inputs
+        // get inputs from model
         QPointF initial_pos = this->model_->getInitialPos();
         QPointF final_pos = this->model_->getFinalPos();
         QVector<QRegion> ellipse_regions = this->model_->getEllipseRegions();
+
+        // validate inputs
         INPUT_CODE input_code = this->validateInputs(ellipse_regions,
                                                      initial_pos, final_pos);
         // set valid input and update message if changed
@@ -59,8 +66,6 @@ void ComputeThread::run() {
         // Input is valid, get additional inputs
         QPointF initial_vel = this->model_->getInitialVel();
         QPointF initial_acc = this->model_->getInitialAcc();
-
-        // Parameters
 
         // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();
@@ -147,13 +152,17 @@ void ComputeThread::run() {
                 + pow(O.r_f_relax[2], 2);
 
         if (accum > 0.25) {
+            // infeasible traj, set feasibility code and traj color to red
             this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
             emit this->setPathColor(true);
         } else {
+            // feasible traj, set feasibility code and traj color to nominal
             this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
             emit this->setPathColor(false);
         }
+        // signal to update the message based on feasibility code
         emit updateMessage();
+        // signal to re-render traj
         emit updateGraphics();
     }
 }
@@ -167,7 +176,7 @@ INPUT_CODE ComputeThread::validateInputs(
     // get truncated final pos
     QPoint trunc_final_pos(final_pos.x(), final_pos.y());
 
-    // Note: coords are still in cm so QPoint instead
+    // Note: Only can use QPoint. coords are still in pixels so QPoint instead
     // of QPointF should be fine
 
     for (int i = 0; i < ellipse_regions.size(); i++) {

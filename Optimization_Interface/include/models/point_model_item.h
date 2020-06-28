@@ -17,13 +17,19 @@ namespace optgui {
 
 class PointModelItem : public DataModel {
  public:
-    explicit PointModelItem(QPointF pos) : mutex_() { pos_ = pos; port_ = 0; }
+    explicit PointModelItem(QPointF pos) : DataModel(), mutex_() {
+        // set pos from params
+        pos_ = pos;
+    }
+
     ~PointModelItem() {
+        // acquire lock to destroy it
         QMutexLocker locker(&this->mutex_);
     }
 
     QPointF getPos() {
         QMutexLocker locker(&this->mutex_);
+        // get copy of pos in xyz pixels
         return this->pos_;
     }
 
@@ -34,7 +40,9 @@ class PointModelItem : public DataModel {
     }
 
  private:
+    // mutex lock for getters/setters
     QMutex mutex_;
+    // pos in xyz pixels
     QPointF pos_;
 };
 
