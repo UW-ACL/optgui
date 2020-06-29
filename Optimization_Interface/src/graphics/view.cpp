@@ -307,7 +307,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case WAYPOINT: {
-            if (this->controller_->model_->getNumWaypoints()
+            if (this->controller_->getNumWaypoints()
                     < skyenet::MAX_WAYPOINTS) {
                 this->controller_->addWaypoint(pos);
             }
@@ -419,7 +419,7 @@ void View::setFinaltime(qreal final_time) {
 }
 
 void View::setClearance(qreal clearance) {
-    this->controller_->model_->setClearance(clearance);
+    this->controller_->setClearance(clearance);
 }
 
 void View::setSkyeFlyParams() {
@@ -1039,7 +1039,7 @@ void View::setCurrFinalPoint() {
     QList<QGraphicsItem *> items = this->scene()->selectedItems();
     for (QGraphicsItem * item : items) {
         if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC) {
-            this->controller_->model_->setCurrFinalPoint(
+            this->controller_->setCurrFinalPoint(
                         qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
         }
     }
@@ -1218,9 +1218,9 @@ void View::initializeZoom(MenuPanel *panel) {
 
 void View::updateFeedbackMessage() {
     FEASIBILITY_CODE feasibility_code =
-            this->controller_->model_->getIsValidTraj();
+            this->controller_->getIsValidTraj();
     INPUT_CODE input_code =
-            this->controller_->model_->getIsValidInput();
+            this->controller_->getIsValidInput();
 
     if (input_code == INPUT_CODE::VALID_INPUT) {
         switch (feasibility_code) {

@@ -359,10 +359,6 @@ void Controller::setPorts() {
     this->port_dialog_->open();
 }
 
-void Controller::setCanvas(Canvas *canvas) {
-    this->canvas_ = canvas;
-}
-
 // ============ NETWORK CONTROLS ============
 
 void Controller::startSockets() {
@@ -542,6 +538,27 @@ void Controller::loadWaypoint(PointModelItem *item_model) {
     this->model_->addWaypoint(item_model);
     item_graphic->setZValue(this->waypoints_render_level_);
     item_graphic->update(item_graphic->boundingRect());
+}
+
+// ============ MODEL CONTROLS ============
+quint32 Controller::getNumWaypoints() {
+    return this->model_->getNumWaypoints();
+}
+
+void Controller::setClearance(qreal clearance) {
+    this->model_->setClearance(clearance);
+}
+
+void Controller::setCurrFinalPoint(PointModelItem *point) {
+    this->model_->setCurrFinalPoint(point);
+}
+
+FEASIBILITY_CODE Controller::getIsValidTraj() {
+    return this->model_->getIsValidTraj();
+}
+
+INPUT_CODE Controller::getIsValidInput() {
+    return this->model_->getIsValidInput();
 }
 
 }  // namespace optgui

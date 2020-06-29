@@ -31,10 +31,6 @@ class Controller : public QObject {
     explicit Controller(Canvas *canvas);
     ~Controller();
 
-    void setCanvas(Canvas *canvas);  // sets up canvas for drawing graphics
-
-    ConstraintModel *model_;
-
     // SkyFly compute thread
     ComputeThread *compute_thread_;
 
@@ -68,6 +64,13 @@ class Controller : public QObject {
 
     void setSimulated(bool state);
 
+    // pass info between model and view
+    quint32 getNumWaypoints();
+    void setClearance(qreal clearance);
+    void setCurrFinalPoint(PointModelItem *point);
+    FEASIBILITY_CODE getIsValidTraj();
+    INPUT_CODE getIsValidInput();
+
  signals:
     void trajectoryExecuted(autogen::packet::traj3dof data);
     void startComputeWorker();
@@ -79,6 +82,8 @@ class Controller : public QObject {
     void tickLiveReference();
 
  private:
+    ConstraintModel *model_;
+
     // QGraphicsScene
     Canvas *canvas_;
     qreal final_point_render_level_;
