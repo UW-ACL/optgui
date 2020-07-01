@@ -18,19 +18,12 @@ namespace optgui {
 
 Canvas::Canvas(QObject *parent, QString background_file)
     : QGraphicsScene(parent) {
-    this->initialize();
-    this->front_depth_ = 0;
-    this->setBackgroundImage(background_file);
-}
 
-Canvas::~Canvas() {
-}
-
-void Canvas::initialize() {
     // initialized by controller
     this->path_graphic_ = nullptr;
     this->drone_graphic_ = nullptr;
 
+    // set background brush
     this->setBackgroundBrush(BLACK);
     // Set background pen
     QColor background_color = Qt::gray;
@@ -51,6 +44,12 @@ void Canvas::initialize() {
     // Connect slots
     connect(this, SIGNAL(selectionChanged()), this,
             SLOT(bringSelectedToFront()));
+
+    this->front_depth_ = 0;
+    this->setBackgroundImage(background_file);
+}
+
+Canvas::~Canvas() {
 }
 
 void Canvas::setBackgroundImage(QString filename) {
@@ -59,49 +58,32 @@ void Canvas::setBackgroundImage(QString filename) {
         // qDebug() << "Image filename not formatted correctly";
     }
 
+    // set background image location
     if (list[1] == "outdoor") {
-//        qDebug() << "Outdoor mode: lat" << list[2].toDouble() << "lon:"
-//                 << list[3].toDouble() << "width:" << list[4].toDouble()
-//                 << "height:" << list[5].toDouble();
         this->background_bottomleft_x_ = 0;
         this->background_bottomleft_y_ = 0;  // list[5].toDouble();
         this->background_topright_x_ = list[4].toDouble();
         this->background_topright_y_ = list[5].toDouble();
-        this->indoor_ = false;
     } else if (list[1] == "indoor") {
         this->background_bottomleft_x_ = list[2].toDouble();
         this->background_bottomleft_y_ = list[3].toDouble();
         this->background_topright_x_ = list[4].toDouble();
         this->background_topright_y_ = list[5].toDouble();
-//        qDebug() << "Indoor mode:" << "bottom left"
-//                 << this->background_bottomleft_x_
-//                 << this->background_bottomleft_y_
-//                 << "top right:" << this->background_topright_x_
-//                 << this->background_topright_y_;
-        this->indoor_ = true;
     }
 
-    this->background_image_ =
-            new QImage(":/assets/" + filename + ".png");
-}
-
-QPointF* Canvas::getBottomLeft() {
-    return new QPointF(this->background_bottomleft_y_*GRID_SIZE,
-                       -this->background_bottomleft_x_*GRID_SIZE);
-}
-
-QPointF* Canvas::getTopRight() {
-    return new QPointF(this->background_topright_y_*GRID_SIZE,
-                       -this->background_topright_x_*GRID_SIZE);
+    this->background_image_ = QImage(":/assets/" + filename + ".png");
 }
 
 void Canvas::bringSelectedToFront() {
     if (!this->selectedItems().isEmpty()) {
+        // grab first selected item
         QGraphicsItem *selected = this->selectedItems().first();
         if (selected->type() == ELLIPSE_GRAPHIC ||
                 selected->type() == POLYGON_GRAPHIC ||
                 selected->type() == PLANE_GRAPHIC) {
+            // move to front render level if it is a constraint graphic
             this->selectedItems().first()->setZValue(this->front_depth_);
+            // update the highest render level
             this->front_depth_ = std::nextafter(this->front_depth_,
                     std::numeric_limits<qreal>::max());
         }
@@ -109,10 +91,12 @@ void Canvas::bringSelectedToFront() {
 }
 
 void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
+    // re-render given graphic
     graphic->update(graphic->boundingRect());
 }
 
 void Canvas::updatePathGraphicsItem() {
+    // re-render traj graphic
     this->path_graphic_->update(this->path_graphic_->boundingRect());
 }
 
@@ -120,19 +104,22 @@ void Canvas::bringToFront(QGraphicsItem *item) {
     if (item->type() == ELLIPSE_GRAPHIC ||
             item->type() == POLYGON_GRAPHIC ||
             item->type() == PLANE_GRAPHIC) {
+        // move given item to front if it is a constraint graphic
         item->setZValue(this->front_depth_);
+        // update the highest render level
         this->front_depth_ = std::nextafter(this->front_depth_,
                                             std::numeric_limits<qreal>::max());
     }
 }
 
 void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
-    // Get scaling factor
+    // Get scaling factor for zoom
     qreal scale = 1;
     if (!this->views().isEmpty()) {
         scale = this->views().first()->matrix().m11();
     }
 
+    // get meters scale
     qint32 segment_size = GRID_SIZE;
     if (scale < 0.1) {
         segment_size /= 0.1;
@@ -144,6 +131,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
         segment_size /= 2;
     }
 
+    // scale pens and meter scale
     qreal pen_width = 2 / scale;
     qreal font_size = 20 / scale;
     qint32 offset = 40 / scale;
@@ -172,10 +160,12 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
 }
 
 qint64 Canvas::roundUpPast(qint64 n, qint64 m) {
+    // return next integer greater than n some multiple of m
     return ((n + m - 1) / m) * m;
 }
 
 qint64 Canvas::roundDownPast(qint64 n, qint64 m) {
+    // return next integer less than n some multiple of m
     return ((n - m + 1) / m) * m;
 }
 
@@ -223,6 +213,7 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 
+    // calculate position of background image
     double width  = this->background_topright_y_
             - this->background_bottomleft_y_;
     double height = this->background_topright_x_
@@ -233,7 +224,8 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
                 width*GRID_SIZE,
                 height*GRID_SIZE);
 
-    painter->drawImage(bbox, *this->background_image_);
+    // draw background image
+    painter->drawImage(bbox, this->background_image_);
 
     // Draw vertical grid lines
     for (qint32 i = 0; i <= right_bound; i += segment_size) {
@@ -251,16 +243,8 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
         painter->drawLine(left_bound, i, right_bound, i);
     }
 
-    // Draw origin
+    // Draw origin coordinate
     painter->drawText(1, -2, "0");
-
-    // Debug info
-//    painter->setPen(RED);
-//    painter->drawRect(this->sceneRect());
-//    painter->setPen(Qt::blue);
-//    if (!this->views().isEmpty()) {
-//        painter->drawRect(this->views().first()->sceneRect());
-//    }
 }
 
 }  // namespace optgui

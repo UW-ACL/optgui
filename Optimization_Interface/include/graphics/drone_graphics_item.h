@@ -21,22 +21,33 @@ class DroneGraphicsItem : public QGraphicsItem {
     explicit DroneGraphicsItem(DroneModelItem *model,
                                QGraphicsItem *parent = nullptr,
                                qreal size = 20);
+    // rough area of graphic
     QRectF boundingRect() const override;
+
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;
 
+    // data model
     DroneModelItem *model_;
 
  protected:
+    // shape to paint
     QPainterPath shape() const override;
+
+    // update model when graphic is moved
     QVariant itemChange(GraphicsItemChange change,
                        const QVariant &value) override;
 
  private:
-    void initialize();
+    // member variables for graphics
     QPen pen_;
     QBrush brush_;
+
+    // size of drone
     qreal size_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

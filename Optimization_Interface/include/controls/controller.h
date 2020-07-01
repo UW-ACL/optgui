@@ -31,8 +31,7 @@ class Controller : public QObject {
     explicit Controller(Canvas *canvas);
     ~Controller();
 
-    void setCanvas(Canvas *canvas);  // sets up canvas for drawing graphics
-
+    // model being manipulated
     ConstraintModel *model_;
 
     // SkyFly compute thread
@@ -62,52 +61,67 @@ class Controller : public QObject {
     // network functionality
     void setPorts();
 
+    // control for executing traj
     void execute();
     void stageTraj();
     void unstageTraj();
 
+    // toggle simulate traj
     void setSimulated(bool state);
 
  signals:
+    // send traj to drone
     void trajectoryExecuted(autogen::packet::traj3dof data);
+    // start/kill compute thread
     void startComputeWorker();
     void stopComputeWorker();
 
  private slots:
+    // bind network sockets
     void startSockets();
+    // set traj color
     void setPathColor(bool isRed);
+    // update simulated traj
     void tickLiveReference();
 
  private:
-    // QGraphicsScene
+    // QGraphicsScene canvas
     Canvas *canvas_;
+
+    // render levels for ordering
     qreal final_point_render_level_;
     qreal waypoints_render_level_;
 
+    // flag for simulated traj
     bool is_simulated_;
 
     // freeze traj timer
     QTimer *freeze_traj_timer_;
     quint32 traj_index_;
 
-    // Port setting dialog and network sockets
+    // network configuration dialog box
     PortDialog *port_dialog_;
+
+    // network sockets
     DroneSocket *drone_socket_;
     QVector<PointSocket *> final_point_sockets_;
     QVector<WaypointSocket *> waypoint_sockets_;
     QVector<EllipseSocket *> ellipse_sockets_;
 
+    // remove and close sockets
     void removeEllipseSocket(EllipseModelItem *model);
     void removePointSocket(PointModelItem *model);
     void removeWaypointSocket(PointModelItem *model);
     void closeSockets();
 
+    // load a graphical object from the model data
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
     void loadWaypoint(PointModelItem *model);
 
+    // controls for staging/unstaging traj
     void freeze_traj();
     void setStagedPath();
     void unsetStagedPath();

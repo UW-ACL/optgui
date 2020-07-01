@@ -20,7 +20,7 @@ namespace optgui {
 
 View::View(QWidget * parent)
     : QGraphicsView(parent) {
-    // Create Canvas
+    // set background image
     QStringList background_images = {"lab_indoor_-6_-6_6_6",
             "demo-campus_outdoor_47.65355_-122.30755_120.0905_167.7810",
             "demo-field_outdoor_47.67158_-121.94751_304.6741_372.8843"};
@@ -28,14 +28,15 @@ View::View(QWidget * parent)
     QString background_image = QInputDialog::getItem(this, tr("Select scene"),
                                       tr("mode"), background_images, 0, false);
 
+    // create new canvas to render
     this->canvas_ = new Canvas(this, background_image);
     this->setScene(this->canvas_);
+
     // connect canvas selection change to detect curr final point
     connect(this->scene(), SIGNAL(selectionChanged()),
             this, SLOT(setCurrFinalPoint()));
 
-    // Create Controller
-    // added menu panel to construction
+    // create controller
     this->controller_ = new Controller(this->canvas_);
 
     // Set State
@@ -50,8 +51,36 @@ View::View(QWidget * parent)
     this->currentStepScaleFactor_ = 1;
     this->initialZoom_ = 1;
 
-    // set graphical settings menu panels
-    this->initialize();
+    // Set color
+    this->setAutoFillBackground(true);
+    QPalette palette = this->palette();
+    QColor background = QWidget::palette().window().color();
+    background.setAlpha(200);
+    palette.setColor(QPalette::Base, background);
+    this->setPalette(palette);
+
+    // Set Layout
+    this->setLayout(new QHBoxLayout(this));
+    this->layout()->setContentsMargins(0, 0, 0, 0);
+
+    // Set scroll preferences
+    this->setDragMode(QGraphicsView::ScrollHandDrag);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+
+    // Set rendering preference
+    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
+    // Set render hint
+    this->setRenderHint(QPainter::Antialiasing);
+
+    // set up menu panels
+    this->initializeExpertPanel();
+    this->initializeMenuPanel();
+
+    // Expand view to fill window
+    this->expandView();
 }
 
 View::~View() {
@@ -79,6 +108,7 @@ View::~View() {
 }
 
 bool View::viewportEvent(QEvent *event) {
+    // enable pinch zoom/3 finger zoom
     if (event->type() == QEvent::Gesture) {
         return this->pinchZoom(static_cast<QGestureEvent *>(event));
     }
@@ -86,40 +116,9 @@ bool View::viewportEvent(QEvent *event) {
 }
 
 void View::setPorts() {
+    // set to default state and open network config dialog
     this->setState(IDLE);
     this->controller_->setPorts();
-}
-
-void View::initialize() {
-    // Set color
-    this->setAutoFillBackground(true);
-    QPalette palette = this->palette();
-    QColor background = QWidget::palette().window().color();
-    background.setAlpha(200);
-    palette.setColor(QPalette::Base, background);
-    this->setPalette(palette);
-
-    // Set Layout
-    this->setLayout(new QHBoxLayout(this));
-    this->layout()->setContentsMargins(0, 0, 0, 0);
-
-    // Set scroll preferences
-    this->setDragMode(QGraphicsView::ScrollHandDrag);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
-    // Set rendering preference
-    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-
-    // Set render hint
-    this->setRenderHint(QPainter::Antialiasing);
-
-    this->initializeExpertPanel();
-    this->initializeMenuPanel();
-
-    // Expand view to fill screen
-    this->expandView();
 }
 
 void View::initializeMenuPanel() {
@@ -147,14 +146,14 @@ void View::initializeMenuPanel() {
     this->initializeWaypointButton(this->menu_panel_);
     this->initializeEraserButton(this->menu_panel_);
     this->initializeFlipButton(this->menu_panel_);
-    // duplicate
+    // duplicate button
     this->initializeDuplicateButton(this->menu_panel_);
     // feedback + final time
     this->initializeMessageBox(this->menu_panel_);
     this->initializeFinaltime(this->menu_panel_);
     // zoom
     this->initializeZoom(this->menu_panel_);
-    // stage
+    // stage button
     this->initializeStageButton(this->menu_panel_);
 
     // add space at the bottom
@@ -213,12 +212,15 @@ void View::mousePressEvent(QMouseEvent *event) {
 
     switch (this->state_) {
         case POINT: {
+            // add a new target
             this->controller_->addFinalPoint(pos);
             break;
         }
         case ELLIPSE: {
             // TODO(bchasnov): disallow user from adding
             // ellipse if it overlaps?
+
+            // add ellipse scaled by zoom factor
             qreal scaling_factor = this->matrix().m11();
             this->controller_->addEllipse(pos,
                                           DEFAULT_RAD / scaling_factor);
@@ -307,6 +309,7 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         case WAYPOINT: {
+            // add new waypoint
             if (this->controller_->model_->getNumWaypoints()
                     < skyenet::MAX_WAYPOINTS) {
                 this->controller_->addWaypoint(pos);
@@ -328,12 +331,14 @@ void View::mousePressEvent(QMouseEvent *event) {
             break;
         }
         default: {
+            // regular mouse interaction
             QGraphicsView::mousePressEvent(event);
         }
     }
 }
 
 void View::closeMenu() {
+    // close menu panel and re-render
     this->menu_panel_->hide();
     this->menu_button_->show();
 
@@ -343,6 +348,7 @@ void View::closeMenu() {
 }
 
 void View::closeExpertMenu() {
+    // close expert menu panel and re-render
     this->expert_panel_->hide();
     this->expert_menu_button_->show();
 
@@ -352,18 +358,21 @@ void View::closeExpertMenu() {
 }
 
 void View::openMenu() {
+    // open menu panel and re-render
     this->menu_button_->hide();
     this->menu_panel_->show();
     this->update();
 }
 
 void View::openExpertMenu() {
+    // open expert menu panel and re-render
     this->expert_menu_button_->hide();
     this->expert_panel_->show();
     this->update();
 }
 
 void View::setZoom(qreal value) {
+    // set zoom scaling factor
     this->setTransform(QTransform::fromScale(value, value));
 }
 
@@ -392,37 +401,45 @@ void View::setState(STATE button_type) {
 }
 
 void View::execute() {
+    // set to default state and try to execute staged traj
     this->clearMarkers();
     this->setState(IDLE);
     this->controller_->execute();
 }
 
 void View::stageTraj() {
+    // set to default state and try to stage traj
     this->clearMarkers();
     this->setState(IDLE);
     this->controller_->stageTraj();
 }
 
 void View::unstageTraj() {
+    // set to default state and try to unstage traj
     this->clearMarkers();
     this->setState(IDLE);
     this->controller_->unstageTraj();
 }
 
 void View::duplicateSelected() {
+    // set to default state and try to duplicate selected ellipse
+    this->clearMarkers();
     this->setState(IDLE);
     this->controller_->duplicateSelected();
 }
 
 void View::setFinaltime(qreal final_time) {
+    // set final time
     this->controller_->setFinaltime(final_time);
 }
 
 void View::setClearance(qreal clearance) {
+    // set clearance around obstacles in meters
     this->controller_->model_->setClearance(clearance);
 }
 
 void View::setSkyeFlyParams() {
+    // copy skyefly params from expert panel table to model
     this->controller_->setSkyeFlyParams(this->skyefly_params_table_);
 }
 
@@ -436,6 +453,7 @@ void View::clearMarkers() {
 }
 
 void View::resizeEvent(QResizeEvent *event) {
+    // expand view when windows is resized
     this->expandView();
 
     QGraphicsView::resizeEvent(event);
@@ -458,19 +476,23 @@ void View::expandView() {
 }
 
 bool View::pinchZoom(QGestureEvent *event) {
+    // accept pinch zoom gesture
     if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
+        // get gesture
         QPinchGesture *pinchGesture = static_cast<QPinchGesture *>(pinch);
-
+        // gesture started
         if (pinchGesture->state() == Qt::GestureStarted) {
             this->initialZoom_ = this->transform().m11();
             event->accept(Qt::PinchGesture);
         }
+        // scale zoom by pinch distance
         QPinchGesture::ChangeFlags changeFlags = pinchGesture->changeFlags();
         if (changeFlags & QPinchGesture::ScaleFactorChanged) {
             this->currentStepScaleFactor_ = pinchGesture->totalScaleFactor();
             this->zoom_slider_->setValue(initialZoom_
                                          * this->currentStepScaleFactor_);
         }
+        // gesture finished
         if (pinchGesture->state() == Qt::GestureFinished) {
             this->currentStepScaleFactor_ = 1;
         }
@@ -671,6 +693,7 @@ void View::initializeFlipButton(MenuPanel *panel) {
     painter.setPen(pen);
     painter.setBrush(Qt::gray);
 
+    // draw icon
     QLineF line(QPointF(10, 40), QPointF(40, 10));
     QLineF normal = line.normalVector();
 
@@ -1021,12 +1044,14 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 }
 
 void View::constrainWpIdx(int value) {
+    // constraint wp index by K when K is changed
     QSpinBox *params_wp_idx = qobject_cast<QSpinBox *>(
                 this->skyefly_params_table_->cellWidget(this->wp_idx_row, 0));
     params_wp_idx->setMaximum(value - 1);
 }
 
 void View::constrainAccel() {
+    // constraint a_min and a_max by each other when either is changed
     QDoubleSpinBox *params_a_min = qobject_cast<QDoubleSpinBox *>(
                 this->skyefly_params_table_->cellWidget(this->a_min_row, 0));
     QDoubleSpinBox *params_a_max = qobject_cast<QDoubleSpinBox *>(
@@ -1036,6 +1061,7 @@ void View::constrainAccel() {
 }
 
 void View::setCurrFinalPoint() {
+    // set selected target point to the current point
     QList<QGraphicsItem *> items = this->scene()->selectedItems();
     for (QGraphicsItem * item : items) {
         if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC) {
@@ -1046,6 +1072,7 @@ void View::setCurrFinalPoint() {
 }
 
 void View::toggleSim(int state) {
+    // toggle between simulate execution or actual execution
     this->controller_->setSimulated(state == Qt::Checked);
 }
 
@@ -1217,11 +1244,13 @@ void View::initializeZoom(MenuPanel *panel) {
 }
 
 void View::updateFeedbackMessage() {
+    // get codes from model
     FEASIBILITY_CODE feasibility_code =
             this->controller_->model_->getIsValidTraj();
     INPUT_CODE input_code =
             this->controller_->model_->getIsValidInput();
 
+    // update message from feasibility codes
     if (input_code == INPUT_CODE::VALID_INPUT) {
         switch (feasibility_code) {
         case FEASIBLE: {

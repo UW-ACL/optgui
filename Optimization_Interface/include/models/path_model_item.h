@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Data model for drone path
+// Data model for vehicle trajectory
 
 #ifndef PATH_MODEL_ITEM_H_
 #define PATH_MODEL_ITEM_H_
@@ -18,22 +18,23 @@ namespace optgui {
 
 class PathModelItem : public DataModel {
  public:
-    PathModelItem() : mutex_() {
-        this->points_ = QVector<QPointF>();
-        port_ = 0;
+    PathModelItem() : DataModel(), mutex_() {
     }
 
     ~PathModelItem() {
+        // acquire lock to destroy it
         QMutexLocker locker(&this->mutex_);
     }
 
     quint32 getSize() {
         QMutexLocker locker(&this->mutex_);
+        // get number of points in traj
         return this->points_.size();
     }
 
     void setPointAt(QPointF point, int index) {
         QMutexLocker locker(&this->mutex_);
+        // set point in traj if within bounds
         if (index < this->points_.size()) {
             QPointF &temp = this->points_[index];
             temp.setX(point.x());
@@ -43,25 +44,30 @@ class PathModelItem : public DataModel {
 
     QPointF getPointAt(int index) {
         QMutexLocker locker(&this->mutex_);
-        QPointF temp = QPointF();
+        // get point in traj if within bounds,
+        // return default point if out of bounds
         if (index < this->points_.size()) {
-            temp = this->points_.value(index);
+            return this->points_.value(index);
+        } else {
+            return QPointF();
         }
-        return temp;
     }
 
     void setPoints(QVector<QPointF> points) {
         QMutexLocker locker(&this->mutex_);
+        // copy over points
         this->points_ = points;
     }
 
     void addPoint(QPointF point) {
         QMutexLocker locker(&this->mutex_);
+        // append point to traj
         this->points_.append(point);
     }
 
     void removePointAt(int index) {
         QMutexLocker locker(&this->mutex_);
+        // remove point from traj if within bounds
         if (index < this->points_.size()) {
             this->points_.removeAt(index);
         }
@@ -74,11 +80,14 @@ class PathModelItem : public DataModel {
 
     QVector<QPointF> getPoints() {
         QMutexLocker locker(&this->mutex_);
+        // get copy of points
         return this->points_;
     }
 
  private:
+    // mutex lock for getters/setters
     QMutex mutex_;
+    // point in trajectory
     QVector<QPointF> points_;
 };
 

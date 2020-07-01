@@ -27,15 +27,16 @@ class Canvas : public QGraphicsScene {
  public:
     explicit Canvas(QObject *parent = nullptr, QString background_file = "");
     ~Canvas();
-    void bringToFront(QGraphicsItem *item);
-    QPointF* getBottomLeft();
-    QPointF* getTopRight();
-    bool indoor_ = true;
 
+    // render item at top level
+    void bringToFront(QGraphicsItem *item);
+
+    // unique graphic items
     PathGraphicsItem *path_graphic_;
     PathGraphicsItem *path_staged_graphic_;
     DroneGraphicsItem *drone_graphic_;
 
+    // variable number graphic items
     QSet<EllipseGraphicsItem *> ellipse_graphics_;
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
@@ -43,25 +44,36 @@ class Canvas : public QGraphicsScene {
     QVector<WaypointGraphicsItem *> waypoint_graphics_;
 
  protected:
+    // draw foreground and background
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
 
  public slots:
+    // move selected item to top render level
     void bringSelectedToFront();
+
+    // manually force a re-render of item
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
     void updatePathGraphicsItem();
 
  private:
-    void initialize();
+    // set the background image
     void setBackgroundImage(QString filename);
+    QImage background_image_;
+
+    // member variables for graphical style
     QPen background_pen_;
     QPen foreground_pen_;
+    QFont font_;
+
+    // max render level, used for move selected to front
     qreal front_depth_;
+
+    // helper functions for drawing grid lines
     qint64 roundUpPast(qint64 n, qint64 m);
     qint64 roundDownPast(qint64 n, qint64 m);
-    QFont font_;
-    QImage *background_image_;
 
+    // size of backgorund image
     qreal background_bottomleft_x_ = 0;
     qreal background_bottomleft_y_ = 0;
     qreal background_topright_x_ = 1;

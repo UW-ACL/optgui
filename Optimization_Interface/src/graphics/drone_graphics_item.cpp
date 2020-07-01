@@ -16,11 +16,7 @@ DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-    this->size_ = size;
-}
 
-void DroneGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::black);
     this->pen_.setWidth(1);
@@ -30,15 +26,20 @@ void DroneGraphicsItem::initialize() {
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
+
+    // set size
+    this->size_ = size;
 }
 
 QRectF DroneGraphicsItem::boundingRect() const {
+    // return area of drawn shape
     return this->shape().boundingRect();
 }
 
 void DroneGraphicsItem::paint(QPainter *painter,
                                const QStyleOptionGraphicsItem *option,
                                QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -72,6 +73,7 @@ void DroneGraphicsItem::paint(QPainter *painter,
 }
 
 QPainterPath DroneGraphicsItem::shape() const {
+    // create diamond shape to draw
     QPainterPath path;
     QPolygonF poly;
     qreal size = this->size_ / this->getScalingFactor();
@@ -94,6 +96,7 @@ QVariant DroneGraphicsItem::itemChange(GraphicsItemChange change,
 }
 
 qreal DroneGraphicsItem::getScalingFactor() const {
+    // get the zoom scaling factor from the view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

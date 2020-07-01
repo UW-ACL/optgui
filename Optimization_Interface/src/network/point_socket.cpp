@@ -14,23 +14,28 @@ PointSocket::PointSocket(PointGraphicsItem *item, QObject *parent)
     this->point_item_ = item;
     this->bind(QHostAddress::AnyIPv4, this->point_item_->model_->port_);
 
+    // automatically read incoming data with slots
     connect(this, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 }
 
 PointSocket::~PointSocket() {
+    // close UDP socket
     this->close();
 }
 
 void PointSocket::readPendingDatagrams() {
     while (this->hasPendingDatagrams()) {
+        // create empty buffer
         char buffer[4000] = {0};
         QHostAddress address;
         quint16 port;
         int64 bytes_read = this->readDatagram(buffer, 4000, &address, &port);
 
         if (bytes_read > 0) {
+            // deserialzie data
             autogen::deserializable::telemetry
                   <autogen::topic::telemetry::UNDEFINED> telemetry_data;
+            // pointer is NULL if does not deserialize correctly
             const uint8 *ptr_telemetry_data =
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
@@ -42,6 +47,7 @@ void PointSocket::readPendingDatagrams() {
                 this->point_item_->model_->setPos(gui_coords);
                 // set graphics coords so view knows to render it
                 this->point_item_->setPos(gui_coords);
+                // re-render graphics
                 emit refresh_graphics();
             }
         }

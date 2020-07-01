@@ -43,7 +43,7 @@ MainWindow::~MainWindow() {
     delete this->file_menu_;
 
     // Delete view
-    // TODO(dtsullivan): automatically deleted my parent?
+    // TODO(dtsullivan): automatically deleted by parent?
     delete this->view_;
 }
 
@@ -52,7 +52,7 @@ void MainWindow::initializeMenu() {
     this->file_menu_ = this->menuBar()->addMenu(tr("&File"));
 
     // TODO(dtsull16): re-enable save/load functionality after refactoring is
-    // done and https://github.com/dtsullivan/optgui/issues/7#issue-504936751
+    // done and https://github.com/dtsullivan/optgui/issues/7
     // is completed
 //    // Initialize load file action
 //    this->load_file_ = new QAction(tr("&Open"), this->file_menu_);

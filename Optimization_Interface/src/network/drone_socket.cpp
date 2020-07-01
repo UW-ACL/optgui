@@ -14,23 +14,28 @@ DroneSocket::DroneSocket(DroneGraphicsItem *model, QObject *parent)
     this->drone_item_ = model;
     this->bind(QHostAddress::AnyIPv4, this->drone_item_->model_->port_);
 
+    // automatically read incoming data with slots
     connect(this, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
 }
 
 DroneSocket::~DroneSocket() {
+    // close UDP socket
     this->close();
 }
 
 void DroneSocket::readPendingDatagrams() {
     while (this->hasPendingDatagrams()) {
+        // allocate buffer
         char buffer[4000] = {0};
         QHostAddress address;
         quint16 port;
         int64 bytes_read = this->readDatagram(buffer, 4000, &address, &port);
 
         if (bytes_read > 0) {
+            // deserialize data into telemetry packet
             autogen::deserializable::telemetry
                   <autogen::topic::telemetry::UNDEFINED> telemetry_data;
+            // pointer is NULL if does not deserialize correctly
             const uint8 *ptr_telemetry_data =
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
@@ -42,6 +47,7 @@ void DroneSocket::readPendingDatagrams() {
                 this->drone_item_->model_->setPos(gui_coords);
                 // set graphics coords so view knows whether to paint it
                 this->drone_item_->setPos(gui_coords);
+                // re-render grpahics
                 emit refresh_graphics();
             }
         }
@@ -49,14 +55,15 @@ void DroneSocket::readPendingDatagrams() {
 }
 
 void DroneSocket::rx_trajectory(const autogen::packet::traj3dof data) {
+    // serialize trajectory packet
     autogen::serializable::traj3dof
             <autogen::topic::traj3dof::UNDEFINED> ser_data;
     ser_data = data;
     char buffer[4096] = {0};
     ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
 
-    // TODO(dtsull16): use config IP address
     if (this->isDestinationAddrValid()) {
+        // send serialized traj to drone
         this->writeDatagram(buffer, ser_data.size(),
                             QHostAddress(this->drone_item_->model_->ip_addr_),
                             this->drone_item_->model_->destination_port_);

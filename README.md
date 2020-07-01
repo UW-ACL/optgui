@@ -1,5 +1,5 @@
 # Graphical User Interface for Trajectory Generation with Successive Convexification
-#### Autonomous Controls Lab, University of Washington AA Department
+#### Autonomous Control Lab, University of Washington AA Department
 
 ### Table of Contents
 1. [Overview](#overview)

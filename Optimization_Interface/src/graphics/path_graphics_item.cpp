@@ -17,10 +17,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
     // Set model
     this->model_ = model;
     this->width_ = size;
-    this->initialize();
-}
 
-void PathGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(RED);
     this->pen_.setWidth(this->width_);
@@ -30,20 +27,23 @@ void PathGraphicsItem::initialize() {
 }
 
 void PathGraphicsItem::setColor(QColor color) {
+    // change color of traj
     this->pen_.setColor(color);
 }
 
 QRectF PathGraphicsItem::boundingRect() const {
+    // return rough area of traj line
     return this->shape().boundingRect();
 }
 
 void PathGraphicsItem::paint(QPainter *painter,
                                const QStyleOptionGraphicsItem *option,
                                QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
-    // Draw current course
+    // Draw current traj
     qreal scaling_factor = this->getScalingFactor();
     this->pen_.setWidthF(this->width_ / scaling_factor);
     painter->setPen(this->pen_);
@@ -56,6 +56,7 @@ void PathGraphicsItem::paint(QPainter *painter,
 }
 
 QPainterPath PathGraphicsItem::shape() const {
+    // return shape of traj line
     QPainterPath path;
     QPolygonF poly;
     quint32 size = this->model_->getSize();
@@ -76,6 +77,7 @@ QVariant PathGraphicsItem::itemChange(GraphicsItemChange change,
 }
 
 qreal PathGraphicsItem::getScalingFactor() const {
+    // get scaling zoom factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

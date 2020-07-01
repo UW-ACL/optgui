@@ -18,10 +18,7 @@ PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void PlaneGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -41,11 +38,13 @@ void PlaneGraphicsItem::initialize() {
             new PlaneResizeHandle(this->model_, false, this);
     this->p2_handle_ =
             new PlaneResizeHandle(this->model_, true, this);
+    //
     this->p1_handle_->hide();
     this->p2_handle_->hide();
 }
 
 PlaneGraphicsItem::~PlaneGraphicsItem() {
+    // clean up resize handles
     delete this->p1_handle_;
     delete this->p2_handle_;
 }
@@ -57,6 +56,7 @@ QRectF PlaneGraphicsItem::boundingRect() const {
 void PlaneGraphicsItem::paint(QPainter *painter,
                               const QStyleOptionGraphicsItem *option,
                               QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 

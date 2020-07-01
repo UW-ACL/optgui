@@ -24,12 +24,16 @@ class WaypointSocket : public QUdpSocket {
     explicit WaypointSocket(WaypointGraphicsItem *item,
                             QObject *parent = nullptr);
     ~WaypointSocket();
+
+    // waypoint to manipulate over network
     WaypointGraphicsItem *waypoint_item_;
 
  signals:
+    // signal to re-render waypoint graphic
     void refresh_graphics();
 
  private slots:
+    // automatically read incoming data with slots
     void readPendingDatagrams();
 };
 

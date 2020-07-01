@@ -21,24 +21,38 @@ class WaypointGraphicsItem : public QGraphicsItem {
                                  quint32 index,
                                  QGraphicsItem *parent = nullptr,
                                  qreal radius = 14);
+    // data model
     PointModelItem *model_;
 
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+    // unique type for graphic
     int type() const override;
+    // set ordering of waypoint
     void setIndex(quint32 index);
 
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic changes
     QVariant itemChange(GraphicsItemChange change,
                        const QVariant &value) override;
 
  private:
+    // graphical info
     QPen pen_;
     QBrush brush_;
+
+    // size of graphic
     qreal radius_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
+
+    // ordering of waypoint
     quint32 index_;
 };
 

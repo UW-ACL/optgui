@@ -19,11 +19,18 @@ WaypointGraphicsItem::WaypointGraphicsItem(PointModelItem *model,
                                          QGraphicsItem *parent,
                                          qreal radius)
     : QGraphicsItem(parent) {
+    // set data model
     this->model_ = model;
+
+    // set graphical info
     this->pen_ = QPen(Qt::black);
     this->pen_.setWidthF(3);
     this->brush_ = QBrush(Qt::white);
+
+    // set size of waypoint
     this->radius_ = radius;
+
+    // set ordering of waypoint
     this->index_ = index;
 
     // Set flags
@@ -36,6 +43,7 @@ WaypointGraphicsItem::WaypointGraphicsItem(PointModelItem *model,
 }
 
 QRectF WaypointGraphicsItem::boundingRect() const {
+    // get rough area circle scaled by zoom factor
     qreal scaling_factor = this->getScalingFactor();
     qreal rad = this->radius_ / scaling_factor;
     return QRectF(-rad, -rad, rad * 2, rad * 2);
@@ -44,12 +52,14 @@ QRectF WaypointGraphicsItem::boundingRect() const {
 void WaypointGraphicsItem::paint(QPainter *painter,
                               const QStyleOptionGraphicsItem *option,
                               QWidget *widget) {
+    // suppress unused options error
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
     // scale with view
     qreal scaling_factor = this->getScalingFactor();
 
+    // update graphic with pos from data model
     this->setPos(this->model_->getPos());
 
     // Show handles if selected
@@ -92,16 +102,19 @@ void WaypointGraphicsItem::paint(QPainter *painter,
 }
 
 void WaypointGraphicsItem::setIndex(quint32 index) {
+    // set ordering of waypoint
     this->index_ = index;
 }
 
 QPainterPath WaypointGraphicsItem::shape() const {
+    // get shape of circle to draw
     QPainterPath path;
     path.addEllipse(this->boundingRect());
     return path;
 }
 
 int WaypointGraphicsItem::type() const {
+    // get unique graphics type
     return WAYPOINT_GRAPHIC;
 }
 
@@ -121,6 +134,7 @@ QVariant WaypointGraphicsItem::itemChange(GraphicsItemChange change,
 }
 
 qreal WaypointGraphicsItem::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

@@ -21,20 +21,32 @@ class EllipseResizeHandle : public QGraphicsEllipseItem {
                                  QGraphicsItem *parent,
                                  quint8 type,
                                  qreal size = 14);
+    // unique type for graphic
     int type() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 
  protected:
+    // respond to mouse input
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
+    // data model
     EllipseModelItem *model_;
+
+    // flag for moving handle
     bool resize_;
+
+    // size of handle
     qreal size_;
+
+    // handle manipulates: width == 0, height == 1, both >= 2
     quint8 type_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

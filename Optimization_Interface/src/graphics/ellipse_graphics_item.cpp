@@ -18,10 +18,7 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void EllipseGraphicsItem::initialize() {
     // Set brush
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -60,6 +57,7 @@ void EllipseGraphicsItem::initialize() {
 }
 
 EllipseGraphicsItem::~EllipseGraphicsItem() {
+    // delete handles
     delete this->width_handle_;
     delete this->height_handle_;
     delete this->radius_handle_;
@@ -76,15 +74,18 @@ QRectF EllipseGraphicsItem::boundingRect() const {
         height += ELLIPSE_BORDER / this->getScalingFactor();
         width += ELLIPSE_BORDER / this->getScalingFactor();
     }
+    // return area of ellipse, QGraphicsItems stores rotation
     return QRectF(-width, -height, width * 2, height * 2);
 }
 
 void EllipseGraphicsItem::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
+    // set color to red if overlapping
     this->setRed(this->model_->getIsOverlap());
 
     qreal scaling_factor = this->getScalingFactor();
@@ -92,6 +93,7 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     qreal height = this->model_->getHeight();
     QPointF pos = this->model_->getPos();
 
+    // update graphics pos with model pos
     this->setPos(pos);
 
     // Show handles if selected
@@ -146,10 +148,12 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 }
 
 int EllipseGraphicsItem::type() const {
+    // return unique graphics type
     return ELLIPSE_GRAPHIC;
 }
 
 QPainterPath EllipseGraphicsItem::shape() const {
+    // return shape of ellipse, QGraphicsItem handles rotation
     QPainterPath path;
     qreal height = this->model_->getHeight();
     qreal width = this->model_->getWidth();
@@ -158,6 +162,7 @@ QPainterPath EllipseGraphicsItem::shape() const {
 }
 
 void EllipseGraphicsItem::setRed(bool isOverlap) {
+    // set color to red if overlapping
     if (isOverlap) {
         QColor fill = Qt::red;
         fill.setAlpha(200);
@@ -170,6 +175,8 @@ void EllipseGraphicsItem::setRed(bool isOverlap) {
 }
 
 void EllipseGraphicsItem::flipDirection() {
+    // flip direction of keep out zone and re-render
+    // not currently supported by socp
     this->model_->flipDirection();
     this->update(this->boundingRect());
 }
@@ -190,6 +197,7 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
 }
 
 qreal EllipseGraphicsItem::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

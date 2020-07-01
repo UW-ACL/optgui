@@ -21,24 +21,37 @@ class PolygonResizeHandle : public QGraphicsEllipseItem {
                                  quint32 index,
                                  QGraphicsItem *parent,
                                  qreal size = 14);
+    // update graphic with model info
     void updatePos();
+    // update model
     void updateModel(QPointF diff);
+    // unique type of graphic
     int type() const override;
+    // get model point
     QPointF getPoint();
-    void setColor(const QColor color);
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 
  protected:
+    // detect mouse input
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
+    // data model
     PolygonModelItem *model_;
+    // index of point in model
     quint32 index_;
+
+    // flag for mouse input
     bool resize_;
+
+    // graphic size
     qreal size_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

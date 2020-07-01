@@ -18,19 +18,26 @@ namespace optgui {
 
 class PolygonModelItem : public DataModel {
  public:
-    explicit PolygonModelItem(QVector<QPointF> points) :
-        mutex_(), direction_(false) { points_ = points; port_ = 0;}
+    explicit PolygonModelItem(QVector<QPointF> points) : DataModel(),
+        mutex_(), direction_(false) {
+        // initialize from copy of points param
+        points_ = points;
+    }
+
     ~PolygonModelItem() {
+        // acquire lock to destroy it
         QMutexLocker locker(&this->mutex_);
     }
 
     quint32 getSize() {
         QMutexLocker locker(&this->mutex_);
+        // get number of verticies
         return this->points_.size();
     }
 
     void setPointAt(QPointF point, quint32 index) {
         QMutexLocker locker(&this->mutex_);
+        // set point of vertex without bounds checking
         QPointF &temp = this->points_[index];
         temp.setX(point.x());
         temp.setY(point.y());
@@ -38,21 +45,27 @@ class PolygonModelItem : public DataModel {
 
     QPointF getPointAt(quint32 index) {
         QMutexLocker locker(&this->mutex_);
+        // get copy of point vertex in xyz pixels
         return this->points_.value(index);
     }
 
     bool getDirection() {
         QMutexLocker locker(&this->mutex_);
+        // get direction of constraint inequality
         return this->direction_;
     }
 
     void flipDirection() {
         QMutexLocker locker(&this->mutex_);
+        // flip direction of constraint inequality
         this->direction_ = !this->direction_;
     }
 
     bool isConvex() {
         QMutexLocker locker(&this->mutex_);
+
+        // detect whenther polygon is convex by summing inner angles
+        // CURRENTLY DOES NOT CHECK FOR SELF INTERSECTING POLYGONS
         quint32 n = this->points_.size();
         if (n < 4) {
             return true;

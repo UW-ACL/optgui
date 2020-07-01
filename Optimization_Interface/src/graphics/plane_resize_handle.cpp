@@ -29,10 +29,6 @@ PlaneResizeHandle::PlaneResizeHandle(PlaneModelItem *model,
                   this->size_ * 2, this->size_ * 2);
 }
 
-void PlaneResizeHandle::setColor(const QColor color) {
-    this->setBrush(QBrush(color));
-}
-
 void PlaneResizeHandle::updatePos() {
     // Translate model point to local coordinates
     if (this->isP2_) {
@@ -64,6 +60,7 @@ void PlaneResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 void PlaneResizeHandle::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
