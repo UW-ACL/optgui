@@ -6,6 +6,7 @@
 
 QT       += core gui
 QT       += network
+QT	 += charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -75,7 +76,8 @@ SOURCES += \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
     src/graphics/point_graphics_item.cpp \
-    src/network/point_socket.cpp
+    src/network/point_socket.cpp \
+    src/controls/plotter.cpp
 
 HEADERS += \
     include/controls/compute_thread.h \
@@ -110,7 +112,8 @@ HEADERS += \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
     include/network/drone_socket.h \
-    include/network/point_socket.h
+    include/network/point_socket.h \
+    src/controls/plotter.h
 
 RESOURCES += \
     resources.qrc

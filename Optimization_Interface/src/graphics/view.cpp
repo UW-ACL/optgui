@@ -13,6 +13,7 @@
 #include <QPushButton>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <QtMath>
 
 #include "include/controls/compute_thread.h"
 
@@ -194,6 +195,7 @@ void View::initializeExpertPanel() {
 
     // initialize menu buttons
     this->initializeSkyeFlyParamsTable(this->expert_panel_);
+    this->initializePlotter(this->expert_panel_);
     this->expert_panel_->menu_layout_->insertStretch(-1, 1);
     this->initializeModelParamsTable(this->expert_panel_);
 
@@ -1018,6 +1020,38 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("wp_idx"));
     row_index++;
     */
+}
+
+void View::initializePlotter(MenuPanel *panel) {
+    this->chart_ = new QChart();
+    this->series_ = new QLineSeries();
+    QLineSeries *cap = new QLineSeries();
+    qreal dt = 0.1;
+    *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
+    for (qreal k=0; k<=30; k++) {
+        *this->series_ << QPointF(k*dt, qMin(qSin(k/3),0.8));
+    }
+    QValueAxis *axisX = new QValueAxis();
+    axisX->setLabelFormat("");
+    axisX->setTickCount(5);
+    this->chart_->addAxis(axisX, Qt::AlignBottom);
+    this->chart_->addSeries(this->series_);
+    this->chart_->addSeries(cap);
+    this->series_->attachAxis(axisX);
+    cap->attachAxis(axisX);
+    this->chart_->legend()->hide();
+    this->chart_->setMargins({0,0,0,0});
+    this->chart_->setBackgroundRoundness(0);
+//    this->chart_->createDefaultAxes();
+
+    this->chart_view_ = new QChartView(this->chart_);
+    this->chart_view_->setRenderHint(QPainter::Antialiasing);
+    panel->menu_->layout()->addWidget(this->chart_view_);
+    panel->menu_->layout()->addWidget(this->chart_view_);
+    panel->menu_->layout()->addWidget(this->chart_view_);
+//    panel->menu_->layout()->addWidget(this->chart_);
+//    panel->menu_->layout()->setAlignment(this->chart_,
+//                                        Qt::AlignTop|Qt::AlignCenter);
 }
 
 void View::constrainWpIdx(int value) {

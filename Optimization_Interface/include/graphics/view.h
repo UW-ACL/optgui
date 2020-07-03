@@ -16,6 +16,7 @@
 #include <QHeaderView>
 #include <QGestureEvent>
 #include <QDoubleSpinBox>
+#include <QtCharts>
 
 #include "algorithm.h"
 
@@ -23,6 +24,8 @@
 #include "include/window/menu_panel.h"
 #include "include/globals.h"
 #include "include/controls/controller.h"
+
+using namespace QtCharts;
 
 namespace optgui {
 
@@ -86,6 +89,10 @@ class View : public QGraphicsView {
     quint32 a_max_row;
     quint32 wp_idx_row;
     QTableWidget *model_params_table_;
+    // this belongs in a "plotter" class
+    QChart *chart_;
+    QChartView *chart_view_;
+    QLineSeries *series_;
 
     // keep track of all widgets to delete them
     QVector<QWidget *> panel_widgets_;
@@ -113,6 +120,7 @@ class View : public QGraphicsView {
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
     // expert panel constraint_model params not in skyefly
     void initializeModelParamsTable(MenuPanel *panel);
+    void initializePlotter(MenuPanel *panel);
 };
 
 }  // namespace optgui
