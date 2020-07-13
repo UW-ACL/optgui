@@ -61,6 +61,7 @@ class View : public QGraphicsView {
     void constrainWpIdx(int value);
     void constrainAccel();
     void updateFeedbackMessage();
+    void updatePlots(skyenet::outputs O);
     void setCurrFinalPoint();
     void toggleSim(int);
 

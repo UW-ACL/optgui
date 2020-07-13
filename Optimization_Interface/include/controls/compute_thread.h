@@ -32,6 +32,7 @@ protected:
     void updateGraphics();
     void setPathColor(bool isRed);
     void updateMessage();
+    void updatePlots(skyenet::outputs O);
 
  public slots:
     void stopCompute();

@@ -1047,11 +1047,14 @@ void View::initializePlotter(MenuPanel *panel) {
     this->chart_view_ = new QChartView(this->chart_);
     this->chart_view_->setRenderHint(QPainter::Antialiasing);
     panel->menu_->layout()->addWidget(this->chart_view_);
-    panel->menu_->layout()->addWidget(this->chart_view_);
-    panel->menu_->layout()->addWidget(this->chart_view_);
+//    panel->menu_->layout()->addWidget(this->chart_view_);
+//    panel->menu_->layout()->addWidget(this->chart_view_);
 //    panel->menu_->layout()->addWidget(this->chart_);
 //    panel->menu_->layout()->setAlignment(this->chart_,
 //                                        Qt::AlignTop|Qt::AlignCenter);
+
+    connect(this->controller_->compute_thread_, SIGNAL(updatePlots(skyenet::outputs)),
+            this, SLOT(updatePlots(skyenet::outputs)));
 }
 
 void View::constrainWpIdx(int value) {
@@ -1284,6 +1287,20 @@ void View::updateFeedbackMessage() {
         }
         }
     }
+}
+
+void View::updatePlots(skyenet::outputs O) {
+    this->chart_->removeAllSeries();
+
+    this->series_ = new QLineSeries();
+    QLineSeries *cap = new QLineSeries();
+    qreal dt = 0.1;
+    *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
+    for (unsigned int k=0; k<skyenet::MAX_HORIZON; k++) {
+//        *this->series_ << QPointF(k*dt, qMin(qSin((k + offset)/3),0.8));
+        *this->series_ << QPointF(k*dt, O.s[k]);
+    }
+    this->chart_->addSeries(this->series_);
 }
 
 }  // namespace optgui

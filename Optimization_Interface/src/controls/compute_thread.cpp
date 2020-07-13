@@ -102,6 +102,8 @@ void ComputeThread::run() {
         // Run SCvx algorithm
         skyenet::outputs O = this->fly_->update();
 
+        emit this->updatePlots(O);
+
         // Iterations in resulting trajectory
         quint32 size = P.K;
         // GUI trajecotry points

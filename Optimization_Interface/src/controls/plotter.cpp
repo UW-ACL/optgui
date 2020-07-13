@@ -1,6 +1,6 @@
-#include "plotter.h"
+//#include "plotter.h"
 
-Plotter::Plotter()
-{
+//Plotter::Plotter()
+//{
 
-}
+//}

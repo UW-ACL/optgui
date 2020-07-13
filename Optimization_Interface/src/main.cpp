@@ -14,6 +14,7 @@ using optgui::MainWindow;
 int main(int argc, char *argv[]) {
     qRegisterMetaType<autogen::packet::traj3dof>("autogen::packet::traj3dof");
     qRegisterMetaType<autogen::packet::telemetry>("autogen::packet::telemetry");
+    qRegisterMetaType<skyenet::outputs>("skyenet::outputs");
 
     // Initialize application
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
