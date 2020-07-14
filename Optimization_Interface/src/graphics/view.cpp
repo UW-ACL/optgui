@@ -1023,35 +1023,82 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 }
 
 void View::initializePlotter(MenuPanel *panel) {
-    this->chart_ = new QChart();
-    this->series_ = new QLineSeries();
-    QLineSeries *cap = new QLineSeries();
-    qreal dt = 0.1;
-    *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
-    for (qreal k=0; k<=30; k++) {
-        *this->series_ << QPointF(k*dt, qMin(qSin(k/3),0.8));
+    for (uint32_t i = 0; i < VARS_TO_PLOT; ++i) {
+        this->charts_.push_back(new QChart());
+        this->lines_.push_back(new QLineSeries());
+        QLineSeries *cap = new QLineSeries();
+        qreal dt = 0.1;
+        *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
+        for (qreal k=0; k<=30; k++) {
+            *this->lines_[i] << QPointF(k*dt, qMin(qSin(k/3),0.8));
+        }
+        QValueAxis *axisX = new QValueAxis();
+        axisX->setLabelFormat("");
+        axisX->setTickCount(5);
+        this->charts_[i]->addAxis(axisX, Qt::AlignBottom);
+        this->charts_[i]->addSeries(this->lines_[i]);
+        this->charts_[i]->addSeries(cap);
+        this->lines_[i]->attachAxis(axisX);
+        cap->attachAxis(axisX);
+        this->charts_[i]->legend()->hide();
+        this->charts_[i]->setMargins({0,0,0,0});
+        this->charts_[i]->setBackgroundRoundness(0);
+        this->charts_[i]->createDefaultAxes();
+
+        this->chart_views_.push_back(new QChartView(this->charts_[i]));
+        this->chart_views_[i]->setRenderHint(QPainter::Antialiasing);
+        panel->menu_->layout()->addWidget(this->chart_views_[i]);
     }
-    QValueAxis *axisX = new QValueAxis();
-    axisX->setLabelFormat("");
-    axisX->setTickCount(5);
-    this->chart_->addAxis(axisX, Qt::AlignBottom);
-    this->chart_->addSeries(this->series_);
-    this->chart_->addSeries(cap);
-    this->series_->attachAxis(axisX);
-    cap->attachAxis(axisX);
-    this->chart_->legend()->hide();
-    this->chart_->setMargins({0,0,0,0});
-    this->chart_->setBackgroundRoundness(0);
+//    this->chart_ = new QChart();
+//    this->series_ = new QLineSeries();
+//    QLineSeries *cap = new QLineSeries();
+//    qreal dt = 0.1;
+//    *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
+//    for (qreal k=0; k<=30; k++) {
+//        *this->series_ << QPointF(k*dt, qMin(qSin(k/3),0.8));
+//    }
+//    QValueAxis *axisX = new QValueAxis();
+//    axisX->setLabelFormat("");
+//    axisX->setTickCount(5);
+//    this->chart_->addAxis(axisX, Qt::AlignBottom);
+//    this->chart_->addSeries(this->series_);
+//    this->chart_->addSeries(cap);
+//    this->series_->attachAxis(axisX);
+//    cap->attachAxis(axisX);
+//    this->chart_->legend()->hide();
+//    this->chart_->setMargins({0,0,0,0});
+//    this->chart_->setBackgroundRoundness(0);
 //    this->chart_->createDefaultAxes();
 
-    this->chart_view_ = new QChartView(this->chart_);
-    this->chart_view_->setRenderHint(QPainter::Antialiasing);
-    panel->menu_->layout()->addWidget(this->chart_view_);
+//    this->chart_view_ = new QChartView(this->chart_);
+//    this->chart_view_->setRenderHint(QPainter::Antialiasing);
 //    panel->menu_->layout()->addWidget(this->chart_view_);
-//    panel->menu_->layout()->addWidget(this->chart_view_);
-//    panel->menu_->layout()->addWidget(this->chart_);
-//    panel->menu_->layout()->setAlignment(this->chart_,
-//                                        Qt::AlignTop|Qt::AlignCenter);
+////    panel->menu_->layout()->setAlignment(this->chart_,
+////                                        Qt::AlignTop|Qt::AlignCenter);
+
+//    this->chart_2_test = new QChart();
+//    this->series_2_test= new QLineSeries();
+//    QLineSeries *cap_2_test = new QLineSeries();
+//    *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
+//    for (qreal k=0; k<=30; k++) {
+//        *this->series_2_test << QPointF(k*dt, qMin(qSin(k/3),0.8));
+//    }
+//    QValueAxis *axisX_2_test = new QValueAxis();
+//    axisX_2_test->setLabelFormat("");
+//    axisX_2_test->setTickCount(5);
+//    this->chart_2_test->addAxis(axisX_2_test, Qt::AlignBottom);
+//    this->chart_2_test->addSeries(this->series_2_test);
+//    this->chart_2_test->addSeries(cap_2_test);
+//    this->series_2_test->attachAxis(axisX_2_test);
+//    cap_2_test->attachAxis(axisX_2_test);
+//    this->chart_2_test->legend()->hide();
+//    this->chart_2_test->setMargins({0,0,0,0});
+//    this->chart_2_test->setBackgroundRoundness(0);
+//    this->chart_2_test->createDefaultAxes();
+
+//    this->chart_view_2_test = new QChartView(this->chart_2_test);
+//    this->chart_view_2_test->setRenderHint(QPainter::Antialiasing);
+//    panel->menu_->layout()->addWidget(this->chart_view_2_test);
 
     connect(this->controller_->compute_thread_, SIGNAL(updatePlots(skyenet::outputs)),
             this, SLOT(updatePlots(skyenet::outputs)));
@@ -1290,17 +1337,44 @@ void View::updateFeedbackMessage() {
 }
 
 void View::updatePlots(skyenet::outputs O) {
-    this->chart_->removeAllSeries();
+    uint32_t max_iter = 0;
+    std::function<qreal(uint32_t)> f = [O](uint32_t k){return 0;};
+    for (uint32_t i = 0; i < VARS_TO_PLOT; ++i) {
+        switch(i){
+        case 0:
+            max_iter = skyenet::MAX_HORIZON;
+            f = [O](uint32_t k) {return O.t[k];};
+            break;
+        case 1:
+            max_iter = skyenet::MAX_HORIZON;
+            f = [O](uint32_t k) {return O.s[k];};
+            break;
+        case 2:
+            max_iter = skyenet::MAX_HORIZON;
+            f = [O](uint32_t k) {return qSqrt(O.r[0][k]*O.r[0][k] + O.r[1][k]*O.r[1][k] + O.r[2][k]*O.r[2][k]);};
+            break;
+        case 3:
+            max_iter = skyenet::MAX_HORIZON;
+            f = [O](uint32_t k) {return qSqrt(O.v[0][k]*O.v[0][k] + O.v[1][k]*O.v[1][k] + O.v[2][k]*O.v[2][k]);};
+            break;
+        case 4:
+            max_iter = skyenet::MAX_HORIZON;
+            f = [O](uint32_t k) {return qSqrt(O.a[0][k]*O.a[0][k] + O.a[1][k]*O.a[1][k] + O.a[2][k]*O.a[2][k]);};
+            break;
+        case 5:
+            max_iter = skyenet::MAX_HORIZON * skyenet::MAX_OBS;
+            f = [O](uint32_t k) {return O.eta[k];};
+            break;
+        }
 
-    this->series_ = new QLineSeries();
-    QLineSeries *cap = new QLineSeries();
-    qreal dt = 0.1;
-    *cap << QPointF(0,0.8) << QPointF(30*dt, 0.8);
-    for (unsigned int k=0; k<skyenet::MAX_HORIZON; k++) {
-//        *this->series_ << QPointF(k*dt, qMin(qSin((k + offset)/3),0.8));
-        *this->series_ << QPointF(k*dt, O.s[k]);
+        this->charts_[i]->removeAllSeries();
+        this->lines_[i] = new QLineSeries();
+        qreal dt = 0.1;
+        for (unsigned int k=0; k<max_iter; k++) {
+            *this->lines_[i] << QPointF(k*dt, f(k));
+        }
+        this->charts_[i]->addSeries(this->lines_[i]);
     }
-    this->chart_->addSeries(this->series_);
 }
 
 }  // namespace optgui

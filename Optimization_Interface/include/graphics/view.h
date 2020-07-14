@@ -30,6 +30,7 @@ using namespace QtCharts;
 namespace optgui {
 
 const qreal DOT_SIZE = 14;
+const uint32_t VARS_TO_PLOT = 6;
 
 class View : public QGraphicsView {
     Q_OBJECT
@@ -91,9 +92,16 @@ class View : public QGraphicsView {
     quint32 wp_idx_row;
     QTableWidget *model_params_table_;
     // this belongs in a "plotter" class
-    QChart *chart_;
-    QChartView *chart_view_;
-    QLineSeries *series_;
+//    QChart *chart_;
+//    QChartView *chart_view_;
+//    QChart *chart_2_test;
+//    QChartView *chart_view_2_test;
+//    QLineSeries *series_;
+//    QLineSeries *series_2_test;
+
+    QVector<QChart*> charts_;
+    QVector<QChartView*> chart_views_;
+    QVector<QLineSeries*> lines_;
 
     // keep track of all widgets to delete them
     QVector<QWidget *> panel_widgets_;
