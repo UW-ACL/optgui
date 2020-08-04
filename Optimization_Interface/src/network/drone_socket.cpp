@@ -35,13 +35,14 @@ void DroneSocket::readPendingDatagrams() {
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
             if (ptr_telemetry_data != NULL) {
-                QPointF gui_coords =
+                QVector3D gui_coords =
                         nedToGuiXyz(telemetry_data.pos_ned(0),
-                                    telemetry_data.pos_ned(1));
+                                    telemetry_data.pos_ned(1),
+                                    telemetry_data.pos_ned(2));
                 // set model coords
                 this->drone_item_->model_->setPos(gui_coords);
                 // set graphics coords so view knows whether to paint it
-                this->drone_item_->setPos(gui_coords);
+                this->drone_item_->setPos(QPointF(gui_coords.x(), gui_coords.y()));
                 emit refresh_graphics();
             }
         }

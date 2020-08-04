@@ -63,6 +63,7 @@ class Controller : public QObject {
     void unstageTraj();
 
     void setSimulated(bool state);
+    void setFreeFinalTime(bool state);
 
     // pass info between model and view
     quint32 getNumWaypoints();
@@ -73,7 +74,7 @@ class Controller : public QObject {
 
  signals:
     void trajectoryExecuted(autogen::packet::traj3dof data);
-    void startComputeWorker();
+    void resetInputs();
     void stopComputeWorker();
 
  private slots:

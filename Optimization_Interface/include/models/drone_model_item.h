@@ -9,19 +9,23 @@
 #define DRONE_MODEL_ITEM_H_
 
 #include <QPointF>
+#include <QVector3D>
 #include <QString>
 #include <QMutex>
 
 #include "include/models/data_model.h"
+
+#include "include/globals.h"
 
 namespace optgui {
 
 class DroneModelItem : public DataModel {
  public:
     DroneModelItem() : mutex_() {
-        this->pos_ = QPointF(0, 0);
-        this->vel_ = QPointF(0, 0);
-        this->accel_ = QPointF(0, 0);
+        this->pos_ = QVector3D(0, 0, 0);
+        this->vel_ = QVector3D(0, 0, 0);
+        // counteract gravity
+        this->accel_ = QVector3D(0, 0, 9.81 * GRID_SIZE);
         port_ = 0;
         destination_port_ = 6000;
         ip_addr_ = "0.0.0.0";
@@ -31,37 +35,34 @@ class DroneModelItem : public DataModel {
         QMutexLocker locker(&this->mutex_);
     }
 
-    QPointF getPos() {
+    QVector3D getPos() {
         QMutexLocker locker(&this->mutex_);
         return this->pos_;
     }
 
-    void setPos(QPointF pos) {
+    void setPos(QVector3D pos) {
         QMutexLocker locker(&this->mutex_);
-        this->pos_.setX(pos.x());
-        this->pos_.setY(pos.y());
+        this->pos_ = pos;
     }
 
-    QPointF getVel() {
+    QVector3D getVel() {
         QMutexLocker locker(&this->mutex_);
         return this->vel_;
     }
 
-    void setVel(QPointF vel) {
+    void setVel(QVector3D vel) {
         QMutexLocker locker(&this->mutex_);
-        this->vel_.setX(vel.x());
-        this->vel_.setY(vel.y());
+        this->vel_ = vel;
     }
 
-    QPointF getAccel() {
+    QVector3D getAccel() {
         QMutexLocker locker(&this->mutex_);
         return this->accel_;
     }
 
-    void setAccel(QPointF accel) {
+    void setAccel(QVector3D accel) {
         QMutexLocker locker(&this->mutex_);
-        this->accel_.setX(accel.x());
-        this->accel_.setY(accel.y());
+        this->accel_ = accel;
     }
 
     QString ip_addr_;
@@ -69,9 +70,9 @@ class DroneModelItem : public DataModel {
 
  private:
     QMutex mutex_;
-    QPointF pos_;
-    QPointF vel_;
-    QPointF accel_;
+    QVector3D pos_;
+    QVector3D vel_;
+    QVector3D accel_;
 };
 
 }  // namespace optgui

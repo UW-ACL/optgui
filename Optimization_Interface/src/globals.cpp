@@ -16,19 +16,49 @@ namespace optgui {
     QColor const CYAN = QColor(0x55, 0xE2, 0xD2);
     QColor const BLACK = QColor(0x1B, 0x1B, 0x1B);
 
-    QPointF nedToGuiXyz(qreal n, qreal e) {
+    QVector3D nedToGuiXyz(qreal n, qreal e, qreal d) {
         // QPointF(x, y ,z)
-        return QPointF(e * GRID_SIZE, -1.0 * n * GRID_SIZE);
+        return QVector3D(e * GRID_SIZE,
+                         -1.0 * n * GRID_SIZE,
+                         -1.0 * d * GRID_SIZE);
     }
 
-    QPointF guiXyzToNED(qreal x, qreal y) {
-        // QPointF(n, e, d)
-        return QPointF(-1.0 * y / GRID_SIZE, x / GRID_SIZE);
+//    QPointF guiXyzToNED(qreal x, qreal y) {
+//        // QPointF(n, e, d)
+//        return QPointF(-1.0 * y / GRID_SIZE, x / GRID_SIZE);
+//    }
+
+//    QPointF guiXyzToNED(QPointF const &gui_coords) {
+//        // QPointF(n, e, d)
+//        return QPointF(-1.0 * gui_coords.y() / GRID_SIZE,
+//                       gui_coords.x() / GRID_SIZE);
+//    }
+
+    QVector3D guiXyzToXyz(QVector3D const &gui_coords) {
+        // QVector3D(x, y, z)
+        return QVector3D(gui_coords.x() / GRID_SIZE,
+                       -1.0 * gui_coords.y() / GRID_SIZE,
+                       gui_coords.z() / GRID_SIZE);
     }
 
-    QPointF guiXyzToNED(QPointF const &gui_coords) {
-        // QPointF(n, e, d)
-        return QPointF(-1.0 * gui_coords.y() / GRID_SIZE,
-                       gui_coords.x() / GRID_SIZE);
+    QVector3D guiXyzToXyz(qreal x, qreal y, qreal z) {
+        // QVector3D(x, y, z)
+        return QVector3D(x / GRID_SIZE,
+                         -1.0 * y / GRID_SIZE,
+                         z / GRID_SIZE);
+    }
+
+    QVector3D xyzToGuiXyz(QVector3D const &xyz_coords) {
+        // QVector3D(x, -y, z)
+        return QVector3D(xyz_coords.x() * GRID_SIZE,
+                       -1.0 * xyz_coords.y() * GRID_SIZE,
+                       xyz_coords.z() * GRID_SIZE);
+    }
+
+    QVector3D xyzToGuiXyz(qreal x, qreal y, qreal z) {
+        // QVector3D(x, -y, z)
+        return QVector3D(x * GRID_SIZE,
+                         -1.0 * y * GRID_SIZE,
+                         z * GRID_SIZE);
     }
 }  // namespace optgui

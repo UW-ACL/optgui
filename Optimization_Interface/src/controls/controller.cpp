@@ -90,6 +90,8 @@ Controller::Controller(Canvas *canvas) {
             this, SLOT(setPathColor(bool)));
     connect(this, SIGNAL(stopComputeWorker()),
             this->compute_thread_, SLOT(stopCompute()));
+    connect(this, SIGNAL(resetInputs()),
+            this->compute_thread_, SLOT(resetInputs()));
     this->compute_thread_->start();
 }
 
@@ -139,7 +141,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     PointGraphicsItem *>(item);
             PointModelItem *model = point->model_;
             if (this->model_->isCurrFinalPoint(model)) {
-                this->model_->setCurrFinalPoint(nullptr);
+                this->setCurrFinalPoint(nullptr);
             }
             this->removePointSocket(model);
             this->canvas_->removeItem(point);
@@ -303,19 +305,23 @@ void Controller::tickLiveReference() {
     if (this->model_->tickPathStaged()) {
         autogen::packet::traj3dof traj = this->model_->getStagedTraj3dof();
         if (this->is_simulated_) {
-            QPointF coords = nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
-                                         traj.pos_ned(1, this->traj_index_));
+            QVector3D coords = nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
+                                           traj.pos_ned(1, this->traj_index_),
+                                           traj.pos_ned(2, this->traj_index_));
             // set model pos
             this->canvas_->drone_graphic_->model_->setPos(coords);
             // set graphic pos so view knows to draw offscreen
-            this->canvas_->drone_graphic_->setPos(coords);
+            this->canvas_->drone_graphic_->setPos(QPointF(coords.x(),
+                                                          coords.y()));
         }
         this->canvas_->drone_graphic_->model_->
                 setVel(nedToGuiXyz(traj.vel_ned(0, this->traj_index_),
-                                   traj.vel_ned(1, this->traj_index_)));
+                                   traj.vel_ned(1, this->traj_index_),
+                                   traj.vel_ned(2, this->traj_index_)));
         this->canvas_->drone_graphic_->model_->
                 setAccel(nedToGuiXyz(traj.accl_ned(0, this->traj_index_),
-                                     traj.accl_ned(1, this->traj_index_)));
+                                     traj.accl_ned(1, this->traj_index_),
+                                     traj.accl_ned(2, this->traj_index_)));
         this->traj_index_++;
     } else {
         this->freeze_traj_timer_->stop();
@@ -352,6 +358,11 @@ void Controller::unstageTraj() {
 
 void Controller::setSimulated(bool state) {
     this->is_simulated_ = state;
+}
+
+void Controller::setFreeFinalTime(bool state) {
+    // emit resetInputs();
+    this->model_->setFreeFinalTime(state);
 }
 
 void Controller::setPorts() {
@@ -550,7 +561,10 @@ void Controller::setClearance(qreal clearance) {
 }
 
 void Controller::setCurrFinalPoint(PointModelItem *point) {
-    this->model_->setCurrFinalPoint(point);
+    if (!this->model_->isCurrFinalPoint(point)) {
+        emit resetInputs();
+        this->model_->setCurrFinalPoint(point);
+    }
 }
 
 FEASIBILITY_CODE Controller::getIsValidTraj() {

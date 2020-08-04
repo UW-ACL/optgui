@@ -18,19 +18,12 @@
 
 namespace optgui {
 
-ConstraintModel::ConstraintModel() : model_lock_() {
-    this->initialize();
-}
-
-void ConstraintModel::initialize() {
+ConstraintModel::ConstraintModel() : model_lock_(), P_() {
     // Set model containers
     this->curr_final_point_ = nullptr;
     this->path_ = nullptr;
     this->path_staged_ = nullptr;
     this->drone_ = nullptr;
-
-    // initialize algorithm variables
-    this->P_ = skyenet::getDefaultP();
 
     this->input_code_ = INPUT_CODE::VALID_INPUT;
     this->feasible_code_ = FEASIBILITY_CODE::INFEASIBLE;
@@ -43,6 +36,7 @@ void ConstraintModel::initialize() {
     // initialize live reference mode to disable updating
     // current trajectory
     this->is_live_reference_ = false;
+    this->is_free_final_time_ = false;
 }
 
 ConstraintModel::~ConstraintModel() {
@@ -235,30 +229,31 @@ void ConstraintModel::setDroneModel(DroneModelItem *drone_model) {
 void ConstraintModel::setDroneModelPos(QPointF const &pos) {
     QMutexLocker locker(&this->model_lock_);
     if (this->drone_) {
-        this->drone_->setPos(pos);
+        this->drone_->setPos(QVector3D(pos.x(), pos.y(), 0));
     }
 }
 
-QPointF ConstraintModel::getFinalPos() {
+QVector3D ConstraintModel::getFinalPos() {
     QMutexLocker locker(&this->model_lock_);
     if (this->curr_final_point_ != nullptr) {
-        return this->curr_final_point_->getPos();
+        QPointF pos_2D = this->curr_final_point_->getPos();
+        return QVector3D(pos_2D.x(), pos_2D.y(), 0);
     } else {
-        return QPointF();
+        return QVector3D();
     }
 }
 
-QPointF ConstraintModel::getInitialPos() {
+QVector3D ConstraintModel::getInitialPos() {
     QMutexLocker locker(&this->model_lock_);
     return this->drone_->getPos();
 }
 
-QPointF ConstraintModel::getInitialVel() {
+QVector3D ConstraintModel::getInitialVel() {
     QMutexLocker locker(&this->model_lock_);
     return this->drone_->getVel();
 }
 
-QPointF ConstraintModel::getInitialAcc() {
+QVector3D ConstraintModel::getInitialAcc() {
     QMutexLocker locker(&this->model_lock_);
     return this->drone_->getAccel();
 }
@@ -352,6 +347,16 @@ void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
     this->is_live_reference_ = reference_mode;
 }
 
+bool ConstraintModel::isFreeFinalTime() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->is_free_final_time_;
+}
+
+void ConstraintModel::setFreeFinalTime(bool free_final_time) {
+    QMutexLocker locker(&this->model_lock_);
+    this->is_free_final_time_ = free_final_time;
+}
+
 void ConstraintModel::setCurrFinalPoint(PointModelItem *point) {
     QMutexLocker locker(&this->model_lock_);
     this->curr_final_point_ = point;
@@ -382,46 +387,47 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.v_max = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.theta_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.q_max = qobject_cast<QDoubleSpinBox *>
+    this->P_.j_max = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.delta = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.max_iter = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.Delta_i = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.lambda = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.alpha = qobject_cast<QDoubleSpinBox *>
+//    this->P_.alpha = qobject_cast<QDoubleSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.dL_tol = qobject_cast<QDoubleSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.rho_0 = qobject_cast<QDoubleSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.rho_1 = qobject_cast<QDoubleSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+//    this->P_.rho_2 = qobject_cast<QDoubleSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.ri_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.dL_tol = qobject_cast<QDoubleSpinBox *>
+    this->P_.rf_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.rho_0 = qobject_cast<QDoubleSpinBox *>
+    this->P_.wp_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.rho_1 = qobject_cast<QDoubleSpinBox *>
+    this->P_.trust_tau_weight = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.rho_2 = qobject_cast<QDoubleSpinBox *>
+    this->P_.trust_delta_weight = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.rirelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.rfrelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    int wprelax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    for (int i = 0; i < skyenet::MAX_WAYPOINTS; i++) {
-        this->P_.wprelax[i] = wprelax;
-    }
-    /*
-    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    */
+//    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
+//            (params_table->cellWidget(row_index++, 0))->value();
 }
 
 skyenet::params ConstraintModel::getSkyeFlyParams() {
     QMutexLocker locker(&this->model_lock_);
 
     // time intervals
-    this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
+    // this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
 
     return this->P_;
 }
@@ -568,28 +574,25 @@ void ConstraintModel::updateEllipseColors() {
 
 void ConstraintModel::loadWaypointConstraints(
             skyenet::params *P,
-            double wp[3][skyenet::MAX_WAYPOINTS]) {
+            double wp[skyenet::MAX_WAYPOINTS][3]) {
     QMutexLocker locker(&this->model_lock_);
 
     P->n_wp = this->waypoints_.size();
     // no waypoints, dont factor in relaxation
     if (P->n_wp == 0) {
-        for (quint32 i = 0; i < skyenet::MAX_WAYPOINTS; i++) {
-            P->wprelax[i] = 0;
-        }
+        P->wp_relax = 0;
         return;
     }
 
     // space out waypoint indicies
     this->distributeWpEvenly(P, 0, P->n_wp, 1, (P->K - 2));
 
-
     // load waypoint pos
     for (quint32 i = 0; i < P->n_wp; i++) {
         QPointF wp_pos = this->waypoints_.at(i)->getPos();
-        QPointF ned_wp_pos = guiXyzToNED(wp_pos.x(), wp_pos.y());
-        wp[1][i] = ned_wp_pos.x();
-        wp[2][i] = ned_wp_pos.y();
+        QVector3D xyz_wp_pos = guiXyzToXyz(wp_pos.x(), wp_pos.y(), 0);
+        wp[i][0] = xyz_wp_pos.x();
+        wp[i][1] = xyz_wp_pos.y();
     }
 }
 
@@ -614,9 +617,10 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
         P->obs.M1[0][index] = (inv_a * sin_t * cos_t) - (inv_b * sin_t * cos_t);
         P->obs.M1[1][index] = (inv_a * sin_t_2) + (inv_b * cos_t_2);
 
-        QPointF ned_coords = guiXyzToNED(ellipse->getPos());
-        P->obs.c_n[index] = ned_coords.x();
-        P->obs.c_e[index] = ned_coords.y();
+        QPointF ellipse_pos = ellipse->getPos();
+        QVector3D xyz_coords = guiXyzToXyz(ellipse_pos.x(), ellipse_pos.y(), 0);
+        P->obs.c_x[index] = xyz_coords.x();
+        P->obs.c_y[index] = xyz_coords.y();
         index++;
         if (index >= skyenet::MAX_OBS) {
             P->obs.n = index;
@@ -633,12 +637,14 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
     for (PolygonModelItem *polygon : this->polygons_) {
         quint32 size = polygon->getSize();
         for (quint32 i = 1; i < size + 1; i++) {
-            QPointF ned_p = guiXyzToNED(polygon->getPointAt(i - 1));
-            QPointF ned_q = guiXyzToNED(polygon->getPointAt(i % size));
+            QPointF p_pos = polygon->getPointAt(i - 1);
+            QPointF q_pos = polygon->getPointAt(i % size);
+            QVector3D xyz_p = guiXyzToXyz(p_pos.x(), p_pos.y(), 0);
+            QVector3D xyz_q = guiXyzToXyz(q_pos.x(), q_pos.y(), 0);
             if (polygon->getDirection()) {
-                this->loadPlaneConstraint(P, index, ned_q, ned_p);
+                this->loadPlaneConstraint(P, index, xyz_q, xyz_p);
             } else {
-                this->loadPlaneConstraint(P, index, ned_p, ned_q);
+                this->loadPlaneConstraint(P, index, xyz_p, xyz_q);
             }
             index++;
             if (index >= skyenet::MAX_CPOS) {
@@ -649,13 +655,15 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
     }
 
     for (PlaneModelItem *plane : this->planes_) {
-        QPointF ned_p = guiXyzToNED(plane->getP1());
-        QPointF ned_q = guiXyzToNED(plane->getP2());
+        QPointF p1_pos = plane->getP1();
+        QPointF p2_pos = plane->getP2();
+        QVector3D xyz_p = guiXyzToXyz(p1_pos.x(), p1_pos.y(), 0);
+        QVector3D xyz_q = guiXyzToXyz(p2_pos.x(), p2_pos.y(), 0);
 
         if (plane->getDirection()) {
-            this->loadPlaneConstraint(P, index, ned_q, ned_p);
+            this->loadPlaneConstraint(P, index, xyz_q, xyz_p);
         } else {
-            this->loadPlaneConstraint(P, index, ned_p, ned_q);
+            this->loadPlaneConstraint(P, index, xyz_p, xyz_q);
         }
         index++;
         if (index >= skyenet::MAX_CPOS) {
@@ -669,15 +677,16 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
 // ====== Private functions, do not lock ======
 
 void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
-                                              QPointF ned_p, QPointF ned_q) {
-    qreal c = ((ned_p.y() * ned_q.x()) - (ned_p.x() * ned_q.y()));
+                                              QVector3D xyz_p, QVector3D xyz_q) {
+    qreal c = ((xyz_q.x() * xyz_p.y()) - (xyz_q.y() * xyz_p.x()));
 
-    qreal a1 = (ned_p.y() - ned_q.y()) / c;
-    qreal a2 = (ned_p.x() - ned_q.x()) / c * -1.0;
+    qreal a1 = (xyz_q.x() - xyz_p.x()) / c;
+    qreal a2 = (xyz_q.y() - xyz_p.y()) / c * -1.0;
 
-    QLineF line(ned_p, ned_q);
+    QLineF line(QPointF(xyz_q.x(), xyz_q.y()),
+                QPointF(xyz_p.x(), xyz_p.y()));
     QPointF normal = line.normalVector().p2();
-    qreal flip = ((a1 * normal.x()) + (a2 * normal.y()) < 1) ? -1 : 1;
+    qreal flip = ((a1 * normal.y()) + (a2 * normal.x()) < 1) ? -1 : 1;
 
     P->cpos.A[2 * index] = flip * a1;
     P->cpos.A[(2 * index) + 1] = flip * a2;

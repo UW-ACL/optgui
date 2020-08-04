@@ -32,17 +32,20 @@ protected:
     void updateGraphics();
     void setPathColor(bool isRed);
     void updateMessage();
+    void finalTime(double final_time);
 
  public slots:
     void stopCompute();
+    void resetInputs();
 
  private:
     ConstraintModel *model_;
     skyenet::SkyeFly fly_;
     bool run_loop_;
+    bool target_changed_;
     INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
-                              QPointF const &initial_pos,
-                              QPointF const &final_pos);
+                              QVector3D const &initial_pos,
+                              QVector3D const &final_pos);
 };
 
 }  // namespace optgui

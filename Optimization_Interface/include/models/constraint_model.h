@@ -97,16 +97,18 @@ class ConstraintModel {
 
     void setLiveReferenceMode(bool reference_mode);
     bool isLiveReference();
+    void setFreeFinalTime(bool free_final_time);
+    bool isFreeFinalTime();
 
     INPUT_CODE getIsValidInput();
     bool setIsValidInput(INPUT_CODE code);
     QVector<QRegion> getEllipseRegions();
     void updateEllipseColors();
 
-    QPointF getFinalPos();
-    QPointF getInitialPos();
-    QPointF getInitialVel();
-    QPointF getInitialAcc();
+    QVector3D getFinalPos();
+    QVector3D getInitialPos();
+    QVector3D getInitialVel();
+    QVector3D getInitialAcc();
     QPointF getWpPos(int index);
 
     void setCurrFinalPoint(PointModelItem *point);
@@ -114,13 +116,11 @@ class ConstraintModel {
     bool isCurrFinalPoint(PointModelItem *model);
 
     void loadWaypointConstraints(skyenet::params *P,
-                                 double wp[3][skyenet::MAX_WAYPOINTS]);
+                                 double wp[skyenet::MAX_WAYPOINTS][3]);
     void loadEllipseConstraints(skyenet::params *P);
     void loadPosConstraints(skyenet::params *P);
 
 private:
-    void initialize();
-
     QMutex model_lock_;
 
     // Skyefly params
@@ -131,6 +131,7 @@ private:
     FEASIBILITY_CODE feasible_code_;
     bool traj_staged_;
     bool is_live_reference_;
+    bool is_free_final_time_;
 
     // Clearance around ellipses in meters
     qreal clearance_;
@@ -148,7 +149,7 @@ private:
 
     // Convert constraints to skyefly params
     void loadPlaneConstraint(skyenet::params *P, quint32 index,
-                                 QPointF p, QPointF q);
+                                 QVector3D p, QVector3D q);
     int distributeWpEvenly(skyenet::params *P, int index, int remaining,
                          int low, int high);
 };

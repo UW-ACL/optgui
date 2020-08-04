@@ -9,6 +9,7 @@
 #define GLOBALS_H_
 
 #include <QGraphicsItem>
+#include <QVector3D>
 
 namespace optgui {
     extern qreal const GRID_SIZE;
@@ -55,9 +56,13 @@ namespace optgui {
         FINAL_POS_OVERLAP
     };
 
-    QPointF nedToGuiXyz(qreal n, qreal e);
-    QPointF guiXyzToNED(qreal x, qreal y);
-    QPointF guiXyzToNED(QPointF const &gui_coords);
+    QVector3D nedToGuiXyz(qreal n, qreal e, qreal d);
+//    QPointF guiXyzToNED(qreal x, qreal y);
+//    QPointF guiXyzToNED(QPointF const &gui_coords);
+    QVector3D guiXyzToXyz(QVector3D const &gui_coords);
+    QVector3D guiXyzToXyz(qreal x, qreal y, qreal z);
+    QVector3D xyzToGuiXyz(QVector3D const &xyz_coords);
+    QVector3D xyzToGuiXyz(qreal x, qreal y, qreal z);
 }  // namespace optgui
 
 #endif  // GLOBALS_H_

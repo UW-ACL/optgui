@@ -43,8 +43,9 @@ void DroneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Update pos
-    QPointF pos = this->model_->getPos();
-    this->setPos(pos);
+    QVector3D pos_3D = this->model_->getPos();
+    QPointF pos_2D = QPointF(pos_3D.x(), pos_3D.y());
+    this->setPos(pos_2D);
 
     // scale with view zoom level
     qreal scaling_factor = this->getScalingFactor();
@@ -58,7 +59,7 @@ void DroneGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(pos));
+        QPointF text_pos(this->mapFromScene(pos_2D));
         QFont font = painter->font();
         font.setPointSizeF(12.0 / scaling_factor);
         painter->setFont(font);
