@@ -60,6 +60,7 @@ class View : public QGraphicsView {
     void updateFeedbackMessage();
     void setCurrFinalPoint();
     void toggleSim(int);
+    void toggleTrajLock(int);
     void toggleFreeFinalTime(int);
 
   private:
@@ -110,6 +111,7 @@ class View : public QGraphicsView {
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
     void initializeSimToggle(MenuPanel *panel);
+    void initializeTrajLockToggle(MenuPanel *panel);
     void initializeFreeFinalTimeToggle(MenuPanel *panel);
     // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);

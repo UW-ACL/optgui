@@ -162,6 +162,9 @@ void View::initializeMenuPanel() {
     // add space at the bottom
     this->menu_panel_->menu_layout_->insertStretch(-1, 1);
 
+    // on fly update
+    this->initializeTrajLockToggle(this->menu_panel_);
+
     // simulation toggle
     this->initializeSimToggle(this->menu_panel_);
 
@@ -794,7 +797,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.a_min
     QDoubleSpinBox *params_a_min =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_a_min->setRange(-1000, 1000);
+    params_a_min->setRange(-10000, 10000);
     params_a_min->setValue(default_P.a_min);
     params_a_min->setSingleStep(0.1);
     connect(params_a_min, SIGNAL(valueChanged(double)),
@@ -812,7 +815,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.a_max
     QDoubleSpinBox *params_a_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_a_max->setRange(-1000, 1000);
+    params_a_max->setRange(-10000, 10000);
     params_a_max->setSingleStep(0.1);
     params_a_max->setValue(default_P.a_max);
     connect(params_a_max, SIGNAL(valueChanged(double)),
@@ -830,15 +833,11 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.v_max
     QDoubleSpinBox *params_v_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_v_max->setRange(-1000, 1000);
+    params_v_max->setRange(-10000, 10000);
     params_v_max->setSingleStep(0.1);
     params_v_max->setValue(default_P.v_max);
     connect(params_v_max, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
-
-    connect(params_v_max, SIGNAL(valueChanged(double)),
-            this, SLOT(constrainAccel()));
-    this->a_max_row = row_index;
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_v_max);
     this->skyefly_params_table_->
@@ -848,7 +847,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.theta_max
     QDoubleSpinBox *params_theta_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_theta_max->setRange(-1000, 1000);
+    params_theta_max->setRange(-10000, 10000);
     params_theta_max->setSingleStep(0.1);
     params_theta_max->setValue(default_P.theta_max);
     connect(params_theta_max, SIGNAL(valueChanged(double)),
@@ -863,7 +862,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.j_max
     QDoubleSpinBox *params_j_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_j_max->setRange(-1000, 1000);
+    params_j_max->setRange(-10000, 10000);
     params_j_max->setValue(default_P.j_max);
     params_j_max->setSingleStep(0.01);
     connect(params_j_max, SIGNAL(valueChanged(double)),
@@ -916,7 +915,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.alpha
 //    QDoubleSpinBox *params_alpha =
 //            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_alpha->setRange(-1000, 1000);
+//    params_alpha->setRange(-10000, 10000);
 //    params_alpha->setValue(default_P.alpha);
 //    params_alpha->setSingleStep(0.1);
 //    connect(params_alpha, SIGNAL(valueChanged(double)),
@@ -944,7 +943,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.rho_0
 //    QDoubleSpinBox *params_rho_0 =
 //            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_0->setRange(-1000, 1000);
+//    params_rho_0->setRange(-10000, 10000);
 //    params_rho_0->setValue(default_P.rho_0);
 //    connect(params_rho_0, SIGNAL(valueChanged(double)),
 //            this, SLOT(setSkyeFlyParams()));
@@ -957,7 +956,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.rho_1
 //    QDoubleSpinBox *params_rho_1 =
 //            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_1->setRange(-1000, 1000);
+//    params_rho_1->setRange(-10000, 10000);
 //    params_rho_1->setValue(default_P.rho_1);
 //    connect(params_rho_1, SIGNAL(valueChanged(double)),
 //            this, SLOT(setSkyeFlyParams()));
@@ -970,7 +969,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.rho_2
 //    QDoubleSpinBox *params_rho_2 =
 //            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_2->setRange(-1000, 1000);
+//    params_rho_2->setRange(-10000, 10000);
 //    params_rho_2->setValue(default_P.rho_2);
 //    connect(params_rho_2, SIGNAL(valueChanged(double)),
 //            this, SLOT(setSkyeFlyParams()));
@@ -1095,6 +1094,10 @@ void View::toggleSim(int state) {
     this->controller_->setSimulated(state == Qt::Checked);
 }
 
+void View::toggleTrajLock(int state) {
+    this->controller_->setTrajLock(state == Qt::Checked);
+}
+
 void View::toggleFreeFinalTime(int state) {
     this->controller_->setFreeFinalTime(state == Qt::Checked);
 }
@@ -1192,6 +1195,22 @@ void View::initializeSimToggle(MenuPanel *panel) {
     // Connect execute button
     connect(sim_toggle, SIGNAL(stateChanged(int)),
             this, SLOT(toggleSim(int)));
+}
+
+void View::initializeTrajLockToggle(MenuPanel *panel) {
+    QCheckBox *traj_lock_toggle = new QCheckBox("Traj Lock", panel->menu_);
+    traj_lock_toggle->
+            setToolTip(tr("Lock Executed Trajectory"));
+    traj_lock_toggle->setMinimumHeight(35);
+    traj_lock_toggle->setCheckState(Qt::Unchecked);
+    panel->menu_->layout()->addWidget(traj_lock_toggle);
+    panel->menu_->layout()->setAlignment(traj_lock_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(traj_lock_toggle);
+
+    // Connect execute button
+    connect(traj_lock_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleTrajLock(int)));
 }
 
 void View::initializeFreeFinalTimeToggle(MenuPanel *panel) {

@@ -82,6 +82,9 @@ Controller::Controller(Canvas *canvas) {
             this, SLOT(tickLiveReference()));
     this->is_simulated_ = false;
 
+    // Set traj lock. Cannot execute traj while already executing.
+    this->traj_lock_ = false;
+
     // initialize skyfly thread
     this->compute_thread_ = new ComputeThread(this->model_);
     connect(this->compute_thread_, SIGNAL(updateGraphics()), this->canvas_,
@@ -284,7 +287,11 @@ void Controller::freeze_traj() {
     int msec = (1000 * this->model_->getFinaltime()) /
             (this->model_->getHorizon() - 1);
     this->freeze_traj_timer_->start(msec);
-    this->model_->setLiveReferenceMode(true);
+    if (this->traj_lock_) {
+        this->model_->setLiveReferenceMode(true);
+    } else {
+        this->model_->setLiveReferenceMode(false);
+    }
     this->traj_index_ = 1;
 }
 
@@ -340,6 +347,14 @@ void Controller::execute() {
         this->canvas_->path_staged_graphic_->setColor(CYAN);
         this->model_->setPathPoints(this->model_->getPathStagedPoints());
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
+    } else if (this->freeze_traj_timer_->isActive() &&
+               !this->traj_lock_ &&
+               this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
+        this->setStagedPath();
+        this->freeze_traj();
+        this->canvas_->path_staged_graphic_->setColor(CYAN);
+        // rthis->model_->setPathPoints(this->model_->getPathStagedPoints());
+        emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     }
 }
 
@@ -358,6 +373,10 @@ void Controller::unstageTraj() {
 
 void Controller::setSimulated(bool state) {
     this->is_simulated_ = state;
+}
+
+void Controller::setTrajLock(bool state) {
+    this->traj_lock_ = state;
 }
 
 void Controller::setFreeFinalTime(bool state) {

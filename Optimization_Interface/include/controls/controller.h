@@ -63,6 +63,7 @@ class Controller : public QObject {
     void unstageTraj();
 
     void setSimulated(bool state);
+    void setTrajLock(bool state);
     void setFreeFinalTime(bool state);
 
     // pass info between model and view
@@ -91,6 +92,7 @@ class Controller : public QObject {
     qreal waypoints_render_level_;
 
     bool is_simulated_;
+    bool traj_lock_;
 
     // freeze traj timer
     QTimer *freeze_traj_timer_;
