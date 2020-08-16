@@ -73,6 +73,7 @@ class Controller : public QObject {
     FEASIBILITY_CODE getIsValidTraj();
     INPUT_CODE getIsValidInput();
 
+
  signals:
     void trajectoryExecuted(autogen::packet::traj3dof data);
     void resetInputs();

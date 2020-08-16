@@ -9,6 +9,11 @@
 #include <QSettings>
 #include <QTranslator>
 #include <QSet>
+#include <QDate>
+#include <QFile>
+#include <QTextStream>
+#include <QString>
+
 
 #include <cmath>
 #include <limits>
@@ -340,12 +345,30 @@ void Controller::tickLiveReference() {
                 this->canvas_->path_staged_graphic_->boundingRect());
 }
 
+
 void Controller::execute() {
     if (!this->freeze_traj_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
         this->freeze_traj();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
         this->model_->setPathPoints(this->model_->getPathStagedPoints());
+
+        //Todo:Skye - change this later
+        QString filepath = "C:/msys32/home/ACL/optgui/paper_data/";
+        QString filename = QDate::currentDate().toString("'data_'MM_dd_yyyy'");
+        filename.append(QTime::currentTime().toString("'_'hh.mm.ss'.txt'"));
+        QVector<QPointF> data_to_write = this->model_->getPathStagedPoints();
+
+        QFile file(filepath + filename);
+        if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+            //file.open(QIODevice::ReadWrite);
+            QTextStream stream(&file);
+            for (int c=0; c < data_to_write.size(); c++ ) {
+                stream << data_to_write[c].rx() << "," << data_to_write[c].ry() << endl;
+            }
+        }
+
+
         emit trajectoryExecuted(this->model_->getStagedTraj3dof());
     } else if (this->freeze_traj_timer_->isActive() &&
                !this->traj_lock_ &&
