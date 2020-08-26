@@ -18,18 +18,7 @@ MenuPanel::MenuPanel(QWidget *parent, bool isRight, int size,
     this->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->setFixedWidth(size);
-    this->initialize();
-}
 
-MenuPanel::~MenuPanel() {
-    // delete menu panel components
-    delete this->menu_->layout();
-    delete this->menu_;
-    delete this->close_button_;
-    delete this->layout();
-}
-
-void MenuPanel::initialize() {
     // Set color
     this->setAutoFillBackground(true);
     QPalette palette = this->palette();
@@ -55,6 +44,14 @@ void MenuPanel::initialize() {
         this->initializeMenuwidget();
         this->initializeCloseButton();
     }
+}
+
+MenuPanel::~MenuPanel() {
+    // delete menu panel components
+    delete this->menu_->layout();
+    delete this->menu_;
+    delete this->close_button_;
+    delete this->layout();
 }
 
 void MenuPanel::initializeCloseButton() {

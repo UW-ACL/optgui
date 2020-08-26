@@ -34,8 +34,8 @@ class Canvas : public QGraphicsScene {
 
     PathGraphicsItem *path_graphic_;
     PathGraphicsItem *path_staged_graphic_;
-    DroneGraphicsItem *drone_graphic_;
 
+    QSet<DroneGraphicsItem *> drone_graphics_;
     QSet<EllipseGraphicsItem *> ellipse_graphics_;
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
@@ -52,7 +52,6 @@ class Canvas : public QGraphicsScene {
     void updatePathGraphicsItem();
 
  private:
-    void initialize();
     void setBackgroundImage(QString filename);
     QPen background_pen_;
     QPen foreground_pen_;

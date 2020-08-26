@@ -46,6 +46,8 @@ class Controller : public QObject {
     void addWaypoint(QPointF const &point);
     void addPathPoint(QPointF const &point);
     void addFinalPoint(QPointF const &pos);
+    void addDrone(QPointF const &point);
+
     void clearPathPoints();
     void removeAllWaypoints();
     void removeItem(QGraphicsItem *item);
@@ -70,9 +72,9 @@ class Controller : public QObject {
     quint32 getNumWaypoints();
     void setClearance(qreal clearance);
     void setCurrFinalPoint(PointModelItem *point);
+    void setCurrDrone(DroneModelItem *drone);
     FEASIBILITY_CODE getIsValidTraj();
     INPUT_CODE getIsValidInput();
-
 
  signals:
     void trajectoryExecuted(autogen::packet::traj3dof data);
@@ -89,6 +91,7 @@ class Controller : public QObject {
 
     // QGraphicsScene
     Canvas *canvas_;
+    qreal drone_render_level_;
     qreal final_point_render_level_;
     qreal waypoints_render_level_;
 
@@ -101,16 +104,18 @@ class Controller : public QObject {
 
     // Port setting dialog and network sockets
     PortDialog *port_dialog_;
-    DroneSocket *drone_socket_;
+    QVector<DroneSocket *> drone_sockets_;
     QVector<PointSocket *> final_point_sockets_;
     QVector<WaypointSocket *> waypoint_sockets_;
     QVector<EllipseSocket *> ellipse_sockets_;
 
+    void removeDroneSocket(DroneModelItem *model);
     void removeEllipseSocket(EllipseModelItem *model);
     void removePointSocket(PointModelItem *model);
     void removeWaypointSocket(PointModelItem *model);
     void closeSockets();
 
+    void loadDrone(DroneModelItem *model);
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);

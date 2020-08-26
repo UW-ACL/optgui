@@ -32,7 +32,7 @@ View::View(QWidget * parent)
     this->setScene(this->canvas_);
     // connect canvas selection change to detect curr final point
     connect(this->scene(), SIGNAL(selectionChanged()),
-            this, SLOT(setCurrFinalPoint()));
+            this, SLOT(setCurrEndpoints()));
 
     // Create Controller
     // added menu panel to construction
@@ -50,8 +50,35 @@ View::View(QWidget * parent)
     this->currentStepScaleFactor_ = 1;
     this->initialZoom_ = 1;
 
-    // set graphical settings menu panels
-    this->initialize();
+    // Set color
+    this->setAutoFillBackground(true);
+    QPalette palette = this->palette();
+    QColor background = QWidget::palette().window().color();
+    background.setAlpha(200);
+    palette.setColor(QPalette::Base, background);
+    this->setPalette(palette);
+
+    // Set Layout
+    this->setLayout(new QHBoxLayout(this));
+    this->layout()->setContentsMargins(0, 0, 0, 0);
+
+    // Set scroll preferences
+    this->setDragMode(QGraphicsView::ScrollHandDrag);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
+
+    // Set rendering preference
+    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
+    // Set render hint
+    this->setRenderHint(QPainter::Antialiasing);
+
+    this->initializeExpertPanel();
+    this->initializeMenuPanel();
+
+    // Expand view to fill screen
+    this->expandView();
 }
 
 View::~View() {
@@ -90,38 +117,6 @@ void View::setPorts() {
     this->controller_->setPorts();
 }
 
-void View::initialize() {
-    // Set color
-    this->setAutoFillBackground(true);
-    QPalette palette = this->palette();
-    QColor background = QWidget::palette().window().color();
-    background.setAlpha(200);
-    palette.setColor(QPalette::Base, background);
-    this->setPalette(palette);
-
-    // Set Layout
-    this->setLayout(new QHBoxLayout(this));
-    this->layout()->setContentsMargins(0, 0, 0, 0);
-
-    // Set scroll preferences
-    this->setDragMode(QGraphicsView::ScrollHandDrag);
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setResizeAnchor(QGraphicsView::AnchorViewCenter);
-
-    // Set rendering preference
-    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-
-    // Set render hint
-    this->setRenderHint(QPainter::Antialiasing);
-
-    this->initializeExpertPanel();
-    this->initializeMenuPanel();
-
-    // Expand view to fill screen
-    this->expandView();
-}
-
 void View::initializeMenuPanel() {
     this->menu_panel_ = new MenuPanel(this, true);
 
@@ -140,6 +135,7 @@ void View::initializeMenuPanel() {
 
     // initialize menu buttons
     // toggle options
+    this->initializeDroneButton(this->menu_panel_);
     this->initializeFinalPointButton(this->menu_panel_);
     this->initializeEllipseButton(this->menu_panel_);
     this->initializePolygonButton(this->menu_panel_);
@@ -217,6 +213,10 @@ void View::mousePressEvent(QMouseEvent *event) {
     QPointF pos = this->mapToScene(event->pos());
 
     switch (this->state_) {
+        case DRONE: {
+            this->controller_->addDrone(pos);
+            break;
+        }
         case POINT: {
             this->controller_->addFinalPoint(pos);
             break;
@@ -507,9 +507,9 @@ void View::initializeFinalPointButton(MenuPanel *panel) {
     pen.setWidth(2);
     painter.setPen(pen);
     painter.setBrush(RED);
-    painter.drawEllipse(15, 15, 20, 20);
+    painter.drawEllipse(10, 10, 30, 30);
     point_button->setPixmap(pix);
-    point_button->setToolTip(tr("Set final point"));
+    point_button->setToolTip(tr("Add target point"));
     this->panel_widgets_.append(point_button);
     this->toggle_buttons_.append(point_button);
 
@@ -518,6 +518,38 @@ void View::initializeFinalPointButton(MenuPanel *panel) {
                                         Qt::AlignTop|Qt::AlignCenter);
 
     connect(point_button, SIGNAL(changeState(STATE)),
+            this, SLOT(setState(STATE)));
+}
+
+void View::initializeDroneButton(MenuPanel *panel) {
+    MenuButton *drone_button = new MenuButton(DRONE, panel->menu_);
+    QPixmap pix(50, 50);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(Qt::black);
+    pen.setWidth(2);
+    painter.setPen(pen);
+    painter.setBrush(YELLOW);
+
+    QPolygonF poly;
+    poly << QPointF(5, 25);
+    poly << QPointF(25, 5);
+    poly << QPointF(45, 25);
+    poly << QPointF(25, 45);
+    poly << QPointF(5, 25);
+    painter.drawPolygon(poly);
+
+    drone_button->setPixmap(pix);
+    drone_button->setToolTip(tr("Add drone"));
+    this->panel_widgets_.append(drone_button);
+    this->toggle_buttons_.append(drone_button);
+
+    panel->menu_->layout()->addWidget(drone_button);
+    panel->menu_->layout()->setAlignment(drone_button,
+                                        Qt::AlignTop|Qt::AlignCenter);
+
+    connect(drone_button, SIGNAL(changeState(STATE)),
             this, SLOT(setState(STATE)));
 }
 
@@ -1039,9 +1071,11 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     connect(params_trust_delta, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_trust_delta);
+    this->skyefly_params_table_->setCellWidget(
+                row_index, 0, params_trust_delta);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("trust_delta"));
+            setVerticalHeaderItem(row_index,
+                                  new QTableWidgetItem("trust_delta"));
     row_index++;
 
     // P.wp_idx
@@ -1080,12 +1114,17 @@ void View::constrainAccel() {
     params_a_max->setMinimum(params_a_min->value());
 }
 
-void View::setCurrFinalPoint() {
+void View::setCurrEndpoints() {
     QList<QGraphicsItem *> items = this->scene()->selectedItems();
     for (QGraphicsItem * item : items) {
         if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC) {
             this->controller_->setCurrFinalPoint(
                         qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
+        }
+
+        if (item->type() == GRAPHICS_TYPE::DRONE_GRAPHIC) {
+            this->controller_->setCurrDrone(
+                        qgraphicsitem_cast<DroneGraphicsItem *>(item)->model_);
         }
     }
 }
@@ -1214,13 +1253,15 @@ void View::initializeTrajLockToggle(MenuPanel *panel) {
 }
 
 void View::initializeFreeFinalTimeToggle(MenuPanel *panel) {
-    QCheckBox *free_final_time_toggle = new QCheckBox("Free Final Time", panel->menu_);
+    QCheckBox *free_final_time_toggle =
+            new QCheckBox("Free Final Time", panel->menu_);
     free_final_time_toggle->
             setToolTip(tr("Toggle simulate trajectory"));
     free_final_time_toggle->setMinimumHeight(35);
     free_final_time_toggle->setCheckState(Qt::Unchecked);
     panel->menu_->layout()->addWidget(free_final_time_toggle);
-    panel->menu_->layout()->setAlignment(free_final_time_toggle, Qt::AlignBottom);
+    panel->menu_->layout()->setAlignment(
+                free_final_time_toggle, Qt::AlignBottom);
 
     this->panel_widgets_.append(free_final_time_toggle);
 

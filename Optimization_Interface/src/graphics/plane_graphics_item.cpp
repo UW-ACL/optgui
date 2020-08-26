@@ -18,10 +18,7 @@ PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void PlaneGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::gray;
     fill.setAlpha(200);

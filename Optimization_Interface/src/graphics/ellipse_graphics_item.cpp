@@ -18,10 +18,7 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void EllipseGraphicsItem::initialize() {
     // Set brush
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -131,6 +128,7 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
+        painter->rotate(-this->rotation());
         painter->setPen(Qt::black);
         QPointF text_pos(this->mapFromScene(pos));
         QFont font = painter->font();

@@ -32,7 +32,6 @@ class PathGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
 
  private:
-    void initialize();
     PathModelItem *model_;
     QPen pen_;
     quint32 width_;

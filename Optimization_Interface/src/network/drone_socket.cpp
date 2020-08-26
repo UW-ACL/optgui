@@ -42,7 +42,8 @@ void DroneSocket::readPendingDatagrams() {
                 // set model coords
                 this->drone_item_->model_->setPos(gui_coords);
                 // set graphics coords so view knows whether to paint it
-                this->drone_item_->setPos(QPointF(gui_coords.x(), gui_coords.y()));
+                this->drone_item_->setPos(QPointF(gui_coords.x(),
+                                                  gui_coords.y()));
                 emit refresh_graphics();
             }
         }

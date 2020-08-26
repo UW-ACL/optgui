@@ -18,10 +18,7 @@ PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void PolygonGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::gray;
     fill.setAlpha(200);

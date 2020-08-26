@@ -27,7 +27,6 @@ class MenuPanel : public QFrame {
     QToolButton *close_button_;
 
  private:
-    void initialize();
     bool is_right_;
     void initializeCloseButton();
     void initializeMenuwidget();

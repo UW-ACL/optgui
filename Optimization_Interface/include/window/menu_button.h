@@ -24,7 +24,6 @@ class MenuButton : public QLabel {
  protected:
     void mousePressEvent(QMouseEvent *event) override;
  private:
-    void initialize();
     STATE button_type_;
 };
 

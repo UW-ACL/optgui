@@ -24,6 +24,7 @@ class DroneGraphicsItem : public QGraphicsItem {
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;
+    int type() const override;
 
     DroneModelItem *model_;
 
@@ -33,7 +34,6 @@ class DroneGraphicsItem : public QGraphicsItem {
                        const QVariant &value) override;
 
  private:
-    void initialize();
     QPen pen_;
     QBrush brush_;
     qreal size_;

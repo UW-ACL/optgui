@@ -30,7 +30,8 @@ namespace optgui {
         POLYGON,
         PLANE,
         WAYPOINT,
-        POINT
+        POINT,
+        DRONE
     };
 
     enum GRAPHICS_TYPE {
@@ -41,7 +42,8 @@ namespace optgui {
         ELLIPSE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
         PLANE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 6,
         POLYGON_HANDLE_GRAPHIC = QGraphicsItem::UserType + 7,
-        POINT_GRAPHIC = QGraphicsItem::UserType + 8
+        POINT_GRAPHIC = QGraphicsItem::UserType + 8,
+        DRONE_GRAPHIC = QGraphicsItem::UserType + 9
     };
 
     enum FEASIBILITY_CODE {

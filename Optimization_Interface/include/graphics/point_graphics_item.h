@@ -19,7 +19,7 @@ class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qreal radius = 14);
+                               qreal radius = 16);
     PointModelItem *model_;
 
     QRectF boundingRect() const override;
@@ -37,7 +37,6 @@ class PointGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     qreal getScalingFactor() const;
-    void initialize();
 };
 
 }  // namespace optgui

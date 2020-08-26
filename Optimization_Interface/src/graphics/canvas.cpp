@@ -18,18 +18,9 @@ namespace optgui {
 
 Canvas::Canvas(QObject *parent, QString background_file)
     : QGraphicsScene(parent) {
-    this->initialize();
-    this->front_depth_ = 0;
-    this->setBackgroundImage(background_file);
-}
 
-Canvas::~Canvas() {
-}
-
-void Canvas::initialize() {
     // initialized by controller
     this->path_graphic_ = nullptr;
-    this->drone_graphic_ = nullptr;
 
     this->setBackgroundBrush(BLACK);
     // Set background pen
@@ -51,6 +42,13 @@ void Canvas::initialize() {
     // Connect slots
     connect(this, SIGNAL(selectionChanged()), this,
             SLOT(bringSelectedToFront()));
+
+    this->front_depth_ = 0;
+
+    this->setBackgroundImage(background_file);
+}
+
+Canvas::~Canvas() {
 }
 
 void Canvas::setBackgroundImage(QString filename) {

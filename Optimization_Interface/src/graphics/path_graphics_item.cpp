@@ -17,10 +17,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
     // Set model
     this->model_ = model;
     this->width_ = size;
-    this->initialize();
-}
 
-void PathGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(RED);
     this->pen_.setWidth(this->width_);

@@ -33,9 +33,6 @@ class ConstraintModel {
     ConstraintModel();
     ~ConstraintModel();
 
-    void setFinalPointModel(PointModelItem *model);
-    void setFinalPointPos(QPointF const &pos);
-
     void addPoint(PointModelItem *item);
     void removePoint(PointModelItem *item);
 
@@ -64,8 +61,8 @@ class ConstraintModel {
     void clearPathStagedPoints();
     QVector<QPointF> getPathStagedPoints();
 
-    void setDroneModel(DroneModelItem *model);
-    void setDroneModelPos(QPointF const &pos);
+    void addDrone(DroneModelItem *item);
+    void removeDrone(DroneModelItem *item);
 
     skyenet::params getSkyeFlyParams();
     void setSkyeFlyParams(QTableWidget *params_table);
@@ -113,7 +110,11 @@ class ConstraintModel {
 
     void setCurrFinalPoint(PointModelItem *point);
     bool hasCurrFinalPoint();
-    bool isCurrFinalPoint(PointModelItem *model);
+    bool isCurrFinalPoint(PointModelItem *point);
+
+    void setCurrDrone(DroneModelItem *drone);
+    bool hasCurrDrone();
+    bool isCurrDrone(DroneModelItem *drone);
 
     void loadWaypointConstraints(skyenet::params *P,
                                  double wp[skyenet::MAX_WAYPOINTS][3]);
@@ -143,9 +144,10 @@ private:
     QVector<PointModelItem *> waypoints_;
     PathModelItem *path_;
     PathModelItem *path_staged_;
-    DroneModelItem *drone_;
+    QSet<DroneModelItem *> drones_;
     QSet<PointModelItem *> final_points_;
     PointModelItem *curr_final_point_;
+    DroneModelItem *curr_drone_;
 
     // Convert constraints to skyefly params
     void loadPlaneConstraint(skyenet::params *P, quint32 index,

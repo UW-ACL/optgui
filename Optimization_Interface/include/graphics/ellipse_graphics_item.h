@@ -39,7 +39,6 @@ class EllipseGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
 
  private:
-    void initialize();
     QPen pen_;
     QPen clearance_pen_;
     QBrush brush_;

@@ -16,11 +16,7 @@ DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-    this->size_ = size;
-}
 
-void DroneGraphicsItem::initialize() {
     // Set pen
     this->pen_ = QPen(Qt::black);
     this->pen_.setWidth(1);
@@ -29,7 +25,16 @@ void DroneGraphicsItem::initialize() {
     this->brush_ = QBrush(YELLOW);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
+    this->setFlags(QGraphicsItem::ItemIsMovable |
+                   QGraphicsItem::ItemIsSelectable |
+                   QGraphicsItem::ItemSendsGeometryChanges);
+
+    this->size_ = size;
+
+    // Set position
+    QVector3D pos_3D = this->model_->getPos();
+    QPointF pos_2D = QPointF(pos_3D.x(), pos_3D.y());
+    this->setPos(pos_2D);
 }
 
 QRectF DroneGraphicsItem::boundingRect() const {
@@ -49,7 +54,12 @@ void DroneGraphicsItem::paint(QPainter *painter,
 
     // scale with view zoom level
     qreal scaling_factor = this->getScalingFactor();
-    this->pen_.setWidthF(1.0 / scaling_factor);
+    if (this->isSelected()) {
+        this->pen_.setWidthF(3.0 / scaling_factor);
+    } else {
+        this->pen_.setWidthF(1.0 / scaling_factor);
+    }
+    painter->setPen(this->pen_);
 
     // Draw current course
     painter->setPen(this->pen_);
@@ -72,6 +82,10 @@ void DroneGraphicsItem::paint(QPainter *painter,
     }
 }
 
+int DroneGraphicsItem::type() const {
+    return DRONE_GRAPHIC;
+}
+
 QPainterPath DroneGraphicsItem::shape() const {
     QPainterPath path;
     QPolygonF poly;
@@ -86,8 +100,14 @@ QPainterPath DroneGraphicsItem::shape() const {
 }
 
 QVariant DroneGraphicsItem::itemChange(GraphicsItemChange change,
-                                        const QVariant &value) {
-    if (change == ItemScenePositionHasChanged && scene()) {
+                                         const QVariant &value) {
+    if (change == ItemPositionChange && this->scene()) {
+        // value is the new position
+        QPointF newPos = value.toPointF();
+
+        // update model
+        this->model_->setPos(QVector3D(newPos.x(), newPos.y(), 0));
+
         // check to expand the scene
         this->update(this->boundingRect());
     }

@@ -58,13 +58,12 @@ class View : public QGraphicsView {
     void constrainWpIdx(int value);
     void constrainAccel();
     void updateFeedbackMessage();
-    void setCurrFinalPoint();
+    void setCurrEndpoints();
     void toggleSim(int);
     void toggleTrajLock(int);
     void toggleFreeFinalTime(int);
 
   private:
-    void initialize();
     void initializeMenuPanel();
     void initializeExpertPanel();
     void clearMarkers();
@@ -104,6 +103,7 @@ class View : public QGraphicsView {
     void initializePlaneButton(MenuPanel *panel);
     void initializePolygonButton(MenuPanel *panel);
     void initializeFinalPointButton(MenuPanel *panel);
+    void initializeDroneButton(MenuPanel *panel);
     void initializeEllipseButton(MenuPanel *panel);
     void initializeFlipButton(MenuPanel *panel);
     void initializeExecButton(MenuPanel *panel);

@@ -21,9 +21,9 @@ namespace optgui {
 ConstraintModel::ConstraintModel() : model_lock_(), P_() {
     // Set model containers
     this->curr_final_point_ = nullptr;
+    this->curr_drone_ = nullptr;
     this->path_ = nullptr;
     this->path_staged_ = nullptr;
-    this->drone_ = nullptr;
 
     this->input_code_ = INPUT_CODE::VALID_INPUT;
     this->feasible_code_ = FEASIBILITY_CODE::INFEASIBLE;
@@ -69,13 +69,13 @@ ConstraintModel::~ConstraintModel() {
     if (this->path_staged_) {
         delete this->path_staged_;
     }
-    // Delete drone
-    if (this->drone_) {
-        delete this->drone_;
+    // Delete drones
+    for (DroneModelItem *model : this->drones_) {
+        delete model;
     }
 
-    // Delete final point
-    for (PointModelItem * model : this->final_points_) {
+    // Delete final points
+    for (PointModelItem *model : this->final_points_) {
         delete model;
     }
 }
@@ -93,6 +93,19 @@ void ConstraintModel::removePoint(PointModelItem *item) {
         this->curr_final_point_ = nullptr;
     }
     this->final_points_.remove(item);
+}
+
+void ConstraintModel::addDrone(DroneModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->drones_.insert(item);
+}
+
+void ConstraintModel::removeDrone(DroneModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    if (item == this->curr_drone_) {
+        this->curr_drone_ = nullptr;
+    }
+    this->drones_.remove(item);
 }
 
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
@@ -218,21 +231,6 @@ QVector<QPointF> ConstraintModel::getPathStagedPoints() {
     return temp;
 }
 
-void ConstraintModel::setDroneModel(DroneModelItem *drone_model) {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->drone_) {
-        delete this->drone_;
-    }
-    this->drone_ = drone_model;
-}
-
-void ConstraintModel::setDroneModelPos(QPointF const &pos) {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->drone_) {
-        this->drone_->setPos(QVector3D(pos.x(), pos.y(), 0));
-    }
-}
-
 QVector3D ConstraintModel::getFinalPos() {
     QMutexLocker locker(&this->model_lock_);
     if (this->curr_final_point_ != nullptr) {
@@ -245,17 +243,29 @@ QVector3D ConstraintModel::getFinalPos() {
 
 QVector3D ConstraintModel::getInitialPos() {
     QMutexLocker locker(&this->model_lock_);
-    return this->drone_->getPos();
+    if (this->curr_drone_ != nullptr) {
+        return this->curr_drone_->getPos();
+    } else {
+        return QVector3D();
+    }
 }
 
 QVector3D ConstraintModel::getInitialVel() {
     QMutexLocker locker(&this->model_lock_);
-    return this->drone_->getVel();
+    if (this->curr_drone_ != nullptr) {
+        return this->curr_drone_->getVel();
+    } else {
+        return QVector3D();
+    }
 }
 
 QVector3D ConstraintModel::getInitialAcc() {
     QMutexLocker locker(&this->model_lock_);
-    return this->drone_->getAccel();
+    if (this->curr_drone_ != nullptr) {
+        return this->curr_drone_->getAccel();
+    } else {
+        return QVector3D();
+    }
 }
 
 QPointF ConstraintModel::getWpPos(int index) {
@@ -367,9 +377,24 @@ bool ConstraintModel::hasCurrFinalPoint() {
     return (this->curr_final_point_ != nullptr);
 }
 
-bool ConstraintModel::isCurrFinalPoint(PointModelItem *model) {
+bool ConstraintModel::isCurrFinalPoint(PointModelItem *point) {
     QMutexLocker locker(&this->model_lock_);
-    return (model == this->curr_final_point_);
+    return (point == this->curr_final_point_);
+}
+
+void ConstraintModel::setCurrDrone(DroneModelItem *drone) {
+    QMutexLocker locker(&this->model_lock_);
+    this->curr_drone_ = drone;
+}
+
+bool ConstraintModel::hasCurrDrone() {
+    QMutexLocker locker(&this->model_lock_);
+    return (this->curr_drone_ != nullptr);
+}
+
+bool ConstraintModel::isCurrDrone(DroneModelItem *drone) {
+    QMutexLocker locker(&this->model_lock_);
+    return (drone == this->curr_drone_);
 }
 
 void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
@@ -438,18 +463,27 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     QMutexLocker locker(&this->model_lock_);
 
     // Set drone table
-    drone_table->setRowCount(1);
+    quint16 row = 0;
+    drone_table->setRowCount(this->drones_.size());
 
-    // Set drone id
-    drone_table->setItem(0, 0, new QTableWidgetItem("Drone ID"));
-    drone_table->item(0, 0)->setFlags(Qt::ItemIsEnabled);
-    ports->insert(this->drone_->port_);
-    drone_table->setCellWidget(0, 1,
-            new DroneIdSelector(this->drone_, drone_table, ports));
+    // Set drone ids
+    quint16 count = 1;
+    for (DroneModelItem *model : this->drones_) {
+        drone_table->setItem(row, 0,
+                new QTableWidgetItem("Drone "
+                                     + QString::number(count)
+                                     + " ID"));
+        drone_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+        ports->insert(model->port_);
+        drone_table->setCellWidget(row, 1,
+                new DroneIdSelector(model, drone_table, ports));
+        row++;
+        count++;
+    }
 
 
     // Configure port table
-    quint16 row = 0;
+    row = 0;
     port_table->setRowCount(this->final_points_.size() +
                             this->waypoints_.size() +
                             this->ellipses_.size() +
@@ -457,8 +491,8 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
                             this->planes_.size());
 
     // Set final points
-    quint16 count = 1;
-    for (PointModelItem * model : this->final_points_) {
+    count = 1;
+    for (PointModelItem *model : this->final_points_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Final Point " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -472,7 +506,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set waypoints
     count = 1;
-    for (PointModelItem * model : this->waypoints_) {
+    for (PointModelItem *model : this->waypoints_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Waypoint " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -677,7 +711,7 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
 // ====== Private functions, do not lock ======
 
 void ConstraintModel::loadPlaneConstraint(skyenet::params *P, quint32 index,
-                                              QVector3D xyz_p, QVector3D xyz_q) {
+                                          QVector3D xyz_p, QVector3D xyz_q) {
     qreal c = ((xyz_q.x() * xyz_p.y()) - (xyz_q.y() * xyz_p.x()));
 
     qreal a1 = (xyz_q.x() - xyz_p.x()) / c;

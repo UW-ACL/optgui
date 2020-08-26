@@ -20,10 +20,7 @@ PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
     // Set model
     this->model_ = model;
     this->radius_ = radius;
-    this->initialize();
-}
 
-void PointGraphicsItem::initialize() {
     // Set pen
     QColor fill = RED;
     this->brush_ = QBrush(fill);

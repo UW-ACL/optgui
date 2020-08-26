@@ -35,7 +35,8 @@ void ComputeThread::run() {
         }
 
         // Do not compute trajectory if no final point selected
-        if (!this->model_->hasCurrFinalPoint()) {
+        if (!this->model_->hasCurrFinalPoint() ||
+                !this->model_->hasCurrDrone()) {
             // clear current trajectory
             this->model_->setPathPoints(QVector<QPointF>());
             autogen::packet::traj3dof empty_traj;
@@ -113,7 +114,8 @@ void ComputeThread::run() {
         }
 
         // Run SCvx algorithm for free or fixed final time
-        skyenet::outputs const &O = this->fly_.update(this->model_->isFreeFinalTime());
+        skyenet::outputs const &O =
+                this->fly_.update(this->model_->isFreeFinalTime());
 
         // Iterations in resulting trajectory
         quint32 size = P.K;

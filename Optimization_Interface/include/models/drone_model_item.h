@@ -21,8 +21,8 @@ namespace optgui {
 
 class DroneModelItem : public DataModel {
  public:
-    DroneModelItem() : mutex_() {
-        this->pos_ = QVector3D(0, 0, 0);
+    explicit DroneModelItem(QPointF const &pos) : mutex_() {
+        this->pos_ = QVector3D(pos.x(), pos.y(), 0);
         this->vel_ = QVector3D(0, 0, 0);
         // counteract gravity
         this->accel_ = QVector3D(0, 0, 9.81 * GRID_SIZE);

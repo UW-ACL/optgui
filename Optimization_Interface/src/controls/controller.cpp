@@ -37,14 +37,9 @@ Controller::Controller(Canvas *canvas) {
     // set rendering order
     qreal renderLevel = std::numeric_limits<qreal>::max();
 
-    // initialize drone model and graphic
-    DroneModelItem *drone_model = new DroneModelItem();
-    this->model_->setDroneModel(drone_model);
-    this->canvas_->drone_graphic_ =
-            new DroneGraphicsItem(drone_model);
-    this->canvas_->drone_graphic_->setZValue(renderLevel);
+    // initialize drone graphic render level
+    this->drone_render_level_ = renderLevel;
     renderLevel = std::nextafter(renderLevel, 0);
-    this->canvas_->addItem(this->canvas_->drone_graphic_);
 
     // initialize final point graphic render level
     this->final_point_render_level_ = renderLevel;
@@ -77,9 +72,6 @@ Controller::Controller(Canvas *canvas) {
     this->port_dialog_ = new PortDialog();
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
-
-    // Initialize network
-    this->drone_socket_ = nullptr;
 
     // Initialize freeze_traj timer
     this->freeze_traj_timer_ = new QTimer();
@@ -144,6 +136,21 @@ void Controller::setFinaltime(qreal final_time) {
 
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
+        case DRONE_GRAPHIC: {
+            DroneGraphicsItem *drone = qgraphicsitem_cast<
+                    DroneGraphicsItem *>(item);
+            DroneModelItem *model = drone->model_;
+            if (this->model_->isCurrDrone(model)) {
+                this->setCurrDrone(nullptr);
+            }
+            this->removeDroneSocket(model);
+            this->canvas_->removeItem(drone);
+            this->canvas_->drone_graphics_.remove(drone);
+            delete drone;
+            this->model_->removeDrone(model);
+            delete model;
+            break;
+        }
         case POINT_GRAPHIC: {
             PointGraphicsItem *point = qgraphicsitem_cast<
                     PointGraphicsItem *>(item);
@@ -264,6 +271,13 @@ void Controller::addWaypoint(QPointF const &point) {
 void Controller::addFinalPoint(const QPointF &pos) {
     PointModelItem *item_model = new PointModelItem(pos);
     this->loadPoint(item_model);
+    this->setCurrFinalPoint(item_model);
+}
+
+void Controller::addDrone(const QPointF &pos) {
+    DroneModelItem *item_model = new DroneModelItem(pos);
+    this->loadDrone(item_model);
+    this->setCurrDrone(item_model);
 }
 
 void Controller::duplicateSelected() {
@@ -316,21 +330,30 @@ void Controller::unsetStagedPath() {
 void Controller::tickLiveReference() {
     if (this->model_->tickPathStaged()) {
         autogen::packet::traj3dof traj = this->model_->getStagedTraj3dof();
+
+        // get graphic for current drone
+        DroneGraphicsItem *drone = nullptr;
+        for (DroneGraphicsItem *graphic : this->canvas_->drone_graphics_) {
+            if (this->model_->isCurrDrone(graphic->model_)) {
+                drone = graphic;
+                break;
+            }
+        }
+
         if (this->is_simulated_) {
             QVector3D coords = nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
                                            traj.pos_ned(1, this->traj_index_),
                                            traj.pos_ned(2, this->traj_index_));
             // set model pos
-            this->canvas_->drone_graphic_->model_->setPos(coords);
+            drone->model_->setPos(coords);
             // set graphic pos so view knows to draw offscreen
-            this->canvas_->drone_graphic_->setPos(QPointF(coords.x(),
-                                                          coords.y()));
+            drone->setPos(QPointF(coords.x(), coords.y()));
         }
-        this->canvas_->drone_graphic_->model_->
+        drone->model_->
                 setVel(nedToGuiXyz(traj.vel_ned(0, this->traj_index_),
                                    traj.vel_ned(1, this->traj_index_),
                                    traj.vel_ned(2, this->traj_index_)));
-        this->canvas_->drone_graphic_->model_->
+        drone->model_->
                 setAccel(nedToGuiXyz(traj.accl_ned(0, this->traj_index_),
                                      traj.accl_ned(1, this->traj_index_),
                                      traj.accl_ned(2, this->traj_index_)));
@@ -353,7 +376,7 @@ void Controller::execute() {
         this->canvas_->path_staged_graphic_->setColor(CYAN);
         this->model_->setPathPoints(this->model_->getPathStagedPoints());
 
-        //Todo:Skye - change this later
+        //  Todo:Skye - change this later
         QString filepath = "C:/msys32/home/ACL/optgui/paper_data/";
         QString filename = QDate::currentDate().toString("'data_'MM_dd_yyyy'");
         filename.append(QTime::currentTime().toString("'_'hh.mm.ss'.txt'"));
@@ -361,10 +384,11 @@ void Controller::execute() {
 
         QFile file(filepath + filename);
         if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
-            //file.open(QIODevice::ReadWrite);
+            //  file.open(QIODevice::ReadWrite);
             QTextStream stream(&file);
-            for (int c=0; c < data_to_write.size(); c++ ) {
-                stream << data_to_write[c].rx() << "," << data_to_write[c].ry() << endl;
+            for (int c=0; c < data_to_write.size(); c++) {
+                stream << data_to_write[c].rx() << ","
+                       << data_to_write[c].ry() << endl;
             }
         }
 
@@ -418,16 +442,18 @@ void Controller::startSockets() {
     // close old sockets
     this->closeSockets();
 
-    // create drone socket
-    if (this->canvas_->drone_graphic_->model_->port_ > 0) {
-        this->drone_socket_ = new DroneSocket(
-                    this->canvas_->drone_graphic_);
-        connect(this,
-                SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof)),
-                this->drone_socket_,
-                SLOT(rx_trajectory(const autogen::packet::traj3dof)));
-        connect(this->drone_socket_, SIGNAL(refresh_graphics()),
-                this->canvas_, SLOT(update()));
+    // create drone sockets
+    for (DroneGraphicsItem *graphic : this->canvas_->drone_graphics_) {
+        if (graphic->model_->port_ > 0) {
+            DroneSocket *temp = new DroneSocket(graphic);
+            connect(this,
+                    SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof)),
+                    temp,
+                    SLOT(rx_trajectory(const autogen::packet::traj3dof)));
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(update()));
+            this->drone_sockets_.append(temp);
+        }
     }
 
     // create final pos sockets
@@ -462,10 +488,12 @@ void Controller::startSockets() {
 }
 
 void Controller::closeSockets() {
-    if (this->drone_socket_) {
-        delete this->drone_socket_;
-        this->drone_socket_ = nullptr;
+    // close drone sockets
+    for (DroneSocket *socket : this->drone_sockets_) {
+        delete socket;
     }
+    this->drone_sockets_.clear();
+
     // close final point sockets
     for (PointSocket *socket : this->final_point_sockets_) {
         delete socket;
@@ -509,6 +537,24 @@ void Controller::removePointSocket(PointModelItem *model) {
 
     for (PointSocket *socket : this->final_point_sockets_) {
         if (socket->point_item_->model_ == model) {
+            delete socket;
+            found = true;
+            break;
+        }
+        index++;
+    }
+
+    if (found) {
+        this->final_point_sockets_.removeAt(index);
+    }
+}
+
+void Controller::removeDroneSocket(DroneModelItem *model) {
+    int index = 0;
+    bool found = false;
+
+    for (DroneSocket *socket : this->drone_sockets_) {
+        if (socket->drone_item_->model_ == model) {
             delete socket;
             found = true;
             break;
@@ -582,6 +628,16 @@ void Controller::loadPoint(PointModelItem *item_model) {
     item_graphic->update(item_graphic->boundingRect());
 }
 
+void Controller::loadDrone(DroneModelItem *item_model) {
+    DroneGraphicsItem *item_graphic =
+            new DroneGraphicsItem(item_model);
+    this->canvas_->addItem(item_graphic);
+    this->canvas_->drone_graphics_.insert(item_graphic);
+    this->model_->addDrone(item_model);
+    item_graphic->setZValue(this->drone_render_level_);
+    item_graphic->update(item_graphic->boundingRect());
+}
+
 void Controller::loadWaypoint(PointModelItem *item_model) {
     quint32 index = this->canvas_->waypoint_graphics_.size();
     WaypointGraphicsItem *item_graphic =
@@ -606,6 +662,13 @@ void Controller::setCurrFinalPoint(PointModelItem *point) {
     if (!this->model_->isCurrFinalPoint(point)) {
         emit resetInputs();
         this->model_->setCurrFinalPoint(point);
+    }
+}
+
+void Controller::setCurrDrone(DroneModelItem *drone) {
+    if (!this->model_->isCurrDrone(drone)) {
+        emit resetInputs();
+        this->model_->setCurrDrone(drone);
     }
 }
 

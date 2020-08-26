@@ -17,7 +17,11 @@ namespace optgui {
 
 class PointModelItem : public DataModel {
  public:
-    explicit PointModelItem(QPointF pos) : mutex_() { pos_ = pos; port_ = 0; }
+    explicit PointModelItem(QPointF const &pos) : mutex_() {
+        pos_ = pos;
+        port_ = 0;
+    }
+
     ~PointModelItem() {
         QMutexLocker locker(&this->mutex_);
     }

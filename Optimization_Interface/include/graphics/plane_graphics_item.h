@@ -38,7 +38,6 @@ class PlaneGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
 
  private:
-    void initialize();
     QPen pen_;
     QBrush brush_;
     PlaneResizeHandle *p1_handle_;
