@@ -563,7 +563,7 @@ void Controller::removeDroneSocket(DroneModelItem *model) {
     }
 
     if (found) {
-        this->final_point_sockets_.removeAt(index);
+        this->drone_sockets_.removeAt(index);
     }
 }
 
