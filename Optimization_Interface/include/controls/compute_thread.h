@@ -14,6 +14,8 @@
 #include "algorithm.h"
 
 #include "include/models/constraint_model.h"
+#include "include/graphics/path_graphics_item.h"
+#include "include/graphics/drone_graphics_item.h"
 #include "include/globals.h"
 
 namespace optgui {
@@ -22,30 +24,50 @@ class ComputeThread : public QThread {
     Q_OBJECT
 
  public:
-    explicit ComputeThread(ConstraintModel *model);
+    explicit ComputeThread(ConstraintModel *model,
+                           DroneGraphicsItem *drone,
+                           PathGraphicsItem *traj_graphic);
     ~ComputeThread();
+
+    PathGraphicsItem *getTrajGraphic();
+    void setTarget(PointModelItem *target);
+    PointModelItem *getTarget();
+    void stopCompute();
+    DroneGraphicsItem *getDroneGraphic();
 
 protected:
     void run() override;
 
  signals:
-    void updateGraphics();
-    void setPathColor(bool isRed);
-    void updateMessage();
-    void finalTime(double final_time);
-
- public slots:
-    void stopCompute();
-    void resetInputs();
+    void updateGraphics(PathGraphicsItem *traj_graphic, bool isRed);
+    void updateMessage(DroneModelItem *drone);
+    void finalTime(DroneModelItem *drone, double final_time);
 
  private:
+    // GUI data
     ConstraintModel *model_;
+    // problem data
     skyenet::SkyeFly fly_;
+
+    // vehicle and target
+    DroneGraphicsItem *drone_;
+    PointModelItem *target_;
+    PathGraphicsItem *traj_graphic_;
+
+    // compute traj flag
     bool run_loop_;
+
+    // lock for accessing resources shared by compute_thread and controller
+    // (target and run flag)
+    QMutex mutex_;
+
+    // flag to reset inputs
     bool target_changed_;
+
     INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
                               QVector3D const &initial_pos,
                               QVector3D const &final_pos);
+    bool getRunFlag();
 };
 
 }  // namespace optgui

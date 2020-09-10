@@ -14,7 +14,6 @@
 #include <QTextStream>
 #include <QString>
 
-
 #include <cmath>
 #include <limits>
 
@@ -60,13 +59,8 @@ Controller::Controller(Canvas *canvas) {
     this->canvas_->addItem(this->canvas_->path_staged_graphic_);
 
     // initialize trajectory model and graphic
-    PathModelItem *trajectory_model = new PathModelItem();
-    this->model_->setPathModel(trajectory_model);
-    this->canvas_->path_graphic_ =
-            new PathGraphicsItem(trajectory_model);
-    this->canvas_->path_graphic_->setZValue(renderLevel);
+    this->traj_render_level_ = renderLevel;
     renderLevel = std::nextafter(renderLevel, 0);
-    this->canvas_->addItem(this->canvas_->path_graphic_);
 
     // initialize port dialog
     this->port_dialog_ = new PortDialog();
@@ -81,33 +75,17 @@ Controller::Controller(Canvas *canvas) {
 
     // Set traj lock. Cannot execute traj while already executing.
     this->traj_lock_ = false;
-
-    // initialize skyfly thread
-    this->compute_thread_ = new ComputeThread(this->model_);
-    connect(this->compute_thread_, SIGNAL(updateGraphics()), this->canvas_,
-            SLOT(updatePathGraphicsItem()));
-    connect(this->compute_thread_, SIGNAL(setPathColor(bool)),
-            this, SLOT(setPathColor(bool)));
-    connect(this, SIGNAL(stopComputeWorker()),
-            this->compute_thread_, SLOT(stopCompute()));
-    connect(this, SIGNAL(resetInputs()),
-            this->compute_thread_, SLOT(resetInputs()));
-    this->compute_thread_->start();
-}
-
-void Controller::setPathColor(bool isRed) {
-    if (isRed) {
-        this->canvas_->path_graphic_->setColor(RED);
-    } else {
-        this->canvas_->path_graphic_->setColor(YELLOW);
-    }
 }
 
 Controller::~Controller() {
-    emit this->stopComputeWorker();
-    this->compute_thread_->quit();
-    this->compute_thread_->wait();
-    delete this->compute_thread_;
+    for (ComputeThread *thread : this->compute_threads_) {
+        thread->stopCompute();
+        // delete should be handled by deletelater slot
+//        thread->quit();
+//        thread->wait();
+//        delete thread;
+    }
+    this->compute_threads_.clear();
 
     // deinitialize port dialog
     delete this->port_dialog_;
@@ -137,9 +115,30 @@ void Controller::setFinaltime(qreal final_time) {
 void Controller::removeItem(QGraphicsItem *item) {
     switch (item->type()) {
         case DRONE_GRAPHIC: {
+            // get drone model
             DroneGraphicsItem *drone = qgraphicsitem_cast<
                     DroneGraphicsItem *>(item);
             DroneModelItem *model = drone->model_;
+
+            // remove compute thread
+            QMap<DroneModelItem *, ComputeThread *>::iterator iter =
+                    this->compute_threads_.find(model);
+            if (iter != this->compute_threads_.end()) {
+                // remove traj graphic
+                PathGraphicsItem *traj = (*iter)->getTrajGraphic();
+                PathModelItem *traj_model = traj->model_;
+                this->canvas_->removeItem(traj);
+                this->canvas_->path_graphics_.remove(traj);
+                delete traj;
+                delete traj_model;
+
+                (*iter)->stopCompute();
+                // deletion will be handled by deletelater slot
+                // remove from map
+                iter = this->compute_threads_.erase(iter);
+            }
+
+            // remove drone
             if (this->model_->isCurrDrone(model)) {
                 this->setCurrDrone(nullptr);
             }
@@ -149,14 +148,17 @@ void Controller::removeItem(QGraphicsItem *item) {
             delete drone;
             this->model_->removeDrone(model);
             delete model;
+
             break;
         }
         case POINT_GRAPHIC: {
             PointGraphicsItem *point = qgraphicsitem_cast<
                     PointGraphicsItem *>(item);
             PointModelItem *model = point->model_;
-            if (this->model_->isCurrFinalPoint(model)) {
-                this->setCurrFinalPoint(nullptr);
+            for (ComputeThread *thread : this->compute_threads_.values()) {
+                if (model == thread->getTarget()) {
+                    thread->setTarget(nullptr);
+                }
             }
             this->removePointSocket(model);
             this->canvas_->removeItem(point);
@@ -271,10 +273,10 @@ void Controller::addWaypoint(QPointF const &point) {
 void Controller::addFinalPoint(const QPointF &pos) {
     PointModelItem *item_model = new PointModelItem(pos);
     this->loadPoint(item_model);
-    this->setCurrFinalPoint(item_model);
 }
 
 void Controller::addDrone(const QPointF &pos) {
+    // create drone model
     DroneModelItem *item_model = new DroneModelItem(pos);
     this->loadDrone(item_model);
     this->setCurrDrone(item_model);
@@ -302,6 +304,43 @@ void Controller::duplicateSelected() {
 
 // ============ BACK END CONTROLS ============
 
+void Controller::setStagedDrone(DroneModelItem *drone_model) {
+    for (DroneGraphicsItem *drone_graphic : this->canvas_->drone_graphics_) {
+        if (drone_graphic->model_ == drone_model) {
+            // select staged drone
+            drone_graphic->is_staged_drone_ = true;
+        } else {
+            // deselect other staged drones
+            drone_graphic->is_staged_drone_ = false;
+        }
+    }
+}
+
+void Controller::setExecutedDrone(DroneModelItem *drone_model) {
+    for (DroneGraphicsItem *drone_graphic : this->canvas_->drone_graphics_) {
+        if (drone_graphic->model_ == drone_model) {
+            // select executed drone
+            drone_graphic->is_executed_drone_ = true;
+        } else {
+            // deselect other executed drones
+            drone_graphic->is_executed_drone_ = false;
+        }
+    }
+}
+
+void Controller::finalTime(DroneModelItem *drone, qreal time) {
+    if (this->model_->isCurrDrone(drone)) {
+        this->setFinaltime(time);
+        emit this->finalTime(time);
+    }
+}
+
+void Controller::updateMessage(DroneModelItem *drone) {
+    if (this->model_->isCurrDrone(drone)) {
+        emit this->updateMessage();
+    }
+}
+
 void Controller::freeze_traj() {
     int msec = (1000 * this->model_->getFinaltime()) /
             (this->model_->getHorizon() - 1);
@@ -316,6 +355,7 @@ void Controller::freeze_traj() {
 
 void Controller::setStagedPath() {
     this->model_->stageTraj();
+    this->setStagedDrone(this->model_->getStagedDrone());
     this->canvas_->path_staged_graphic_->setColor(GREEN);
     this->canvas_->path_staged_graphic_->update(
                 this->canvas_->path_staged_graphic_->boundingRect());
@@ -323,6 +363,10 @@ void Controller::setStagedPath() {
 
 void Controller::unsetStagedPath() {
     this->model_->unstageTraj();
+    for (DroneGraphicsItem *drone : this->canvas_->drone_graphics_) {
+        drone->is_staged_drone_ = false;
+        drone->is_executed_drone_ = false;
+    }
     this->canvas_->path_staged_graphic_->update(
                 this->canvas_->path_staged_graphic_->boundingRect());
 }
@@ -333,8 +377,9 @@ void Controller::tickLiveReference() {
 
         // get graphic for current drone
         DroneGraphicsItem *drone = nullptr;
+        DroneModelItem *staged_drone = this->model_->getStagedDrone();
         for (DroneGraphicsItem *graphic : this->canvas_->drone_graphics_) {
-            if (this->model_->isCurrDrone(graphic->model_)) {
+            if (staged_drone == graphic->model_) {
                 drone = graphic;
                 break;
             }
@@ -370,11 +415,28 @@ void Controller::tickLiveReference() {
 
 
 void Controller::execute() {
+    // get staged drone
+    DroneModelItem *staged_drone = this->model_->getStagedDrone();
+
     if (!this->freeze_traj_timer_->isActive() &&
             this->model_->getIsTrajStaged()) {
         this->freeze_traj();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
-        this->model_->setPathPoints(this->model_->getPathStagedPoints());
+        for (DroneGraphicsItem *drone : this->canvas_->drone_graphics_) {
+            if (drone->model_ == staged_drone) {
+                drone->is_executed_drone_ = true;
+            } else {
+                drone->is_executed_drone_ = false;
+            }
+        }
+
+        // find traj and set it
+        QMap<DroneModelItem *, ComputeThread *>::iterator iter =
+                this->compute_threads_.find(staged_drone);
+        if (iter != this->compute_threads_.end()) {
+            (*iter)->getTrajGraphic()->model_->
+                    setPoints(this->model_->getPathStagedPoints());
+        }
 
         //  Todo:Skye - change this later
         QString filepath = "C:/msys32/home/ACL/optgui/paper_data/";
@@ -392,16 +454,17 @@ void Controller::execute() {
             }
         }
 
-
-        emit trajectoryExecuted(this->model_->getStagedTraj3dof());
+        emit trajectoryExecuted(staged_drone,
+                                this->model_->getStagedTraj3dof());
     } else if (this->freeze_traj_timer_->isActive() &&
                !this->traj_lock_ &&
                this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
         this->setStagedPath();
         this->freeze_traj();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
-        // rthis->model_->setPathPoints(this->model_->getPathStagedPoints());
-        emit trajectoryExecuted(this->model_->getStagedTraj3dof());
+        // this->model_->setPathPoints(this->model_->getPathStagedPoints());
+        emit trajectoryExecuted(staged_drone,
+                                this->model_->getStagedTraj3dof());
     }
 }
 
@@ -427,7 +490,7 @@ void Controller::setTrajLock(bool state) {
 }
 
 void Controller::setFreeFinalTime(bool state) {
-    // emit resetInputs();
+    // TODO(dtsull16): reset inputs?
     this->model_->setFreeFinalTime(state);
 }
 
@@ -447,9 +510,11 @@ void Controller::startSockets() {
         if (graphic->model_->port_ > 0) {
             DroneSocket *temp = new DroneSocket(graphic);
             connect(this,
-                    SIGNAL(trajectoryExecuted(const autogen::packet::traj3dof)),
+                    SIGNAL(trajectoryExecuted(DroneModelItem *,
+                                             const autogen::packet::traj3dof)),
                     temp,
-                    SLOT(rx_trajectory(const autogen::packet::traj3dof)));
+                    SLOT(rx_trajectory(DroneModelItem *,
+                                       const autogen::packet::traj3dof)));
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(update()));
             this->drone_sockets_.append(temp);
@@ -629,13 +694,42 @@ void Controller::loadPoint(PointModelItem *item_model) {
 }
 
 void Controller::loadDrone(DroneModelItem *item_model) {
+    // create path model
+    PathModelItem *trajectory_model = new PathModelItem();
+
+    // create drone graphic
     DroneGraphicsItem *item_graphic =
             new DroneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->drone_graphics_.insert(item_graphic);
-    this->model_->addDrone(item_model);
+    this->model_->addDrone(item_model, trajectory_model);
     item_graphic->setZValue(this->drone_render_level_);
     item_graphic->update(item_graphic->boundingRect());
+
+    // create path graphic
+    PathGraphicsItem *path_graphic_ =
+            new PathGraphicsItem(trajectory_model);
+    path_graphic_->setZValue(this->traj_render_level_);
+    this->canvas_->path_graphics_.insert(path_graphic_);
+    this->canvas_->addItem(path_graphic_);
+
+    // create compute thread
+    ComputeThread *compute_thread_ =
+            new ComputeThread(this->model_, item_graphic, path_graphic_);
+    this->compute_threads_.insert(item_model, compute_thread_);
+    connect(compute_thread_,
+            SIGNAL(updateGraphics(PathGraphicsItem *, bool)),
+            this->canvas_,
+            SLOT(updatePathGraphicsItem(PathGraphicsItem *, bool)));
+    connect(compute_thread_,
+            SIGNAL(finalTime(DroneModelItem *, qreal)),
+            this,
+            SLOT(finalTime(DroneModelItem *, qreal)));
+    connect(compute_thread_,
+            SIGNAL(finished()),
+            compute_thread_,
+            SLOT(deleteLater()));
+    compute_thread_->start();
 }
 
 void Controller::loadWaypoint(PointModelItem *item_model) {
@@ -659,16 +753,29 @@ void Controller::setClearance(qreal clearance) {
 }
 
 void Controller::setCurrFinalPoint(PointModelItem *point) {
-    if (!this->model_->isCurrFinalPoint(point)) {
-        emit resetInputs();
-        this->model_->setCurrFinalPoint(point);
+    if (this->model_->getCurrDrone()) {
+        QMap<DroneModelItem *, ComputeThread *>::iterator iter =
+                this->compute_threads_.find(this->model_->getCurrDrone());
+        if (iter != this->compute_threads_.end()) {
+            (*iter)->setTarget(point);
+        }
     }
 }
 
 void Controller::setCurrDrone(DroneModelItem *drone) {
     if (!this->model_->isCurrDrone(drone)) {
-        emit resetInputs();
         this->model_->setCurrDrone(drone);
+
+        if (drone != nullptr) {
+            for (DroneGraphicsItem *drone_graphic :
+                    this->canvas_->drone_graphics_) {
+                if (drone_graphic->model_ == drone) {
+                    drone_graphic->is_curr_drone_ = true;
+                } else {
+                    drone_graphic->is_curr_drone_ = false;
+                }
+            }
+        }
     }
 }
 

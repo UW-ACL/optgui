@@ -32,7 +32,7 @@ class Canvas : public QGraphicsScene {
     QPointF* getTopRight();
     bool indoor_ = true;
 
-    PathGraphicsItem *path_graphic_;
+    QSet<PathGraphicsItem *> path_graphics_;
     PathGraphicsItem *path_staged_graphic_;
 
     QSet<DroneGraphicsItem *> drone_graphics_;
@@ -49,7 +49,7 @@ class Canvas : public QGraphicsScene {
  public slots:
     void bringSelectedToFront();
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
-    void updatePathGraphicsItem();
+    void updatePathGraphicsItem(PathGraphicsItem *, bool);
 
  private:
     void setBackgroundImage(QString filename);

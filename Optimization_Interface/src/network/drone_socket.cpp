@@ -50,18 +50,20 @@ void DroneSocket::readPendingDatagrams() {
     }
 }
 
-void DroneSocket::rx_trajectory(const autogen::packet::traj3dof data) {
-    autogen::serializable::traj3dof
-            <autogen::topic::traj3dof::UNDEFINED> ser_data;
-    ser_data = data;
-    char buffer[4096] = {0};
-    ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
+void DroneSocket::rx_trajectory(DroneModelItem *drone,
+                                const autogen::packet::traj3dof data) {
+    if (drone == this->drone_item_->model_) {
+        autogen::serializable::traj3dof
+                <autogen::topic::traj3dof::UNDEFINED> ser_data;
+        ser_data = data;
+        char buffer[4096] = {0};
+        ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
 
-    // TODO(dtsull16): use config IP address
-    if (this->isDestinationAddrValid()) {
-        this->writeDatagram(buffer, ser_data.size(),
-                            QHostAddress(this->drone_item_->model_->ip_addr_),
-                            this->drone_item_->model_->destination_port_);
+        if (this->isDestinationAddrValid()) {
+            this->writeDatagram(buffer, ser_data.size(),
+                    QHostAddress(this->drone_item_->model_->ip_addr_),
+                    this->drone_item_->model_->destination_port_);
+        }
     }
 }
 

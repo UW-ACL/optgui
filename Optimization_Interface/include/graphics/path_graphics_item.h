@@ -26,13 +26,14 @@ class PathGraphicsItem : public QGraphicsItem {
                QWidget *widget = nullptr) override;
     void setColor(QColor);
 
+    PathModelItem *model_;
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
-    PathModelItem *model_;
     QPen pen_;
     quint32 width_;
     qreal getScalingFactor() const;

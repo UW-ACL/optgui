@@ -4,30 +4,61 @@
 // LICENSE: Copyright 2020, All Rights Reserved
 
 #include "include/controls/compute_thread.h"
+#include "include/graphics/path_graphics_item.h"
 
 #include <algorithm>
 #include <QVector3D>
 
 namespace optgui {
 
-ComputeThread::ComputeThread(ConstraintModel *model) {
+ComputeThread::ComputeThread(ConstraintModel *model,
+                             DroneGraphicsItem *drone,
+                             PathGraphicsItem *traj_graphic) : mutex_() {
     this->model_ = model;
     this->run_loop_ = true;
-}
-
-ComputeThread::~ComputeThread() {
-}
-
-void ComputeThread::stopCompute() {
-    this->run_loop_ = false;
-}
-
-void ComputeThread::resetInputs() {
+    this->drone_ = drone;
+    this->traj_graphic_ = traj_graphic;
+    this->target_ = nullptr;
     this->target_changed_ = true;
 }
 
+ComputeThread::~ComputeThread() {
+    QMutexLocker(&this->mutex_);
+}
+
+void ComputeThread::stopCompute() {
+    QMutexLocker(&this->mutex_);
+    this->run_loop_ = false;
+}
+
+void ComputeThread::setTarget(PointModelItem *target) {
+    QMutexLocker(&this->mutex_);
+    this->target_ = target;
+    this->target_changed_ = true;
+}
+
+PointModelItem *ComputeThread::getTarget() {
+    QMutexLocker(&this->mutex_);
+    return this->target_;
+}
+
+bool ComputeThread::getRunFlag() {
+    QMutexLocker(&this->mutex_);
+    return this->run_loop_;
+}
+
+PathGraphicsItem *ComputeThread::getTrajGraphic() {
+    QMutexLocker(&this->mutex_);
+    return this->traj_graphic_;
+}
+
+DroneGraphicsItem *ComputeThread::getDroneGraphic() {
+    QMutexLocker(&this->mutex_);
+    return this->drone_;
+}
+
 void ComputeThread::run() {
-    while (this->run_loop_) {
+    while (this->getRunFlag()) {
         // Do not compute new trajectories if executing
         // sent trajectory
         if (this->model_->isLiveReference()) {
@@ -35,25 +66,25 @@ void ComputeThread::run() {
         }
 
         // Do not compute trajectory if no final point selected
-        if (!this->model_->hasCurrFinalPoint() ||
-                !this->model_->hasCurrDrone()) {
+        if (this->getTarget() == nullptr) {
             // clear current trajectory
-            this->model_->setPathPoints(QVector<QPointF>());
+            this->getTrajGraphic()->model_->setPoints(QVector<QPointF>());
             autogen::packet::traj3dof empty_traj;
-            this->model_->setCurrTraj3dof(empty_traj);
+            this->model_->setCurrTraj3dof(this->drone_->model_, empty_traj);
             continue;
         }
 
         // Validate inputs
-        QVector3D initial_pos = this->model_->getInitialPos();
-        QVector3D final_pos = this->model_->getFinalPos();
+        QVector3D initial_pos = this->drone_->model_->getPos();
+        QPointF final_pos_2D = this->getTarget()->getPos();
+        QVector3D final_pos = QVector3D(final_pos_2D.x(), final_pos_2D.y(), 0);
         QVector<QRegion> ellipse_regions = this->model_->getEllipseRegions();
         INPUT_CODE input_code = this->validateInputs(ellipse_regions,
                                                      initial_pos, final_pos);
         // set valid input and update message if changed
         if (this->model_->setIsValidInput(input_code)) {
             this->model_->updateEllipseColors();
-            emit updateMessage();
+            emit updateMessage(this->drone_->model_);
         }
         // Dont compute if invalid input
         if (input_code != INPUT_CODE::VALID_INPUT) {
@@ -61,8 +92,8 @@ void ComputeThread::run() {
         }
 
         // Input is valid, get additional inputs
-        QVector3D initial_vel = this->model_->getInitialVel();
-        QVector3D initial_acc = this->model_->getInitialAcc();
+        QVector3D initial_vel = this->drone_->model_->getVel();
+        QVector3D initial_acc = this->drone_->model_->getAccel();
 
         // Parameters
 
@@ -157,8 +188,9 @@ void ComputeThread::run() {
         if (this->model_->isLiveReference()) continue;
 
         // set points on graphical display
-        this->model_->setPathPoints(trajectory);
-        this->model_->setCurrTraj3dof(drone_traj3dof_data);
+        this->getTrajGraphic()->model_->setPoints(trajectory);
+        this->model_->setCurrTraj3dof(this->drone_->model_,
+                                      drone_traj3dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation
         qreal accum = pow(O.rf_relax[0], 2)  // final pos
@@ -171,18 +203,19 @@ void ComputeThread::run() {
 
                     + pow(O.dtau, 2);  // change in time
 
+        bool is_infeasible = true;
         if (accum > 0.25) {
             this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
-            emit this->setPathColor(true);
+            is_infeasible = true;
         } else {
             this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
-            emit this->setPathColor(false);
+            is_infeasible = false;
         }
         if (this->model_->isFreeFinalTime()) {
-            emit finalTime(O.t[size - 1]);
+            emit finalTime(this->drone_->model_, O.t[size - 1]);
         }
-        emit updateMessage();
-        emit updateGraphics();
+        emit updateMessage(this->drone_->model_);
+        emit updateGraphics(this->getTrajGraphic(), is_infeasible);
     }
 }
 

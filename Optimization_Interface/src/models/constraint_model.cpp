@@ -20,9 +20,8 @@ namespace optgui {
 
 ConstraintModel::ConstraintModel() : model_lock_(), P_() {
     // Set model containers
-    this->curr_final_point_ = nullptr;
     this->curr_drone_ = nullptr;
-    this->path_ = nullptr;
+    this->staged_drone_ = nullptr;
     this->path_staged_ = nullptr;
 
     this->input_code_ = INPUT_CODE::VALID_INPUT;
@@ -61,17 +60,16 @@ ConstraintModel::~ConstraintModel() {
         delete waypoint;
     }
 
-    // Delete path
-    if (this->path_) {
-        delete this->path_;
-    }
-    // Delete path sent
+    // Delete path staged
     if (this->path_staged_) {
         delete this->path_staged_;
     }
-    // Delete drones
-    for (DroneModelItem *model : this->drones_) {
-        delete model;
+    // Delete drones and associated traj
+    for ( QMap<DroneModelItem *, QPair<PathModelItem *,
+          autogen::packet::traj3dof>>::iterator iter = this->drones_.begin();
+         iter != this->drones_.end(); iter++) {
+        delete iter.key();  // delete drone
+        delete iter.value().first;  // delete path
     }
 
     // Delete final points
@@ -89,19 +87,19 @@ void ConstraintModel::addPoint(PointModelItem *item) {
 
 void ConstraintModel::removePoint(PointModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    if (item == this->curr_final_point_) {
-        this->curr_final_point_ = nullptr;
-    }
     this->final_points_.remove(item);
 }
 
-void ConstraintModel::addDrone(DroneModelItem *item) {
+void ConstraintModel::addDrone(DroneModelItem *drone, PathModelItem *traj) {
     QMutexLocker locker(&this->model_lock_);
-    this->drones_.insert(item);
+    this->drones_.insert(drone,
+                         QPair<PathModelItem *, autogen::packet::traj3dof>
+                                (traj, autogen::packet::traj3dof()));
 }
 
 void ConstraintModel::removeDrone(DroneModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
+    // unset curr drone
     if (item == this->curr_drone_) {
         this->curr_drone_ = nullptr;
     }
@@ -160,44 +158,12 @@ void ConstraintModel::reverseWaypoints() {
     std::reverse(this->waypoints_.begin(), this->waypoints_.end());
 }
 
-void ConstraintModel::setPathModel(PathModelItem *trajectory) {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->path_) {
-        delete this->path_;
-    }
-    this->path_ = trajectory;
-}
-
-
 void ConstraintModel::setPathStagedModel(PathModelItem *trajectory) {
     QMutexLocker locker(&this->model_lock_);
     if (this->path_staged_) {
         delete this->path_staged_;
     }
     this->path_staged_ = trajectory;
-}
-
-void ConstraintModel::setPathPoints(QVector<QPointF> points) {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->path_) {
-        this->path_->setPoints(points);
-    }
-}
-
-QVector<QPointF> ConstraintModel::getPathPoints() {
-    QMutexLocker locker(&this->model_lock_);
-    QVector<QPointF> temp;
-    if (this->path_) {
-        temp = this->path_->getPoints();
-    }
-    return temp;
-}
-
-void ConstraintModel::clearPathPoints() {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->path_) {
-        this->path_->clearPoints();
-    }
 }
 
 void ConstraintModel::setPathStagedPoints(QVector<QPointF> points) {
@@ -231,43 +197,6 @@ QVector<QPointF> ConstraintModel::getPathStagedPoints() {
     return temp;
 }
 
-QVector3D ConstraintModel::getFinalPos() {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->curr_final_point_ != nullptr) {
-        QPointF pos_2D = this->curr_final_point_->getPos();
-        return QVector3D(pos_2D.x(), pos_2D.y(), 0);
-    } else {
-        return QVector3D();
-    }
-}
-
-QVector3D ConstraintModel::getInitialPos() {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->curr_drone_ != nullptr) {
-        return this->curr_drone_->getPos();
-    } else {
-        return QVector3D();
-    }
-}
-
-QVector3D ConstraintModel::getInitialVel() {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->curr_drone_ != nullptr) {
-        return this->curr_drone_->getVel();
-    } else {
-        return QVector3D();
-    }
-}
-
-QVector3D ConstraintModel::getInitialAcc() {
-    QMutexLocker locker(&this->model_lock_);
-    if (this->curr_drone_ != nullptr) {
-        return this->curr_drone_->getAccel();
-    } else {
-        return QVector3D();
-    }
-}
-
 QPointF ConstraintModel::getWpPos(int index) {
     QMutexLocker locker(&this->model_lock_);
     if (this->waypoints_.size() > index) {
@@ -286,14 +215,31 @@ void ConstraintModel::setFinaltime(qreal finaltime) {
     this->P_.tf = finaltime;
 }
 
-autogen::packet::traj3dof ConstraintModel::getCurrTraj3dof() {
+autogen::packet::traj3dof
+        ConstraintModel::getCurrTraj3dof(DroneModelItem *drone) {
     QMutexLocker locker(&this->model_lock_);
-    return this->drone_curr_traj3dof_data_;
+    // find drone
+    QMap<DroneModelItem *, QPair<PathModelItem *,
+            autogen::packet::traj3dof>>::iterator iter =
+            this->drones_.find(drone);
+    if (iter != this->drones_.end()) {
+        // get traj3dof for drone
+        return (*iter).second;
+    }
+    return autogen::packet::traj3dof();
 }
 
-void ConstraintModel::setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data) {
+void ConstraintModel::setCurrTraj3dof(DroneModelItem *drone,
+                                     autogen::packet::traj3dof traj3dof_data) {
     QMutexLocker locker(&this->model_lock_);
-    this->drone_curr_traj3dof_data_ = traj3dof_data;
+    // find drone
+    QMap<DroneModelItem *, QPair<PathModelItem *,
+            autogen::packet::traj3dof>>::iterator iter =
+            this->drones_.find(drone);
+    if (iter != this->drones_.end()) {
+        // set traj3dof for drone
+        (*iter).second = traj3dof_data;
+    }
 }
 
 autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
@@ -301,11 +247,26 @@ autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
     return this->drone_staged_traj3dof_data_;
 }
 
+DroneModelItem *ConstraintModel::getStagedDrone() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->staged_drone_;
+}
+
 void ConstraintModel::stageTraj() {
     QMutexLocker locker(&this->model_lock_);
-    this->drone_staged_traj3dof_data_ = this->drone_curr_traj3dof_data_;
-    this->path_staged_->setPoints(this->path_->getPoints());
-    this->traj_staged_ = true;
+    if (this->curr_drone_) {
+        // set drone to staged drone
+        this->staged_drone_ = this->curr_drone_;
+        // find drone
+        QMap<DroneModelItem *, QPair<PathModelItem *,
+                autogen::packet::traj3dof>>::iterator iter =
+                this->drones_.find(this->curr_drone_);
+        if (iter != this->drones_.end()) {
+            this->drone_staged_traj3dof_data_ = (*iter).second;
+            this->path_staged_->setPoints((*iter).first->getPoints());
+            this->traj_staged_ = true;
+        }
+    }
 }
 
 void ConstraintModel::unstageTraj() {
@@ -367,21 +328,6 @@ void ConstraintModel::setFreeFinalTime(bool free_final_time) {
     this->is_free_final_time_ = free_final_time;
 }
 
-void ConstraintModel::setCurrFinalPoint(PointModelItem *point) {
-    QMutexLocker locker(&this->model_lock_);
-    this->curr_final_point_ = point;
-}
-
-bool ConstraintModel::hasCurrFinalPoint() {
-    QMutexLocker locker(&this->model_lock_);
-    return (this->curr_final_point_ != nullptr);
-}
-
-bool ConstraintModel::isCurrFinalPoint(PointModelItem *point) {
-    QMutexLocker locker(&this->model_lock_);
-    return (point == this->curr_final_point_);
-}
-
 void ConstraintModel::setCurrDrone(DroneModelItem *drone) {
     QMutexLocker locker(&this->model_lock_);
     this->curr_drone_ = drone;
@@ -390,6 +336,11 @@ void ConstraintModel::setCurrDrone(DroneModelItem *drone) {
 bool ConstraintModel::hasCurrDrone() {
     QMutexLocker locker(&this->model_lock_);
     return (this->curr_drone_ != nullptr);
+}
+
+DroneModelItem *ConstraintModel::getCurrDrone() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->curr_drone_;
 }
 
 bool ConstraintModel::isCurrDrone(DroneModelItem *drone) {
@@ -468,7 +419,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Set drone ids
     quint16 count = 1;
-    for (DroneModelItem *model : this->drones_) {
+    for (DroneModelItem *model : this->drones_.keys()) {
         drone_table->setItem(row, 0,
                 new QTableWidgetItem("Drone "
                                      + QString::number(count)
@@ -480,7 +431,6 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         row++;
         count++;
     }
-
 
     // Configure port table
     row = 0;

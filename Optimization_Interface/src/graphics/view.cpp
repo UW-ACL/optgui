@@ -493,7 +493,7 @@ void View::initializeMessageBox(MenuPanel *panel) {
     panel->menu_->layout()->addWidget(this->user_msg_label_);
     this->panel_widgets_.append(this->user_msg_label_);
 
-    connect(this->controller_->compute_thread_, SIGNAL(updateMessage()),
+    connect(this->controller_, SIGNAL(updateMessage()),
             this, SLOT(updateFeedbackMessage()));
 }
 
@@ -1116,15 +1116,23 @@ void View::constrainAccel() {
 
 void View::setCurrEndpoints() {
     QList<QGraphicsItem *> items = this->scene()->selectedItems();
+    bool point_found = false;
+    bool drone_found = false;
     for (QGraphicsItem * item : items) {
-        if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC) {
+        if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC && !point_found) {
             this->controller_->setCurrFinalPoint(
                         qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
+            // found, dont flag other selected points
+            point_found = true;
         }
 
-        if (item->type() == GRAPHICS_TYPE::DRONE_GRAPHIC) {
-            this->controller_->setCurrDrone(
-                        qgraphicsitem_cast<DroneGraphicsItem *>(item)->model_);
+        if (item->type() == GRAPHICS_TYPE::DRONE_GRAPHIC && !drone_found) {
+            DroneGraphicsItem *drone_graphic =
+                    qgraphicsitem_cast<DroneGraphicsItem *>(item);
+            // set model as curr selected drone
+            this->controller_->setCurrDrone(drone_graphic->model_);
+            // found, dont flag other selected points
+            drone_found = true;
         }
     }
 }
@@ -1207,9 +1215,9 @@ void View::initializeFinaltime(MenuPanel *panel) {
     this->panel_widgets_.append(opt_finaltime_label);
 
     // free final time updates text box and P.tf
-    connect(this->controller_->compute_thread_, SIGNAL(finalTime(double)),
+    connect(this->controller_, SIGNAL(finalTime(double)),
             this, SLOT(setFinaltime(qreal)));
-    connect(this->controller_->compute_thread_, SIGNAL(finalTime(double)),
+    connect(this->controller_, SIGNAL(finalTime(double)),
             opt_finaltime, SLOT(setValue(qreal)));
     // manual change updates P.tf
     connect(opt_finaltime, SIGNAL(valueChanged(double)),

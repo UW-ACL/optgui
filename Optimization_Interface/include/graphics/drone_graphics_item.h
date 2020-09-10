@@ -27,6 +27,9 @@ class DroneGraphicsItem : public QGraphicsItem {
     int type() const override;
 
     DroneModelItem *model_;
+    bool is_curr_drone_;
+    bool is_staged_drone_;
+    bool is_executed_drone_;
 
  protected:
     QPainterPath shape() const override;

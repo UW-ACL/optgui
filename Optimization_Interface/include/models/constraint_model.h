@@ -50,18 +50,13 @@ class ConstraintModel {
     quint32 getNumWaypoints();
     void reverseWaypoints();
 
-    void setPathModel(PathModelItem *model);
-    void setPathPoints(QVector<QPointF> points);
-    QVector<QPointF> getPathPoints();
-    void clearPathPoints();
-
     void setPathStagedModel(PathModelItem *model);
     void setPathStagedPoints(QVector<QPointF> points);
     bool tickPathStaged();
     void clearPathStagedPoints();
     QVector<QPointF> getPathStagedPoints();
 
-    void addDrone(DroneModelItem *item);
+    void addDrone(DroneModelItem *drone, PathModelItem *traj);
     void removeDrone(DroneModelItem *item);
 
     skyenet::params getSkyeFlyParams();
@@ -76,11 +71,13 @@ class ConstraintModel {
     void stageTraj();
     void unstageTraj();
 
-    autogen::packet::traj3dof getCurrTraj3dof();
-    void setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data);
+    autogen::packet::traj3dof getCurrTraj3dof(DroneModelItem *drone);
+    void setCurrTraj3dof(DroneModelItem *drone,
+                         autogen::packet::traj3dof traj3dof_data);
 
     autogen::packet::traj3dof getStagedTraj3dof();
     bool getIsTrajStaged();
+    DroneModelItem *getStagedDrone();
 
     FEASIBILITY_CODE getIsValidTraj();
     void setIsValidTraj(FEASIBILITY_CODE code);
@@ -102,19 +99,12 @@ class ConstraintModel {
     QVector<QRegion> getEllipseRegions();
     void updateEllipseColors();
 
-    QVector3D getFinalPos();
-    QVector3D getInitialPos();
-    QVector3D getInitialVel();
-    QVector3D getInitialAcc();
     QPointF getWpPos(int index);
-
-    void setCurrFinalPoint(PointModelItem *point);
-    bool hasCurrFinalPoint();
-    bool isCurrFinalPoint(PointModelItem *point);
 
     void setCurrDrone(DroneModelItem *drone);
     bool hasCurrDrone();
     bool isCurrDrone(DroneModelItem *drone);
+    DroneModelItem *getCurrDrone();
 
     void loadWaypointConstraints(skyenet::params *P,
                                  double wp[skyenet::MAX_WAYPOINTS][3]);
@@ -126,7 +116,6 @@ private:
 
     // Skyefly params
     skyenet::params P_;
-    autogen::packet::traj3dof drone_curr_traj3dof_data_;
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
     INPUT_CODE input_code_;
     FEASIBILITY_CODE feasible_code_;
@@ -142,11 +131,11 @@ private:
     QSet<PolygonModelItem *> polygons_;
     QSet<PlaneModelItem *> planes_;
     QVector<PointModelItem *> waypoints_;
-    PathModelItem *path_;
     PathModelItem *path_staged_;
-    QSet<DroneModelItem *> drones_;
+    DroneModelItem *staged_drone_;
+    QMap<DroneModelItem *, QPair<PathModelItem *,
+                                 autogen::packet::traj3dof>> drones_;
     QSet<PointModelItem *> final_points_;
-    PointModelItem *curr_final_point_;
     DroneModelItem *curr_drone_;
 
     // Convert constraints to skyefly params

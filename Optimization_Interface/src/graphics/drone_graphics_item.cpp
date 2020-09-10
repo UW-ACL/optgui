@@ -29,7 +29,11 @@ DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
                    QGraphicsItem::ItemIsSelectable |
                    QGraphicsItem::ItemSendsGeometryChanges);
 
+    // set radius
     this->size_ = size;
+    this->is_curr_drone_ = false;
+    this->is_staged_drone_ = false;
+    this->is_executed_drone_ = false;
 
     // Set position
     QVector3D pos_3D = this->model_->getPos();
@@ -59,9 +63,23 @@ void DroneGraphicsItem::paint(QPainter *painter,
     } else {
         this->pen_.setWidthF(1.0 / scaling_factor);
     }
-    painter->setPen(this->pen_);
 
-    // Draw current course
+    // draw curr selected drone circle
+    if (this->is_curr_drone_
+            || this->is_staged_drone_
+            || this->is_executed_drone_) {
+        QPen selection_pen(YELLOW);
+        if (this->is_executed_drone_) {
+            selection_pen = QPen(CYAN);
+        } else if (this->is_staged_drone_) {
+            selection_pen = QPen(GREEN);
+        }
+        selection_pen.setWidthF(3.0 / scaling_factor);
+        painter->setPen(selection_pen);
+        painter->drawEllipse(QPointF(), this->size_, this->size_);
+    }
+
+    // Draw drone
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
 

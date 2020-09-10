@@ -32,7 +32,7 @@ class Controller : public QObject {
     ~Controller();
 
     // SkyFly compute thread
-    ComputeThread *compute_thread_;
+    QMap<DroneModelItem *, ComputeThread *> compute_threads_;
 
     // add constraints
     void addEllipse(QPointF const &point, qreal radius = 120);
@@ -62,6 +62,8 @@ class Controller : public QObject {
 
     void execute();
     void stageTraj();
+    void setStagedDrone(DroneModelItem *drone);
+    void setExecutedDrone(DroneModelItem *drone);
     void unstageTraj();
 
     void setSimulated(bool state);
@@ -77,13 +79,17 @@ class Controller : public QObject {
     INPUT_CODE getIsValidInput();
 
  signals:
-    void trajectoryExecuted(autogen::packet::traj3dof data);
-    void resetInputs();
-    void stopComputeWorker();
+    void trajectoryExecuted(DroneModelItem *, autogen::packet::traj3dof data);
+    // signal view to update
+    void finalTime(qreal time);
+    void updateMessage();
 
  private slots:
+    // receive update from compute thread, check if
+    // drone is current drone
+    void updateMessage(DroneModelItem *drone);
+    void finalTime(DroneModelItem *drone, qreal time);
     void startSockets();
-    void setPathColor(bool isRed);
     void tickLiveReference();
 
  private:
@@ -94,6 +100,7 @@ class Controller : public QObject {
     qreal drone_render_level_;
     qreal final_point_render_level_;
     qreal waypoints_render_level_;
+    qreal traj_render_level_;
 
     bool is_simulated_;
     bool traj_lock_;
