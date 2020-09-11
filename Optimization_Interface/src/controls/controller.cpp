@@ -120,29 +120,39 @@ void Controller::removeItem(QGraphicsItem *item) {
                     DroneGraphicsItem *>(item);
             DroneModelItem *model = drone->model_;
 
+            // remove drone socket
+            this->removeDroneSocket(model);
+
+            // stop staged or executed drones
+            this->freeze_traj_timer_->stop();
+            this->model_->setLiveReferenceMode(false);
+            this->unsetStagedPath();
+
             // remove compute thread
             QMap<DroneModelItem *, ComputeThread *>::iterator iter =
                     this->compute_threads_.find(model);
             if (iter != this->compute_threads_.end()) {
-                // remove traj graphic
+                // get traj
                 PathGraphicsItem *traj = (*iter)->getTrajGraphic();
                 PathModelItem *traj_model = traj->model_;
-                this->canvas_->removeItem(traj);
-                this->canvas_->path_graphics_.remove(traj);
-                delete traj;
-                delete traj_model;
 
+                // stop compute
                 (*iter)->stopCompute();
                 // deletion will be handled by deletelater slot
                 // remove from map
                 iter = this->compute_threads_.erase(iter);
+
+                // remove traj
+                this->canvas_->removeItem(traj);
+                this->canvas_->path_graphics_.remove(traj);
+                delete traj;
+                delete traj_model;
             }
 
             // remove drone
             if (this->model_->isCurrDrone(model)) {
                 this->setCurrDrone(nullptr);
             }
-            this->removeDroneSocket(model);
             this->canvas_->removeItem(drone);
             this->canvas_->drone_graphics_.remove(drone);
             delete drone;

@@ -185,7 +185,7 @@ void ComputeThread::run() {
         // Do not display new trajectories if executing
         // sent trajectory. Needed because sometimes compute
         // overlaps with setting live reference mode
-        if (this->model_->isLiveReference()) continue;
+        if (this->model_->isLiveReference() || !this->getRunFlag()) continue;
 
         // set points on graphical display
         this->getTrajGraphic()->model_->setPoints(trajectory);

@@ -76,7 +76,9 @@ void DroneGraphicsItem::paint(QPainter *painter,
         }
         selection_pen.setWidthF(3.0 / scaling_factor);
         painter->setPen(selection_pen);
-        painter->drawEllipse(QPointF(), this->size_, this->size_);
+        painter->drawEllipse(QPointF(),
+                             this->size_ / scaling_factor,
+                             this->size_ / scaling_factor);
     }
 
     // Draw drone
