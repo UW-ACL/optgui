@@ -283,6 +283,7 @@ void Controller::addWaypoint(QPointF const &point) {
 void Controller::addFinalPoint(const QPointF &pos) {
     PointModelItem *item_model = new PointModelItem(pos);
     this->loadPoint(item_model);
+    this->setCurrFinalPoint(item_model);
 }
 
 void Controller::addDrone(const QPointF &pos) {

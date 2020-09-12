@@ -760,7 +760,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // Create table
     this->skyefly_params_table_ = new QTableWidget(panel->menu_);
     this->skyefly_params_table_->setColumnCount(1);  // fill with spinboxes
-    this->skyefly_params_table_->setRowCount(14);  // how many params to edit
+    this->skyefly_params_table_->setRowCount(15);  // how many params to edit
         // vertical headers are spinbox labels
     this->skyefly_params_table_->verticalHeader()->setVisible(true);
     this->skyefly_params_table_->verticalHeader()->
@@ -874,6 +874,20 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_v_max);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("v_max"));
+    row_index++;
+
+    // P.v_max_slow
+    QDoubleSpinBox *params_v_max_slow =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_v_max_slow->setRange(-10000, 10000);
+    params_v_max_slow->setSingleStep(0.1);
+    params_v_max_slow->setValue(default_P.v_max_slow);
+    connect(params_v_max_slow, SIGNAL(valueChanged(double)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_v_max_slow);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("vmax_slow"));
     row_index++;
 
     // P.theta_max

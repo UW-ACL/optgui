@@ -365,6 +365,8 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.v_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.v_max_slow = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.theta_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.j_max = qobject_cast<QDoubleSpinBox *>
@@ -626,9 +628,9 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
             QVector3D xyz_p = guiXyzToXyz(p_pos.x(), p_pos.y(), 0);
             QVector3D xyz_q = guiXyzToXyz(q_pos.x(), q_pos.y(), 0);
             if (polygon->getDirection()) {
-                this->loadPlaneConstraint(P, index, xyz_q, xyz_p);
-            } else {
                 this->loadPlaneConstraint(P, index, xyz_p, xyz_q);
+            } else {
+                this->loadPlaneConstraint(P, index, xyz_q, xyz_p);
             }
             index++;
             if (index >= skyenet::MAX_CPOS) {
@@ -645,9 +647,9 @@ void ConstraintModel::loadPosConstraints(skyenet::params *P) {
         QVector3D xyz_q = guiXyzToXyz(p2_pos.x(), p2_pos.y(), 0);
 
         if (plane->getDirection()) {
-            this->loadPlaneConstraint(P, index, xyz_q, xyz_p);
-        } else {
             this->loadPlaneConstraint(P, index, xyz_p, xyz_q);
+        } else {
+            this->loadPlaneConstraint(P, index, xyz_q, xyz_p);
         }
         index++;
         if (index >= skyenet::MAX_CPOS) {
