@@ -729,9 +729,9 @@ void Controller::loadDrone(DroneModelItem *item_model) {
             new ComputeThread(this->model_, item_graphic, path_graphic_);
     this->compute_threads_.insert(item_model, compute_thread_);
     connect(compute_thread_,
-            SIGNAL(updateGraphics(PathGraphicsItem *, bool)),
+            SIGNAL(updateGraphics(PathGraphicsItem *, DroneGraphicsItem *)),
             this->canvas_,
-            SLOT(updatePathGraphicsItem(PathGraphicsItem *, bool)));
+            SLOT(updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *)));
     connect(compute_thread_,
             SIGNAL(finalTime(DroneModelItem *, qreal)),
             this,

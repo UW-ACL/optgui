@@ -49,7 +49,7 @@ class Canvas : public QGraphicsScene {
  public slots:
     void bringSelectedToFront();
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
-    void updatePathGraphicsItem(PathGraphicsItem *, bool);
+    void updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *);
 
  private:
     void setBackgroundImage(QString filename);

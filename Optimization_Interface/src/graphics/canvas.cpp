@@ -107,21 +107,13 @@ void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
     graphic->update(graphic->boundingRect());
 }
 
-void Canvas::updatePathGraphicsItem(PathGraphicsItem *traj, bool isRed) {
-    // find correct path graphic
-    QSet<PathGraphicsItem *>::iterator iter = this->path_graphics_.find(traj);
-    if (iter != this->path_graphics_.end()) {
-        PathGraphicsItem *path_graphic_ = *iter;
-
-        // update color
-        if (isRed) {
-            path_graphic_->setColor(RED);
-        } else {
-            path_graphic_->setColor(YELLOW);
-        }
-
-        // redraw
-        path_graphic_->update(path_graphic_->boundingRect());
+void Canvas::updateGraphicsItems(PathGraphicsItem *traj, DroneGraphicsItem *drone) {
+    // verify graphics exist
+    if (this->path_graphics_.contains(traj) &&
+        this->drone_graphics_.contains(drone)) {
+        // schedule re-draw
+        traj->update(traj->boundingRect());
+        drone->update(drone->boundingRect());
     }
 }
 

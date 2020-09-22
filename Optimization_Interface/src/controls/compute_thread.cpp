@@ -203,20 +203,39 @@ void ComputeThread::run() {
 
                     + pow(O.dtau, 2);  // change in time
 
-        bool is_infeasible = true;
+        bool is_feasible;
         if (accum > 0.25) {
             this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
-            is_infeasible = true;
+            is_feasible = false;
         } else {
             this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
-            is_infeasible = false;
+            is_feasible = true;
         }
         if (this->model_->isFreeFinalTime()) {
             emit finalTime(this->drone_->model_, O.t[size - 1]);
         }
         emit updateMessage(this->drone_->model_);
-        emit updateGraphics(this->getTrajGraphic(), is_infeasible);
+
+        this->setFeasibilityColor(is_feasible);
+
+
     }
+}
+
+void ComputeThread::setFeasibilityColor(bool is_feasible) {
+    // get graphics items
+    DroneGraphicsItem *drone = this->getDroneGraphic();
+    PathGraphicsItem *traj = this->getTrajGraphic();
+
+    // set feasiblility color
+    if (is_feasible) {
+        traj->setColor(YELLOW);
+        drone->setIsFeasible(true);
+    } else {
+        traj->setColor(RED);
+        drone->setIsFeasible(false);
+    }
+    emit updateGraphics(traj, drone);
 }
 
 INPUT_CODE ComputeThread::validateInputs(

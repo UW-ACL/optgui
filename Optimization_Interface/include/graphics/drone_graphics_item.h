@@ -31,6 +31,9 @@ class DroneGraphicsItem : public QGraphicsItem {
     bool is_staged_drone_;
     bool is_executed_drone_;
 
+    void setIsFeasible(bool feasible);
+    bool getIsFeasible();
+
  protected:
     QPainterPath shape() const override;
     QVariant itemChange(GraphicsItemChange change,
@@ -40,6 +43,11 @@ class DroneGraphicsItem : public QGraphicsItem {
     QPen pen_;
     QBrush brush_;
     qreal size_;
+
+    // for compute thread setting infeasible
+    QMutex mutex_;
+    bool is_feasible_;
+
     qreal getScalingFactor() const;
 };
 

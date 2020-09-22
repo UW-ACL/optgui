@@ -39,7 +39,7 @@ protected:
     void run() override;
 
  signals:
-    void updateGraphics(PathGraphicsItem *traj_graphic, bool isRed);
+    void updateGraphics(PathGraphicsItem *traj_graphic, DroneGraphicsItem *drone_graphic);
     void updateMessage(DroneModelItem *drone);
     void finalTime(DroneModelItem *drone, double final_time);
 
@@ -67,6 +67,8 @@ protected:
     INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
                               QVector3D const &initial_pos,
                               QVector3D const &final_pos);
+    void setFeasibilityColor(bool is_feasible);
+
     bool getRunFlag();
 };
 
