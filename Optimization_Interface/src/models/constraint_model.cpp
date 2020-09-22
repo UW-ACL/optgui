@@ -423,7 +423,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     quint16 count = 1;
     for (DroneModelItem *model : this->drones_.keys()) {
         drone_table->setItem(row, 0,
-                new QTableWidgetItem("Drone "
+                new QTableWidgetItem("Vehicle "
                                      + QString::number(count)
                                      + " ID"));
         drone_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
@@ -436,17 +436,18 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
 
     // Configure port table
     row = 0;
-    port_table->setRowCount(this->final_points_.size() +
-                            this->waypoints_.size() +
-                            this->ellipses_.size() +
-                            this->polygons_.size() +
-                            this->planes_.size());
+    port_table->setRowCount(this->final_points_.size()
+                            + this->waypoints_.size()
+                            + this->ellipses_.size()
+//                          + this->polygons_.size()
+//                          + this->planes_.size()
+                            );
 
     // Set final points
     count = 1;
     for (PointModelItem *model : this->final_points_) {
         port_table->setItem(row, 0,
-                new QTableWidgetItem("Final Point " + QString::number(count)));
+                new QTableWidgetItem("Target " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
         ports->insert(model->port_);
         port_table->setCellWidget(row, 1,
@@ -485,35 +486,39 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         count++;
     }
 
+    // Not Currently Supported
+    // Would be interesting to implement for the purpose of centering
+    //  a slow zone around a drone
+
     // Set polygons
-    count = 1;
-    for (PolygonModelItem *model : this->polygons_) {
-        port_table->setItem(row, 0,
-                new QTableWidgetItem("Polygon " + QString::number(count)));
-        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+//    count = 1;
+//    for (PolygonModelItem *model : this->polygons_) {
+//        port_table->setItem(row, 0,
+//                new QTableWidgetItem("Polygon " + QString::number(count)));
+//        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
-        port_table->setCellWidget(row, 1,
-                new PortSelector(ports, model, port_table));
-        ports->insert(model->port_);
+//        port_table->setCellWidget(row, 1,
+//                new PortSelector(ports, model, port_table));
+//        ports->insert(model->port_);
 
-        row++;
-        count++;
-    }
+//        row++;
+//        count++;
+//    }
 
     // Set planes
-    count = 1;
-    for (PlaneModelItem *model : this->planes_) {
-        port_table->setItem(row, 0,
-                new QTableWidgetItem("Plane " + QString::number(count)));
-        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+//    count = 1;
+//    for (PlaneModelItem *model : this->planes_) {
+//        port_table->setItem(row, 0,
+//                new QTableWidgetItem("Plane " + QString::number(count)));
+//        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
-        port_table->setCellWidget(row, 1,
-                new PortSelector(ports, model, port_table));
-        ports->insert(model->port_);
+//        port_table->setCellWidget(row, 1,
+//                new PortSelector(ports, model, port_table));
+//        ports->insert(model->port_);
 
-        row++;
-        count++;
-    }
+//        row++;
+//        count++;
+//    }
 }
 
 qreal ConstraintModel::getClearance() {

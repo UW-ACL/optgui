@@ -27,6 +27,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
 }
 
 void PathGraphicsItem::setColor(QColor color) {
+    QMutexLocker(&this->mutex_);
     this->pen_.setColor(color);
 }
 

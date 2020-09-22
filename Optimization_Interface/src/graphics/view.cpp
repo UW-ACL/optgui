@@ -272,7 +272,7 @@ void View::mousePressEvent(QMouseEvent *event) {
                     }
 
                     // if poly is "inside out" reverse it
-                    if (tot_angle <= 0) {
+                    if (tot_angle > 0) {
                         std::reverse(poly.begin(), poly.end());
                     }
 
@@ -1395,11 +1395,11 @@ void View::updateFeedbackMessage() {
             break;
         }
         case DRONE_OVERLAP: {
-            this->user_msg_label_->setText("Drone cannot be in obstacle");
+            this->user_msg_label_->setText("Vehicle cannot be in obstacle");
             break;
         }
         case FINAL_POS_OVERLAP: {
-            this->user_msg_label_->setText("Final point cannot be in obstacle");
+            this->user_msg_label_->setText("Target cannot be in obstacle");
             break;
         }
         case VALID_INPUT: {

@@ -34,6 +34,7 @@ DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
     this->is_curr_drone_ = false;
     this->is_staged_drone_ = false;
     this->is_executed_drone_ = false;
+    this->is_feasible_ = true;
 
     // Set position
     QVector3D pos_3D = this->model_->getPos();
@@ -73,6 +74,8 @@ void DroneGraphicsItem::paint(QPainter *painter,
             selection_pen = QPen(CYAN);
         } else if (this->is_staged_drone_) {
             selection_pen = QPen(GREEN);
+        } else if (!this->getIsFeasible()) {
+            selection_pen = QPen(RED);
         }
         selection_pen.setWidthF(3.0 / scaling_factor);
         painter->setPen(selection_pen);
@@ -140,6 +143,16 @@ qreal DroneGraphicsItem::getScalingFactor() const {
         scaling_factor = this->scene()->views().first()->matrix().m11();
     }
     return scaling_factor;
+}
+
+void DroneGraphicsItem::setIsFeasible(bool feasible) {
+    QMutexLocker(&this->mutex_);
+    this->is_feasible_ = feasible;
+}
+
+bool DroneGraphicsItem::getIsFeasible() {
+    QMutexLocker(&this->mutex_);
+    return this->is_feasible_;
 }
 
 }  // namespace optgui
