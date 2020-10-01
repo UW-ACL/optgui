@@ -15,32 +15,38 @@
 
 namespace optgui {
 
-qreal const POINT_SIZE = 14;
-
 class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qreal size = POINT_SIZE);
+                               qreal radius = 16);
     PointModelItem *model_;
 
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+    // unique type of graphic class
     int type() const override;
-    void expandScene();
 
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
+    // size of graphic
     qreal radius_;
+
+    // graphical info
     QPen pen_;
     QBrush brush_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
-    void initialize();
 };
 
 }  // namespace optgui

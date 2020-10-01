@@ -18,17 +18,24 @@ class DroneIdSelector : public QLineEdit {
     Q_OBJECT
 
  public:
-    explicit DroneIdSelector(DroneModelItem *model, QWidget *parent);
+    explicit DroneIdSelector(DroneModelItem *model, QWidget *parent,
+                             QSet<quint16> *ports);
 
  protected:
+    // select current input when typing
     void focusInEvent(QFocusEvent *event) override;
 
  public slots:
+    // valida IP address and save to data model
     void updateIp();
 
  private:
+    // currently used ports, shared between all input boxes
+    QSet<quint16> *ports_;
+    // data model
     DroneModelItem *model_;
-    bool isIpValid();
+    // helper function to validate IP address
+    quint16 isIpValid();
 };
 
 }  // namespace optgui

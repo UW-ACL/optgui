@@ -4,7 +4,7 @@
 // LICENSE: Copyright 2018, All Rights Reserved
 
 // UDP Socket for interacting with ellipse
-// constraint model over network
+// obstacle over network
 
 #ifndef ELLIPSE_SOCKET_H_
 #define ELLIPSE_SOCKET_H_
@@ -13,7 +13,7 @@
 
 #include "autogen/lib.h"
 
-#include "include/models/ellipse_model_item.h"
+#include "include/graphics/ellipse_graphics_item.h"
 
 namespace optgui {
 
@@ -21,14 +21,19 @@ class EllipseSocket : public QUdpSocket {
     Q_OBJECT
 
  public:
-    explicit EllipseSocket(EllipseModelItem *model, QObject *parent = nullptr);
+    explicit EllipseSocket(EllipseGraphicsItem *item,
+                           QObject *parent = nullptr);
     ~EllipseSocket();
-    EllipseModelItem *ellipse_model_;
+
+    // ellipse obstacle to manipulate over network
+    EllipseGraphicsItem *ellipse_item_;
 
  signals:
+    // signal to re-render ellipse
     void refresh_graphics();
 
  private slots:
+    // automatically read incoming data with slots
     void readPendingDatagrams();
 };
 

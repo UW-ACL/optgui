@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Entry box for setting port numbers
+// Entry box for setting local listening port numbers
 
 #ifndef PORT_SELECTOR_H_
 #define PORT_SELECTOR_H_
@@ -23,15 +23,20 @@ class PortSelector : public QLineEdit {
                           DataModel *model, QWidget *parent);
 
  protected:
+    // select input when typing
     void focusInEvent(QFocusEvent *event) override;
 
  public slots:
+    // validate port and save to data model
     void updatePort();
 
  private:
+    // currently used ports, shared between all input boxes
     QSet<quint16> *ports_;
+    // data model
     DataModel *model_;
-    bool isPortValid();
+    // validate port
+    quint16 isPortValid();
 };
 
 }  // namespace optgui

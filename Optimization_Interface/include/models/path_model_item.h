@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Data model for drone path
+// Data model for vehicle trajectory
 
 #ifndef PATH_MODEL_ITEM_H_
 #define PATH_MODEL_ITEM_H_
@@ -18,75 +18,76 @@ namespace optgui {
 
 class PathModelItem : public DataModel {
  public:
-    PathModelItem() : mutex_()
-        { this->points_ = QVector<QPointF>(); port_ = 0; }
+    PathModelItem() : DataModel(), mutex_() {
+    }
+
     ~PathModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        // acquire lock to destroy it
+        QMutexLocker locker(&this->mutex_);
     }
 
     quint32 getSize() {
-        this->mutex_.lock();
-        quint32 size = this->points_.size();
-        this->mutex_.unlock();
-        return size;
+        QMutexLocker locker(&this->mutex_);
+        // get number of points in traj
+        return this->points_.size();
     }
 
-    void setPointAt(QPointF point, quint32 index) {
-        this->mutex_.lock();
+    void setPointAt(QPointF point, int index) {
+        QMutexLocker locker(&this->mutex_);
+        // set point in traj if within bounds
         if (index < this->points_.size()) {
             QPointF &temp = this->points_[index];
             temp.setX(point.x());
             temp.setY(point.y());
         }
-        this->mutex_.unlock();
     }
 
-    QPointF getPointAt(quint32 index) {
-        this->mutex_.lock();
-        QPointF temp = QPointF();
+    QPointF getPointAt(int index) {
+        QMutexLocker locker(&this->mutex_);
+        // get point in traj if within bounds,
+        // return default point if out of bounds
         if (index < this->points_.size()) {
-            temp = this->points_.value(index);
+            return this->points_.value(index);
+        } else {
+            return QPointF();
         }
-        this->mutex_.unlock();
-        return temp;
     }
 
     void setPoints(QVector<QPointF> points) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
+        // copy over points
         this->points_ = points;
-        this->mutex_.unlock();
     }
 
     void addPoint(QPointF point) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
+        // append point to traj
         this->points_.append(point);
-        this->mutex_.unlock();
     }
 
-    void removePointAt(quint32 index) {
-        this->mutex_.lock();
+    void removePointAt(int index) {
+        QMutexLocker locker(&this->mutex_);
+        // remove point from traj if within bounds
         if (index < this->points_.size()) {
             this->points_.removeAt(index);
         }
-        this->mutex_.unlock();
     }
 
     void clearPoints() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->points_.clear();
-        this->mutex_.unlock();
     }
 
     QVector<QPointF> getPoints() {
-        this->mutex_.lock();
-        QVector<QPointF> temp = this->points_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get copy of points
+        return this->points_;
     }
 
  private:
+    // mutex lock for getters/setters
     QMutex mutex_;
+    // point in trajectory
     QVector<QPointF> points_;
 };
 

@@ -13,7 +13,7 @@
 
 #include "include/graphics/path_graphics_item.h"
 #include "include/graphics/drone_graphics_item.h"
-#include "include/graphics/waypoints_graphics_item.h"
+#include "include/graphics/waypoint_graphics_item.h"
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
@@ -27,42 +27,50 @@ class Canvas : public QGraphicsScene {
  public:
     explicit Canvas(QObject *parent = nullptr, QString background_file = "");
     ~Canvas();
+
+    // render item at top level
     void bringToFront(QGraphicsItem *item);
-    void expandScene();
-    QPointF* getBottomLeft();
-    QPointF* getTopRight();
-    bool indoor_ = true;
 
-    WaypointsGraphicsItem *waypoints_graphic_;
-    PathGraphicsItem *path_graphic_;
+    QSet<PathGraphicsItem *> path_graphics_;
     PathGraphicsItem *path_staged_graphic_;
-    DroneGraphicsItem *drone_graphic_;
-    PointGraphicsItem *final_point_;
 
-    QSet<EllipseGraphicsItem *> *ellipse_graphics_;
-    QSet<PolygonGraphicsItem *> *polygon_graphics_;
-    QSet<PlaneGraphicsItem *> *plane_graphics_;
+    QSet<DroneGraphicsItem *> drone_graphics_;
+    QSet<EllipseGraphicsItem *> ellipse_graphics_;
+    QSet<PolygonGraphicsItem *> polygon_graphics_;
+    QSet<PlaneGraphicsItem *> plane_graphics_;
+    QSet<PointGraphicsItem *> final_points_;
+    QVector<WaypointGraphicsItem *> waypoint_graphics_;
 
  protected:
+    // draw foreground and background
     void drawBackground(QPainter *painter, const QRectF &rect) override;
     void drawForeground(QPainter *painter, const QRectF &rect) override;
 
  public slots:
+    // move selected item to top render level
     void bringSelectedToFront();
+
+    // manually force a re-render of item
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
-    void updatePathGraphicsItem();
+    void updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *);
 
  private:
-    void initialize();
     void setBackgroundImage(QString filename);
+    QImage background_image_;
+
+    // member variables for graphical style
     QPen background_pen_;
     QPen foreground_pen_;
+    QFont font_;
+
+    // max render level, used for move selected to front
     qreal front_depth_;
+
+    // helper functions for drawing grid lines
     qint64 roundUpPast(qint64 n, qint64 m);
     qint64 roundDownPast(qint64 n, qint64 m);
-    QFont font_;
-    QImage *background_image_;
 
+    // size of backgorund image
     qreal background_bottomleft_x_ = 0;
     qreal background_bottomleft_y_ = 0;
     qreal background_topright_x_ = 1;

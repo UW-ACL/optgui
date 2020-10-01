@@ -18,53 +18,56 @@ namespace optgui {
 
 class PolygonModelItem : public DataModel {
  public:
-    explicit PolygonModelItem(QVector<QPointF> points) :
-        mutex_(), direction_(false) { points_ = points; port_ = 0;}
+    explicit PolygonModelItem(QVector<QPointF> points) : DataModel(),
+        mutex_(), direction_(false) {
+        // initialize from copy of points param
+        points_ = points;
+    }
+
     ~PolygonModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        // acquire lock to destroy it
+        QMutexLocker locker(&this->mutex_);
     }
 
     quint32 getSize() {
-        this->mutex_.lock();
-        quint32 size = this->points_.size();
-        this->mutex_.unlock();
-        return size;
+        QMutexLocker locker(&this->mutex_);
+        // get number of verticies
+        return this->points_.size();
     }
 
     void setPointAt(QPointF point, quint32 index) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
+        // set point of vertex without bounds checking
         QPointF &temp = this->points_[index];
         temp.setX(point.x());
         temp.setY(point.y());
-        this->mutex_.unlock();
     }
 
     QPointF getPointAt(quint32 index) {
-        this->mutex_.lock();
-        QPointF temp = this->points_.value(index);
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get copy of point vertex in xyz pixels
+        return this->points_.value(index);
     }
 
     bool getDirection() {
-        this->mutex_.lock();
-        qreal temp = this->direction_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get direction of constraint inequality
+        return this->direction_;
     }
 
     void flipDirection() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
+        // flip direction of constraint inequality
         this->direction_ = !this->direction_;
-        this->mutex_.unlock();
     }
 
     bool isConvex() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
+
+        // detect whenther polygon is convex by summing inner angles
+        // CURRENTLY DOES NOT CHECK FOR SELF INTERSECTING POLYGONS
         quint32 n = this->points_.size();
         if (n < 4) {
-            this->mutex_.unlock();
             return true;
         }
 
@@ -83,11 +86,9 @@ class PolygonModelItem : public DataModel {
             if (i == 0) {
                 sign = z_cross_product > 0;
             } else if (sign != (z_cross_product > 0)) {
-                this->mutex_.unlock();
                 return false;
             }
         }
-        this->mutex_.unlock();
         return true;
     }
 

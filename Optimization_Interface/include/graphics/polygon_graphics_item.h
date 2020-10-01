@@ -23,26 +23,36 @@ class PolygonGraphicsItem : public QGraphicsItem {
     explicit PolygonGraphicsItem(PolygonModelItem *model,
                                  QGraphicsItem *parent = nullptr);
     ~PolygonGraphicsItem();
+
+    // data model
     PolygonModelItem *model_;
 
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = 0) override;
+    // unique graphic type
     int type() const override;
 
-    void expandScene();
+    // flip direction of constraint
     void flipDirection();
 
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
-    void initialize();
     QPen pen_;
     QBrush brush_;
-    QVector<PolygonResizeHandle *> *resize_handles_;
+
+    // resize handles
+    QVector<PolygonResizeHandle *> resize_handles_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

@@ -10,8 +10,11 @@
 
 #include <QPointF>
 #include <QMutex>
+#include <QRegion>
+#include <QTransform>
 
 #include "include/models/data_model.h"
+#include "include/globals.h"
 
 namespace optgui {
 
@@ -19,101 +22,151 @@ qreal const DEFAULT_RAD = 100;
 
 class EllipseModelItem : public DataModel {
  public:
-    explicit EllipseModelItem(QPointF pos, qreal *clearance,
+    explicit EllipseModelItem(QPointF pos, qreal clearance,
                 qreal height = DEFAULT_RAD,
                 qreal width = DEFAULT_RAD, qreal rot = 0) :
-        mutex_(), height_(height), width_(width), rot_(rot),
-        direction_(false), clearance_(clearance) {
-        pos_ = pos;
-        port_ = 0;
+        DataModel(), mutex_(), height_(height), width_(width), rot_(rot),
+        direction_(false), is_overlap_(false), clearance_(clearance) {
+        // set pos from param
+        this->pos_ = pos;
+        // generate region for overlap detection,
+        // only generate new region when coords change
+        this->region_ = generateRegion();
     }
 
     ~EllipseModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        // acquire lock to destroy it
+        QMutexLocker locker(&this->mutex_);
     }
 
     qreal getWidth() {
-        this->mutex_.lock();
-        qreal temp = this->width_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get width in pixels
+        return this->width_;
     }
 
     void setWidth(qreal width) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->width_ = width;
-        this->mutex_.unlock();
+        // update region
+        this->region_ = this->generateRegion();
     }
 
     qreal getHeight() {
-        this->mutex_.lock();
-        qreal temp = this->height_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get height in pixels
+        return this->height_;
     }
 
     void setHeight(qreal height) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->height_ = height;
-        this->mutex_.unlock();
+        // update region
+        this->region_ = this->generateRegion();
     }
 
     qreal getRot() {
-        this->mutex_.lock();
-        qreal temp = this->rot_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get rotation in degrees clockwise
+        return this->rot_;
     }
 
     void setRot(qreal rot) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->rot_ = rot;
-        this->mutex_.unlock();
+        // update region
+        this->region_ = this->generateRegion();
     }
 
     QPointF getPos() {
-        this->mutex_.lock();
-        QPointF temp = this->pos_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get copy of pos in xyz pixels
+        return this->pos_;
     }
 
     void setPos(QPointF pos) {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
         this->pos_.setX(pos.x());
         this->pos_.setY(pos.y());
-        this->mutex_.unlock();
+        // update region
+        this->region_ = this->generateRegion();
     }
 
     bool getDirection() {
-        this->mutex_.lock();
-        qreal temp = this->direction_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get direction of constraint inequality
+        // (not currently supported by socp)
+        return this->direction_;
     }
 
     void flipDirection() {
-        this->mutex_.lock();
+        QMutexLocker locker(&this->mutex_);
+        // flip direction of constraint inequality
         this->direction_ = !this->direction_;
-        this->mutex_.unlock();
     }
 
     qreal getClearance() {
-        this->mutex_.lock();
-        qreal temp = *this->clearance_;
-        this->mutex_.unlock();
-        return temp;
+        QMutexLocker locker(&this->mutex_);
+        // get clearance around obs in meters
+        return this->clearance_;
+    }
+
+    void setClearance(qreal clearance) {
+        QMutexLocker locker(&this->mutex_);
+        this->clearance_ = clearance;
+        // update region
+        this->region_ = this->generateRegion();
+    }
+
+    bool getIsOverlap() {
+        QMutexLocker locker(&this->mutex_);
+        return this->is_overlap_;
+    }
+
+    void setIsOverlap(bool is_overlap) {
+        QMutexLocker locker(&this->mutex_);
+        this->is_overlap_ = is_overlap;
+    }
+
+    QRegion const getRegion() {
+        QMutexLocker locker(&this->mutex_);
+        return this->region_;
     }
 
  private:
+    // mutex lock for getters and setters
     QMutex mutex_;
+    // dimensions in pixels
     qreal height_;
     qreal width_;
+    // rotation clockwise in degrees
     qreal rot_;
+    // position in xyz pixels
     QPointF pos_;
+    // direction of constraint
     bool direction_;
-    qreal *clearance_;
+    // flag for overlapping ellipse
+    bool is_overlap_;
+    // clearance in meters
+    qreal clearance_;
+    // save region for detecting overlap to minimize
+    // times needed to generate
+    QRegion region_;
+
+    QRegion generateRegion() {
+        // create a QRegion to use for overlap detection
+        qreal width = this->width_ + (this->clearance_ * GRID_SIZE);
+        qreal height = this->height_ + (this->clearance_ * GRID_SIZE);
+        QRegion region = QRegion(QRect(-width, -height,
+                                       width * 2, height * 2),
+                                 QRegion::Ellipse);
+        QTransform rotation;
+        rotation.rotate(this->rot_);
+        region = rotation.map(region);
+        region.translate(this->pos_.x(), this->pos_.y());
+
+        return region;
+    }
 };
 
 }  // namespace optgui

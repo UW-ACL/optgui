@@ -45,10 +45,8 @@ PortDialog::~PortDialog() {
     delete this->layout();
 }
 
-void PortDialog::setModel(ConstraintModel *model) {
-    this->model_ = model;
-    this->resetTable();
-    this->model_->fillTable(this->port_table_,
+void PortDialog::fillTable(ConstraintModel *model) {
+    model->fillTable(this->port_table_,
                             this->drone_table_,
                             this->ports_);
 }
@@ -87,10 +85,10 @@ void PortDialog::initializeTable() {
             setSectionResizeMode(QHeaderView::Stretch);
     this->drone_table_->verticalHeader()->setVisible(false);
     this->drone_table_->horizontalHeader()->setVisible(false);
-    this->drone_table_->setMinimumSize(
-                this->drone_table_->minimumSize().rwidth(), 30);
-    this->drone_table_->setMaximumSize(
-                this->drone_table_->maximumSize().rwidth(), 32);
+//    this->drone_table_->setMinimumSize(
+//                this->drone_table_->minimumSize().rwidth(), 30);
+//    this->drone_table_->setMaximumSize(
+//                this->drone_table_->maximumSize().rwidth(), 32);
 
     // Set color
     this->port_table_->setAutoFillBackground(true);

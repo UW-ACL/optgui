@@ -21,26 +21,42 @@ class PlaneResizeHandle : public QGraphicsEllipseItem {
                                bool isP2,
                                QGraphicsItem *parent,
                                qreal size = 14);
+    // update graphic with model info
     void updatePos();
+    // update model info
     void updateModel(QPointF diff);
+
+    // unique graphic type
     int type() const override;
+
+    // get pos of handle
     QPointF getPoint();
-    void setColor(const QColor color);
+
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 
  protected:
+    // detect mouse input
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
  private:
-    void expandScene();
+    // data model
     PlaneModelItem *model_;
+
+    // type of handle: P1, P2
     bool isP2_;
+
+    // flag for using handle
     bool resize_;
+
+    // size of handle
     qreal size_;
-    qreal getScalingFactor();
+
+    // scale zoom level
+    qreal getScalingFactor() const;
 };
 
 }  // namespace optgui

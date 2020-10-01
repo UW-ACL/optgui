@@ -29,10 +29,6 @@ PolygonResizeHandle::PolygonResizeHandle(PolygonModelItem *model,
                   this->size_ * 2, this->size_ * 2);
 }
 
-void PolygonResizeHandle::setColor(const QColor color) {
-    this->setBrush(QBrush(color));
-}
-
 void PolygonResizeHandle::updatePos() {
     // Translate model point to local coordinates
     this->setPos(this->parentItem()->mapFromScene(
@@ -54,6 +50,7 @@ void PolygonResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 void PolygonResizeHandle::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused option errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -65,7 +62,7 @@ void PolygonResizeHandle::paint(QPainter *painter,
     this->setPen(pen);
     this->setRect(-size, -size, size * 2, size * 2);
 
-    // paint
+    // paint ellipse
     QGraphicsEllipseItem::paint(painter, option, widget);
 }
 
@@ -77,37 +74,25 @@ void PolygonResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void PolygonResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
+        // update model with handle position and re-render
         QPointF eventPos = event->scenePos();
         this->model_->setPointAt(eventPos, this->index_);
-        this->expandScene();
-    }
-}
-
-int PolygonResizeHandle::type() const {
-    return HANDLE_GRAPHIC;
-}
-
-QPointF PolygonResizeHandle::getPoint() {
-    return this->model_->getPointAt(this->index_);
-}
-
-void PolygonResizeHandle::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->parentItem()->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
         this->update(this->boundingRect());
     }
 }
 
-qreal PolygonResizeHandle::getScalingFactor() {
+int PolygonResizeHandle::type() const {
+    // get unique graphiccs type
+    return POLYGON_HANDLE_GRAPHIC;
+}
+
+QPointF PolygonResizeHandle::getPoint() {
+    // get copy of point from data model
+    return this->model_->getPointAt(this->index_);
+}
+
+qreal PolygonResizeHandle::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

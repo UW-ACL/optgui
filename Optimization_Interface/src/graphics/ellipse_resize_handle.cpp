@@ -10,6 +10,8 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
+#include "include/globals.h"
+
 namespace optgui {
 
 EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
@@ -17,12 +19,19 @@ EllipseResizeHandle::EllipseResizeHandle(EllipseModelItem *model,
                                          quint8 type,
                                          qreal size)
     : QGraphicsEllipseItem(parent) {
+    // set model
     this->model_ = model;
+
+    // set resize
     this->resize_ = false;
+
+    // set graphics options
     this->setPen(QPen(Qt::black));
     this->setBrush(QBrush(Qt::white));
     this->size_ = size;
     this->type_ = type;
+
+    // set size of circle
     this->setRect(-this->size_, -this->size_,
                   this->size_ * 2, this->size_ * 2);
 }
@@ -41,30 +50,38 @@ void EllipseResizeHandle::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void EllipseResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     if (this->resize_) {
+        // get rotation of mouse
         QLineF vector(event->scenePos(),
                       parentItem()->scenePos());
 
         qreal rotation = 360 - vector.angle();
         if (this->type_ == 0) {
+            // adjust width
             this->model_->setWidth(vector.length());
         } else if (this->type_ == 1) {
+            // adjust height
             this->model_->setHeight(vector.length());
+
             rotation -= 90;
             if (rotation < 0) {
                 rotation += 360;
             }
         } else {
+            // adjust both width and height
             this->model_->setWidth(vector.length());
             this->model_->setHeight(vector.length());
+
             rotation -= 45;
             if (rotation < 0) {
                 rotation += 360;
             }
         }
+        // set model rotation and graphical rotation
         this->model_->setRot(rotation);
         this->parentItem()->setRotation(rotation);
 
-        this->expandScene();
+        // re-render ellipse graphic
+        this->update(this->boundingRect());
     }
 }
 
@@ -83,24 +100,13 @@ void EllipseResizeHandle::paint(QPainter *painter,
     QGraphicsEllipseItem::paint(painter, option, widget);
 }
 
-void EllipseResizeHandle::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = parentItem()->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
+int EllipseResizeHandle::type() const {
+    // return unique graphic type
+    return ELLIPSE_HANDLE_GRAPHIC;
 }
 
-qreal EllipseResizeHandle::getScalingFactor() {
+qreal EllipseResizeHandle::getScalingFactor() const {
+    // get scaling zoom factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

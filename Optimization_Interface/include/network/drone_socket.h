@@ -12,7 +12,7 @@
 
 #include "autogen/lib.h"
 
-#include "include/models/drone_model_item.h"
+#include "include/graphics/drone_graphics_item.h"
 
 namespace optgui {
 
@@ -20,20 +20,26 @@ class DroneSocket : public QUdpSocket {
     Q_OBJECT
 
  public:
-    explicit DroneSocket(DroneModelItem *model, QObject *parent = nullptr);
+    explicit DroneSocket(DroneGraphicsItem *item, QObject *parent = nullptr);
     ~DroneSocket();
-    DroneModelItem *drone_model_;
+
+    // graphic item to manipulate over network
+    DroneGraphicsItem *drone_item_;
 
  private slots:
+    // automatically read incoming data with slots
     void readPendingDatagrams();
 
  signals:
+    // signal to re-render vehicle
     void refresh_graphics();
 
  public slots:
-    void rx_trajectory(const autogen::packet::traj3dof data);
+    void rx_trajectory(DroneModelItem *drone,
+                       const autogen::packet::traj3dof data);
 
  private:
+    // check if destination address is valid
     bool isDestinationAddrValid();
 };
 

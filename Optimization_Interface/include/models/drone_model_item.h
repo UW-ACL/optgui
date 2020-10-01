@@ -9,46 +9,77 @@
 #define DRONE_MODEL_ITEM_H_
 
 #include <QPointF>
+#include <QVector3D>
 #include <QString>
 #include <QMutex>
 
 #include "include/models/data_model.h"
 
+#include "include/globals.h"
+
 namespace optgui {
 
 class DroneModelItem : public DataModel {
  public:
-    DroneModelItem() : mutex_() {
-        this->pos_ = QPointF(0, 0);
+    explicit DroneModelItem(QPointF const &pos) : mutex_() {
+        this->pos_ = QVector3D(pos.x(), pos.y(), 0);
+        this->vel_ = QVector3D(0, 0, 0);
+        // counteract gravity
+        this->accel_ = QVector3D(0, 0, 9.81 * GRID_SIZE);
         port_ = 0;
         destination_port_ = 6000;
         ip_addr_ = "0.0.0.0";
     }
+
     ~DroneModelItem() {
-        this->mutex_.lock();
-        this->mutex_.unlock();
+        // acquire lock to destroy it
+        QMutexLocker locker(&this->mutex_);
     }
 
-    QPointF getPos() {
-        this->mutex_.lock();
-        QPointF temp = this->pos_;
-        this->mutex_.unlock();
-        return temp;
+    QVector3D getPos() {
+        QMutexLocker locker(&this->mutex_);
+        // get copy of pos
+        return this->pos_;
     }
 
-    void setPos(QPointF pos) {
-        this->mutex_.lock();
-        this->pos_.setX(pos.x());
-        this->pos_.setY(pos.y());
-        this->mutex_.unlock();
+    void setPos(QVector3D pos) {
+        QMutexLocker locker(&this->mutex_);
+        this->pos_ = pos;
     }
 
+    QVector3D getVel() {
+        QMutexLocker locker(&this->mutex_);
+        // get copy of velocity
+        return this->vel_;
+    }
+
+    void setVel(QVector3D vel) {
+        QMutexLocker locker(&this->mutex_);
+        this->vel_ = vel;
+    }
+
+    QVector3D getAccel() {
+        QMutexLocker locker(&this->mutex_);
+        // get copy of acceleration
+        return this->accel_;
+    }
+
+    void setAccel(QVector3D accel) {
+        QMutexLocker locker(&this->mutex_);
+        this->accel_ = accel;
+    }
+
+    // IP addr of drone
     QString ip_addr_;
+    // listening port on drone
     quint16 destination_port_;
 
  private:
+    // mutex lock for getters/setters
     QMutex mutex_;
-    QPointF pos_;
+    QVector3D pos_;
+    QVector3D vel_;
+    QVector3D accel_;
 };
 
 }  // namespace optgui

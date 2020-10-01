@@ -1,33 +1,37 @@
-// TITLE:   Optimization_Interface/src/graphics/point_graphics_item.cpp
+// TITLE:   Optimization_Interface/src/graphics/waypoint_graphics_item.cpp
 // AUTHORS: Daniel Sullivan, Miki Szmuk
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include "include/graphics/point_graphics_item.h"
+#include "include/graphics/waypoint_graphics_item.h"
 
-#include <QGraphicsScene>
 #include <QtMath>
+#include <QPen>
+#include <QGraphicsScene>
 #include <QGraphicsView>
 
 #include "include/globals.h"
 
 namespace optgui {
 
-PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
-                                     QGraphicsItem *parent,
-                                     qreal radius)
+WaypointGraphicsItem::WaypointGraphicsItem(PointModelItem *model,
+                                         quint32 index,
+                                         QGraphicsItem *parent,
+                                         qreal radius)
     : QGraphicsItem(parent) {
-    // Set model
+    // set data model
     this->model_ = model;
+
+    // set graphical info
+    this->pen_ = QPen(Qt::black);
+    this->pen_.setWidthF(3);
+    this->brush_ = QBrush(Qt::white);
+
+    // set size of waypoint
     this->radius_ = radius;
 
-    // Set pen
-    QColor fill = RED;
-    this->brush_ = QBrush(fill);
-
-    // Set brush
-    this->pen_ = QPen(Qt::black);
-    this->pen_.setWidth(3);
+    // set ordering of waypoint
+    this->index_ = index;
 
     // Set flags
     this->setFlags(QGraphicsItem::ItemIsMovable |
@@ -38,16 +42,16 @@ PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
     this->setPos(this->model_->getPos());
 }
 
-QRectF PointGraphicsItem::boundingRect() const {
-    // return area of point scaled by zoom factor
+QRectF WaypointGraphicsItem::boundingRect() const {
+    // get rough area circle scaled by zoom factor
     qreal scaling_factor = this->getScalingFactor();
     qreal rad = this->radius_ / scaling_factor;
     return QRectF(-rad, -rad, rad * 2, rad * 2);
 }
 
-void PointGraphicsItem::paint(QPainter *painter,
-                                const QStyleOptionGraphicsItem *option,
-                                QWidget *widget) {
+void WaypointGraphicsItem::paint(QPainter *painter,
+                              const QStyleOptionGraphicsItem *option,
+                              QWidget *widget) {
     // suppress unused options error
     Q_UNUSED(option);
     Q_UNUSED(widget);
@@ -55,6 +59,7 @@ void PointGraphicsItem::paint(QPainter *painter,
     // scale with view
     qreal scaling_factor = this->getScalingFactor();
 
+    // update graphic with pos from data model
     this->setPos(this->model_->getPos());
 
     // Show handles if selected
@@ -71,9 +76,18 @@ void PointGraphicsItem::paint(QPainter *painter,
     qreal rad = this->radius_ / scaling_factor;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
-    // Label with port
-    if (this->model_->port_ != 0) {
-        painter->setPen(BLACK);
+    // Draw label
+    painter->setPen(BLACK);
+    QFont font = painter->font();
+
+    if (this->model_->port_ == 0) {
+        // label with index
+        font.setPointSizeF(14 / scaling_factor);
+        painter->setFont(font);
+        painter->drawText(this->boundingRect(), Qt::AlignCenter,
+                          QString::number(this->index_ + 1));
+    } else {
+        // Or label with port
         QPointF text_pos(this->mapFromScene(this->model_->getPos()));
         QFont font = painter->font();
         font.setPointSizeF(10 / scaling_factor);
@@ -87,19 +101,24 @@ void PointGraphicsItem::paint(QPainter *painter,
     }
 }
 
-int PointGraphicsItem::type() const {
-    // return unique graphics type
-    return POINT_GRAPHIC;
+void WaypointGraphicsItem::setIndex(quint32 index) {
+    // set ordering of waypoint
+    this->index_ = index;
 }
 
-QPainterPath PointGraphicsItem::shape() const {
-    // return shape of point
+QPainterPath WaypointGraphicsItem::shape() const {
+    // get shape of circle to draw
     QPainterPath path;
     path.addEllipse(this->boundingRect());
     return path;
 }
 
-QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
+int WaypointGraphicsItem::type() const {
+    // get unique graphics type
+    return WAYPOINT_GRAPHIC;
+}
+
+QVariant WaypointGraphicsItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value) {
     if (change == ItemPositionChange && scene()) {
         // value is the new position.
@@ -108,13 +127,13 @@ QVariant PointGraphicsItem::itemChange(GraphicsItemChange change,
         // update model
         this->model_->setPos(newPos);
 
-        // check to redraw
+        // redraw graphic
         this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }
 
-qreal PointGraphicsItem::getScalingFactor() const {
+qreal WaypointGraphicsItem::getScalingFactor() const {
     // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {

@@ -23,29 +23,45 @@ class EllipseGraphicsItem : public QGraphicsItem {
     explicit EllipseGraphicsItem(EllipseModelItem *model,
                                  QGraphicsItem *parent = nullptr);
     ~EllipseGraphicsItem();
+
+    // data model
     EllipseModelItem *model_;
 
+    // rough area of graphic
     QRectF boundingRect() const override;
+
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+
+    // unique type for graphic class
     int type() const override;
 
+    // flip direction of constraint (not supported in socp)
     void flipDirection();
-    void expandScene();
+
+    // change color to red for displaying errors
+    void setRed(bool isOverlap);
 
  protected:
+    // shape to paint
     QPainterPath shape() const override;
+
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
-    void initialize();
     QPen pen_;
     QPen clearance_pen_;
     QBrush brush_;
+
+    // handles for resizing
     EllipseResizeHandle *width_handle_;
     EllipseResizeHandle *height_handle_;
     EllipseResizeHandle *radius_handle_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

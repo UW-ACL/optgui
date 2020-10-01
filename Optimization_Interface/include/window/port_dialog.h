@@ -21,20 +21,28 @@ class PortDialog : public QDialog {
  public:
     explicit PortDialog(QWidget *parent = nullptr);
     ~PortDialog();
-    void setModel(ConstraintModel *model);
+
+    // fill table from the model
+    void fillTable(ConstraintModel *model);
+    // save network configuration to data models on close
     void closeEvent(QCloseEvent *event) override;
 
  private slots:
+    // clear contents of table
     void resetTable();
 
  signals:
+    // signal to save ports to data models
     void setSocketPorts();
 
  private:
+    // set up table layout
     void initializeTable();
+    // table for constraint listening ports
     QTableWidget *port_table_;
+    // table for drone listening port and destination address
     QTableWidget *drone_table_;
-    ConstraintModel *model_;
+    // currently used ports, shared between all input boxes
     QSet<quint16> *ports_;
 };
 

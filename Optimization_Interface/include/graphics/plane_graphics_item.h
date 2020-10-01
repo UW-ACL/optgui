@@ -23,27 +23,37 @@ class PlaneGraphicsItem : public QGraphicsItem {
     explicit PlaneGraphicsItem(PlaneModelItem *model,
                                QGraphicsItem *parent = nullptr);
     ~PlaneGraphicsItem();
+
+    // data model
     PlaneModelItem *model_;
 
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw shape
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
+    // unique type of graphic
     int type() const override;
 
-    void expandScene();
+    // flip direction of graphic
     void flipDirection();
 
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
-    void initialize();
     QPen pen_;
     QBrush brush_;
+
+    // resize handles
     PlaneResizeHandle *p1_handle_;
     PlaneResizeHandle *p2_handle_;
+
+    // scale zoom level
     qreal getScalingFactor() const;
 };
 

@@ -18,10 +18,7 @@ PlaneGraphicsItem::PlaneGraphicsItem(PlaneModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void PlaneGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -41,11 +38,13 @@ void PlaneGraphicsItem::initialize() {
             new PlaneResizeHandle(this->model_, false, this);
     this->p2_handle_ =
             new PlaneResizeHandle(this->model_, true, this);
+    //
     this->p1_handle_->hide();
     this->p2_handle_->hide();
 }
 
 PlaneGraphicsItem::~PlaneGraphicsItem() {
+    // clean up resize handles
     delete this->p1_handle_;
     delete this->p2_handle_;
 }
@@ -57,6 +56,7 @@ QRectF PlaneGraphicsItem::boundingRect() const {
 void PlaneGraphicsItem::paint(QPainter *painter,
                               const QStyleOptionGraphicsItem *option,
                               QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -129,26 +129,9 @@ QPainterPath PlaneGraphicsItem::shape() const {
     return path;
 }
 
-void PlaneGraphicsItem::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 void PlaneGraphicsItem::flipDirection() {
     this->model_->flipDirection();
-    this->expandScene();
+    this->update(this->boundingRect());
 }
 
 QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change,
@@ -162,8 +145,8 @@ QVariant PlaneGraphicsItem::itemChange(GraphicsItemChange change,
         this->p1_handle_->updateModel(diff);
         this->p2_handle_->updateModel(diff);
 
-        // check to expand the scene
-        this->expandScene();
+        // check to redraw
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }

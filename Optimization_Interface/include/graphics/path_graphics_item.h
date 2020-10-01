@@ -21,23 +21,28 @@ class PathGraphicsItem : public QGraphicsItem {
     explicit PathGraphicsItem(PathModelItem *model,
                               QGraphicsItem *parent = nullptr,
                               quint32 size = 4);
+    // rough area of graphic
     QRectF boundingRect() const override;
+    // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
-    void expandScene();
+    // set color of traj
     void setColor(QColor);
 
+    PathModelItem *model_;
+
  protected:
+    // shape to draw
     QPainterPath shape() const override;
+    // update model when graphic is changed
     QVariant itemChange(GraphicsItemChange change,
                         const QVariant &value) override;
 
  private:
-    void initialize();
-    PathModelItem *model_;
     QPen pen_;
     quint32 width_;
-    qreal getScalingFactor();
+    QMutex mutex_;  // mutex lock for compute thread setting color
+    qreal getScalingFactor() const;
 };
 
 }  // namespace optgui

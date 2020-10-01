@@ -29,10 +29,6 @@ PlaneResizeHandle::PlaneResizeHandle(PlaneModelItem *model,
                   this->size_ * 2, this->size_ * 2);
 }
 
-void PlaneResizeHandle::setColor(const QColor color) {
-    this->setBrush(QBrush(color));
-}
-
 void PlaneResizeHandle::updatePos() {
     // Translate model point to local coordinates
     if (this->isP2_) {
@@ -64,6 +60,7 @@ void PlaneResizeHandle::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 void PlaneResizeHandle::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
@@ -93,12 +90,12 @@ void PlaneResizeHandle::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         } else {
             this->model_->setP1(eventPos);
         }
-        this->expandScene();
+        this->update(this->boundingRect());
     }
 }
 
 int PlaneResizeHandle::type() const {
-    return HANDLE_GRAPHIC;
+    return PLANE_HANDLE_GRAPHIC;
 }
 
 QPointF PlaneResizeHandle::getPoint() {
@@ -109,23 +106,7 @@ QPointF PlaneResizeHandle::getPoint() {
     }
 }
 
-void PlaneResizeHandle::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->parentItem()->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
-qreal PlaneResizeHandle::getScalingFactor() {
+qreal PlaneResizeHandle::getScalingFactor() const {
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

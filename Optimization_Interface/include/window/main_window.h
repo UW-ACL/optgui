@@ -22,12 +22,18 @@ class MainWindow : public QMainWindow {
  public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
  private:
+    // set up window menu
     void initializeMenu();
+    // main window widget
     View *view_;
+    // window menu
     QMenu *file_menu_;
+    // save/load functionality (not currently supported)
 //    QAction *save_file_;
 //    QAction *load_file_;
+    // open network configuration dialog
     QAction *set_ports_;
 };
 

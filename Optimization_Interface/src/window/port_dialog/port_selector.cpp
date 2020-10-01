@@ -15,38 +15,44 @@ PortSelector::PortSelector(QSet<quint16> *ports,
     this->ports_ = ports;
     this->model_ = model;
 
+    // dispaly current port
     this->setText(QString::number(this->model_->port_));
 
     this->connect(this, SIGNAL(editingFinished()), this, SLOT(updatePort()));
 }
 
 void PortSelector::focusInEvent(QFocusEvent *event) {
+    // select all text when clicked
     QLineEdit::focusInEvent(event);
     QTimer::singleShot(0, this, SLOT(selectAll()));
 }
 
 void PortSelector::updatePort() {
+    // remove old port from list
     this->ports_->remove(this->model_->port_);
 
     // check that port is in valid range and unused
-    if (this->isPortValid()) {
-        quint32 value = this->text().toUShort();
-        this->ports_->insert((quint16)value);
-        this->model_->port_ = (quint16)value;
+    quint16 value = this->isPortValid();
+    if (value != 0) {
+        // add new port to list and save to data model
+        this->ports_->insert(value);
+        this->model_->port_ = value;
     } else {
         this->setText("0");
         this->model_->port_ = 0;
     }
 }
 
-bool PortSelector::isPortValid() {
+quint16 PortSelector::isPortValid() {
     bool ok = false;
-    quint32 value = this->text().toUShort(&ok);
+    quint16 value = this->text().toUShort(&ok);
 
-    if (!ok || 1024 > value || value > 65535) {
-        return false;
+    // validate port is in valid range and not already used
+    if (ok && 1023 < value && value <= 65535 &&
+            !this->ports_->contains(value)) {
+        return value;
     }
-    return true;
+    return 0;
 }
 
 }  // namespace optgui

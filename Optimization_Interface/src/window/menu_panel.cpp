@@ -18,18 +18,7 @@ MenuPanel::MenuPanel(QWidget *parent, bool isRight, int size,
     this->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->setFixedWidth(size);
-    this->initialize();
-}
 
-MenuPanel::~MenuPanel() {
-    // delete menu panel components
-    delete this->menu_->layout();
-    delete this->menu_;
-    delete this->close_button_;
-    delete this->layout();
-}
-
-void MenuPanel::initialize() {
     // Set color
     this->setAutoFillBackground(true);
     QPalette palette = this->palette();
@@ -57,7 +46,16 @@ void MenuPanel::initialize() {
     }
 }
 
+MenuPanel::~MenuPanel() {
+    // delete menu panel components
+    delete this->menu_->layout();
+    delete this->menu_;
+    delete this->close_button_;
+    delete this->layout();
+}
+
 void MenuPanel::initializeCloseButton() {
+    // create button to close menu panel
     this->close_button_ = new QToolButton(this);
     if (this->is_right_) {
         this->close_button_->setArrowType(Qt::RightArrow);
@@ -75,6 +73,7 @@ void MenuPanel::initializeCloseButton() {
 }
 
 void MenuPanel::initializeMenuwidget() {
+    // set up layout for buttons
     this->menu_ = new QWidget(this);
     this->menu_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     this->menu_layout_ = new QVBoxLayout(this->menu_);

@@ -18,10 +18,7 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void EllipseGraphicsItem::initialize() {
     // Set brush
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -52,9 +49,15 @@ void EllipseGraphicsItem::initialize() {
     this->width_handle_->hide();
     this->height_handle_->hide();
     this->radius_handle_->hide();
+
+    // set granularity for collision detection
+    // collision detection is iterative, value between
+    // 0 and 1 balances precision with performance
+    this->setBoundingRegionGranularity(0.9);
 }
 
 EllipseGraphicsItem::~EllipseGraphicsItem() {
+    // delete handles
     delete this->width_handle_;
     delete this->height_handle_;
     delete this->radius_handle_;
@@ -71,20 +74,26 @@ QRectF EllipseGraphicsItem::boundingRect() const {
         height += ELLIPSE_BORDER / this->getScalingFactor();
         width += ELLIPSE_BORDER / this->getScalingFactor();
     }
+    // return area of ellipse, QGraphicsItems stores rotation
     return QRectF(-width, -height, width * 2, height * 2);
 }
 
 void EllipseGraphicsItem::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
+
+    // set color to red if overlapping
+    this->setRed(this->model_->getIsOverlap());
 
     qreal scaling_factor = this->getScalingFactor();
     qreal width = this->model_->getWidth();
     qreal height = this->model_->getHeight();
     QPointF pos = this->model_->getPos();
 
+    // update graphics pos with model pos
     this->setPos(pos);
 
     // Show handles if selected
@@ -124,6 +133,8 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
+        painter->rotate(-this->rotation());
+        painter->setPen(Qt::black);
         QPointF text_pos(this->mapFromScene(pos));
         QFont font = painter->font();
         font.setPointSizeF(12 / scaling_factor);
@@ -138,10 +149,12 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 }
 
 int EllipseGraphicsItem::type() const {
+    // return unique graphics type
     return ELLIPSE_GRAPHIC;
 }
 
 QPainterPath EllipseGraphicsItem::shape() const {
+    // return shape of ellipse, QGraphicsItem handles rotation
     QPainterPath path;
     qreal height = this->model_->getHeight();
     qreal width = this->model_->getWidth();
@@ -149,26 +162,24 @@ QPainterPath EllipseGraphicsItem::shape() const {
     return path;
 }
 
-void EllipseGraphicsItem::expandScene() {
-    if (this->scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(scene()->sceneRect().united(newRect));
-
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
+void EllipseGraphicsItem::setRed(bool isOverlap) {
+    // set color to red if overlapping
+    if (isOverlap) {
+        QColor fill = Qt::red;
+        fill.setAlpha(200);
+        this->brush_ = QBrush(fill);
+    } else {
+        QColor fill = Qt::gray;
+        fill.setAlpha(200);
+        this->brush_ = QBrush(fill);
     }
 }
 
 void EllipseGraphicsItem::flipDirection() {
+    // flip direction of keep out zone and re-render
+    // not currently supported by socp
     this->model_->flipDirection();
-    this->expandScene();
+    this->update(this->boundingRect());
 }
 
 QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
@@ -181,12 +192,13 @@ QVariant EllipseGraphicsItem::itemChange(GraphicsItemChange change,
         this->model_->setPos(newPos);
 
         // check to expand the scene
-        this->expandScene();
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }
 
 qreal EllipseGraphicsItem::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();

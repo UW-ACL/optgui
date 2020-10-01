@@ -18,10 +18,7 @@ PolygonGraphicsItem::PolygonGraphicsItem(PolygonModelItem *model,
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
-    this->initialize();
-}
 
-void PolygonGraphicsItem::initialize() {
     // Set pen
     QColor fill = Qt::gray;
     fill.setAlpha(200);
@@ -36,41 +33,43 @@ void PolygonGraphicsItem::initialize() {
                    QGraphicsItem::ItemSendsGeometryChanges);
 
     // Set resize handles
-    this->resize_handles_ = new QVector<PolygonResizeHandle *>();
     quint32 size = this->model_->getSize();
     for (quint32 i = 0; i < size; i++) {
         PolygonResizeHandle *handle =
                 new PolygonResizeHandle(this->model_, i, this);
-        this->resize_handles_->append(handle);
+        this->resize_handles_.append(handle);
         handle->hide();
     }
 }
 
 PolygonGraphicsItem::~PolygonGraphicsItem() {
     // Delete resize handles
-    for (PolygonResizeHandle *handle : *this->resize_handles_) {
+    for (PolygonResizeHandle *handle : this->resize_handles_) {
         delete handle;
     }
-    delete this->resize_handles_;
 }
 
 QRectF PolygonGraphicsItem::boundingRect() const {
+    // get rough area of polygon
     return this->shape().boundingRect();
 }
 
 void PolygonGraphicsItem::paint(QPainter *painter,
                                 const QStyleOptionGraphicsItem *option,
                                 QWidget *widget) {
+    // suppress unused options errors
     Q_UNUSED(option);
     Q_UNUSED(widget);
 
     // Change color based on convexity
-    QColor fill;
+    QColor fill = Qt::gray;
+    /*
     if (this->model_->isConvex()) {
         fill = Qt::gray;
     } else {
         fill = RED;
     }
+    */
     fill.setAlpha(200);
     this->brush_ = QBrush(fill);
 
@@ -82,14 +81,14 @@ void PolygonGraphicsItem::paint(QPainter *painter,
 
     // Show handles if selected
     if (this->isSelected()) {
-        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        for (PolygonResizeHandle *handle : this->resize_handles_) {
             handle->updatePos();
             handle->show();
         }
 
         this->pen_.setWidthF(3.0 / scaling_factor);
     } else {
-        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        for (PolygonResizeHandle *handle : this->resize_handles_) {
             handle->hide();
         }
 
@@ -159,26 +158,10 @@ QPainterPath PolygonGraphicsItem::shape() const {
     return path;
 }
 
-void PolygonGraphicsItem::expandScene() {
-    if (scene()) {
-        // expand scene if item goes out of bounds
-        QRectF newRect = this->sceneBoundingRect();
-        QRectF rect = this->scene()->sceneRect();
-        if (!rect.contains(newRect)) {
-            this->scene()->setSceneRect(
-                        this->scene()->sceneRect().united(newRect));
-            if (!this->scene()->views().isEmpty()) {
-                this->scene()->views().first()->setSceneRect(
-                            this->scene()->sceneRect());
-            }
-        }
-        this->update(this->boundingRect());
-    }
-}
-
 void PolygonGraphicsItem::flipDirection() {
+    // flip direction of keep out zone and re-render
     this->model_->flipDirection();
-    this->expandScene();
+    this->update(this->boundingRect());
 }
 
 QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
@@ -189,17 +172,18 @@ QVariant PolygonGraphicsItem::itemChange(GraphicsItemChange change,
 
         // update model
         QPointF diff = newPos - this->scenePos();
-        for (PolygonResizeHandle *handle : *this->resize_handles_) {
+        for (PolygonResizeHandle *handle : this->resize_handles_) {
             handle->updateModel(diff);
         }
 
         // check to expand the scene
-        this->expandScene();
+        this->update(this->boundingRect());
     }
     return QGraphicsItem::itemChange(change, value);
 }
 
 qreal PolygonGraphicsItem::getScalingFactor() const {
+    // get zoom scaling factor from view
     qreal scaling_factor = 1;
     if (this->scene() && !this->scene()->views().isEmpty()) {
         scaling_factor = this->scene()->views().first()->matrix().m11();
