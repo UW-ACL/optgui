@@ -33,8 +33,6 @@ class ConstraintModel {
     ConstraintModel();
     ~ConstraintModel();
 
-    // functions for target point data models
-    // caller responsible for deleting pointer
     void addPoint(PointModelItem *item);
     void removePoint(PointModelItem *item);
 
@@ -60,15 +58,6 @@ class ConstraintModel {
     quint32 getNumWaypoints();
     void reverseWaypoints();
 
-    // functions for current traj data model
-    void setPathModel(PathModelItem *model);
-    void setPathPoints(QVector<QPointF> points);
-    // get copy of trajectory points
-    QVector<QPointF> getPathPoints();
-    // clear traj
-    void clearPathPoints();
-
-    // functions for staged traj data model
     void setPathStagedModel(PathModelItem *model);
     void setPathStagedPoints(QVector<QPointF> points);
     // remove first point from staged traj, return whether
@@ -79,9 +68,8 @@ class ConstraintModel {
     // get copy of staged traj points
     QVector<QPointF> getPathStagedPoints();
 
-    // functions for vehicle data model
-    void setDroneModel(DroneModelItem *model);
-    void setDroneModelPos(QPointF const &pos);
+    void addDrone(DroneModelItem *drone, PathModelItem *traj);
+    void removeDrone(DroneModelItem *item);
 
     // functions for skyenet params
     skyenet::params getSkyeFlyParams();
@@ -100,13 +88,14 @@ class ConstraintModel {
     void stageTraj();
     void unstageTraj();
 
-    // functions for current traj network packet
-    autogen::packet::traj3dof getCurrTraj3dof();
-    void setCurrTraj3dof(autogen::packet::traj3dof traj3dof_data);
+    autogen::packet::traj3dof getCurrTraj3dof(DroneModelItem *drone);
+    void setCurrTraj3dof(DroneModelItem *drone,
+                         autogen::packet::traj3dof traj3dof_data);
 
     // functions for staged traj network packet
     autogen::packet::traj3dof getStagedTraj3dof();
     bool getIsTrajStaged();
+    DroneModelItem *getStagedDrone();
 
     // functions for traj feasibility
     FEASIBILITY_CODE getIsValidTraj();
@@ -126,6 +115,8 @@ class ConstraintModel {
     // (live reference)
     void setLiveReferenceMode(bool reference_mode);
     bool isLiveReference();
+    void setFreeFinalTime(bool free_final_time);
+    bool isFreeFinalTime();
 
     // functions for valid input detection
     INPUT_CODE getIsValidInput();
@@ -136,34 +127,24 @@ class ConstraintModel {
     // mark overlapping ellipses as red
     void updateEllipseColors();
 
-    // getters for inputs
-    // coords in xyz, pos in pixels
-    QPointF getFinalPos();
-    QPointF getInitialPos();
-    QPointF getInitialVel();
-    QPointF getInitialAcc();
     QPointF getWpPos(int index);
 
-    // functions for setting target point
-    void setCurrFinalPoint(PointModelItem *point);
-    bool hasCurrFinalPoint();
-    bool isCurrFinalPoint(PointModelItem *model);
+    void setCurrDrone(DroneModelItem *drone);
+    bool hasCurrDrone();
+    bool isCurrDrone(DroneModelItem *drone);
+    DroneModelItem *getCurrDrone();
 
     // funtions for loading data into a skyenet params
     void loadWaypointConstraints(skyenet::params *P,
-                                 double wp[3][skyenet::MAX_WAYPOINTS]);
+                                 double wp[skyenet::MAX_WAYPOINTS][3]);
     void loadEllipseConstraints(skyenet::params *P);
     void loadPosConstraints(skyenet::params *P);
 
 private:
-    // mutex lock for getters and setters
     QMutex model_lock_;
 
     // skyenet params
     skyenet::params P_;
-
-    // trajectory network packets
-    autogen::packet::traj3dof drone_curr_traj3dof_data_;
     autogen::packet::traj3dof drone_staged_traj3dof_data_;
 
     // input and feasibility status
@@ -174,6 +155,7 @@ private:
     bool traj_staged_;
     // flag for tracking a sent trajectory
     bool is_live_reference_;
+    bool is_free_final_time_;
 
     // Clearance around ellipses in meters
     qreal clearance_;
@@ -185,23 +167,16 @@ private:
 
     // waypoints
     QVector<PointModelItem *> waypoints_;
-
-    // current trajectory
-    PathModelItem *path_;
-    // staged trajectory
     PathModelItem *path_staged_;
-    // vehicle
-    DroneModelItem *drone_;
-    // target points
+    DroneModelItem *staged_drone_;
+    QMap<DroneModelItem *, QPair<PathModelItem *,
+                                 autogen::packet::traj3dof>> drones_;
     QSet<PointModelItem *> final_points_;
-    // currently selected target in final_points_
-    PointModelItem *curr_final_point_;
+    DroneModelItem *curr_drone_;
 
     // Convert constraints to skyefly params
     void loadPlaneConstraint(skyenet::params *P, quint32 index,
-                                 QPointF p, QPointF q);
-    // helper function for distributing waypoints evenly among
-    // the K points in the trajectory
+                                 QVector3D p, QVector3D q);
     int distributeWpEvenly(skyenet::params *P, int index, int remaining,
                          int low, int high);
 };

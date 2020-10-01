@@ -31,11 +31,8 @@ class Controller : public QObject {
     explicit Controller(Canvas *canvas);
     ~Controller();
 
-    // model being manipulated
-    ConstraintModel *model_;
-
     // SkyFly compute thread
-    ComputeThread *compute_thread_;
+    QMap<DroneModelItem *, ComputeThread *> compute_threads_;
 
     // add constraints
     void addEllipse(QPointF const &point, qreal radius = 120);
@@ -49,6 +46,8 @@ class Controller : public QObject {
     void addWaypoint(QPointF const &point);
     void addPathPoint(QPointF const &point);
     void addFinalPoint(QPointF const &pos);
+    void addDrone(QPointF const &point);
+
     void clearPathPoints();
     void removeAllWaypoints();
     void removeItem(QGraphicsItem *item);
@@ -64,36 +63,50 @@ class Controller : public QObject {
     // control for executing traj
     void execute();
     void stageTraj();
+    void setStagedDrone(DroneModelItem *drone);
+    void setExecutedDrone(DroneModelItem *drone);
     void unstageTraj();
 
     // toggle simulate traj
     void setSimulated(bool state);
+    void setTrajLock(bool state);
+    void setFreeFinalTime(bool state);
+
+    // pass info between model and view
+    quint32 getNumWaypoints();
+    void setClearance(qreal clearance);
+    void setCurrFinalPoint(PointModelItem *point);
+    void setCurrDrone(DroneModelItem *drone);
+    FEASIBILITY_CODE getIsValidTraj();
+    INPUT_CODE getIsValidInput();
 
  signals:
-    // send traj to drone
-    void trajectoryExecuted(autogen::packet::traj3dof data);
-    // start/kill compute thread
-    void startComputeWorker();
-    void stopComputeWorker();
+    void trajectoryExecuted(DroneModelItem *, autogen::packet::traj3dof data);
+    // signal view to update
+    void finalTime(qreal time);
+    void updateMessage();
 
  private slots:
-    // bind network sockets
+    // receive update from compute thread, check if
+    // drone is current drone
+    void updateMessage(DroneModelItem *drone);
+    void finalTime(DroneModelItem *drone, qreal time);
     void startSockets();
-    // set traj color
-    void setPathColor(bool isRed);
-    // update simulated traj
     void tickLiveReference();
 
  private:
-    // QGraphicsScene canvas
-    Canvas *canvas_;
+    ConstraintModel *model_;
 
-    // render levels for ordering
+    // QGraphicsScene
+    Canvas *canvas_;
+    qreal drone_render_level_;
     qreal final_point_render_level_;
     qreal waypoints_render_level_;
+    qreal traj_render_level_;
 
     // flag for simulated traj
     bool is_simulated_;
+    bool traj_lock_;
 
     // freeze traj timer
     QTimer *freeze_traj_timer_;
@@ -101,20 +114,20 @@ class Controller : public QObject {
 
     // network configuration dialog box
     PortDialog *port_dialog_;
-
-    // network sockets
-    DroneSocket *drone_socket_;
+    QVector<DroneSocket *> drone_sockets_;
     QVector<PointSocket *> final_point_sockets_;
     QVector<WaypointSocket *> waypoint_sockets_;
     QVector<EllipseSocket *> ellipse_sockets_;
 
-    // remove and close sockets
+    // remove items
+    void removeDroneSocket(DroneModelItem *model);
     void removeEllipseSocket(EllipseModelItem *model);
     void removePointSocket(PointModelItem *model);
     void removeWaypointSocket(PointModelItem *model);
     void closeSockets();
 
-    // load a graphical object from the model data
+    // load graphical component from data model
+    void loadDrone(DroneModelItem *model);
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
     void loadPolygon(PolygonModelItem *model);

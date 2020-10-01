@@ -46,7 +46,6 @@ class PolygonGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
 
  private:
-    // graphical info
     QPen pen_;
     QBrush brush_;
 

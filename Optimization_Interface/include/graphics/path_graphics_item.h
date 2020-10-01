@@ -29,6 +29,8 @@ class PathGraphicsItem : public QGraphicsItem {
     // set color of traj
     void setColor(QColor);
 
+    PathModelItem *model_;
+
  protected:
     // shape to draw
     QPainterPath shape() const override;
@@ -37,14 +39,9 @@ class PathGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
 
  private:
-    // data model
-    PathModelItem *model_;
-
-    // graphical info
     QPen pen_;
     quint32 width_;
-
-    // scale zoom level
+    QMutex mutex_;  // mutex lock for compute thread setting color
     qreal getScalingFactor() const;
 };
 

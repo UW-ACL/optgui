@@ -19,10 +19,6 @@ namespace optgui {
 Canvas::Canvas(QObject *parent, QString background_file)
     : QGraphicsScene(parent) {
 
-    // initialized by controller
-    this->path_graphic_ = nullptr;
-    this->drone_graphic_ = nullptr;
-
     // set background brush
     this->setBackgroundBrush(BLACK);
     // Set background pen
@@ -95,9 +91,14 @@ void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
     graphic->update(graphic->boundingRect());
 }
 
-void Canvas::updatePathGraphicsItem() {
-    // re-render traj graphic
-    this->path_graphic_->update(this->path_graphic_->boundingRect());
+void Canvas::updateGraphicsItems(PathGraphicsItem *traj, DroneGraphicsItem *drone) {
+    // verify graphics exist
+    if (this->path_graphics_.contains(traj) &&
+        this->drone_graphics_.contains(drone)) {
+        // schedule re-draw
+        traj->update(traj->boundingRect());
+        drone->update(drone->boundingRect());
+    }
 }
 
 void Canvas::bringToFront(QGraphicsItem *item) {

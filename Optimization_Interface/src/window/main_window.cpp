@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->setWindowTitle("Optimization Interface");
 
     // Set default size
-    this->setMinimumSize(1024, 576);
+    this->setMinimumSize(1024, 768);
     // this->showFullScreen();
 
     // Set view

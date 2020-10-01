@@ -25,10 +25,21 @@ DroneGraphicsItem::DroneGraphicsItem(DroneModelItem *model,
     this->brush_ = QBrush(YELLOW);
 
     // Set flags
-    this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
+    this->setFlags(QGraphicsItem::ItemIsMovable |
+                   QGraphicsItem::ItemIsSelectable |
+                   QGraphicsItem::ItemSendsGeometryChanges);
 
-    // set size
+    // set radius
     this->size_ = size;
+    this->is_curr_drone_ = false;
+    this->is_staged_drone_ = false;
+    this->is_executed_drone_ = false;
+    this->is_feasible_ = true;
+
+    // Set position
+    QVector3D pos_3D = this->model_->getPos();
+    QPointF pos_2D = QPointF(pos_3D.x(), pos_3D.y());
+    this->setPos(pos_2D);
 }
 
 QRectF DroneGraphicsItem::boundingRect() const {
@@ -44,14 +55,38 @@ void DroneGraphicsItem::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     // Update pos
-    QPointF pos = this->model_->getPos();
-    this->setPos(pos);
+    QVector3D pos_3D = this->model_->getPos();
+    QPointF pos_2D = QPointF(pos_3D.x(), pos_3D.y());
+    this->setPos(pos_2D);
 
     // scale with view zoom level
     qreal scaling_factor = this->getScalingFactor();
-    this->pen_.setWidthF(1.0 / scaling_factor);
+    if (this->isSelected()) {
+        this->pen_.setWidthF(3.0 / scaling_factor);
+    } else {
+        this->pen_.setWidthF(1.0 / scaling_factor);
+    }
 
-    // Draw current course
+    // draw curr selected drone circle
+    if (this->is_curr_drone_
+            || this->is_staged_drone_
+            || this->is_executed_drone_) {
+        QPen selection_pen(YELLOW);
+        if (this->is_executed_drone_) {
+            selection_pen = QPen(CYAN);
+        } else if (this->is_staged_drone_) {
+            selection_pen = QPen(GREEN);
+        } else if (!this->getIsFeasible()) {
+            selection_pen = QPen(RED);
+        }
+        selection_pen.setWidthF(3.0 / scaling_factor);
+        painter->setPen(selection_pen);
+        painter->drawEllipse(QPointF(),
+                             this->size_ / scaling_factor,
+                             this->size_ / scaling_factor);
+    }
+
+    // Draw drone
     painter->setPen(this->pen_);
     painter->setBrush(this->brush_);
 
@@ -59,7 +94,7 @@ void DroneGraphicsItem::paint(QPainter *painter,
 
     // Label with port
     if (this->model_->port_ != 0) {
-        QPointF text_pos(this->mapFromScene(pos));
+        QPointF text_pos(this->mapFromScene(pos_2D));
         QFont font = painter->font();
         font.setPointSizeF(12.0 / scaling_factor);
         painter->setFont(font);
@@ -70,6 +105,10 @@ void DroneGraphicsItem::paint(QPainter *painter,
                           Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
+}
+
+int DroneGraphicsItem::type() const {
+    return DRONE_GRAPHIC;
 }
 
 QPainterPath DroneGraphicsItem::shape() const {
@@ -87,8 +126,14 @@ QPainterPath DroneGraphicsItem::shape() const {
 }
 
 QVariant DroneGraphicsItem::itemChange(GraphicsItemChange change,
-                                        const QVariant &value) {
-    if (change == ItemScenePositionHasChanged && scene()) {
+                                         const QVariant &value) {
+    if (change == ItemPositionChange && this->scene()) {
+        // value is the new position
+        QPointF newPos = value.toPointF();
+
+        // update model
+        this->model_->setPos(QVector3D(newPos.x(), newPos.y(), 0));
+
         // check to expand the scene
         this->update(this->boundingRect());
     }
@@ -102,6 +147,16 @@ qreal DroneGraphicsItem::getScalingFactor() const {
         scaling_factor = this->scene()->views().first()->matrix().m11();
     }
     return scaling_factor;
+}
+
+void DroneGraphicsItem::setIsFeasible(bool feasible) {
+    QMutexLocker(&this->mutex_);
+    this->is_feasible_ = feasible;
+}
+
+bool DroneGraphicsItem::getIsFeasible() {
+    QMutexLocker(&this->mutex_);
+    return this->is_feasible_;
 }
 
 }  // namespace optgui

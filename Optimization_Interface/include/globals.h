@@ -9,6 +9,7 @@
 #define GLOBALS_H_
 
 #include <QGraphicsItem>
+#include <QVector3D>
 
 namespace optgui {
     extern qreal const GRID_SIZE;  // scale from meters to pixels
@@ -31,7 +32,8 @@ namespace optgui {
         POLYGON,
         PLANE,
         WAYPOINT,
-        POINT
+        POINT,
+        DRONE
     };
 
     // Unique graphics object types
@@ -43,7 +45,8 @@ namespace optgui {
         ELLIPSE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 5,
         PLANE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 6,
         POLYGON_HANDLE_GRAPHIC = QGraphicsItem::UserType + 7,
-        POINT_GRAPHIC = QGraphicsItem::UserType + 8
+        POINT_GRAPHIC = QGraphicsItem::UserType + 8,
+        DRONE_GRAPHIC = QGraphicsItem::UserType + 9
     };
 
     // Traj feasibility
@@ -60,13 +63,13 @@ namespace optgui {
         FINAL_POS_OVERLAP
     };
 
-    // scale from meters to pixels and transform from ned to xyz
-    QPointF nedToGuiXyz(qreal n, qreal e);
-
-    // scale from pixels to meters and transform from xyz to ned
-    QPointF guiXyzToNED(qreal x, qreal y);
-    QPointF guiXyzToNED(QPointF const &gui_coords);
-
+    QVector3D nedToGuiXyz(qreal n, qreal e, qreal d);
+//    QPointF guiXyzToNED(qreal x, qreal y);
+//    QPointF guiXyzToNED(QPointF const &gui_coords);
+    QVector3D guiXyzToXyz(QVector3D const &gui_coords);
+    QVector3D guiXyzToXyz(qreal x, qreal y, qreal z);
+    QVector3D xyzToGuiXyz(QVector3D const &xyz_coords);
+    QVector3D xyzToGuiXyz(qreal x, qreal y, qreal z);
 }  // namespace optgui
 
 #endif  // GLOBALS_H_

@@ -27,9 +27,16 @@ class DroneGraphicsItem : public QGraphicsItem {
     // draw graphic
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
               QWidget *widget = nullptr) override;
+    int type() const override;
 
     // data model
     DroneModelItem *model_;
+    bool is_curr_drone_;
+    bool is_staged_drone_;
+    bool is_executed_drone_;
+
+    void setIsFeasible(bool feasible);
+    bool getIsFeasible();
 
  protected:
     // shape to paint
@@ -40,14 +47,16 @@ class DroneGraphicsItem : public QGraphicsItem {
                        const QVariant &value) override;
 
  private:
-    // member variables for graphics
     QPen pen_;
     QBrush brush_;
 
     // size of drone
     qreal size_;
 
-    // scale zoom level
+    // for compute thread setting infeasible
+    QMutex mutex_;
+    bool is_feasible_;
+
     qreal getScalingFactor() const;
 };
 

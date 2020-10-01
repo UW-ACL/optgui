@@ -31,12 +31,10 @@ class Canvas : public QGraphicsScene {
     // render item at top level
     void bringToFront(QGraphicsItem *item);
 
-    // unique graphic items
-    PathGraphicsItem *path_graphic_;
+    QSet<PathGraphicsItem *> path_graphics_;
     PathGraphicsItem *path_staged_graphic_;
-    DroneGraphicsItem *drone_graphic_;
 
-    // variable number graphic items
+    QSet<DroneGraphicsItem *> drone_graphics_;
     QSet<EllipseGraphicsItem *> ellipse_graphics_;
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
@@ -54,10 +52,9 @@ class Canvas : public QGraphicsScene {
 
     // manually force a re-render of item
     void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
-    void updatePathGraphicsItem();
+    void updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *);
 
  private:
-    // set the background image
     void setBackgroundImage(QString filename);
     QImage background_image_;
 

@@ -17,9 +17,9 @@ namespace optgui {
 
 class PointModelItem : public DataModel {
  public:
-    explicit PointModelItem(QPointF pos) : DataModel(), mutex_() {
-        // set pos from params
+    explicit PointModelItem(QPointF const &pos) : mutex_() {
         pos_ = pos;
+        port_ = 0;
     }
 
     ~PointModelItem() {

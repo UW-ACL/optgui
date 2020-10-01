@@ -19,8 +19,7 @@ class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
                                QGraphicsItem *parent = nullptr,
-                               qreal radius = 14);
-    // data model
+                               qreal radius = 16);
     PointModelItem *model_;
 
     // rough area of graphic

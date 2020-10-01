@@ -90,15 +90,12 @@ class View : public QGraphicsView {
 
     // update user feedback box message
     void updateFeedbackMessage();
-
-    // set the current target
-    void setCurrFinalPoint();
-
-    // toggle between simulate traj and send traj
+    void setCurrEndpoints();
     void toggleSim(int);
+    void toggleTrajLock(int);
+    void toggleFreeFinalTime(int);
 
   private:
-    // set up menu panel
     void initializeMenuPanel();
     // set up expert panel
     void initializeExpertPanel();
@@ -158,6 +155,7 @@ class View : public QGraphicsView {
     void initializePlaneButton(MenuPanel *panel);
     void initializePolygonButton(MenuPanel *panel);
     void initializeFinalPointButton(MenuPanel *panel);
+    void initializeDroneButton(MenuPanel *panel);
     void initializeEllipseButton(MenuPanel *panel);
     void initializeFlipButton(MenuPanel *panel);
     void initializeExecButton(MenuPanel *panel);
@@ -165,6 +163,8 @@ class View : public QGraphicsView {
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
     void initializeSimToggle(MenuPanel *panel);
+    void initializeTrajLockToggle(MenuPanel *panel);
+    void initializeFreeFinalTimeToggle(MenuPanel *panel);
     // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
     // expert panel constraint_model params not in skyefly

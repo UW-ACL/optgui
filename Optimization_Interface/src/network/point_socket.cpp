@@ -40,14 +40,16 @@ void PointSocket::readPendingDatagrams() {
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
             if (ptr_telemetry_data != NULL) {
-                QPointF gui_coords =
+                QVector3D gui_coords_3D =
                         nedToGuiXyz(telemetry_data.pos_ned(0),
-                                    telemetry_data.pos_ned(1));
+                                    telemetry_data.pos_ned(1),
+                                    telemetry_data.pos_ned(2));
+                QPointF gui_coords_2D = QPointF(gui_coords_3D.x(),
+                                                gui_coords_3D.y());
                 // set model coords
-                this->point_item_->model_->setPos(gui_coords);
+                this->point_item_->model_->setPos(gui_coords_2D);
                 // set graphics coords so view knows to render it
-                this->point_item_->setPos(gui_coords);
-                // re-render graphics
+                this->point_item_->setPos(gui_coords_2D);
                 emit refresh_graphics();
             }
         }

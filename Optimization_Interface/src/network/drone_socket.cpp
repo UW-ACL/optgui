@@ -40,33 +40,35 @@ void DroneSocket::readPendingDatagrams() {
                     telemetry_data.deserialize(
                         reinterpret_cast<const uint8 *>(buffer));
             if (ptr_telemetry_data != NULL) {
-                QPointF gui_coords =
+                QVector3D gui_coords =
                         nedToGuiXyz(telemetry_data.pos_ned(0),
-                                    telemetry_data.pos_ned(1));
+                                    telemetry_data.pos_ned(1),
+                                    telemetry_data.pos_ned(2));
                 // set model coords
                 this->drone_item_->model_->setPos(gui_coords);
                 // set graphics coords so view knows whether to paint it
-                this->drone_item_->setPos(gui_coords);
-                // re-render grpahics
+                this->drone_item_->setPos(QPointF(gui_coords.x(),
+                                                  gui_coords.y()));
                 emit refresh_graphics();
             }
         }
     }
 }
 
-void DroneSocket::rx_trajectory(const autogen::packet::traj3dof data) {
-    // serialize trajectory packet
-    autogen::serializable::traj3dof
-            <autogen::topic::traj3dof::UNDEFINED> ser_data;
-    ser_data = data;
-    char buffer[4096] = {0};
-    ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
+void DroneSocket::rx_trajectory(DroneModelItem *drone,
+                                const autogen::packet::traj3dof data) {
+    if (drone == this->drone_item_->model_) {
+        autogen::serializable::traj3dof
+                <autogen::topic::traj3dof::UNDEFINED> ser_data;
+        ser_data = data;
+        char buffer[4096] = {0};
+        ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
 
-    if (this->isDestinationAddrValid()) {
-        // send serialized traj to drone
-        this->writeDatagram(buffer, ser_data.size(),
-                            QHostAddress(this->drone_item_->model_->ip_addr_),
-                            this->drone_item_->model_->destination_port_);
+        if (this->isDestinationAddrValid()) {
+            this->writeDatagram(buffer, ser_data.size(),
+                    QHostAddress(this->drone_item_->model_->ip_addr_),
+                    this->drone_item_->model_->destination_port_);
+        }
     }
 }
 

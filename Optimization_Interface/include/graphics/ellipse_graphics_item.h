@@ -52,7 +52,6 @@ class EllipseGraphicsItem : public QGraphicsItem {
                         const QVariant &value) override;
 
  private:
-    // members for graphic style
     QPen pen_;
     QPen clearance_pen_;
     QBrush brush_;
