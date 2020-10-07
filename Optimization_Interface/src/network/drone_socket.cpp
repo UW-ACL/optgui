@@ -44,8 +44,18 @@ void DroneSocket::readPendingDatagrams() {
                         nedToGuiXyz(telemetry_data.pos_ned(0),
                                     telemetry_data.pos_ned(1),
                                     telemetry_data.pos_ned(2));
-                // set model coords
+                QVector3D gui_vels =
+                        nedToGuiXyz(telemetry_data.vel_ned(0),
+                                    telemetry_data.vel_ned(1),
+                                    0);  // hard code velocity
+                QVector3D gui_accels =
+                        nedToGuiXyz(telemetry_data.accl_b(0),
+                                    telemetry_data.accl_b(1),
+                                    -9.81);  // hard code gravity
+                // set model telem
                 this->drone_item_->model_->setPos(gui_coords);
+                this->drone_item_->model_->setVel(gui_vels);
+                this->drone_item_->model_->setAccel(gui_accels);
                 // set graphics coords so view knows whether to paint it
                 this->drone_item_->setPos(QPointF(gui_coords.x(),
                                                   gui_coords.y()));

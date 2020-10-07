@@ -81,6 +81,9 @@ void ComputeThread::run() {
 
         // Validate inputs
         QVector3D initial_pos = this->drone_->model_->getPos();
+        QVector3D initial_vel = this->drone_->model_->getVel();
+        QVector3D initial_acc = this->drone_->model_->getAccel();
+
         QPointF final_pos_2D = this->getTarget()->getPos();
         QVector3D final_pos = QVector3D(final_pos_2D.x(), final_pos_2D.y(), 0);
         QVector<QRegion> ellipse_regions = this->model_->getEllipseRegions();
@@ -98,9 +101,7 @@ void ComputeThread::run() {
 //            continue;
 //        }
 
-        // Input is valid, get additional inputs
-        QVector3D initial_vel = this->drone_->model_->getVel();
-        QVector3D initial_acc = this->drone_->model_->getAccel();
+        // Parameters
 
         // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();

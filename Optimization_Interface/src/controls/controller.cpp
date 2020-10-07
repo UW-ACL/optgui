@@ -518,23 +518,29 @@ void Controller::execute() {
         }
 
         //  Todo:Skye - change this later
-        QString filepath = "C:/msys32/home/ACL/optgui/paper_data/";
+        autogen::packet::traj3dof staged_traj = this->model_->getStagedTraj3dof();
+
+        QString filepath = "";
         QString filename = QDate::currentDate().toString("'data_'MM_dd_yyyy'");
         filename.append(QTime::currentTime().toString("'_'hh.mm.ss'.txt'"));
-        QVector<QPointF> data_to_write = this->model_->getPathStagedPoints();
 
         QFile file(filepath + filename);
-        if (file.open(QIODevice::ReadWrite | QIODevice::Text)) {
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             //  file.open(QIODevice::ReadWrite);
             QTextStream stream(&file);
-            for (int c=0; c < data_to_write.size(); c++) {
-                stream << data_to_write[c].rx() << ","
-                       << data_to_write[c].ry() << endl;
+            for (int i = 0; i < staged_traj.K; i++) {
+                stream << staged_traj.time(i) << "\n";
+                stream << staged_traj.pos_ned(0, i) << " " << staged_traj.pos_ned(1, i) << " " << staged_traj.pos_ned(2, i) << "\n";
+                stream << staged_traj.vel_ned(0, i) << " " << staged_traj.vel_ned(1, i) << " " << staged_traj.vel_ned(2, i) << "\n";
+                stream << staged_traj.accl_ned(0, i) << " " << staged_traj.accl_ned(1, i) << " " << staged_traj.accl_ned(2, i) << "\n";
+                stream << "\n";
             }
+            stream << endl;
+            file.close();
         }
 
         emit trajectoryExecuted(staged_drone,
-                                this->model_->getStagedTraj3dof());
+                                staged_traj);
     } else if (this->freeze_traj_timer_->isActive() &&
                !this->traj_lock_ &&
                this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
