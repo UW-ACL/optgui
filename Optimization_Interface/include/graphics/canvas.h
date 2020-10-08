@@ -51,7 +51,6 @@ class Canvas : public QGraphicsScene {
     void bringSelectedToFront();
 
     // manually force a re-render of item
-    void updateEllipseGraphicsItem(EllipseGraphicsItem *graphic);
     void updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *);
 
  private:

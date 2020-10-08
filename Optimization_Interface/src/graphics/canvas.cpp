@@ -86,11 +86,6 @@ void Canvas::bringSelectedToFront() {
     }
 }
 
-void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
-    // re-render given graphic
-    graphic->update(graphic->boundingRect());
-}
-
 void Canvas::updateGraphicsItems(PathGraphicsItem *traj,
                                  DroneGraphicsItem *drone) {
     // verify graphics exist
