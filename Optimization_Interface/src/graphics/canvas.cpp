@@ -91,7 +91,8 @@ void Canvas::updateEllipseGraphicsItem(EllipseGraphicsItem *graphic) {
     graphic->update(graphic->boundingRect());
 }
 
-void Canvas::updateGraphicsItems(PathGraphicsItem *traj, DroneGraphicsItem *drone) {
+void Canvas::updateGraphicsItems(PathGraphicsItem *traj,
+                                 DroneGraphicsItem *drone) {
     // verify graphics exist
     if (this->path_graphics_.contains(traj) &&
         this->drone_graphics_.contains(drone)) {

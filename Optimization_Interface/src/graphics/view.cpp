@@ -199,6 +199,7 @@ void View::initializeExpertPanel() {
     // initialize menu buttons
     this->initializeSkyeFlyParamsTable(this->expert_panel_);
     this->expert_panel_->menu_layout_->insertStretch(-1, 1);
+    this->initializeDataCaptureToggle(this->expert_panel_);
     this->initializeModelParamsTable(this->expert_panel_);
 
     // Connect menu open/close
@@ -1191,6 +1192,10 @@ void View::toggleFreeFinalTime(int state) {
     this->controller_->setFreeFinalTime(state == Qt::Checked);
 }
 
+void View::toggleDataCapture(int state) {
+    this->controller_->setDataCapture(state == Qt::Checked);
+}
+
 void View::initializeModelParamsTable(MenuPanel *panel) {
     // Create table
     this->model_params_table_ = new QTableWidget(panel->menu_);
@@ -1300,6 +1305,24 @@ void View::initializeTrajLockToggle(MenuPanel *panel) {
     // Connect execute button
     connect(traj_lock_toggle, SIGNAL(stateChanged(int)),
             this, SLOT(toggleTrajLock(int)));
+}
+
+void View::initializeDataCaptureToggle(MenuPanel *panel) {
+    QCheckBox *data_capture_toggle =
+            new QCheckBox("Data Capture", panel->menu_);
+    data_capture_toggle->
+            setToolTip(tr("Save trajectory data to csv"));
+    data_capture_toggle->setMinimumHeight(35);
+    data_capture_toggle->setCheckState(Qt::Checked);
+    panel->menu_->layout()->addWidget(data_capture_toggle);
+    panel->menu_->layout()->setAlignment(
+                data_capture_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(data_capture_toggle);
+
+    // Connect execute button
+    connect(data_capture_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleDataCapture(int)));
 }
 
 void View::initializeFreeFinalTimeToggle(MenuPanel *panel) {

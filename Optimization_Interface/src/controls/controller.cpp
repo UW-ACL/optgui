@@ -10,7 +10,6 @@
 #include <QTranslator>
 #include <QSet>
 #include <QDate>
-#include <QFile>
 #include <QTextStream>
 #include <QString>
 
@@ -76,6 +75,10 @@ Controller::Controller(Canvas *canvas) {
 
     // Set traj lock. Cannot execute traj while already executing.
     this->traj_lock_ = false;
+
+    // capture data on by default
+    this->capture_data_ = true;
+    this->output_file_ = nullptr;
 }
 
 Controller::~Controller() {
@@ -418,7 +421,16 @@ void Controller::freeze_traj() {
     } else {
         this->model_->setLiveReferenceMode(false);
     }
-    this->traj_index_ = 1;
+
+    this->traj_index_ = 0;
+    // update data output with traj
+    if (this->capture_data_) {
+        this->createOutputFile();
+        this->updateOutputFile(this->model_->getStagedTraj3dof(),
+                               this->model_->getStagedDrone(),
+                               this->traj_index_);
+    }
+    this->traj_index_++;
 }
 
 void Controller::setStagedPath() {
@@ -458,25 +470,43 @@ void Controller::tickLiveReference() {
             }
         }
 
+        int index = this->traj_index_;
+
+        // update drone with reference telemetry in simulation mode
         if (this->is_simulated_) {
-            QVector3D coords = nedToGuiXyz(traj.pos_ned(0, this->traj_index_),
-                                           traj.pos_ned(1, this->traj_index_),
-                                           traj.pos_ned(2, this->traj_index_));
+            QVector3D coords = nedToGuiXyz(traj.pos_ned(0, index),
+                                           traj.pos_ned(1, index),
+                                           traj.pos_ned(2, index));
+
+            staged_drone->
+                    setVel(nedToGuiXyz(traj.vel_ned(0, index),
+                                       traj.vel_ned(1, index),
+                                       traj.vel_ned(2, index)));
+            staged_drone->
+                    setAccel(nedToGuiXyz(traj.accl_ned(0, index),
+                                         traj.accl_ned(1, index),
+                                         traj.accl_ned(2, index)));
+
             // set model pos
-            drone->model_->setPos(coords);
+            staged_drone->setPos(coords);
             // set graphic pos so view knows to draw offscreen
             drone->setPos(QPointF(coords.x(), coords.y()));
         }
-        drone->model_->
-                setVel(nedToGuiXyz(traj.vel_ned(0, this->traj_index_),
-                                   traj.vel_ned(1, this->traj_index_),
-                                   traj.vel_ned(2, this->traj_index_)));
-        drone->model_->
-                setAccel(nedToGuiXyz(traj.accl_ned(0, this->traj_index_),
-                                     traj.accl_ned(1, this->traj_index_),
-                                     traj.accl_ned(2, this->traj_index_)));
+
+        // update output file
+        if (this->capture_data_ && this->output_file_ != nullptr) {
+            this->updateOutputFile(traj, staged_drone, index);
+        }
+
         this->traj_index_++;
     } else {
+        // close output file
+        if (this->output_file_ != nullptr) {
+            this->output_file_->close();
+            delete this->output_file_;
+            this->output_file_ = nullptr;
+        }
+
         // no more points in tracked traj
         // stop timer between traj time points
         this->freeze_traj_timer_->stop();
@@ -517,30 +547,8 @@ void Controller::execute() {
                     setPoints(this->model_->getPathStagedPoints());
         }
 
-        //  Todo:Skye - change this later
-        autogen::packet::traj3dof staged_traj = this->model_->getStagedTraj3dof();
-
-        QString filepath = "";
-        QString filename = QDate::currentDate().toString("'data_'MM_dd_yyyy'");
-        filename.append(QTime::currentTime().toString("'_'hh.mm.ss'.txt'"));
-
-        QFile file(filepath + filename);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            //  file.open(QIODevice::ReadWrite);
-            QTextStream stream(&file);
-            for (int i = 0; i < staged_traj.K; i++) {
-                stream << staged_traj.time(i) << "\n";
-                stream << staged_traj.pos_ned(0, i) << " " << staged_traj.pos_ned(1, i) << " " << staged_traj.pos_ned(2, i) << "\n";
-                stream << staged_traj.vel_ned(0, i) << " " << staged_traj.vel_ned(1, i) << " " << staged_traj.vel_ned(2, i) << "\n";
-                stream << staged_traj.accl_ned(0, i) << " " << staged_traj.accl_ned(1, i) << " " << staged_traj.accl_ned(2, i) << "\n";
-                stream << "\n";
-            }
-            stream << endl;
-            file.close();
-        }
-
         emit trajectoryExecuted(staged_drone,
-                                staged_traj);
+                                this->model_->getStagedTraj3dof());
     } else if (this->freeze_traj_timer_->isActive() &&
                !this->traj_lock_ &&
                this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
@@ -548,9 +556,75 @@ void Controller::execute() {
         this->freeze_traj();
         this->canvas_->path_staged_graphic_->setColor(CYAN);
         // this->model_->setPathPoints(this->model_->getPathStagedPoints());
+
         emit trajectoryExecuted(staged_drone,
                                 this->model_->getStagedTraj3dof());
     }
+}
+
+void Controller::createOutputFile() {
+    // close old output file if exists
+    if (this->output_file_ != nullptr) {
+        this->output_file_->close();
+        delete this->output_file_;
+        this->output_file_ = nullptr;
+    }
+
+    // create file in same directory as executable
+    QString filename = QDate::currentDate().toString("'data_'MM_dd_yyyy'");
+    filename.append(QTime::currentTime().toString("'_'hh.mm.ss'.csv'"));
+
+    this->output_file_ = new QFile(filename);
+
+    if (this->output_file_->open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream stream(this->output_file_);
+
+        stream << "abs_time,rel_time,"
+
+               << "pos_ref_n,pos_ref_e,pos_ref_d,"
+               << "vel_ref_n,vel_ref_e,vel_ref_d,"
+               << "accl_ref_n,accl_ref_e,accl_ref_d,"
+
+               << "pos_telem_n,pos_telem_e,pos_telem_d,"
+               << "vel_telem_n,vel_telem_e,vel_telem_d,"
+               << "accl_telem_n,accl_telem_e,accl_telem_d,"
+
+               << "pos_diff_n,pos_diff_e,pos_diff_d,"
+               << "vel_diff_n,vel_diff_e,vel_diff_d,"
+               << "accl_diff_n,accl_diff_e,accl_diff_d"
+
+               << endl;
+    } else {
+        delete this->output_file_;
+        this->output_file_ = nullptr;
+    }
+}
+
+void Controller::updateOutputFile(autogen::packet::traj3dof const &traj, DroneModelItem *staged_drone, int index) {
+    QTextStream stream(this->output_file_);
+
+    // time
+    stream << QTime::currentTime().toString("hh.mm.ss") << "," << traj.time(index) << ",";
+
+    // ref
+    stream << traj.pos_ned(0, index) << "," << traj.pos_ned(1, index) << "," << traj.pos_ned(2, index) << ","
+           << traj.vel_ned(0, index) << "," << traj.vel_ned(1, index) << "," << traj.vel_ned(2, index) << ","
+           << traj.accl_ned(0, index) << "," << traj.accl_ned(1, index) << "," << traj.accl_ned(2, index) << ",";
+
+    // telem
+    QVector3D pos_telem_ned(guiXyzToNED(staged_drone->getPos()));
+    QVector3D vel_telem_ned(guiXyzToNED(staged_drone->getVel()));
+    QVector3D accl_telem_ned(guiXyzToNED(staged_drone->getAccel()));
+    stream << pos_telem_ned.x() << "," << pos_telem_ned.y() << "," << pos_telem_ned.z() << ","
+           << vel_telem_ned.x() << "," << vel_telem_ned.y() << "," << vel_telem_ned.z() << ","
+           << accl_telem_ned.x() << "," << accl_telem_ned.y() << "," << accl_telem_ned.z() << ",";
+
+    // diff
+    stream << traj.pos_ned(0, index)-pos_telem_ned.x() << "," << traj.pos_ned(1, index)-pos_telem_ned.y() << "," << traj.pos_ned(2, index)-pos_telem_ned.z() << ","
+           << traj.vel_ned(0, index)-vel_telem_ned.x() << "," << traj.vel_ned(1, index)-vel_telem_ned.y() << "," << traj.vel_ned(2, index)-vel_telem_ned.z() << ","
+           << traj.accl_ned(0, index)-accl_telem_ned.x() << "," << traj.accl_ned(1, index)-accl_telem_ned.y() << "," << traj.accl_ned(2, index)-accl_telem_ned.z();
+
+    stream << endl;
 }
 
 void Controller::stageTraj() {
@@ -581,6 +655,17 @@ void Controller::setTrajLock(bool state) {
 void Controller::setFreeFinalTime(bool state) {
     // TODO(dtsull16): reset inputs?
     this->model_->setFreeFinalTime(state);
+}
+
+void Controller::setDataCapture(bool state) {
+    // close current output file when switching modes
+    if (state != this->capture_data_ && this->output_file_ != nullptr) {
+        this->output_file_->close();
+        delete this->output_file_;
+        this->output_file_ = nullptr;
+    }
+    // set state
+    this->capture_data_ = state;
 }
 
 void Controller::setPorts() {

@@ -94,6 +94,7 @@ class View : public QGraphicsView {
     void toggleSim(int);
     void toggleTrajLock(int);
     void toggleFreeFinalTime(int);
+    void toggleDataCapture(int);
 
   private:
     void initializeMenuPanel();
@@ -167,6 +168,7 @@ class View : public QGraphicsView {
     void initializeFreeFinalTimeToggle(MenuPanel *panel);
     // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);
+    void initializeDataCaptureToggle(MenuPanel *panel);
     // expert panel constraint_model params not in skyefly
     void initializeModelParamsTable(MenuPanel *panel);
 };

@@ -11,6 +11,7 @@
 #include <cprs.h>
 #include <algorithm.h>
 #include <QTimer>
+#include <QFile>
 #include <QTableWidget>
 
 #include "include/graphics/canvas.h"
@@ -71,6 +72,7 @@ class Controller : public QObject {
     void setSimulated(bool state);
     void setTrajLock(bool state);
     void setFreeFinalTime(bool state);
+    void setDataCapture(bool state);
 
     // pass info between model and view
     quint32 getNumWaypoints();
@@ -107,6 +109,13 @@ class Controller : public QObject {
     // flag for simulated traj
     bool is_simulated_;
     bool traj_lock_;
+
+    // Data capture
+    bool capture_data_;
+    QFile *output_file_;
+    void createOutputFile();
+    void updateOutputFile(const autogen::packet::traj3dof &traj,
+                          DroneModelItem *staged_drone, int index);
 
     // freeze traj timer
     QTimer *freeze_traj_timer_;

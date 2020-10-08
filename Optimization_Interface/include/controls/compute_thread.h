@@ -40,7 +40,8 @@ class ComputeThread : public QThread {
 
  // slots for signals from thread are run in parent thread
  signals:
-    void updateGraphics(PathGraphicsItem *traj_graphic, DroneGraphicsItem *drone_graphic);
+    void updateGraphics(PathGraphicsItem *traj_graphic,
+                        DroneGraphicsItem *drone_graphic);
     void updateMessage(DroneModelItem *drone);
     void finalTime(DroneModelItem *drone, double final_time);
 

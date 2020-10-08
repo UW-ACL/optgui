@@ -65,7 +65,7 @@ namespace optgui {
 
     QVector3D nedToGuiXyz(qreal n, qreal e, qreal d);
 //    QPointF guiXyzToNED(qreal x, qreal y);
-//    QPointF guiXyzToNED(QPointF const &gui_coords);
+    QVector3D guiXyzToNED(QVector3D const &gui_coords);
     QVector3D guiXyzToXyz(QVector3D const &gui_coords);
     QVector3D guiXyzToXyz(qreal x, qreal y, qreal z);
     QVector3D xyzToGuiXyz(QVector3D const &xyz_coords);

@@ -28,11 +28,12 @@ namespace optgui {
 //        return QPointF(-1.0 * y / GRID_SIZE, x / GRID_SIZE);
 //    }
 
-//    QPointF guiXyzToNED(QPointF const &gui_coords) {
-//        // QPointF(n, e, d)
-//        return QPointF(-1.0 * gui_coords.y() / GRID_SIZE,
-//                       gui_coords.x() / GRID_SIZE);
-//    }
+    QVector3D guiXyzToNED(QVector3D const &gui_coords) {
+        // QVector3D(n, e, d)
+        return QVector3D(-1.0 * gui_coords.y() / GRID_SIZE,
+                        gui_coords.x() / GRID_SIZE,
+                        -1.0 * gui_coords.z() / GRID_SIZE);
+    }
 
     QVector3D guiXyzToXyz(QVector3D const &gui_coords) {
         // QVector3D(x, y, z)
