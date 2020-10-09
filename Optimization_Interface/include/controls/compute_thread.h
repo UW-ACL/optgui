@@ -31,6 +31,7 @@ class ComputeThread : public QThread {
 
     PathGraphicsItem *getTrajGraphic();
     void setTarget(PointModelItem *target);
+    void reInit();
     PointModelItem *getTarget();
     void stopCompute();
     DroneGraphicsItem *getDroneGraphic();

@@ -263,6 +263,12 @@ void Controller::removeItem(QGraphicsItem *item) {
             for (int i = 0; i < this->canvas_->waypoint_graphics_.size(); i++) {
                 this->canvas_->waypoint_graphics_.at(i)->setIndex(i);
             }
+
+            // update all traj's to no have waypoint
+            for (ComputeThread *thread : this->compute_threads_) {
+                thread->reInit();
+            }
+
             break;
         }
     }
@@ -947,6 +953,11 @@ void Controller::loadWaypoint(PointModelItem *item_model) {
     // render graphic
     item_graphic->setZValue(this->waypoints_render_level_);
     item_graphic->update(item_graphic->boundingRect());
+
+    // update all traj's with new waypoint
+    for (ComputeThread *thread : this->compute_threads_) {
+        thread->reInit();
+    }
 }
 
 // ============ MODEL CONTROLS ============

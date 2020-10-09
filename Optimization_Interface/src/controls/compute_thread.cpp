@@ -41,6 +41,11 @@ void ComputeThread::setTarget(PointModelItem *target) {
     this->target_ = target;
 }
 
+void ComputeThread::reInit() {
+    QMutexLocker(&this->mutex_);
+    this->target_changed_ = true;
+}
+
 PointModelItem *ComputeThread::getTarget() {
     QMutexLocker(&this->mutex_);
     return this->target_;
@@ -147,7 +152,7 @@ void ComputeThread::run() {
         // check to reset inputs
         if (this->target_changed_) {
             this->target_changed_ = false;
-            this->fly_.resetInputs(r_i, v_i, a_i, r_f);
+            this->fly_.resetInputs(r_i, v_i, a_i, r_f, wp);
         }
 
         // Run SCvx algorithm for free or fixed final time
