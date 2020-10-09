@@ -728,7 +728,7 @@ void Controller::startSockets() {
         if (graphic->model_->port_ > 0) {
             EllipseSocket *temp = new EllipseSocket(graphic);
             connect(temp, SIGNAL(refresh_graphics()),
-                    this->canvas_, SLOT(updateEllipseGraphicsItem(graphic)));
+                    this->canvas_, SLOT(update()));
             this->ellipse_sockets_.append(temp);
         }
     }
