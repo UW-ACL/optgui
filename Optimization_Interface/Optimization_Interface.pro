@@ -30,7 +30,7 @@ INCLUDEPATH += $$PWD/../../skyenet/algorithm/
 INCLUDEPATH += $$PWD/../../skyenet/cprs/headers/
 INCLUDEPATH += $$PWD/../../skyenet/csocp/
 INCLUDEPATH += $$PWD/../../mikipilot
-INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/release/
+INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/
 
 # //SKYENET//
 LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # looks for libalgorithm.a file
@@ -38,15 +38,15 @@ LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS     # looks for libCPRS.a
 LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP         # looks for libCSOCP.a
 
 # //MIKIPILOT//
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_globals     # looks for lib_autogen_globals.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_packet      # looks for lib_autogen_packet.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_state       # looks for lib_autogen_state.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_parameter   # looks for lib_autogen_parameter.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_timestamped # looks for lib_autogen_timestamped.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_autogen_bus         # looks for lib_autogen_bus.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_network             # looks for lib_network.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_utilities           # looks for lib_utilities.a
-LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/release/ -l_gnc                 # looks for lib_gnc.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_globals     # looks for lib_autogen_globals.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_packet      # looks for lib_autogen_packet.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_state       # looks for lib_autogen_state.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_parameter   # looks for lib_autogen_parameter.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_timestamped # looks for lib_autogen_timestamped.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_bus         # looks for lib_autogen_bus.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_network             # looks for lib_network.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_utilities           # looks for lib_utilities.a
+LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_gnc                 # looks for lib_gnc.a
 
 SOURCES += \
     src/controls/compute_thread.cpp \
