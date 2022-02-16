@@ -158,6 +158,7 @@ class View : public QGraphicsView {
     void initializeFinalPointButton(MenuPanel *panel);
     void initializeDroneButton(MenuPanel *panel);
     void initializeEllipseButton(MenuPanel *panel);
+    void initializeCylinderButton(MenuPanel *panel);
     void initializeFlipButton(MenuPanel *panel);
     void initializeExecButton(MenuPanel *panel);
     void initializeStageButton(MenuPanel *panel);

@@ -75,6 +75,7 @@ void Canvas::bringSelectedToFront() {
         // grab first selected item
         QGraphicsItem *selected = this->selectedItems().first();
         if (selected->type() == ELLIPSE_GRAPHIC ||
+                selected->type() == CYLINDER_GRAPHIC ||
                 selected->type() == POLYGON_GRAPHIC ||
                 selected->type() == PLANE_GRAPHIC) {
             // move to front render level if it is a constraint graphic
@@ -99,6 +100,7 @@ void Canvas::updateGraphicsItems(PathGraphicsItem *traj,
 
 void Canvas::bringToFront(QGraphicsItem *item) {
     if (item->type() == ELLIPSE_GRAPHIC ||
+            item->type() == CYLINDER_GRAPHIC ||
             item->type() == POLYGON_GRAPHIC ||
             item->type() == PLANE_GRAPHIC) {
         // move given item to front if it is a constraint graphic

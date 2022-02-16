@@ -141,6 +141,7 @@ void View::initializeMenuPanel() {
     this->initializeDroneButton(this->menu_panel_);
     this->initializeFinalPointButton(this->menu_panel_);
     this->initializeEllipseButton(this->menu_panel_);
+    this->initializeCylinderButton(this->menu_panel_);
     this->initializePolygonButton(this->menu_panel_);
     this->initializePlaneButton(this->menu_panel_);
     this->initializeWaypointButton(this->menu_panel_);
@@ -234,6 +235,13 @@ void View::mousePressEvent(QMouseEvent *event) {
             qreal scaling_factor = this->matrix().m11();
             this->controller_->addEllipse(pos,
                                           DEFAULT_RAD / scaling_factor);
+            break;
+        }
+        case CYLINDER: {
+            // add cylinder scaled by zoom factor
+            qreal scaling_factor = this->matrix().m11();
+            this->controller_->addCylinder(pos,
+                                          DEFAULT_WIDTH / scaling_factor);
             break;
         }
         case POLYGON: {
@@ -599,6 +607,30 @@ void View::initializeEllipseButton(MenuPanel *panel) {
                                         Qt::AlignTop|Qt::AlignCenter);
 
     connect(ellipse_button, SIGNAL(changeState(STATE)),
+            this, SLOT(setState(STATE)));
+}
+
+void View::initializeCylinderButton(MenuPanel *panel) {
+    MenuButton *cylinder_button = new MenuButton(CYLINDER, panel->menu_);
+    QPixmap pix(50, 50);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(Qt::black);
+    pen.setWidth(2);
+    painter.setPen(pen);
+    painter.setBrush(Qt::green);
+    painter.drawRect(1, 12, 48, 24);
+    cylinder_button->setPixmap(pix);
+    cylinder_button->setToolTip(tr("Add cylinder constraint"));
+    this->panel_widgets_.append(cylinder_button);
+    this->toggle_buttons_.append(cylinder_button);
+
+    panel->menu_->layout()->addWidget(cylinder_button);
+    panel->menu_->layout()->setAlignment(cylinder_button,
+                                        Qt::AlignTop|Qt::AlignCenter);
+
+    connect(cylinder_button, SIGNAL(changeState(STATE)),
             this, SLOT(setState(STATE)));
 }
 
