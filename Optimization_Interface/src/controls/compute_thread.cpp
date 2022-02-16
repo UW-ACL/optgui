@@ -102,15 +102,16 @@ void ComputeThread::run() {
             emit updateMessage(this->drone_->model_);
         }
         // Dont compute if invalid input
-//        if (input_code != INPUT_CODE::VALID_INPUT) {
-//            continue;
-//        }
+        //        if (input_code != INPUT_CODE::VALID_INPUT) {
+        //            continue;
+        //        }
 
         // Parameters
 
         // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();
         this->model_->loadEllipseConstraints(&P);
+        this->model_->loadCylinderConstraints(&P);
         this->model_->loadPosConstraints(&P);
 
         double r_i[3] = { 0 };
@@ -157,7 +158,7 @@ void ComputeThread::run() {
 
         // Run SCvx algorithm for free or fixed final time
         skyenet::outputs const &O =
-                this->fly_.update(this->model_->isFreeFinalTime());
+            this->fly_.update(this->model_->isFreeFinalTime());
 
         // Iterations in resulting trajectory
         quint32 size = P.K;
@@ -205,11 +206,11 @@ void ComputeThread::run() {
 
         // OUTPUT VIOLATIONS: initial and final pos violation
         qreal accum = pow(O.rf_relax[0], 2)  // final pos
-                    + pow(O.rf_relax[1], 2)
+                    + pow(O.rf_relax[1], 2) 
                     + pow(O.rf_relax[2], 2)
 
                     + pow(O.ri_relax[0], 2)  // initial pos
-                    + pow(O.ri_relax[1], 2)
+                    + pow(O.ri_relax[1], 2) 
                     + pow(O.ri_relax[2], 2)
 
                     + pow(O.dtau, 2);  // change in time
@@ -250,9 +251,9 @@ void ComputeThread::setFeasibilityColor(bool is_feasible) {
 }
 
 INPUT_CODE ComputeThread::validateInputs(
-        QVector<QRegion> const &ellipse_regions,
-        QVector3D const &initial_pos,
-        QVector3D const &final_pos) {
+    QVector<QRegion> const &ellipse_regions,
+    QVector3D const &initial_pos,
+    QVector3D const &final_pos) {
     // get truncated drone pos
     QPoint trunc_intial_pos(initial_pos.x(), initial_pos.y());
     // get truncated final pos
