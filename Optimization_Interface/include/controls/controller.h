@@ -37,6 +37,7 @@ class Controller : public QObject {
 
     // add constraints
     void addEllipse(QPointF const &point, qreal radius = 120);
+    void addCylinder(QPointF const &point, qreal radius = 120);
     void addPolygon(QVector<QPointF> points);
     void addPlane(QPointF const &p1, QPointF const &p2);
 
@@ -141,6 +142,7 @@ class Controller : public QObject {
     void loadDrone(DroneModelItem *model);
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
+    void loadCylinder(CylinderModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
     void loadWaypoint(PointModelItem *model);
