@@ -17,7 +17,7 @@
 #include <limits>
 
 #include "include/graphics/point_graphics_item.h"
-#include "include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/cylinder_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
 #include "include/graphics/polygon_resize_handle.h"
@@ -209,6 +209,23 @@ void Controller::removeItem(QGraphicsItem *item) {
             // exit switch
             break;
         }
+    case CYLINDER_GRAPHIC: {
+        // cast to specific graphic item type
+        CylinderGraphicsItem *cylinder = qgraphicsitem_cast<
+                CylinderGraphicsItem *>(item);
+        // get data model
+        CylinderModelItem *model = cylinder->model_;
+        // remove from QGraphicsScene canvas
+        this->canvas_->removeItem(cylinder);
+        this->canvas_->cylinder_graphics_.remove(cylinder);
+        // delete graphic
+        delete cylinder;
+        // delete data model
+        this->model_->removeCylinder(model);
+        delete model;
+        // exit switch
+        break;
+    }
         case POLYGON_GRAPHIC: {
             // cast to specific graphic item type
             PolygonGraphicsItem *polygon = qgraphicsitem_cast<
@@ -317,6 +334,16 @@ void Controller::addEllipse(QPointF const &point, qreal radius) {
     this->loadEllipse(item_model);
     // update color based on valid input code
     this->model_->updateEllipseColors();
+}
+
+void Controller::addCylinder(QPointF const &point, qreal width) {
+    // create new data model
+    CylinderModelItem *item_model = new CylinderModelItem(point,
+        this->model_->getClearance(), width, width, width, 0);
+    // create graphic based on data model and save to model
+    this->loadCylinder(item_model);
+    // update color based on valid input code
+    this->model_->updateCylinderColors();
 }
 
 void Controller::addPolygon(QVector<QPointF> points) {
@@ -850,6 +877,21 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
     item_graphic->setRotation(item_model->getRot());
     // add graphic to model
     this->model_->addEllipse(item_model);
+    // render graphic
+    this->canvas_->bringToFront(item_graphic);
+    item_graphic->update(item_graphic->boundingRect());
+}
+
+void Controller::loadCylinder(CylinderModelItem *item_model) {
+    // create new graphic for data model
+    CylinderGraphicsItem *item_graphic =
+            new CylinderGraphicsItem(item_model);
+    // add graphic to canvas
+    this->canvas_->addItem(item_graphic);
+    this->canvas_->cylinder_graphics_.insert(item_graphic);
+    item_graphic->setRotation(item_model->getRot());
+    // add graphic to model
+    this->model_->addCylinder(item_model);
     // render graphic
     this->canvas_->bringToFront(item_graphic);
     item_graphic->update(item_graphic->boundingRect());
