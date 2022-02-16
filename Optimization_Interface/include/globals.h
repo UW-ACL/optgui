@@ -30,6 +30,7 @@ namespace optgui {
         ERASER,
         FLIP,
         ELLIPSE,
+        CYLINDER,
         POLYGON,
         PLANE,
         WAYPOINT,
@@ -47,7 +48,9 @@ namespace optgui {
         PLANE_HANDLE_GRAPHIC = QGraphicsItem::UserType + 6,
         POLYGON_HANDLE_GRAPHIC = QGraphicsItem::UserType + 7,
         POINT_GRAPHIC = QGraphicsItem::UserType + 8,
-        DRONE_GRAPHIC = QGraphicsItem::UserType + 9
+        DRONE_GRAPHIC = QGraphicsItem::UserType + 9,
+        CYLINDER_HANDLE_GRAPHIC = QGraphicsItem::UserType + 10,
+        CYLINDER_GRAPHIC = QGraphicsItem::UserType + 11
     };
 
     // Traj feasibility
