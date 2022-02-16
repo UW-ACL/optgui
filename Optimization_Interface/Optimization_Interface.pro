@@ -67,6 +67,8 @@ SOURCES += \
     src/globals.cpp \
     src/graphics/ellipse_graphics_item.cpp \
     src/graphics/ellipse_resize_handle.cpp \
+    src/graphics/cylinder_graphics_item.cpp \
+    src/graphics/cylinder_resize_handle.cpp \
     src/graphics/polygon_graphics_item.cpp \
     src/graphics/polygon_resize_handle.cpp \
     src/graphics/plane_graphics_item.cpp \
@@ -96,6 +98,9 @@ HEADERS += \
     include/models/ellipse_model_item.h \
     include/graphics/ellipse_graphics_item.h \
     include/graphics/ellipse_resize_handle.h \
+    include/models/cylinder_model_item.h \
+    include/graphics/cylinder_graphics_item.h \
+    include/graphics/cylinder_resize_handle.h \
     include/graphics/polygon_graphics_item.h \
     include/models/polygon_model_item.h \
     include/graphics/polygon_resize_handle.h \
