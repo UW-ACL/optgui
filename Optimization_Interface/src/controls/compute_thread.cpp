@@ -199,6 +199,7 @@ void ComputeThread::run() {
         // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();
         this->model_->loadEllipseConstraints(&P);
+        this->model_->loadCylinderConstraints(&P);
         this->model_->loadPosConstraints(&P);
 
         double r_i[3] = { 0 };
@@ -382,9 +383,9 @@ void ComputeThread::setPooledFeasibilityColor(bool is_feasible, quint32 tag) {
 }
 
 INPUT_CODE ComputeThread::validateInputs(
-        QVector<QRegion> const &ellipse_regions,
-        QVector3D const &initial_pos,
-        QVector3D const &final_pos) {
+    QVector<QRegion> const &ellipse_regions,
+    QVector3D const &initial_pos,
+    QVector3D const &final_pos) {
     // get truncated drone pos
     QPoint trunc_intial_pos(initial_pos.x(), initial_pos.y());
     // get truncated final pos

@@ -46,6 +46,11 @@ ConstraintModel::~ConstraintModel() {
         delete ellipse;
     }
 
+    // Delete cylinders
+    for (CylinderModelItem *cylinder : this->cylinders_) {
+        delete cylinder;
+    }
+
     // Delete polygons
     for (PolygonModelItem *polygon : this->polygons_) {
         delete polygon;
@@ -115,6 +120,16 @@ void ConstraintModel::addEllipse(EllipseModelItem *item) {
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
     this->ellipses_.remove(item);
+}
+
+void ConstraintModel::addCylinder(CylinderModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->cylinders_.insert(item);
+}
+
+void ConstraintModel::removeCylinder(CylinderModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->cylinders_.remove(item);
 }
 
 void ConstraintModel::addPolygon(PolygonModelItem *item) {
@@ -417,6 +432,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     port_table->setRowCount(this->final_points_.size()
                             + this->waypoints_.size()
                             + this->ellipses_.size()
+                            + this->cylinders_.size()
 //                          + this->polygons_.size()
 //                          + this->planes_.size()
                             );
@@ -541,6 +557,31 @@ void ConstraintModel::updateEllipseColors() {
     }
 }
 
+QVector<QRegion> ConstraintModel::getCylinderRegions() {
+    QMutexLocker locker(&this->model_lock_);
+    QVector<QRegion> regions;
+    for (CylinderModelItem *cylinder : this->cylinders_) {
+        regions.append(cylinder->getRegion());
+    }
+    return regions;
+}
+
+void ConstraintModel::updateCylinderColors() {
+    QMutexLocker locker(&this->model_lock_);
+
+    if (this->input_code_ == INPUT_CODE::VALID_INPUT) {
+        // show cylinders as valid
+        for (CylinderModelItem *cylinder : this->cylinders_) {
+            cylinder->setIsOverlap(false);
+        }
+    } else {
+        // show cylinders as invalid
+        for (CylinderModelItem *cylinder : this->cylinders_) {
+            cylinder->setIsOverlap(true);
+        }
+    }
+}
+
 void ConstraintModel::loadWaypointConstraints(
             skyenet::params *P,
             double wp[skyenet::MAX_WAYPOINTS][3]) {
@@ -600,6 +641,37 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
         }
     }
     P->obs.n = index;
+}
+
+void ConstraintModel::loadCylinderConstraints(skyenet::params *P) {
+    QMutexLocker locker(&this->model_lock_);
+
+    quint32 index = 0;
+    for (CylinderModelItem *cylinder : this->cylinders_) {
+        // calculate cylinder properties
+
+        qreal p_c = (cylinder->getWidth() / GRID_SIZE);
+        qreal p_g = ((cylinder->getWidth() + cylinder->getTriggerWidth())/ GRID_SIZE);
+        qreal l_c = (cylinder->getHeight() / GRID_SIZE);
+        qreal yaw = cylinder->getRot();
+
+        QPointF cylinder_pos = cylinder->getPos();
+        QVector3D xyz_coords = guiXyzToXyz(cylinder_pos.x(), cylinder_pos.y(), 0);
+
+        P->hoops.c_x[index] = xyz_coords.x();
+        P->hoops.c_y[index] = xyz_coords.y();
+        P->hoops.p_c[index] = p_c;
+        P->hoops.p_g[index] = p_g;
+        P->hoops.l_c[index] = l_c;
+        P->hoops.yaw[index] = -yaw;
+        index++;
+        // dont go over max
+        if (index >= skyenet::MAX_OBS) {
+            P->hoops.n = index;
+            return;
+        }
+    }
+    P->hoops.n = index;
 }
 
 void ConstraintModel::loadPosConstraints(skyenet::params *P) {

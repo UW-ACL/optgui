@@ -21,6 +21,7 @@
 #include "include/globals.h"
 #include "include/models/point_model_item.h"
 #include "include/models/ellipse_model_item.h"
+#include "include/models/cylinder_model_item.h"
 #include "include/models/polygon_model_item.h"
 #include "include/models/plane_model_item.h"
 #include "include/models/path_model_item.h"
@@ -40,6 +41,11 @@ class ConstraintModel {
     // caller responsible for deleting pointer
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
+
+    // functions for cylinder hoop data models
+    // caller responsible for deleting pointer
+    void addCylinder(CylinderModelItem *item);
+    void removeCylinder(CylinderModelItem *item);
 
     // functions for polygon constraint data models
     // caller responsible for deleting pointer
@@ -127,6 +133,12 @@ class ConstraintModel {
     // mark overlapping ellipses as red
     void updateEllipseColors();
 
+    // calculate regions for cylinders to use for
+    // overlap detection
+    QVector<QRegion> getCylinderRegions();
+    // mark overlapping cylinders as red
+    void updateCylinderColors();
+
     QPointF getWpPos(int index);
 
     void setCurrDrone(DroneModelItem *drone);
@@ -138,6 +150,7 @@ class ConstraintModel {
     void loadWaypointConstraints(skyenet::params *P,
                                  double wp[skyenet::MAX_WAYPOINTS][3]);
     void loadEllipseConstraints(skyenet::params *P);
+    void loadCylinderConstraints(skyenet::params *P);
     void loadPosConstraints(skyenet::params *P);
 
 private:
@@ -162,6 +175,7 @@ private:
 
     // Constraints
     QSet<EllipseModelItem *> ellipses_;
+    QSet<CylinderModelItem *> cylinders_;
     QSet<PolygonModelItem *> polygons_;
     QSet<PlaneModelItem *> planes_;
 
