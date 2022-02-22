@@ -76,6 +76,7 @@ SOURCES += \
     src/window/port_dialog/port_selector.cpp \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
+    src/network/cylinder_socket.cpp \
     src/graphics/point_graphics_item.cpp \
     src/network/point_socket.cpp
 
@@ -112,6 +113,7 @@ HEADERS += \
     include/window/port_dialog/port_selector.h \
     include/models/data_model.h \
     include/network/ellipse_socket.h \
+    include/network/cylinder_socket.h \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
     include/network/drone_socket.h \
