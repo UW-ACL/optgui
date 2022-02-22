@@ -759,6 +759,16 @@ void Controller::startSockets() {
             this->ellipse_sockets_.append(temp);
         }
     }
+
+    // create cylinder sockets
+    for (CylinderGraphicsItem *graphic : this->canvas_->cylinder_graphics_) {
+        if (graphic->model_->port_ > 0) {
+            CylinderSocket *temp = new CylinderSocket(graphic);
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(update()));
+            this->cylinder_sockets_.append(temp);
+        }
+    }
 }
 
 void Controller::closeSockets() {
@@ -785,6 +795,12 @@ void Controller::closeSockets() {
         delete socket;
     }
     this->ellipse_sockets_.clear();
+
+    // close cylinder sockets
+    for (CylinderSocket *socket : this->cylinder_sockets_) {
+        delete socket;
+    }
+    this->cylinder_sockets_.clear();
 }
 
 void Controller::removeEllipseSocket(EllipseModelItem *model) {
@@ -804,6 +820,26 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
 
     if (found) {
         this->ellipse_sockets_.removeAt(index);
+    }
+}
+
+void Controller::removeCylinderSocket(CylinderModelItem *model) {
+    // search for socket for given data model and delete it if
+    // it exists
+    int index = 0;
+    bool found = false;
+
+    for (CylinderSocket *socket : this->cylinder_sockets_) {
+        if (socket->cylinder_item_->model_ == model) {
+            delete socket;
+            found = true;
+            break;
+        }
+        index++;
+    }
+
+    if (found) {
+        this->cylinder_sockets_.removeAt(index);
     }
 }
 

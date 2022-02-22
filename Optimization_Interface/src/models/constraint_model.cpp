@@ -480,6 +480,21 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
         count++;
     }
 
+    // Set cylinders
+    count = 1;
+    for (CylinderModelItem *model : this->cylinders_) {
+        port_table->setItem(row, 0,
+                new QTableWidgetItem("Cylinder " + QString::number(count)));
+        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+
+        port_table->setCellWidget(row, 1,
+                new PortSelector(ports, model, port_table));
+        ports->insert(model->port_);
+
+        row++;
+        count++;
+    }
+
     // Not Currently Supported
     // Would be interesting to implement for the purpose of centering
     //  a slow zone around a drone
