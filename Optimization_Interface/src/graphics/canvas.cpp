@@ -48,6 +48,16 @@ Canvas::Canvas(QObject *parent, QString background_file)
 Canvas::~Canvas() {
 }
 
+qreal Canvas::getScalingFactor() {
+    qreal scale = 1;
+    if (!this->views().isEmpty()) {
+        qreal matrix = qMin(this->views().first()->matrix().m11(), 1.0);
+        quint64 factor = quint64(GRID_SIZE / matrix) / GRID_SIZE;
+        scale = 1.0 / factor;
+    }
+    return scale;
+}
+
 void Canvas::setBackgroundImage(QString filename) {
     QStringList list = filename.split('_');
     if (list.length() != 6) {
@@ -56,8 +66,8 @@ void Canvas::setBackgroundImage(QString filename) {
 
     // set background image location
     if (list[1] == "outdoor") {
-        this->background_bottomleft_x_ = 0;
-        this->background_bottomleft_y_ = 0;  // list[5].toDouble();
+        this->background_bottomleft_x_ = 0;  // mikipilot pos_ref_ned uses bottomleft as origin for outdoor
+        this->background_bottomleft_y_ = 0;  // mikipilot pos_ref_ned uses bottomleft as origin for outdoor
         this->background_topright_x_ = list[4].toDouble();
         this->background_topright_y_ = list[5].toDouble();
     } else if (list[1] == "indoor") {
@@ -110,33 +120,20 @@ void Canvas::bringToFront(QGraphicsItem *item) {
 }
 
 void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
-    // Get scaling factor for zoom
-    qreal scale = 1;
-    if (!this->views().isEmpty()) {
-        scale = this->views().first()->matrix().m11();
-    }
-
     // get meters scale
+    qreal scale = this->getScalingFactor();
     qint32 segment_size = GRID_SIZE;
-    if (scale < 0.1) {
-        segment_size /= 0.1;
-    } else if (scale < 0.2) {
-        segment_size /= 0.2;
-    } else if (scale < 0.5) {
-        segment_size /= 0.5;
-    } else if (scale > 1.5) {
-        segment_size /= 2;
-    }
+    segment_size /= scale;
 
     // scale pens and meter scale
-    qreal pen_width = 2 / scale;
+    qreal pen_width = 2;
     qreal font_size = 20 / scale;
     qint32 offset = 40 / scale;
     qint32 text_offset = 50 / scale;
     qint32 notch_offset = 45 / scale;
 
     this->foreground_pen_.setWidthF(pen_width);
-    this->font_.setPointSizeF(font_size);
+    this->font_.setPixelSize(font_size);
     painter->setPen(this->foreground_pen_);
     painter->setFont(this->font_);
 
@@ -145,7 +142,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
                       rect.left() + (offset + segment_size),
                       rect.bottom() - offset);
     // Draw notches on scale
-    for (qint32 i = 0; i <= segment_size; i += segment_size / 2) {
+    for (qint32 i = 0; i <= segment_size; i += segment_size) {
         painter->drawLine(rect.left() + offset + i, rect.bottom() - offset,
                           rect.left() + offset + i,
                           rect.bottom() - notch_offset);
@@ -153,7 +150,7 @@ void Canvas::drawForeground(QPainter *painter, const QRectF &rect) {
 
     // Draw label
     painter->drawText(rect.left() + offset, rect.bottom() - text_offset,
-                      QString::number(qreal(segment_size) / 100) + "m");
+                      QString::number(qreal(segment_size) / GRID_SIZE) + "m");
 }
 
 qint64 Canvas::roundUpPast(qint64 n, qint64 m) {
@@ -170,32 +167,12 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
     // Fill background
     QGraphicsScene::drawBackground(painter, rect);
 
-    // Get scaling factor
-    qreal scale = 1;
-    if (!this->views().isEmpty()) {
-        scale = this->views().first()->matrix().m11();
-    }
-
-    // Expand scene to fit exposed area
-    // (dtsull16): Already done in View::expandView ?
-    //    this->setSceneRect(this->sceneRect().united(rect));
-    //    if (!this->views().isEmpty()) {
-    //        this->views().first()->setSceneRect(this->sceneRect().united(rect));
-    //    }
-
     // Add grids proportional to scaling factor
+    qreal scale = this->getScalingFactor();
     qint64 segment_size = GRID_SIZE;
-    if (scale < 0.1) {
-        segment_size /= 0.1;
-    } else if (scale < 0.2) {
-        segment_size /= 0.2;
-    } else if (scale < 0.5) {
-        segment_size /= 0.5;
-    } else if (scale > 1.5) {
-        segment_size /= 2;
-    }
+    segment_size /= scale;
 
-    qreal pen_width = 2 / scale;
+    qreal pen_width = 2.0;
     qreal font_size = 20 / scale;
 
     // Set boundries of grid
@@ -206,7 +183,7 @@ void Canvas::drawBackground(QPainter *painter, const QRectF &rect) {
 
     // Set pen
     this->background_pen_.setWidthF(pen_width);
-    this->font_.setPointSizeF(font_size);
+    this->font_.setPixelSize(font_size);
     painter->setPen(this->background_pen_);
     painter->setFont(this->font_);
 

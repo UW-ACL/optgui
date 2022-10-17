@@ -54,6 +54,7 @@ class Canvas : public QGraphicsScene {
     void updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *);
 
  private:
+    qreal getScalingFactor();
     void setBackgroundImage(QString filename);
     QImage background_image_;
 
