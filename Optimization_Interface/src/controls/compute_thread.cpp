@@ -123,7 +123,7 @@ void ComputeThread::run() {
         QVector3D xyz_drone_pos = guiXyzToXyz(initial_pos);
         r_i[0] = xyz_drone_pos.x();
         r_i[1] = xyz_drone_pos.y();
-        r_i[2] = xyz_drone_pos.z();
+        r_i[2] = 0.0;
 
         // set initial drone vel
         QVector3D xyz_drone_vel = guiXyzToXyz(initial_vel);
