@@ -68,7 +68,7 @@ void PortDialog::initializeTable() {
     this->port_table_->setHorizontalHeaderItem(0,
             new QTableWidgetItem(tr("Graphics Item")));
     this->port_table_->setHorizontalHeaderItem(1,
-            new QTableWidgetItem(tr("Listening Port")));
+            new QTableWidgetItem(tr("Listening ID")));
     this->port_table_->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
     this->port_table_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

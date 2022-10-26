@@ -45,7 +45,7 @@ void PortSelector::updatePort() {
 
 quint16 PortSelector::isPortValid() {
     bool ok = false;
-    quint16 value = this->text().toUShort(&ok);
+    quint16 value = this->text().toUShort(&ok) + 8000;
 
     // validate port is in valid range and not already used
     if (ok && 1023 < value && value <= 65535 &&
