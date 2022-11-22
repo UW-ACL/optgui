@@ -15,6 +15,7 @@ namespace optgui {
 
 PortDialog::PortDialog(QWidget *parent)
     : QDialog(parent, Qt::Tool) {
+
     // Set title
     this->setWindowTitle("Set Ports");
 

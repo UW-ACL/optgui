@@ -67,6 +67,12 @@ Controller::Controller(Canvas *canvas) {
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
 
+    // initialize save dialog
+    this->save_dialog_ = new SaveDialog();
+
+    // initialize load dialog
+    this->load_dialog_ = new LoadDialog();
+
     // Initialize freeze_traj timer
     this->freeze_traj_timer_ = new QTimer();
     connect(this->freeze_traj_timer_, SIGNAL(timeout()),
@@ -93,6 +99,9 @@ Controller::~Controller() {
 
     // deinitialize port dialog
     delete this->port_dialog_;
+
+    // deinitialize save dialog
+    delete this->save_dialog_;
 
     // deinitialize network
     this->closeSockets();
@@ -679,6 +688,24 @@ void Controller::setPorts() {
     this->port_dialog_->fillTable(this->model_);
     // open pop up dialog box
     this->port_dialog_->open();
+}
+
+void Controller::saveFile() {
+    // save current configuration
+    this->save_dialog_->saveConfig(this->model_);
+}
+
+void Controller::loadFile() {
+    // load configuration from file
+    QSet<EllipseModelItem *> ell = this->load_dialog_->loadConfig(this->model_);
+
+    for (QSet<EllipseModelItem *>::iterator ptr = ell.begin(); ptr != ell.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadEllipse(*ptr);
+        // update color based on valid input code
+        this->model_->updateEllipseColors();
+    }
+    
 }
 
 // ============ NETWORK CONTROLS ============
