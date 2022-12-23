@@ -74,6 +74,7 @@ class ConstraintModel {
 
     void addDrone(DroneModelItem *drone, PathModelItem *traj);
     void removeDrone(DroneModelItem *item);
+    DroneModelItem* getDrones();
 
     // functions for skyenet params
     skyenet::params getSkyeFlyParams();

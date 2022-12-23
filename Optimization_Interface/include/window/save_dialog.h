@@ -25,6 +25,12 @@ class SaveDialog : public QDialog {
     // save configuration file
     void saveConfig(ConstraintModel *model);
 
+    QSet<EllipseModelItem *> ellipses_;
+    QSet<PolygonModelItem *> polygons_;
+    QVector<PointModelItem *> waypoints_;
+    QSet<PointModelItem *> final_points_;
+    DroneModelItem* drone_;
+
 };
 
 }  // namespace optgui

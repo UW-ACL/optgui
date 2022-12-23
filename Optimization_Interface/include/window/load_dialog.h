@@ -3,7 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-// Pop up dialog for loading configuration file
+// Load class for creating and loading config file
 
 #ifndef LOAD_DIALOG_H_
 #define LOAD_DIALOG_H_
@@ -24,7 +24,20 @@ class LoadDialog : public QDialog {
     ~LoadDialog();
 
     // load configuration file
-    QSet<EllipseModelItem *> loadConfig(ConstraintModel *model);
+    void loadConfig(ConstraintModel *model);
+
+    QSet<EllipseModelItem *> ellipses_;
+    QSet<PolygonModelItem *> polygons_;
+    QVector<PointModelItem *> waypoints_;
+    QSet<PointModelItem *> final_points_;
+    DroneModelItem* drone_;
+
+    qreal wid;
+    qreal hei;
+    qreal rot;
+    QPointF pos;
+    qreal cle;
+    quint16 por = NULL;
 
 };
 

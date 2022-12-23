@@ -110,6 +110,13 @@ void ConstraintModel::removeDrone(DroneModelItem *item) {
     this->drones_.remove(item);
 }
 
+DroneModelItem* ConstraintModel::getDrones(){
+    if (drones_.count() > 0)
+        return this->drones_.firstKey();
+    else
+        return NULL;
+}
+
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
     this->ellipses_.insert(item);

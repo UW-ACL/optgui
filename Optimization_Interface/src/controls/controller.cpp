@@ -697,13 +697,34 @@ void Controller::saveFile() {
 
 void Controller::loadFile() {
     // load configuration from file
-    QSet<EllipseModelItem *> ell = this->load_dialog_->loadConfig(this->model_);
+    this->load_dialog_->loadConfig(this->model_);
 
-    for (QSet<EllipseModelItem *>::iterator ptr = ell.begin(); ptr != ell.end(); ++ptr) {
+    ellipses_ = this->model_->getEllipses();
+    waypoints_ = this->model_->getWaypoints();
+    final_points_ = this->model_->getPoints();
+    polygons_ = this->model_->getPolygons();
+    drone_ = this->model_->getDrones();
+
+    for (QSet<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
         // create graphic based on data model and save to model
         this->loadEllipse(*ptr);
         // update color based on valid input code
         this->model_->updateEllipseColors();
+    }
+    for (QVector<PointModelItem *>::iterator ptr = waypoints_.begin(); ptr != waypoints_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadWaypoint(*ptr);
+    }
+    for (QSet<PointModelItem *>::iterator ptr = final_points_.begin(); ptr != final_points_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadPoint(*ptr);
+    }
+    for (QSet<PolygonModelItem *>::iterator ptr = polygons_.begin(); ptr != polygons_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadPolygon(*ptr);
+    }
+    if (drone_ != NULL){
+        this->loadDrone(drone_);
     }
     
 }

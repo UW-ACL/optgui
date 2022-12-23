@@ -32,7 +32,7 @@ LoadDialog::~LoadDialog() {
     delete this->layout();
 }
 
-QSet<EllipseModelItem *> LoadDialog::loadConfig(ConstraintModel *model) {
+void LoadDialog::loadConfig(ConstraintModel *model) {
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load File"),
                             "../Optimization_Interface/" );
@@ -42,70 +42,132 @@ QSet<EllipseModelItem *> LoadDialog::loadConfig(ConstraintModel *model) {
     if(!file.open(QIODevice::ReadOnly)) {
         QMessageBox::information(0, "error", file.errorString());
     }
-
-    QSet<EllipseModelItem *> ellipses_;
-    QSet<PolygonModelItem *> polygons_;
-    QVector<PointModelItem *> waypoints_;
-    QSet<PointModelItem *> final_points_;
     
+    // Variables for stepping through file
     QTextStream in(&file);
     QRegExp separator("[:,]");
-    qreal wid;
-    qreal hei;
-    qreal rot;
-    QPointF pos;
-    qreal cle;
+    // Variables to keep track of current item
+    char new_item_type;
+    char old_item_type;
+    bool new_item = 1;
+    // Polygon vertices variable
+    QVector<QPointF> vertices;
 
+    // Step through config file
     while(!in.atEnd()) {
-        QString line = in.readLine();    
-        QStringList fields = line.split(":");
-        if (fields[0] == "Ellipse"){
-            QString itemtype = "e";
-            QStringList width = in.readLine().split(separator);
-            if (width[0].contains("Width")){
-                wid = width[1].toDouble();
-            }
-            QStringList height = in.readLine().split(separator);
-            if (height[0].contains("Height")){
-                hei = height[1].toDouble();
-            }
-            QStringList rotation = in.readLine().split(separator);
-            if (rotation[0].contains("Rotation")){
-                rot = rotation[1].toDouble();
-            }
-            QStringList position = in.readLine().split(separator);
-            if (position[0].contains("Position")){
-                pos = QPoint(position[1].toDouble(), position[2].toDouble());
-            }
-            QStringList clear = in.readLine().split(separator);
-            if (clear[0].contains("Clearance")){
-                cle = clear[1].toDouble();
-            }
+        // Read current line
+        QStringList line = in.readLine().split(separator);
 
-            // create new data model
-            EllipseModelItem *item_model = new EllipseModelItem(pos, cle, hei, wid, rot);
-            // create graphic based on data model and save to model
-            ellipses_.insert(item_model);
+        // First check if new item
+        if (line[0] == "Ellipse"){
+            new_item_type = 'e';
+            new_item = !new_item;
+            continue;
         }
-        if (fields[0] == "Waypoints"){
-            QString itemtype = "w";
-            QStringList pos = in.readLine().split(separator);
+        else if (line[0] == "Waypoints"){
+            new_item_type = 'w';
+            new_item = !new_item;
+            continue;
         }
-        if (fields[0] == "Polygons"){
-            QString itemtype = "p";
-            // for (){
-            //     QStringList pos = in.readLine().split(separator); // TODO
-            // }
+        else if (line[0] == "Polygons"){
+            new_item_type = 'p';
+            new_item = !new_item;
+            QVector<QPointF> vertices;
+            continue;
         }
-        if (fields[0] == "Final Points"){
-            QString itemtype = "f";
-            QStringList pos = in.readLine().split(separator);
+        else if (line[0] == "Final Points"){
+            new_item_type = 'f';
+            new_item = !new_item;
+            continue;
         }
+        else if (line[0] == "Drone"){
+            new_item_type = 'd';
+            new_item = !new_item;
+            continue;
+        }
+        else if (line[0] == "End"){
+            new_item = !new_item;
+        }
+
+        // If old_item_type is null, set it
+       if (old_item_type == NULL){
+           old_item_type = new_item_type;
+       }
+
+        // If new item, add last item to model
+        if (new_item){
+            if (old_item_type == 'e'){
+                // create new data model
+                EllipseModelItem *item_model = new EllipseModelItem(pos, cle, hei, wid, rot);
+                if (por != NULL)
+                    item_model->port_ = por;
+                // create graphic based on data model and save to model
+                model->addEllipse(item_model);
+            }
+            else if (old_item_type == 'w'){
+                // create new data model
+                PointModelItem *item_model = new PointModelItem(pos);
+                if (por != NULL)
+                    item_model->port_ = por;
+                // create graphic based on data model and save to model
+                model->addWaypoint(item_model);
+            }
+            else if (old_item_type == 'p'){
+                // create new data model
+               PolygonModelItem *item_model = new PolygonModelItem(vertices);
+               if (por != NULL)
+                    item_model->port_ = por;
+               // create graphic based on data model and save to model
+               model->addPolygon(item_model);
+            }
+            else if (old_item_type == 'f'){
+                // create new data model
+                PointModelItem *item_model = new PointModelItem(pos);
+                if (por != NULL)
+                    item_model->port_ = por;
+                // create graphic based on data model and save to model
+                model->addPoint(item_model);
+            }
+            else if (old_item_type == 'd'){
+                // create new data model
+                DroneModelItem *item_model = new DroneModelItem(pos);
+                PathModelItem *traj;
+                if (por != NULL)
+                    item_model->port_ = por;
+                // create graphic based on data model and save to model
+                model->addDrone(item_model, traj);
+            }
+            new_item = 0;
+            old_item_type = new_item_type;
+        }
+
+        // Store item parameters
+        if (line[0].contains("Position")){
+            pos = QPoint(line[1].toDouble(), line[2].toDouble());
+        }
+        else if (line[0].contains("Height")){
+            hei = line[1].toDouble();
+        }
+        else if (line[0].contains("Rotation")){
+            rot = line[1].toDouble();
+        }
+        else if (line[0].contains("Width")){
+            wid = line[1].toDouble();
+        }
+        else if (line[0].contains("Clearance")){
+            cle = line[1].toDouble();
+        }
+        else if (line[0].contains("Port")){
+            por = line[1].toDouble();
+        }
+        else if(line[0].contains("Vertex")){
+            pos = QPointF(line[1].toDouble(), line[2].toDouble());
+            vertices.append(pos);
+        }
+
     }
 
     file.close();
-
-    return ellipses_;
     
 }
 

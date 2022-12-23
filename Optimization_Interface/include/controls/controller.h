@@ -107,6 +107,13 @@ class Controller : public QObject {
  private:
     ConstraintModel *model_;
 
+    // configuration
+    QSet<EllipseModelItem *> ellipses_;
+    QSet<PolygonModelItem *> polygons_;
+    QVector<PointModelItem *> waypoints_;
+    QSet<PointModelItem *> final_points_;
+    DroneModelItem * drone_;
+
     // QGraphicsScene
     Canvas *canvas_;
     qreal drone_render_level_;
