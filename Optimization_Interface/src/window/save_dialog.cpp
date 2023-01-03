@@ -35,7 +35,7 @@ void SaveDialog::saveConfig(ConstraintModel *model) {
 
     // Popup to select filename
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"),
-                            "../Optimization_Interface/untitled.config" );
+                            "../untitled.config" );
     QFile file(fileName);
 
     // Get models in current window

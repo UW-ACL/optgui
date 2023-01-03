@@ -890,8 +890,9 @@ void Controller::removeWaypointSocket(PointModelItem *model) {
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     // create new graphic for data model
+    quint32 index = this->canvas_->ellipse_graphics_.size();
     EllipseGraphicsItem *item_graphic =
-            new EllipseGraphicsItem(item_model);
+            new EllipseGraphicsItem(item_model, index);
     // add graphic to canvas
     this->canvas_->addItem(item_graphic);
     this->canvas_->ellipse_graphics_.insert(item_graphic);
