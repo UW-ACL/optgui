@@ -209,12 +209,17 @@ void Controller::removeItem(QGraphicsItem *item) {
             this->removeEllipseSocket(model);
             // remove from QGraphicsScene canvas
             this->canvas_->removeItem(ellipse);
-            this->canvas_->ellipse_graphics_.remove(ellipse);
+            this->canvas_->ellipse_graphics_.removeOne(ellipse);
             // delete graphic
             delete ellipse;
             // delete data model
             this->model_->removeEllipse(model);
             delete model;
+            // set new ordering of waypoints
+            for (int i = 0; i < this->canvas_->ellipse_graphics_.size(); i++) {
+                this->canvas_->ellipse_graphics_.at(i)->setIndex(i);
+            }
+
             // exit switch
             break;
         }
@@ -895,7 +900,7 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
             new EllipseGraphicsItem(item_model, index);
     // add graphic to canvas
     this->canvas_->addItem(item_graphic);
-    this->canvas_->ellipse_graphics_.insert(item_graphic);
+    this->canvas_->ellipse_graphics_.append(item_graphic);
     item_graphic->setRotation(item_model->getRot());
     // add graphic to model
     this->model_->addEllipse(item_model);

@@ -35,7 +35,7 @@ class Canvas : public QGraphicsScene {
     PathGraphicsItem *path_staged_graphic_;
 
     QSet<DroneGraphicsItem *> drone_graphics_;
-    QSet<EllipseGraphicsItem *> ellipse_graphics_;
+    QVector<EllipseGraphicsItem *> ellipse_graphics_;
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
     QSet<PointGraphicsItem *> final_points_;
