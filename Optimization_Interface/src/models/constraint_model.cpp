@@ -119,15 +119,16 @@ DroneModelItem* ConstraintModel::getDrones(){
 
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->ellipses_.insert(item);
+    this->ellipses_.push_back(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->ellipses_.remove(item);
+    int idx = this->ellipses_.indexOf(item);
+    this->ellipses_.remove(idx);
 }
 
-QSet<EllipseModelItem *> ConstraintModel::getEllipses(){
+QVector<EllipseModelItem *> ConstraintModel::getEllipses(){
     return this->ellipses_;
 }
 

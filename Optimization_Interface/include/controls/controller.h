@@ -108,7 +108,7 @@ class Controller : public QObject {
     ConstraintModel *model_;
 
     // configuration
-    QSet<EllipseModelItem *> ellipses_;
+    QVector<EllipseModelItem *> ellipses_;
     QSet<PolygonModelItem *> polygons_;
     QVector<PointModelItem *> waypoints_;
     QSet<PointModelItem *> final_points_;

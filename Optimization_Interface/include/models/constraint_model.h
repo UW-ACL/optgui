@@ -41,7 +41,7 @@ class ConstraintModel {
     // caller responsible for deleting pointer
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
-    QSet<EllipseModelItem *> getEllipses();
+    QVector<EllipseModelItem *> getEllipses();
 
     // functions for polygon constraint data models
     // caller responsible for deleting pointer
@@ -166,7 +166,7 @@ private:
     qreal clearance_;
 
     // Constraints
-    QSet<EllipseModelItem *> ellipses_;
+    QVector<EllipseModelItem *> ellipses_;
     QSet<PolygonModelItem *> polygons_;
     QSet<PlaneModelItem *> planes_;
 

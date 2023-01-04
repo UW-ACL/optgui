@@ -49,7 +49,7 @@ void SaveDialog::saveConfig(ConstraintModel *model) {
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
         // Ellipses
-        for (QSet<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
+        for (QVector<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
             stream << "Ellipse:" << endl;
             stream << "\tWidth: " << (*ptr)->getWidth() << endl; // width in pixels
             stream << "\tHeight: " << (*ptr)->getHeight() << endl; // height in pixels

@@ -134,7 +134,8 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     painter->setPen(this->clearance_pen_);
     painter->drawEllipse(QRectF(-clearance_width, -clearance_height,
                                     clearance_width * 2, clearance_height * 2));
-    painter->drawText(this->boundingRect(), Qt::AlignCenter,
+    painter->setPen(Qt::red);
+    painter->drawText(this->boundingRect(), Qt::AlignHCenter,
                               QString::number(this->index_ + 1));
 
     // Label with port

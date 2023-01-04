@@ -705,7 +705,7 @@ void Controller::loadFile() {
     polygons_ = this->model_->getPolygons();
     drone_ = this->model_->getDrones();
 
-    for (QSet<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
+    for (QVector<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
         // create graphic based on data model and save to model
         this->loadEllipse(*ptr);
         // update color based on valid input code

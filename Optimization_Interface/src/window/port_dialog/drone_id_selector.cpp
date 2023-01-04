@@ -37,9 +37,15 @@ void DroneIdSelector::updateIp() {
     if (value != 0) {
         // generate IP address and port from drone ID
         this->model_->ip_addr_ = "192.168.1." + this->text();
-        this->model_->port_ = 8000 + value;
-        // add new port to list
-        this->ports_->insert(8000 + value);
+        if (value < 8000){
+            this->model_->port_ = 8000 + value;
+            // add new port to list
+            this->ports_->insert(8000 + value);
+        } else{
+            this->model_->port_ = value;
+            // add new port to list
+            this->ports_->insert(value);
+        }
     } else {
         this->setText("0");
         this->model_->ip_addr_ = "0.0.0.0";
