@@ -48,7 +48,7 @@ void LoadDialog::loadConfig(ConstraintModel *model) {
     QRegExp separator("[:,]");
     // Variables to keep track of current item
     char new_item_type;
-    char old_item_type;
+    char old_item_type = NULL;
     bool new_item = 1;
     // Polygon vertices variable
     QVector<QPointF> vertices;
