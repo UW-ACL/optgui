@@ -106,6 +106,7 @@ class Controller : public QObject {
 
  private:
     ConstraintModel *model_;
+    ConstraintModel *loaded_model_;
 
     // configuration
     QVector<EllipseModelItem *> ellipses_;

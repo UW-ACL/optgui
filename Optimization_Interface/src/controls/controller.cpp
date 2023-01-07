@@ -33,6 +33,8 @@ Controller::Controller(Canvas *canvas) {
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
 
+    this->loaded_model_ = new ConstraintModel();
+
     // set rendering order
     qreal renderLevel = std::numeric_limits<qreal>::max();
 
@@ -702,13 +704,13 @@ void Controller::saveFile() {
 
 void Controller::loadFile() {
     // load configuration from file
-    this->load_dialog_->loadConfig(this->model_);
+    this->load_dialog_->loadConfig(this->loaded_model_);
 
-    ellipses_ = this->model_->getEllipses();
-    waypoints_ = this->model_->getWaypoints();
-    final_points_ = this->model_->getPoints();
-    polygons_ = this->model_->getPolygons();
-    drone_ = this->model_->getDrones();
+    ellipses_ = this->loaded_model_->getEllipses();
+    waypoints_ = this->loaded_model_->getWaypoints();
+    final_points_ = this->loaded_model_->getPoints();
+    polygons_ = this->loaded_model_->getPolygons();
+    drone_ = this->loaded_model_->getDrones();
 
     for (QVector<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
         // create graphic based on data model and save to model
