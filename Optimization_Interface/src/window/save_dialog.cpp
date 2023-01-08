@@ -80,7 +80,7 @@ void SaveDialog::saveConfig(ConstraintModel *model) {
              stream << "\tPort: " << (*ptr)->port_ << endl; // port
         }
         // Drones
-        if (sizeof(drone_) > 0) {
+        if (drone_ != NULL) {
              stream << "\nDrone:" << endl;
              stream << "\tPosition: " << (drone_)->getPos().x() << ", " << (drone_)->getPos().y() << endl; // x position in pixels
              stream << "\tPort: " << (drone_)->port_ << endl; // port

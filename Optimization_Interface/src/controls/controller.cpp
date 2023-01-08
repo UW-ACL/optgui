@@ -733,6 +733,8 @@ void Controller::loadFile() {
     if (drone_ != NULL){
         this->loadDrone(drone_);
     }
+
+    this->loaded_model_ = new ConstraintModel();
     
 }
 
