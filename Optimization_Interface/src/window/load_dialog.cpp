@@ -58,6 +58,9 @@ void LoadDialog::loadConfig(ConstraintModel *model) {
         // Read current line
         QStringList line = in.readLine().split(separator);
 
+        if (line[0] == "")
+            continue;
+
         // First check if new item
         if (line[0] == "Ellipse"){
             new_item_type = 'e';
