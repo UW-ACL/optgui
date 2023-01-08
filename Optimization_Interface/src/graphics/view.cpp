@@ -3,7 +3,10 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
+#include <algorithm.h>
+
 #include "include/graphics/view.h"
+#include "include/models/constraint_model.h"
 
 #include <QHBoxLayout>
 #include <QScrollBar>
@@ -786,7 +789,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // Create table
     this->skyefly_params_table_ = new QTableWidget(panel->menu_);
     this->skyefly_params_table_->setColumnCount(1);  // fill with spinboxes
-    this->skyefly_params_table_->setRowCount(15);  // how many params to edit
+    this->skyefly_params_table_->setRowCount(11);  // how many params to edit
         // vertical headers are spinbox labels
     this->skyefly_params_table_->verticalHeader()->setVisible(true);
     this->skyefly_params_table_->verticalHeader()->
@@ -810,10 +813,9 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // TODO(dtsull16): get min and max values for all params
     quint32 row_index = 0;
 
-    // P.K
+     // P.K
     QSpinBox *params_K = new QSpinBox(this->skyefly_params_table_);
-    // TODO(dtsull16): replace with skyenet::MIN_HORIZON
-    params_K->setRange(5, skyenet::MAX_HORIZON);
+    params_K->setRange(skyenet::MIN_HORIZON, skyenet::MAX_HORIZON);
     params_K->setValue(default_P.K);
     connect(params_K, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -822,35 +824,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("K"));
     row_index++;
-
-    // P.dK
-    // Testing param, no longer needed
-//    QSpinBox *params_dK = new QSpinBox(this->skyefly_params_table_);
-//    params_dK->setRange(0, 1000);
-//    params_dK->setSingleStep(0.1);
-//    params_dK->setValue(default_P.dK);
-//    connect(params_dK, SIGNAL(valueChanged(int)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_dK);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("dK"));
-//    row_index++;
-
-    // P.n_recalcs
-    // Testing param, no longer needed
-//    QSpinBox *params_n_recalcs = new QSpinBox(this->skyefly_params_table_);
-//    params_n_recalcs->setRange(0, 1000);
-//    params_n_recalcs->setValue(default_P.n_recalcs);
-//    connect(params_n_recalcs, SIGNAL(valueChanged(int)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(
-//      row_index, 0, params_n_recalcs);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index,
-//                                  new QTableWidgetItem("n_recalcs"));
-//    row_index++;
 
     // P.a_min
     QDoubleSpinBox *params_a_min =
@@ -902,20 +875,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("v_max"));
     row_index++;
 
-    // P.v_max_slow
-    QDoubleSpinBox *params_v_max_slow =
-            new QDoubleSpinBox(this->skyefly_params_table_);
-    params_v_max_slow->setRange(-10000, 10000);
-    params_v_max_slow->setSingleStep(0.1);
-    params_v_max_slow->setValue(default_P.v_max_slow);
-    connect(params_v_max_slow, SIGNAL(valueChanged(double)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_v_max_slow);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("vmax_slow"));
-    row_index++;
-
     // P.theta_max
     QDoubleSpinBox *params_theta_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
@@ -931,212 +890,83 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
                                   new QTableWidgetItem("theta_max"));
     row_index++;
 
-    // P.j_max
-    QDoubleSpinBox *params_j_max =
+    // P.subopt_tol
+    QDoubleSpinBox *params_subopt_tol =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_j_max->setRange(-10000, 10000);
-    params_j_max->setValue(default_P.j_max);
-    params_j_max->setSingleStep(0.01);
-    connect(params_j_max, SIGNAL(valueChanged(double)),
+    params_subopt_tol->setRange(0, 10000);
+    params_subopt_tol->setValue(default_P.subopt_tol);
+    connect(params_subopt_tol, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_j_max);
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_subopt_tol);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("j_max"));
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("subopt_tol"));
     row_index++;
 
-    // P.delta
-    QDoubleSpinBox *params_delta =
+    // P.w_buffer
+    QDoubleSpinBox *params_w_buffer =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_delta->setRange(0, 1000);
-    params_delta->setValue(default_P.delta);
-    connect(params_delta, SIGNAL(valueChanged(double)),
+    params_w_buffer->setRange(0, 10000);
+    params_w_buffer->setValue(default_P.w_buff);
+    connect(params_w_buffer, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_delta);
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_w_buffer);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("delta"));
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("w_buffer"));
     row_index++;
 
-    // P.max_iter
-    QSpinBox *params_max_iter = new QSpinBox(this->skyefly_params_table_);
-    params_max_iter->setRange(0, 1000);
-    params_max_iter->setValue(default_P.max_iter);
-    connect(params_max_iter, SIGNAL(valueChanged(int)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_max_iter);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("max_iter"));
-    row_index++;
-
-    // P.lambda
-    QDoubleSpinBox *params_lambda =
+    // P.w_trust
+    QDoubleSpinBox *params_w_trust =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_lambda->setRange(0, 1000000);
-    params_lambda->setValue(default_P.lambda);
-    params_lambda->setSingleStep(10000);
-    connect(params_lambda, SIGNAL(valueChanged(double)),
+    params_w_trust->setRange(0, 10000);
+    params_w_trust->setValue(default_P.w_trust);
+    connect(params_w_trust, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_lambda);
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_w_trust);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("lambda"));
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("w_trust"));
     row_index++;
 
-    // P.alpha
-//    QDoubleSpinBox *params_alpha =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_alpha->setRange(-10000, 10000);
-//    params_alpha->setValue(default_P.alpha);
-//    params_alpha->setSingleStep(0.1);
-//    connect(params_alpha, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
+    // P.scp_iters
+    QSpinBox *params_scp_iters =
+            new QSpinBox(this->skyefly_params_table_);
+    params_scp_iters->setRange(0, 10000);
+    params_scp_iters->setValue(default_P.scp_iters);
+    connect(params_scp_iters, SIGNAL(valueChanged(int)),
+            this, SLOT(setSkyeFlyParams()));
 
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_alpha);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("alpha"));
-//    row_index++;
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_scp_iters);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("scp_iters"));
+    row_index++;
 
-    // P.dL_tol
-//    QDoubleSpinBox *params_dL_tol =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_dL_tol->setRange(0, 1000);
-//    params_dL_tol->setValue(default_P.dL_tol);
-//    params_dL_tol->setSingleStep(0.01);
-//    connect(params_dL_tol, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
+    // P.tau_max
+    QSpinBox *params_tau_max =
+            new QSpinBox(this->skyefly_params_table_);
+    params_tau_max->setRange(0, 10000);
+    params_tau_max->setValue(default_P.tau_max);
+    connect(params_tau_max, SIGNAL(valueChanged(int)),
+            this, SLOT(setSkyeFlyParams()));
 
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_dL_tol);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("dL_tol"));
-//    row_index++;
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_tau_max);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("tau_max"));
+    row_index++;
 
-    // P.rho_0
-//    QDoubleSpinBox *params_rho_0 =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_0->setRange(-10000, 10000);
-//    params_rho_0->setValue(default_P.rho_0);
-//    connect(params_rho_0, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_0);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_0"));
-//    row_index++;
-
-    // P.rho_1
-//    QDoubleSpinBox *params_rho_1 =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_1->setRange(-10000, 10000);
-//    params_rho_1->setValue(default_P.rho_1);
-//    connect(params_rho_1, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_1);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_1"));
-//    row_index++;
-
-    // P.rho_2
-//    QDoubleSpinBox *params_rho_2 =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_2->setRange(-10000, 10000);
-//    params_rho_2->setValue(default_P.rho_2);
-//    connect(params_rho_2, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_2);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_2"));
-//    row_index++;
-
-    // P.ri_relax
-    QDoubleSpinBox *params_ri_relax =
+    // P.eps_cvg
+    QDoubleSpinBox *params_eps_cvg =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_ri_relax->setRange(0, 10000);
-    params_ri_relax->setValue(default_P.ri_relax);
-    connect(params_ri_relax, SIGNAL(valueChanged(double)),
+    params_eps_cvg->setRange(0, 10000);
+    params_eps_cvg->setValue(default_P.eps_cvg);
+    connect(params_eps_cvg, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_ri_relax);
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_eps_cvg);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("ri_relax"));
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("eps_cvg"));
     row_index++;
-
-    // P.rf_relax
-    QDoubleSpinBox *params_rf_relax =
-            new QDoubleSpinBox(this->skyefly_params_table_);
-    params_rf_relax->setRange(0, 10000);
-    params_rf_relax->setValue(default_P.rf_relax);
-    connect(params_rf_relax, SIGNAL(valueChanged(double)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rf_relax);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("rf_relax"));
-    row_index++;
-
-    // P.wp_relax
-    QDoubleSpinBox *params_wp_relax =
-            new QDoubleSpinBox(this->skyefly_params_table_);
-    params_wp_relax->setRange(0, 10000);
-    params_wp_relax->setValue(default_P.wp_relax);
-    connect(params_wp_relax, SIGNAL(valueChanged(double)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_wp_relax);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("wp_relax"));
-    row_index++;
-
-    // P.trust_tau_weight
-    QDoubleSpinBox *params_trust_tau =
-            new QDoubleSpinBox(this->skyefly_params_table_);
-    params_trust_tau->setRange(0, 10000);
-    params_trust_tau->setValue(default_P.trust_tau_weight);
-    connect(params_trust_tau, SIGNAL(valueChanged(double)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_trust_tau);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("trust_tau"));
-    row_index++;
-
-    // P.trust_delta_weight
-    QDoubleSpinBox *params_trust_delta =
-            new QDoubleSpinBox(this->skyefly_params_table_);
-    params_trust_delta->setRange(0, 10000);
-    params_trust_delta->setValue(default_P.trust_delta_weight);
-    connect(params_trust_delta, SIGNAL(valueChanged(double)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(
-                row_index, 0, params_trust_delta);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index,
-                                  new QTableWidgetItem("trust_delta"));
-    row_index++;
-
-    // P.wp_idx
-    // currently autogenerated in constraint_model by distributeWpEvenly()
-    /*
-    QSpinBox *params_wp_idx = new QSpinBox(this->skyefly_params_table_);
-    // TODO(dtsull16): replace with skyenet::MIN_HORIZON
-    params_wp_idx->setRange(1, params_K->value() - 1);
-    params_wp_idx->setValue(default_P.K / 2);
-    connect(params_wp_idx, SIGNAL(valueChanged(int)),
-            this, SLOT(setSkyeFlyParams()));
-
-    connect(params_K, SIGNAL(valueChanged(int)),  // constrain to max K
-            this, SLOT(constrainWpIdx(int)));
-    this->wp_idx_row = row_index;
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_wp_idx);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("wp_idx"));
-    row_index++;
-    */
 }
 
 void View::constrainWpIdx(int value) {
@@ -1157,17 +987,15 @@ void View::constrainAccel() {
 }
 
 void View::setCurrEndpoints() {
-    QList<QGraphicsItem *> items = this->scene()->selectedItems();
-    bool point_found = false;
-    bool drone_found = false;
-    for (QGraphicsItem * item : items) {
-        if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC && !point_found) {
-            this->controller_->setCurrFinalPoint(
-                        qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
-            // found, dont flag other selected points
-            point_found = true;
-        }
 
+    QList<QGraphicsItem *> all_items = this->scene()->items();
+    QList<QGraphicsItem *> selected_items = this->scene()->selectedItems();
+    bool target_found = false;
+    bool drone_found = false;
+
+    for (QGraphicsItem * item : selected_items) {
+
+        // Obtain selected drone
         if (item->type() == GRAPHICS_TYPE::DRONE_GRAPHIC && !drone_found) {
             DroneGraphicsItem *drone_graphic =
                     qgraphicsitem_cast<DroneGraphicsItem *>(item);
@@ -1176,7 +1004,28 @@ void View::setCurrEndpoints() {
             // found, dont flag other selected points
             drone_found = true;
         }
+
+        // Obtain selected target
+        if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC && !target_found) {
+            this->controller_->setCurrFinalPoint(
+                        qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
+            // found, dont flag other selected points
+            target_found = true;
+        }
     }
+
+    // Obtain all existing targets
+    PointModelItem *targets[skyenet::MAX_TARGETS];
+    quint32 num_targ = 0;
+    for (QGraphicsItem * item : all_items) {
+        if (item->type() == GRAPHICS_TYPE::POINT_GRAPHIC) {
+            // this->controller_->addPooledFinalPoint(
+            //             qgraphicsitem_cast<PointGraphicsItem *>(item)->model_);
+            targets[num_targ] = qgraphicsitem_cast<PointGraphicsItem *>(item)->model_;
+            num_targ++;
+        }
+    }
+    this->controller_->setPooledFinalPoints(targets, num_targ);
 }
 
 void View::toggleSim(int state) {

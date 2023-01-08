@@ -15,6 +15,7 @@ namespace optgui {
     QColor const GREEN = QColor(0x37, 0xD2, 0x24);
     QColor const CYAN = QColor(0x55, 0xE2, 0xD2);
     QColor const BLACK = QColor(0x1B, 0x1B, 0x1B);
+    QColor const TRANS_YELLOW = QColor(0xE8, 0xC6, 0x38, 0x50);
 
     QVector3D nedToGuiXyz(qreal n, qreal e, qreal d) {
         // QPointF(x, y ,z)

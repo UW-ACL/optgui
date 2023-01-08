@@ -6,12 +6,15 @@
 // Runs main event loop
 
 #include <QApplication>
+#include <algorithm>
+#include <QDebug>
 
 #include "include/window/main_window.h"
 
 using optgui::MainWindow;
 
 int main(int argc, char *argv[]) {
+
     // allow custom packets to be used in signal/slot definitions
     qRegisterMetaType<autogen::packet::traj3dof>("autogen::packet::traj3dof");
     qRegisterMetaType<autogen::packet::telemetry>("autogen::packet::telemetry");

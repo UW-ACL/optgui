@@ -22,6 +22,7 @@ namespace optgui {
     extern QColor const GREEN;
     extern QColor const CYAN;
     extern QColor const BLACK;
+    extern QColor const TRANS_YELLOW;
 
     // Toggle button state
     enum STATE {

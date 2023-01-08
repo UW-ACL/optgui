@@ -78,6 +78,8 @@ class Controller : public QObject {
     quint32 getNumWaypoints();
     void setClearance(qreal clearance);
     void setCurrFinalPoint(PointModelItem *point);
+   //  void addPooledFinalPoint(PointModelItem *point);
+    void setPooledFinalPoints(PointModelItem *points[skyenet::MAX_TARGETS], quint32 num_targs);
     void setCurrDrone(DroneModelItem *drone);
     FEASIBILITY_CODE getIsValidTraj();
     INPUT_CODE getIsValidInput();

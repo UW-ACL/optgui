@@ -10,6 +10,7 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QtMath>
+#include <QDebug>
 
 #include <algorithm>
 
@@ -356,11 +357,6 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     uint32 row_index = 0;
     this->P_.K = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    // no longer in expert panel table
-//    this->P_.dK = qobject_cast<QSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.n_recalcs = qobject_cast<QSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_min = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.a_max = qobject_cast<QDoubleSpinBox *>
@@ -379,28 +375,12 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.lambda = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.alpha = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.dL_tol = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.rho_0 = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.rho_1 = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.rho_2 = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.ri_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rf_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.wp_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.trust_tau_weight = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.trust_delta_weight = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
 }
 
 skyenet::params ConstraintModel::getSkyeFlyParams() {
@@ -409,6 +389,7 @@ skyenet::params ConstraintModel::getSkyeFlyParams() {
     // time intervals
     // this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
 
+    qDebug() << "DID WE GET HERE?";
     return this->P_;
 }
 

@@ -26,14 +26,21 @@ class ComputeThread : public QThread {
  public:
     explicit ComputeThread(ConstraintModel *model,
                            DroneGraphicsItem *drone,
-                           PathGraphicsItem *traj_graphic);
+                           PathGraphicsItem *traj_graphic,
+                           PathGraphicsItem *traj_graphic_pool[skyenet::MAX_TARGETS]);
     ~ComputeThread();
 
     PathGraphicsItem *getTrajGraphic();
+    PathGraphicsItem *getPooledTrajGraphic(quint32 tag);
     void setTarget(PointModelItem *target);
+   //  void addPooledTarget(PointModelItem *target);
+    void setPooledTargets(PointModelItem* targets[skyenet::MAX_TARGETS], quint32 num_targets);
     void reInit();
     PointModelItem *getTarget();
+    PointModelItem *getPooledTarget(quint32 tag);
+   //  void checkRemovedTarget();
     void stopCompute();
+    void initializeJulia();
     DroneGraphicsItem *getDroneGraphic();
 
  protected:
@@ -57,6 +64,10 @@ class ComputeThread : public QThread {
     PointModelItem *target_;
     PathGraphicsItem *traj_graphic_;
 
+    // target pool (options) for multitarget traj opt (e.g. DDTO)
+    PointModelItem *target_pool_[skyenet::MAX_TARGETS];
+    PathGraphicsItem *traj_graphic_pool_[skyenet::MAX_TARGETS];
+
     // compute traj flag
     bool run_loop_;
 
@@ -67,10 +78,16 @@ class ComputeThread : public QThread {
     // flag to reset inputs
     bool target_changed_;
 
+    bool julia_initialized_;
+
+    // Keeps count of the number of targets in consideration
+    quint32 num_pooled_targets_;
+
     INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
                               QVector3D const &initial_pos,
                               QVector3D const &final_pos);
     void setFeasibilityColor(bool is_feasible);
+    void setPooledFeasibilityColor(bool is_feasible, quint32 tag);
 
     bool getRunFlag();
 };

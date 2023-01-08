@@ -33,9 +33,12 @@ INCLUDEPATH += $$PWD/../../mikipilot
 INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/
 
 # //SKYENET//
-LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # looks for libalgorithm.a file
-LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS     # looks for libCPRS.a
-LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP         # looks for libCSOCP.a
+LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm    # looks for libalgorithm.a file
+LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS        # looks for libCPRS.a
+LIBS += -L$$PWD/../../skyenet/csocp -lCSOCP            # looks for libCSOCP.a
+LIBS += -L$$PWD/../../skyenet/cpp/target/lib -lddtoscp # looks for libddtoscp*.dylib
+LIBS += -L$$PWD/../../skyenet/cpp/target/lib -ljulia   # looks for libddtoscp*.dylib
+LIBS += -L$$PWD/../../skyenet/cpp/target/lib/julia     # looks for all .dylib libraries
 
 # //MIKIPILOT//
 LIBS += -L$$PWD/../../mikipilot/build/gcs/executable/ -l_autogen_globals     # looks for lib_autogen_globals.a

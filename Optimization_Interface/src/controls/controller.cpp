@@ -898,7 +898,7 @@ void Controller::loadPoint(PointModelItem *item_model) {
 }
 
 void Controller::loadDrone(DroneModelItem *item_model) {
-    // create path model
+    // create path model for selected trajectory
     PathModelItem *trajectory_model = new PathModelItem();
 
     // create drone graphic
@@ -910,16 +910,27 @@ void Controller::loadDrone(DroneModelItem *item_model) {
     item_graphic->setZValue(this->drone_render_level_);
     item_graphic->update(item_graphic->boundingRect());
 
-    // create path graphic
-    PathGraphicsItem *path_graphic_ =
+    // create path graphic for selected trajectory
+    PathGraphicsItem *path_graphic_ = 
             new PathGraphicsItem(trajectory_model);
     path_graphic_->setZValue(this->traj_render_level_);
     this->canvas_->path_graphics_.insert(path_graphic_);
     this->canvas_->addItem(path_graphic_);
 
+    // create path graphics for pooled trajectories (allocated up to MAX_TARGETS)
+    PathGraphicsItem *path_graphic_pool_[skyenet::MAX_TARGETS];
+    for (int i = 0; i < skyenet::MAX_TARGETS; i++){
+        PathModelItem *trajectory_model = new PathModelItem();
+        path_graphic_pool_[i] = 
+                new PathGraphicsItem(trajectory_model);
+        path_graphic_pool_[i]->setZValue(this->traj_render_level_);
+        this->canvas_->path_graphics_.insert(path_graphic_pool_[i]);
+        this->canvas_->addItem(path_graphic_pool_[i]);
+    }
+
     // create compute thread
     ComputeThread *compute_thread_ =
-            new ComputeThread(this->model_, item_graphic, path_graphic_);
+            new ComputeThread(this->model_, item_graphic, path_graphic_, path_graphic_pool_);
     this->compute_threads_.insert(item_model, compute_thread_);
     connect(compute_thread_,
             SIGNAL(updateGraphics(PathGraphicsItem *, DroneGraphicsItem *)),
@@ -978,6 +989,27 @@ void Controller::setCurrFinalPoint(PointModelItem *point) {
         }
     }
 }
+
+// void Controller::addPooledFinalPoint(PointModelItem *point) {
+//     if (this->model_->getCurrDrone()) {
+//         QMap<DroneModelItem *, ComputeThread *>::iterator iter =
+//                 this->compute_threads_.find(this->model_->getCurrDrone());
+//         if (iter != this->compute_threads_.end()) {
+//             (*iter)->addPooledTarget(point);
+//         }
+//     }
+// }
+
+void Controller::setPooledFinalPoints(PointModelItem *points[skyenet::MAX_TARGETS], quint32 num_targs) {
+    if (this->model_->getCurrDrone()) {
+        QMap<DroneModelItem *, ComputeThread *>::iterator iter =
+                this->compute_threads_.find(this->model_->getCurrDrone());
+        if (iter != this->compute_threads_.end()) {
+            (*iter)->setPooledTargets(points, num_targs);
+        }
+    }
+}
+
 
 void Controller::setCurrDrone(DroneModelItem *drone) {
     if (!this->model_->isCurrDrone(drone)) {
