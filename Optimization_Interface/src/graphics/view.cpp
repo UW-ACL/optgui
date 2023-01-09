@@ -3,10 +3,7 @@
 // LAB:     Autonomous Controls Lab (ACL)
 // LICENSE: Copyright 2018, All Rights Reserved
 
-#include <algorithm.h>
-
 #include "include/graphics/view.h"
-#include "include/models/constraint_model.h"
 
 #include <QHBoxLayout>
 #include <QScrollBar>
@@ -820,7 +817,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     // Default skyefly param values
     skyenet::params default_P;
-    // TODO(dtsull16): get min and max values for all params
     quint32 row_index = 0;
 
      // P.K
@@ -838,7 +834,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.a_min
     QDoubleSpinBox *params_a_min =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_a_min->setRange(-10000, 10000);
+    params_a_min->setRange(0, 10000);
     params_a_min->setValue(default_P.a_min);
     params_a_min->setSingleStep(0.1);
     connect(params_a_min, SIGNAL(valueChanged(double)),
@@ -856,7 +852,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.a_max
     QDoubleSpinBox *params_a_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_a_max->setRange(-10000, 10000);
+    params_a_max->setRange(0, 10000);
     params_a_max->setSingleStep(0.1);
     params_a_max->setValue(default_P.a_max);
     connect(params_a_max, SIGNAL(valueChanged(double)),
@@ -874,7 +870,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.v_max
     QDoubleSpinBox *params_v_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_v_max->setRange(-10000, 10000);
+    params_v_max->setRange(0, 10000);
     params_v_max->setSingleStep(0.1);
     params_v_max->setValue(default_P.v_max);
     connect(params_v_max, SIGNAL(valueChanged(double)),
@@ -888,7 +884,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.theta_max
     QDoubleSpinBox *params_theta_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_theta_max->setRange(-10000, 10000);
+    params_theta_max->setRange(0, 10000);
     params_theta_max->setSingleStep(0.1);
     params_theta_max->setValue(default_P.theta_max);
     connect(params_theta_max, SIGNAL(valueChanged(double)),
@@ -942,7 +938,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.scp_iters
     QSpinBox *params_scp_iters =
             new QSpinBox(this->skyefly_params_table_);
-    params_scp_iters->setRange(0, 10000);
+    params_scp_iters->setRange(1, 50);
     params_scp_iters->setValue(default_P.scp_iters);
     connect(params_scp_iters, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -955,7 +951,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.tau_max
     QSpinBox *params_tau_max =
             new QSpinBox(this->skyefly_params_table_);
-    params_tau_max->setRange(0, 10000);
+    params_tau_max->setRange(0, skyenet::MAX_HORIZON);
     params_tau_max->setValue(default_P.tau_max);
     connect(params_tau_max, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
