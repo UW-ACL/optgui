@@ -363,23 +363,19 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.v_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.v_max_slow = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.theta_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.j_max = qobject_cast<QDoubleSpinBox *>
+    this->P_.subopt_tol = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.delta = qobject_cast<QDoubleSpinBox *>
+    this->P_.w_buff = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.max_iter = qobject_cast<QSpinBox *>
+    this->P_.w_trust = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.lambda = qobject_cast<QDoubleSpinBox *>
+    this->P_.scp_iters = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.ri_relax = qobject_cast<QDoubleSpinBox *>
+    this->P_.tau_max = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.rf_relax = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.wp_relax = qobject_cast<QDoubleSpinBox *>
+    this->P_.eps_cvg = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
 }
 
@@ -389,7 +385,6 @@ skyenet::params ConstraintModel::getSkyeFlyParams() {
     // time intervals
     // this->P_.dt = (this->P_.tf / (this->P_.K - 1.0));
 
-    qDebug() << "DID WE GET HERE?";
     return this->P_;
 }
 
