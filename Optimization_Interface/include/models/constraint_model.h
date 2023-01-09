@@ -35,16 +35,19 @@ class ConstraintModel {
 
     void addPoint(PointModelItem *item);
     void removePoint(PointModelItem *item);
+    QSet<PointModelItem *> getPoints();
 
     // functions for ellipse obstacle data models
     // caller responsible for deleting pointer
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
+    QVector<EllipseModelItem *> getEllipses();
 
     // functions for polygon constraint data models
     // caller responsible for deleting pointer
     void addPolygon(PolygonModelItem *item);
     void removePolygon(PolygonModelItem *item);
+    QSet<PolygonModelItem *> getPolygons();
 
     // functions for plane constraint data models
     // caller responsible for deleting pointer
@@ -57,6 +60,7 @@ class ConstraintModel {
     void removeWaypoint(PointModelItem *item);
     quint32 getNumWaypoints();
     void reverseWaypoints();
+    QVector<PointModelItem *> getWaypoints();
 
     void setPathStagedModel(PathModelItem *model);
     void setPathStagedPoints(QVector<QPointF> points);
@@ -70,6 +74,7 @@ class ConstraintModel {
 
     void addDrone(DroneModelItem *drone, PathModelItem *traj);
     void removeDrone(DroneModelItem *item);
+    DroneModelItem* getDrones();
 
     // functions for skyenet params
     skyenet::params getSkyeFlyParams();
@@ -161,7 +166,7 @@ private:
     qreal clearance_;
 
     // Constraints
-    QSet<EllipseModelItem *> ellipses_;
+    QVector<EllipseModelItem *> ellipses_;
     QSet<PolygonModelItem *> polygons_;
     QSet<PlaneModelItem *> planes_;
 

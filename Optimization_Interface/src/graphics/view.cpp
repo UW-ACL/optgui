@@ -123,6 +123,16 @@ void View::setPorts() {
     this->controller_->setPorts();
 }
 
+void View::saveFile() {
+    // save configuration file
+    this->controller_->saveFile();
+}
+
+void View::loadFile() {
+    // save configuration file
+    this->controller_->loadFile();
+}
+
 void View::initializeMenuPanel() {
     this->menu_panel_ = new MenuPanel(this, true);
 

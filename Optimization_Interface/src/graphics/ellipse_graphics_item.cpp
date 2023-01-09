@@ -14,6 +14,7 @@
 namespace optgui {
 
 EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
+                                         quint32 index,
                                          QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
@@ -35,6 +36,9 @@ EllipseGraphicsItem::EllipseGraphicsItem(EllipseModelItem *model,
     this->setFlags(QGraphicsItem::ItemIsMovable |
                    QGraphicsItem::ItemIsSelectable |
                    QGraphicsItem::ItemSendsGeometryChanges);
+
+    // set ordering of ellipse
+    this->index_ = index;
 
     // Set position
     this->setPos(this->model_->getPos());
@@ -131,6 +135,13 @@ void EllipseGraphicsItem::paint(QPainter *painter,
     painter->drawEllipse(QRectF(-clearance_width, -clearance_height,
                                     clearance_width * 2, clearance_height * 2));
 
+    QFont font = painter->font();
+    font.setPointSizeF(14 / scaling_factor);
+    painter->setFont(font);
+    painter->setPen(Qt::red);
+    painter->drawText(this->boundingRect(), Qt::AlignHCenter,
+                              QString::number(this->index_ + 1));
+
     // Label with port
     if (this->model_->port_ != 0) {
         painter->rotate(-this->rotation());
@@ -151,6 +162,11 @@ void EllipseGraphicsItem::paint(QPainter *painter,
 int EllipseGraphicsItem::type() const {
     // return unique graphics type
     return ELLIPSE_GRAPHIC;
+}
+
+void EllipseGraphicsItem::setIndex(quint32 index) {
+    // set ordering of ellipse
+    this->index_ = index;
 }
 
 QPainterPath EllipseGraphicsItem::shape() const {

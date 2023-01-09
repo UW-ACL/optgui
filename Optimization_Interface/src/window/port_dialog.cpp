@@ -15,6 +15,7 @@ namespace optgui {
 
 PortDialog::PortDialog(QWidget *parent)
     : QDialog(parent, Qt::Tool) {
+
     // Set title
     this->setWindowTitle("Set Ports");
 
@@ -85,10 +86,6 @@ void PortDialog::initializeTable() {
             setSectionResizeMode(QHeaderView::Stretch);
     this->drone_table_->verticalHeader()->setVisible(false);
     this->drone_table_->horizontalHeader()->setVisible(false);
-//    this->drone_table_->setMinimumSize(
-//                this->drone_table_->minimumSize().rwidth(), 30);
-//    this->drone_table_->setMaximumSize(
-//                this->drone_table_->maximumSize().rwidth(), 32);
 
     // Set color
     this->port_table_->setAutoFillBackground(true);
