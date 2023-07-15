@@ -432,7 +432,7 @@ void Controller::freeze_traj() {
     // update data output with traj
     if (this->capture_data_) {
         this->createOutputFile();
-        this->updateOutputFile(this->model_->getStagedTraj3dof(),
+        this->updateOutputFile(this->model_->getStagedTraj2dof(),
                                this->model_->getStagedDrone(),
                                this->traj_index_);
     }
@@ -464,7 +464,7 @@ void Controller::tickLiveReference() {
     // move to next traj point in model
     if (this->model_->tickPathStaged()) {
         // more points in tracked traj
-        autogen::packet::traj3dof traj = this->model_->getStagedTraj3dof();
+        autogen::packet::traj2dof traj = this->model_->getStagedTraj2dof();
 
         // get graphic for current drone
         DroneGraphicsItem *drone = nullptr;
@@ -554,7 +554,7 @@ void Controller::execute() {
         }
 
         emit trajectoryExecuted(staged_drone,
-                                this->model_->getStagedTraj3dof());
+                                this->model_->getStagedTraj2dof());
     } else if (this->freeze_traj_timer_->isActive() &&
                !this->traj_lock_ &&
                this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
@@ -564,7 +564,7 @@ void Controller::execute() {
         // this->model_->setPathPoints(this->model_->getPathStagedPoints());
 
         emit trajectoryExecuted(staged_drone,
-                                this->model_->getStagedTraj3dof());
+                                this->model_->getStagedTraj2dof());
     }
 }
 
@@ -606,7 +606,7 @@ void Controller::createOutputFile() {
     }
 }
 
-void Controller::updateOutputFile(autogen::packet::traj3dof const &traj, DroneModelItem *staged_drone, int index) {
+void Controller::updateOutputFile(autogen::packet::traj2dof const &traj, DroneModelItem *staged_drone, int index) {
     QTextStream stream(this->output_file_);
 
     // time
@@ -693,10 +693,10 @@ void Controller::startSockets() {
             DroneSocket *temp = new DroneSocket(graphic);
             connect(this,
                     SIGNAL(trajectoryExecuted(DroneModelItem *,
-                                             const autogen::packet::traj3dof)),
+                                             const autogen::packet::traj2dof)),
                     temp,
                     SLOT(rx_trajectory(DroneModelItem *,
-                                       const autogen::packet::traj3dof)));
+                                       const autogen::packet::traj2dof)));
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(update()));
             this->drone_sockets_.append(temp);
