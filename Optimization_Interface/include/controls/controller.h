@@ -19,6 +19,7 @@
 #include "include/window/port_dialog.h"
 #include "include/network/drone_socket.h"
 #include "include/network/ellipse_socket.h"
+#include "include/network/cylinder_socket.h"
 #include "include/network/waypoint_socket.h"
 #include "include/network/point_socket.h"
 #include "include/controls/compute_thread.h"
@@ -37,6 +38,7 @@ class Controller : public QObject {
 
     // add constraints
     void addEllipse(QPointF const &point, qreal radius = 120);
+    void addCylinder(QPointF const &point, qreal radius = 120);
     void addPolygon(QVector<QPointF> points);
     void addPlane(QPointF const &p1, QPointF const &p2);
 
@@ -127,10 +129,12 @@ class Controller : public QObject {
     QVector<PointSocket *> final_point_sockets_;
     QVector<WaypointSocket *> waypoint_sockets_;
     QVector<EllipseSocket *> ellipse_sockets_;
+    QVector<CylinderSocket *> cylinder_sockets_;
 
     // remove items
     void removeDroneSocket(DroneModelItem *model);
     void removeEllipseSocket(EllipseModelItem *model);
+    void removeCylinderSocket(CylinderModelItem *model);
     void removePointSocket(PointModelItem *model);
     void removeWaypointSocket(PointModelItem *model);
     void closeSockets();
@@ -139,6 +143,7 @@ class Controller : public QObject {
     void loadDrone(DroneModelItem *model);
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
+    void loadCylinder(CylinderModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
     void loadWaypoint(PointModelItem *model);
