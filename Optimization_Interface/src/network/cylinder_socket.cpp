@@ -57,6 +57,7 @@ void CylinderSocket::readPendingDatagrams() {
                 this->cylinder_item_->model_->setRot(yaw);
                 // set graphics pos so view knows whether to paint it
                 this->cylinder_item_->setPos(gui_coords_2D);
+                this->cylinder_item_->setRotation(yaw);
                 emit refresh_graphics();
             }
         }
