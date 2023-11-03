@@ -262,28 +262,28 @@ void ComputeThread::run() {
         quint32 size = P.K;
         
         // ..:: Build Mikipilot trajectory to send to drone ::..
-        autogen::packet::traj3dof drone_traj3dof_data;
-        drone_traj3dof_data.K = size;
+        autogen::packet::traj2dof drone_traj2dof_data;
+        drone_traj2dof_data.K = size;
 
         for (quint32 i = 0; i < size; i++) {
             // Add data to mikipilot trajectory
-            drone_traj3dof_data.time(i) = O.t[i];
+            drone_traj2dof_data.time(i) = O.t[i];
 
             // XYZ to NED conversion
-            drone_traj3dof_data.pos_ned(0, i) =  O.r[1][i][sel_target_tag];
-            drone_traj3dof_data.pos_ned(1, i) =  O.r[0][i][sel_target_tag];
-            drone_traj3dof_data.pos_ned(2, i) = -O.r[2][i][sel_target_tag];
+            drone_traj2dof_data.pos_ned(0, i) =  O.r[1][i][sel_target_tag];
+            drone_traj2dof_data.pos_ned(1, i) =  O.r[0][i][sel_target_tag];
+            // drone_traj2dof_data.pos_ned(2, i) = -O.r[2][i][sel_target_tag];
 
-            drone_traj3dof_data.vel_ned(0, i) =  O.v[1][i][sel_target_tag];
-            drone_traj3dof_data.vel_ned(1, i) =  O.v[0][i][sel_target_tag];
-            drone_traj3dof_data.vel_ned(2, i) = -O.v[2][i][sel_target_tag];
+            drone_traj2dof_data.vel_ned(0, i) =  O.v[1][i][sel_target_tag];
+            drone_traj2dof_data.vel_ned(1, i) =  O.v[0][i][sel_target_tag];
+            // drone_traj2dof_data.vel_ned(2, i) = -O.v[2][i][sel_target_tag];
 
-            drone_traj3dof_data.accl_ned(0, i) =  O.a[1][i][sel_target_tag];
-            drone_traj3dof_data.accl_ned(1, i) =  O.a[0][i][sel_target_tag];
-            drone_traj3dof_data.accl_ned(2, i) = -O.a[2][i][sel_target_tag];
+            drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i][sel_target_tag];
+            drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i][sel_target_tag];
+            // drone_traj2dof_data.accl_ned(2, i) = -O.a[2][i][sel_target_tag];
         }
-        this->model_->setCurrTraj3dof(this->drone_->model_,
-                                        drone_traj3dof_data);
+        this->model_->setCurrTraj2dof(this->drone_->model_,
+                                        drone_traj2dof_data);
 
         // ..:: Build GUI trajectory for visualization ::..
         // Do not display new trajectories if executing
