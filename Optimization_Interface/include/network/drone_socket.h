@@ -36,7 +36,7 @@ class DroneSocket : public QUdpSocket {
 
  public slots:
     void rx_trajectory(DroneModelItem *drone,
-                       const autogen::packet::traj3dof data);
+                       const autogen::packet::traj2dof data);
 
  private:
     // check if destination address is valid

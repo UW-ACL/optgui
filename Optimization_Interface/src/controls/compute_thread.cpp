@@ -161,8 +161,8 @@ void ComputeThread::run() {
         if (this->getTarget() == nullptr) {
             // clear current trajectory
             this->getTrajGraphic()->model_->setPoints(QVector<QPointF>());
-            autogen::packet::traj3dof empty_traj;
-            this->model_->setCurrTraj3dof(this->drone_->model_, empty_traj);
+            autogen::packet::traj2dof empty_traj;
+            this->model_->setCurrTraj2dof(this->drone_->model_, empty_traj);
             continue;
         }
 

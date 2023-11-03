@@ -67,7 +67,7 @@ ConstraintModel::~ConstraintModel() {
     }
     // Delete drones and associated traj
     for ( QMap<DroneModelItem *, QPair<PathModelItem *,
-          autogen::packet::traj3dof>>::iterator iter = this->drones_.begin();
+          autogen::packet::traj2dof>>::iterator iter = this->drones_.begin();
          iter != this->drones_.end(); iter++) {
         delete iter.key();  // delete drone
         delete iter.value().first;  // delete path
@@ -94,8 +94,8 @@ void ConstraintModel::removePoint(PointModelItem *item) {
 void ConstraintModel::addDrone(DroneModelItem *drone, PathModelItem *traj) {
     QMutexLocker locker(&this->model_lock_);
     this->drones_.insert(drone,
-                         QPair<PathModelItem *, autogen::packet::traj3dof>
-                                (traj, autogen::packet::traj3dof()));
+                         QPair<PathModelItem *, autogen::packet::traj2dof>
+                                (traj, autogen::packet::traj2dof()));
 }
 
 void ConstraintModel::removeDrone(DroneModelItem *item) {
@@ -217,36 +217,36 @@ void ConstraintModel::setFinaltime(qreal finaltime) {
     this->P_.tf = finaltime;
 }
 
-autogen::packet::traj3dof
-        ConstraintModel::getCurrTraj3dof(DroneModelItem *drone) {
+autogen::packet::traj2dof
+        ConstraintModel::getCurrTraj2dof(DroneModelItem *drone) {
     QMutexLocker locker(&this->model_lock_);
     // find drone
     QMap<DroneModelItem *, QPair<PathModelItem *,
-            autogen::packet::traj3dof>>::iterator iter =
+            autogen::packet::traj2dof>>::iterator iter =
             this->drones_.find(drone);
     if (iter != this->drones_.end()) {
-        // get traj3dof for drone
+        // get traj2dof for drone
         return (*iter).second;
     }
-    return autogen::packet::traj3dof();
+    return autogen::packet::traj2dof();
 }
 
-void ConstraintModel::setCurrTraj3dof(DroneModelItem *drone,
-                                     autogen::packet::traj3dof traj3dof_data) {
+void ConstraintModel::setCurrTraj2dof(DroneModelItem *drone,
+                                     autogen::packet::traj2dof traj2dof_data) {
     QMutexLocker locker(&this->model_lock_);
     // find drone
     QMap<DroneModelItem *, QPair<PathModelItem *,
-            autogen::packet::traj3dof>>::iterator iter =
+            autogen::packet::traj2dof>>::iterator iter =
             this->drones_.find(drone);
     if (iter != this->drones_.end()) {
-        // set traj3dof for drone
-        (*iter).second = traj3dof_data;
+        // set traj2dof for drone
+        (*iter).second = traj2dof_data;
     }
 }
 
-autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
+autogen::packet::traj2dof ConstraintModel::getStagedTraj2dof() {
     QMutexLocker locker(&this->model_lock_);
-    return this->drone_staged_traj3dof_data_;
+    return this->drone_staged_traj2dof_data_;
 }
 
 DroneModelItem *ConstraintModel::getStagedDrone() {
@@ -261,10 +261,10 @@ void ConstraintModel::stageTraj() {
         this->staged_drone_ = this->curr_drone_;
         // find drone
         QMap<DroneModelItem *, QPair<PathModelItem *,
-                autogen::packet::traj3dof>>::iterator iter =
+                autogen::packet::traj2dof>>::iterator iter =
                 this->drones_.find(this->curr_drone_);
         if (iter != this->drones_.end()) {
-            this->drone_staged_traj3dof_data_ = (*iter).second;
+            this->drone_staged_traj2dof_data_ = (*iter).second;
             this->path_staged_->setPoints((*iter).first->getPoints());
             this->traj_staged_ = true;
         }

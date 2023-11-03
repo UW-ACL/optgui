@@ -88,12 +88,12 @@ class ConstraintModel {
     void stageTraj();
     void unstageTraj();
 
-    autogen::packet::traj3dof getCurrTraj3dof(DroneModelItem *drone);
-    void setCurrTraj3dof(DroneModelItem *drone,
-                         autogen::packet::traj3dof traj3dof_data);
+    autogen::packet::traj2dof getCurrTraj2dof(DroneModelItem *drone);
+    void setCurrTraj2dof(DroneModelItem *drone,
+                         autogen::packet::traj2dof traj2dof_data);
 
     // functions for staged traj network packet
-    autogen::packet::traj3dof getStagedTraj3dof();
+    autogen::packet::traj2dof getStagedTraj2dof();
     bool getIsTrajStaged();
     DroneModelItem *getStagedDrone();
 
@@ -145,7 +145,7 @@ private:
 
     // skyenet params
     skyenet::params P_;
-    autogen::packet::traj3dof drone_staged_traj3dof_data_;
+    autogen::packet::traj2dof drone_staged_traj2dof_data_;
 
     // input and feasibility status
     INPUT_CODE input_code_;
@@ -170,7 +170,7 @@ private:
     PathModelItem *path_staged_;
     DroneModelItem *staged_drone_;
     QMap<DroneModelItem *, QPair<PathModelItem *,
-                                 autogen::packet::traj3dof>> drones_;
+                                 autogen::packet::traj2dof>> drones_;
     QSet<PointModelItem *> final_points_;
     DroneModelItem *curr_drone_;
 

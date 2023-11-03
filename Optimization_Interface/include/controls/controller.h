@@ -85,7 +85,7 @@ class Controller : public QObject {
     INPUT_CODE getIsValidInput();
 
  signals:
-    void trajectoryExecuted(DroneModelItem *, autogen::packet::traj3dof data);
+    void trajectoryExecuted(DroneModelItem *, autogen::packet::traj2dof data);
     // signal view to update
     void finalTime(qreal time);
     void updateMessage();
@@ -116,7 +116,7 @@ class Controller : public QObject {
     bool capture_data_;
     QFile *output_file_;
     void createOutputFile();
-    void updateOutputFile(const autogen::packet::traj3dof &traj,
+    void updateOutputFile(const autogen::packet::traj2dof &traj,
                           DroneModelItem *staged_drone, int index);
 
     // freeze traj timer
