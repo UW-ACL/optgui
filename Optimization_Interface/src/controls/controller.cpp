@@ -76,6 +76,9 @@ Controller::Controller(Canvas *canvas) {
     // Set traj lock. Cannot execute traj while already executing.
     this->traj_lock_ = false;
 
+    // Set disable stage bool to false
+    this->is_stage_booled_ = false;
+
     // capture data on by default
     this->capture_data_ = true;
     this->output_file_ = nullptr;
@@ -555,6 +558,8 @@ void Controller::tickLiveReference() {
 
 
 void Controller::execute() {
+    if(this->is_stage_booled_)
+        stageTraj(); // Forces stage of trajectory for Dyanmic Obstacle Avoidance
     // get staged drone
     DroneModelItem *staged_drone = this->model_->getStagedDrone();
 
@@ -661,7 +666,7 @@ void Controller::updateOutputFile(autogen::packet::traj2dof const &traj, DroneMo
 }
 
 void Controller::stageTraj() {
-    // stage current traj if not currently tracking executed traj and
+    // stage current traj if not currently tracking executed traj and if
     // current traj is feasible
     if (!this->freeze_traj_timer_->isActive() &&
             this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
@@ -679,6 +684,11 @@ void Controller::unstageTraj() {
 void Controller::setSimulated(bool state) {
     // flag to simulate traj instead of sending to vehicle
     this->is_simulated_ = state;
+}
+
+void Controller::setStageBool(bool state) {
+    // flag to simulate traj instead of sending to vehicle
+    this->is_stage_booled_ = state;
 }
 
 void Controller::setTrajLock(bool state) {

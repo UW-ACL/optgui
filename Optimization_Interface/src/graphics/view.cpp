@@ -165,6 +165,9 @@ void View::initializeMenuPanel() {
     // on fly update
     this->initializeTrajLockToggle(this->menu_panel_);
 
+    // on fly update
+    this->initializeStageToggle(this->menu_panel_);
+
     // simulation toggle
     this->initializeSimToggle(this->menu_panel_);
 
@@ -1216,6 +1219,11 @@ void View::toggleSim(int state) {
     this->controller_->setSimulated(state == Qt::Checked);
 }
 
+void View::toggleStage(int state) {
+    // toggle between simulate execution or actual execution
+    this->controller_->setStageBool(state == Qt::Checked);
+}
+
 void View::toggleTrajLock(int state) {
     this->controller_->setTrajLock(state == Qt::Checked);
 }
@@ -1305,6 +1313,22 @@ void View::initializeFinaltime(MenuPanel *panel) {
 
     // Set table size
     this->skyefly_params_table_->resizeColumnsToContents();
+}
+
+void View::initializeStageToggle(MenuPanel *panel) {
+    QCheckBox *stage_toggle = new QCheckBox("No Stage", panel->menu_);
+    stage_toggle->
+            setToolTip(tr("Disable Staging of Trajectory"));
+    stage_toggle->setMinimumHeight(35);
+    stage_toggle->setCheckState(Qt::Unchecked);
+    panel->menu_->layout()->addWidget(stage_toggle);
+    panel->menu_->layout()->setAlignment(stage_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(stage_toggle);
+
+    // Connect execute button
+    connect(stage_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleStage(int)));
 }
 
 void View::initializeSimToggle(MenuPanel *panel) {
