@@ -958,9 +958,10 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
 
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_delta);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("delta"));
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("delta_lim"));
     row_index++;
 
+    /*
     // P.max_iter (maximum iterations of SCP)
     QSpinBox *params_max_iter = new QSpinBox(this->skyefly_params_table_);
     params_max_iter->setRange(0, 1000);
@@ -972,6 +973,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("max_iter"));
     row_index++;
+    */
 
     // P.lambda (penalty weight on ellipse obstacle violation) -> TODO: change to eta_weight
     QDoubleSpinBox *params_lambda =
@@ -987,6 +989,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("lambda"));
     row_index++;
 
+    /*
     // P.ri_relax (penalty on initial condition violation) -> TODO: change to ri_relax_weight
     QDoubleSpinBox *params_ri_relax =
             new QDoubleSpinBox(this->skyefly_params_table_);
@@ -1012,6 +1015,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rf_relax"));
     row_index++;
+    */
 
     // P.wp_relax (penalty on waypoint violation) -> TODO: change to wp_relax_weight
     QDoubleSpinBox *params_wp_relax =
@@ -1056,28 +1060,54 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
                                   new QTableWidgetItem("vc_weight"));
     row_index++;
 
-    /*
+
     // P.trust_delta_time_weight (penalty on time trust region)
-    QDoubleSpinBox *params_trust_delta_time =
+    QDoubleSpinBox *trust_delta_time_weight =
             new QDoubleSpinBox(this->skyefly_params_table_);
-    params_trust_delta_time->setRange(0, 10000);
-    params_trust_delta_time->setValue(default_P.trust_delta_time_weight);
-    connect(params_trust_delta_time, SIGNAL(valueChanged(double)),
+    trust_delta_time_weight->setRange(0, 10000);
+    trust_delta_time_weight->setValue(default_P.trust_delta_time_weight);
+    connect(trust_delta_time_weight, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
     this->skyefly_params_table_->setCellWidget(
-                row_index, 0, params_trust_delta_time);
+                row_index, 0, trust_delta_time_weight);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index,
                                   new QTableWidgetItem("trust_delta_time"));
     row_index++;
-    */
+
+    // P.min_fuel_weight (penalty on min fuel cost)
+    QDoubleSpinBox *min_fuel_weight =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    min_fuel_weight->setRange(0, 10000);
+    min_fuel_weight->setValue(default_P.min_fuel_weight);
+    connect(min_fuel_weight, SIGNAL(valueChanged(double)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(
+                row_index, 0, min_fuel_weight);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index,
+                                  new QTableWidgetItem("min_fuel_weight"));
+    row_index++;
+
+    // P.min_time_weight (penalty on min time cost)
+    QDoubleSpinBox *min_time_weight =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    min_time_weight->setRange(0, 10000);
+    min_time_weight->setValue(default_P.min_time_weight);
+    connect(min_time_weight, SIGNAL(valueChanged(double)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(
+                    row_index, 0, min_time_weight);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index,
+                                    new QTableWidgetItem("min_time_weight"));
+    row_index++;
 
 
-    // TODO: Add new params:
-    // vc_weight
-    // delta_time_weight
-    // .. maybe others
+
 }
 
 void View::constrainWpIdx(int value) {
