@@ -855,35 +855,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("K"));
     row_index++;
 
-    // P.dK
-    // Testing param, no longer needed
-//    QSpinBox *params_dK = new QSpinBox(this->skyefly_params_table_);
-//    params_dK->setRange(0, 1000);
-//    params_dK->setSingleStep(0.1);
-//    params_dK->setValue(default_P.dK);
-//    connect(params_dK, SIGNAL(valueChanged(int)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_dK);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("dK"));
-//    row_index++;
-
-    // P.n_recalcs
-    // Testing param, no longer needed
-//    QSpinBox *params_n_recalcs = new QSpinBox(this->skyefly_params_table_);
-//    params_n_recalcs->setRange(0, 1000);
-//    params_n_recalcs->setValue(default_P.n_recalcs);
-//    connect(params_n_recalcs, SIGNAL(valueChanged(int)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(
-//      row_index, 0, params_n_recalcs);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index,
-//                                  new QTableWidgetItem("n_recalcs"));
-//    row_index++;
-
     // P.a_min
     QDoubleSpinBox *params_a_min =
             new QDoubleSpinBox(this->skyefly_params_table_);
@@ -977,11 +948,11 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("j_max"));
     row_index++;
 
-    // P.delta
+    // P.delta_lim (hard trust region bound on state)
     QDoubleSpinBox *params_delta =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_delta->setRange(0, 1000);
-    params_delta->setValue(default_P.delta);
+    params_delta->setValue(default_P.delta_lim);
     connect(params_delta, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
@@ -990,7 +961,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("delta"));
     row_index++;
 
-    // P.max_iter
+    // P.max_iter (maximum iterations of SCP)
     QSpinBox *params_max_iter = new QSpinBox(this->skyefly_params_table_);
     params_max_iter->setRange(0, 1000);
     params_max_iter->setValue(default_P.max_iter);
@@ -1002,7 +973,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("max_iter"));
     row_index++;
 
-    // P.lambda
+    // P.lambda (penalty weight on ellipse obstacle violation) -> TODO: change to eta_weight
     QDoubleSpinBox *params_lambda =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_lambda->setRange(0, 1000000);
@@ -1016,74 +987,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("lambda"));
     row_index++;
 
-    // P.alpha
-//    QDoubleSpinBox *params_alpha =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_alpha->setRange(-10000, 10000);
-//    params_alpha->setValue(default_P.alpha);
-//    params_alpha->setSingleStep(0.1);
-//    connect(params_alpha, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_alpha);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("alpha"));
-//    row_index++;
-
-    // P.dL_tol
-//    QDoubleSpinBox *params_dL_tol =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_dL_tol->setRange(0, 1000);
-//    params_dL_tol->setValue(default_P.dL_tol);
-//    params_dL_tol->setSingleStep(0.01);
-//    connect(params_dL_tol, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_dL_tol);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("dL_tol"));
-//    row_index++;
-
-    // P.rho_0
-//    QDoubleSpinBox *params_rho_0 =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_0->setRange(-10000, 10000);
-//    params_rho_0->setValue(default_P.rho_0);
-//    connect(params_rho_0, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_0);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_0"));
-//    row_index++;
-
-    // P.rho_1
-//    QDoubleSpinBox *params_rho_1 =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_1->setRange(-10000, 10000);
-//    params_rho_1->setValue(default_P.rho_1);
-//    connect(params_rho_1, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_1);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_1"));
-//    row_index++;
-
-    // P.rho_2
-//    QDoubleSpinBox *params_rho_2 =
-//            new QDoubleSpinBox(this->skyefly_params_table_);
-//    params_rho_2->setRange(-10000, 10000);
-//    params_rho_2->setValue(default_P.rho_2);
-//    connect(params_rho_2, SIGNAL(valueChanged(double)),
-//            this, SLOT(setSkyeFlyParams()));
-
-//    this->skyefly_params_table_->setCellWidget(row_index, 0, params_rho_2);
-//    this->skyefly_params_table_->
-//            setVerticalHeaderItem(row_index, new QTableWidgetItem("rho_2"));
-//    row_index++;
-
-    // P.ri_relax
+    // P.ri_relax (penalty on initial condition violation) -> TODO: change to ri_relax_weight
     QDoubleSpinBox *params_ri_relax =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_ri_relax->setRange(0, 10000);
@@ -1096,7 +1000,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("ri_relax"));
     row_index++;
 
-    // P.rf_relax
+    // P.rf_relax (penalty on final condition violation) -> TODO: change to rf_relax_weight
     QDoubleSpinBox *params_rf_relax =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_rf_relax->setRange(0, 10000);
@@ -1109,7 +1013,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("rf_relax"));
     row_index++;
 
-    // P.wp_relax
+    // P.wp_relax (penalty on waypoint violation) -> TODO: change to wp_relax_weight
     QDoubleSpinBox *params_wp_relax =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_wp_relax->setRange(0, 10000);
@@ -1122,20 +1026,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("wp_relax"));
     row_index++;
 
-    // P.trust_tau_weight
-    QDoubleSpinBox *params_trust_tau =
-            new QDoubleSpinBox(this->skyefly_params_table_);
-    params_trust_tau->setRange(0, 10000);
-    params_trust_tau->setValue(default_P.trust_tau_weight);
-    connect(params_trust_tau, SIGNAL(valueChanged(double)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_trust_tau);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("trust_tau"));
-    row_index++;
-
-    // P.trust_delta_weight
+    // P.trust_delta_weight (penalty on state trust region)
     QDoubleSpinBox *params_trust_delta =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_trust_delta->setRange(0, 10000);
@@ -1150,25 +1041,43 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
                                   new QTableWidgetItem("trust_delta"));
     row_index++;
 
-    // P.wp_idx
-    // currently autogenerated in constraint_model by distributeWpEvenly()
-    /*
-    QSpinBox *params_wp_idx = new QSpinBox(this->skyefly_params_table_);
-    // TODO(dtsull16): replace with skyenet::MIN_HORIZON
-    params_wp_idx->setRange(1, params_K->value() - 1);
-    params_wp_idx->setValue(default_P.K / 2);
-    connect(params_wp_idx, SIGNAL(valueChanged(int)),
+    // P.vc_weight (penalty on vc)
+    QDoubleSpinBox *params_vc_weight =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_vc_weight->setRange(0, 1e8);
+    params_vc_weight->setValue(default_P.vc_weight);
+    connect(params_vc_weight, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
 
-    connect(params_K, SIGNAL(valueChanged(int)),  // constrain to max K
-            this, SLOT(constrainWpIdx(int)));
-    this->wp_idx_row = row_index;
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_wp_idx);
+    this->skyefly_params_table_->setCellWidget(
+                row_index, 0, params_vc_weight);
     this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("wp_idx"));
+            setVerticalHeaderItem(row_index,
+                                  new QTableWidgetItem("vc_weight"));
+    row_index++;
+
+    /*
+    // P.trust_delta_time_weight (penalty on time trust region)
+    QDoubleSpinBox *params_trust_delta_time =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_trust_delta_time->setRange(0, 10000);
+    params_trust_delta_time->setValue(default_P.trust_delta_time_weight);
+    connect(params_trust_delta_time, SIGNAL(valueChanged(double)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(
+                row_index, 0, params_trust_delta_time);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index,
+                                  new QTableWidgetItem("trust_delta_time"));
     row_index++;
     */
+
+
+    // TODO: Add new params:
+    // vc_weight
+    // delta_time_weight
+    // .. maybe others
 }
 
 void View::constrainWpIdx(int value) {

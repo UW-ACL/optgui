@@ -153,12 +153,46 @@ void ComputeThread::run() {
         // check to reset inputs
         if (this->target_changed_) {
             this->target_changed_ = false;
-            this->fly_.resetInputs(r_i, v_i, a_i, r_f, wp);
+            this->fly_.resetInputs(r_i, v_i, a_i, r_f, wp,this->model_->isFreeFinalTime());
         }
 
         // Run SCvx algorithm for free or fixed final time
         skyenet::outputs const &O =
             this->fly_.update(this->model_->isFreeFinalTime());
+
+
+
+        ///*
+         std::cout << "%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+        for (uint32_t k=0; k < P.K-1; ++k) {
+            if (k==0 || k == P.K/2 || k == P.K-2) {
+                // TODO(skye): debug
+                std::cout << "%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+                std::cout << "tf=" << P.tf << ", k=" << k << ", K=" << P.K << ", dt=" << P.dt << std::endl;
+                //std::cout << "T0=" << I.T0 << ", " << std::endl;
+                std::cout << "O.T=" << O.T << std::endl;
+
+                std::cout << "Printing r generated using matrix mul" << std::endl;
+                std::cout << "Position, time" << k << ": [" << O.r[0][k] << " , " <<  O.r[1][k] << "]"<< std::endl;
+                std::cout << "Velocity, time" << k << ": [" << O.v[0][k] << " , " <<  O.v[1][k] << "]"<< std::endl;
+                //std::cout << "Ak" << std::endl << O.DiscOut[k].A << std::endl;
+                //std::cout << "Bk" << std::endl << O.DiscOut[k].B << std::endl;
+                //std::cout << "Bkp" << std::endl << O.DiscOut[k].Bp << std::endl;
+                if (this->model_->isFreeFinalTime()) {
+                    //std::cout << "wk+Sk*T" << std::endl << O.DiscOut[k].z  << std::endl;
+                    std::cout << "VC position, time" << k << ": [" << O.vc[0][k] << " , " <<  O.vc[1][k] << "]"<< std::endl;
+                    std::cout << "VC velocity, time" << k << ": [" << O.vc[3][k] << " , " <<  O.vc[4][k] << "]"<< std::endl;
+
+                }
+                else{
+                    //std::cout << "wk" << std::endl << O.DiscOut[k].w << std::endl;
+                }
+                std::cout << "----------------------------------------------------" << std::endl;
+                std::cout << "%%%%%%%%%%%%%%%%% DEBUG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << std::endl;
+            }
+        }
+        //*/
+
 
         // Iterations in resulting trajectory
         quint32 size = P.K;
@@ -226,7 +260,7 @@ void ComputeThread::run() {
             is_feasible = true;
         }
         if (this->model_->isFreeFinalTime()) {
-            emit finalTime(this->drone_->model_, O.t[size - 1]);
+            emit finalTime(this->drone_->model_, O.T);
         }
         emit updateMessage(this->drone_->model_);
 

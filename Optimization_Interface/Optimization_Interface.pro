@@ -32,6 +32,7 @@ INCLUDEPATH += $$PWD/../../skyenet/csocp/
 INCLUDEPATH += $$PWD/../../mikipilot
 INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/
 
+
 # //SKYENET//
 LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm # looks for libalgorithm.a file
 LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS     # looks for libCPRS.a

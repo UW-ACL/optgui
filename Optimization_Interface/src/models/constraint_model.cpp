@@ -388,34 +388,24 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.j_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.delta = qobject_cast<QDoubleSpinBox *>
+    this->P_.delta_lim = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.max_iter = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.lambda = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.alpha = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.dL_tol = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.rho_0 = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.rho_1 = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.rho_2 = qobject_cast<QDoubleSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.ri_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.rf_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.wp_relax = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.trust_tau_weight = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.trust_delta_weight = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-//    this->P_.wp_idx[0] = qobject_cast<QSpinBox *>
-//            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.vc_weight = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
+    /* this->P_.trust_delta_time_weight = qobject_cast<QDoubleSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value(); */
 }
 
 skyenet::params ConstraintModel::getSkyeFlyParams() {
