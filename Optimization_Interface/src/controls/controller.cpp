@@ -138,7 +138,7 @@ void Controller::removeItem(QGraphicsItem *item) {
                     this->compute_threads_.find(model);
             if (iter != this->compute_threads_.end()) {
                 // get traj
-                PathGraphicsItem *traj = (*iter)->getTrajGraphic();
+                PathGraphicsItem *traj = (*iter)->getTrajGraphic(0); // TODO
                 PathModelItem *traj_model = traj->model_;
 
                 // stop compute
@@ -549,7 +549,7 @@ void Controller::execute() {
         QMap<DroneModelItem *, ComputeThread *>::iterator iter =
                 this->compute_threads_.find(staged_drone);
         if (iter != this->compute_threads_.end()) {
-            (*iter)->getTrajGraphic()->model_->
+            (*iter)->getTrajGraphic(0)->model_->
                     setPoints(this->model_->getPathStagedPoints());
         }
 
@@ -898,28 +898,36 @@ void Controller::loadPoint(PointModelItem *item_model) {
 }
 
 void Controller::loadDrone(DroneModelItem *item_model) {
-    // create path model
-    PathModelItem *trajectory_model = new PathModelItem();
-
     // create drone graphic
     DroneGraphicsItem *item_graphic =
             new DroneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->drone_graphics_.insert(item_graphic);
-    this->model_->addDrone(item_model, trajectory_model);
     item_graphic->setZValue(this->drone_render_level_);
     item_graphic->update(item_graphic->boundingRect());
 
-    // create path graphic
-    PathGraphicsItem *path_graphic_ =
-            new PathGraphicsItem(trajectory_model);
-    path_graphic_->setZValue(this->traj_render_level_);
-    this->canvas_->path_graphics_.insert(path_graphic_);
-    this->canvas_->addItem(path_graphic_);
+    QVector<PathGraphicsItem*> *path_graphics_ = new QVector<PathGraphicsItem*>();
+
+    for (uint32_t i = 0; i < 10; i++){
+        // create path model
+        PathModelItem *trajectory_model = new PathModelItem();
+
+        // create drone graphic
+        this->model_->addDrone(item_model, trajectory_model);
+
+        // create path graphic
+        PathGraphicsItem *path_graphic_ =
+                new PathGraphicsItem(trajectory_model);
+
+        path_graphics_->append(path_graphic_);
+        path_graphic_->setZValue(this->traj_render_level_);
+        this->canvas_->path_graphics_.insert(path_graphic_);
+        this->canvas_->addItem(path_graphic_);
+    }
 
     // create compute thread
     ComputeThread *compute_thread_ =
-            new ComputeThread(this->model_, item_graphic, path_graphic_);
+            new ComputeThread(this->model_, item_graphic, path_graphics_);
     this->compute_threads_.insert(item_model, compute_thread_);
     connect(compute_thread_,
             SIGNAL(updateGraphics(PathGraphicsItem *, DroneGraphicsItem *)),

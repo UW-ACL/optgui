@@ -26,10 +26,10 @@ class ComputeThread : public QThread {
  public:
     explicit ComputeThread(ConstraintModel *model,
                            DroneGraphicsItem *drone,
-                           PathGraphicsItem *traj_graphic);
+                           QVector<PathGraphicsItem*> *traj_graphic);
     ~ComputeThread();
 
-    PathGraphicsItem *getTrajGraphic();
+    PathGraphicsItem *getTrajGraphic(int);
     void setTarget(PointModelItem *target);
     void reInit();
     PointModelItem *getTarget();
@@ -55,7 +55,8 @@ class ComputeThread : public QThread {
     // vehicle and target
     DroneGraphicsItem *drone_;
     PointModelItem *target_;
-    PathGraphicsItem *traj_graphic_;
+    QVector<PathGraphicsItem*> *traj_graphic_;
+    int active_traj_;
 
     // compute traj flag
     bool run_loop_;

@@ -13,7 +13,7 @@ namespace optgui {
 
 ComputeThread::ComputeThread(ConstraintModel *model,
                              DroneGraphicsItem *drone,
-                             PathGraphicsItem *traj_graphic) : mutex_() {
+                             QVector<PathGraphicsItem*> *traj_graphic) : mutex_() {
     this->model_ = model;
     // start running compute loop on construction
     this->run_loop_ = true;
@@ -21,6 +21,7 @@ ComputeThread::ComputeThread(ConstraintModel *model,
     this->traj_graphic_ = traj_graphic;
     this->target_ = nullptr;
     this->target_changed_ = true;
+    this->active_traj_ = 0;
 }
 
 ComputeThread::~ComputeThread() {
@@ -56,9 +57,9 @@ bool ComputeThread::getRunFlag() {
     return this->run_loop_;
 }
 
-PathGraphicsItem *ComputeThread::getTrajGraphic() {
+PathGraphicsItem *ComputeThread::getTrajGraphic(int i) {
     QMutexLocker(&this->mutex_);
-    return this->traj_graphic_;
+    return this->traj_graphic_->at(i);
 }
 
 DroneGraphicsItem *ComputeThread::getDroneGraphic() {
@@ -78,7 +79,7 @@ void ComputeThread::run() {
         // Do not compute trajectory if no final point selected
         if (this->getTarget() == nullptr) {
             // clear current trajectory
-            this->getTrajGraphic()->model_->setPoints(QVector<QPointF>());
+            this->getTrajGraphic(0)->model_->setPoints(QVector<QPointF>());
             autogen::packet::traj2dof empty_traj;
             this->model_->setCurrTraj2dof(this->drone_->model_, empty_traj);
             continue;
@@ -156,87 +157,103 @@ void ComputeThread::run() {
         }
 
         // Run SCvx algorithm for free or fixed final time
-        skyenet::outputs const &O =
+        skyenet::outputs_traj const &O =
                 this->fly_.update(this->model_->isFreeFinalTime());
 
         // Iterations in resulting trajectory
         quint32 size = P.K;
         // GUI trajecotry points
         QVector<QPointF> trajectory = QVector<QPointF>();
+        // GUI trajecotry points
+        QVector<QVector<QPointF>> trajectories = QVector<QVector<QPointF>>();
         // Mikipilot trajectory to send to drone
         autogen::packet::traj2dof drone_traj2dof_data;
         drone_traj2dof_data.K = size;
-
-        for (quint32 i = 0; i < size; i++) {
-            // Add points to GUI trajectory
-            QVector3D gui_coords = xyzToGuiXyz(O.r[0][i],
-                                               O.r[1][i],
-                                               O.r[2][i]);
-            trajectory.append(QPointF(gui_coords.x(),
-                                      gui_coords.y()));
-
-            // Add data to mikipilot trajectory
-            // drone_traj2dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
-            drone_traj2dof_data.time(i) = O.t[i];
-
-            // XYZ to NED conversion
-            drone_traj2dof_data.pos_ned(0, i) =  O.r[1][i];
-            drone_traj2dof_data.pos_ned(1, i) =  O.r[0][i];
-            // drone_traj2dof_data.pos_ned(2, i) = -O.r[2][i];
-
-            drone_traj2dof_data.vel_ned(0, i) =  O.v[1][i];
-            drone_traj2dof_data.vel_ned(1, i) =  O.v[0][i];
-            // drone_traj2dof_data.vel_ned(2, i) = -O.v[2][i];
-
-            drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i];
-            drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i];
-            // drone_traj2dof_data.accl_ned(2, i) = -O.a[2][i];
+        uint32_t n_traj = this->fly_.traj.n_traj;
+        if (n_traj > this->traj_graphic_->length()){
+            PathModelItem *trajectory_model = new PathModelItem();
+            // create path graphic
+            PathGraphicsItem *path_graphic_ =
+                    new PathGraphicsItem(trajectory_model);
+            traj_graphic_->append(path_graphic_);
         }
 
-        // Do not display new trajectories if executing
-        // sent trajectory. Needed because sometimes compute
-        // overlaps with setting live reference mode
-        if (this->model_->isLiveReference() || !this->getRunFlag()) continue;
+        for (uint32_t j = 0; j < n_traj; j++){
+            QVector<QPointF> trajectory = QVector<QPointF>();
+            for (uint32_t i = 0; i < size; i++) {
+                // Add points to GUI trajectory
+                QVector3D gui_coords = xyzToGuiXyz(O.r[0][i][j],
+                                                   O.r[1][i][j],
+                                                   O.r[2][i][j]);
+                trajectory.append(QPointF(gui_coords.x(),
+                                          gui_coords.y()));
 
-        // set points on graphical display
-        this->getTrajGraphic()->model_->setPoints(trajectory);
-        this->model_->setCurrTraj2dof(this->drone_->model_,
-                                      drone_traj2dof_data);
+                // Add data to mikipilot trajectory
+                // drone_traj2dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
+//                if (j == this->active_traj_){
+                    drone_traj2dof_data.time(i) = O.t[i][j];
 
-        // OUTPUT VIOLATIONS: initial and final pos violation
-        qreal accum = pow(O.rf_relax[0], 2)  // final pos
-                    + pow(O.rf_relax[1], 2)
-                    + pow(O.rf_relax[2], 2)
+                    // XYZ to NED conversion
+                    drone_traj2dof_data.pos_ned(0, i) =  O.r[1][i][j];
+                    drone_traj2dof_data.pos_ned(1, i) =  O.r[0][i][j];
+                    // drone_traj2dof_data.pos_ned(2, i) = -O.r[2][i];
 
-                    + pow(O.ri_relax[0], 2)  // initial pos
-                    + pow(O.ri_relax[1], 2)
-                    + pow(O.ri_relax[2], 2)
+                    drone_traj2dof_data.vel_ned(0, i) =  O.v[1][i][j];
+                    drone_traj2dof_data.vel_ned(1, i) =  O.v[0][i][j];
+                    // drone_traj2dof_data.vel_ned(2, i) = -O.v[2][i];
 
-                    + pow(O.dtau, 2);  // change in time
+                    drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i][j];
+                    drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i][j];
+                    // drone_traj2dof_data.accl_ned(2, i) = -O.a[2][i];
+//                }
+            }
+            trajectories.append(trajectory);
 
-        bool is_feasible;
-        if (accum > 0.25) {
-            // infeasible traj, set feasibility code and traj color to red
-            this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
-            is_feasible = false;
-        } else {
-            // feasible traj, set feasibility code and traj color to nominal
-            this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
-            is_feasible = true;
+            // Do not display new trajectories if executing
+            // sent trajectory. Needed because sometimes compute
+            // overlaps with setting live reference mode
+            if (this->model_->isLiveReference() || !this->getRunFlag()) continue;
+
+            // set points on graphical display
+            this->getTrajGraphic(j)->model_->setPoints(trajectories[j]);
+            this->model_->setCurrTraj2dof(this->drone_->model_,
+                                          drone_traj2dof_data);
+
+            // OUTPUT VIOLATIONS: initial and final pos violation
+            qreal accum = pow(O.rf_relax[0][j], 2)  // final pos
+                        + pow(O.rf_relax[1][j], 2)
+                        + pow(O.rf_relax[2][j], 2)
+
+                        + pow(O.ri_relax[0][j], 2)  // initial pos
+                        + pow(O.ri_relax[1][j], 2)
+                        + pow(O.ri_relax[2][j], 2)
+
+                        + pow(O.dtau[j], 2);  // change in time
+
+            bool is_feasible;
+            if (accum > 0.25) {
+                // infeasible traj, set feasibility code and traj color to red
+                this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
+                is_feasible = false;
+            } else {
+                // feasible traj, set feasibility code and traj color to nominal
+                this->model_->setIsValidTraj(FEASIBILITY_CODE::FEASIBLE);
+                is_feasible = true;
+            }
+            if (this->model_->isFreeFinalTime()) {
+                emit finalTime(this->drone_->model_, O.t[size - 1][j]);
+            }
+            emit updateMessage(this->drone_->model_);
+
+            this->setFeasibilityColor(is_feasible);
         }
-        if (this->model_->isFreeFinalTime()) {
-            emit finalTime(this->drone_->model_, O.t[size - 1]);
-        }
-        emit updateMessage(this->drone_->model_);
-
-        this->setFeasibilityColor(is_feasible);
     }
 }
 
 void ComputeThread::setFeasibilityColor(bool is_feasible) {
     // get graphics items
     DroneGraphicsItem *drone = this->getDroneGraphic();
-    PathGraphicsItem *traj = this->getTrajGraphic();
+    PathGraphicsItem *traj = this->getTrajGraphic(0); // TODO
 
     // set feasiblility color
     if (is_feasible) {
