@@ -170,13 +170,6 @@ void ComputeThread::run() {
         autogen::packet::traj2dof drone_traj2dof_data;
         drone_traj2dof_data.K = size;
         uint32_t n_traj = this->fly_.traj.n_traj;
-        if (n_traj > this->traj_graphic_->length()){
-            PathModelItem *trajectory_model = new PathModelItem();
-            // create path graphic
-            PathGraphicsItem *path_graphic_ =
-                    new PathGraphicsItem(trajectory_model);
-            traj_graphic_->append(path_graphic_);
-        }
 
         for (uint32_t j = 0; j < n_traj; j++){
             QVector<QPointF> trajectory = QVector<QPointF>();
