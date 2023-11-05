@@ -72,6 +72,7 @@ class Controller : public QObject {
 
     // toggle simulate traj
     void setSimulated(bool state);
+    void setStageBool(bool state);
     void setTrajLock(bool state);
     void setFreeFinalTime(bool state);
     void setDataCapture(bool state);
@@ -110,6 +111,7 @@ class Controller : public QObject {
 
     // flag for simulated traj
     bool is_simulated_;
+    bool is_stage_booled_;
     bool traj_lock_;
 
     // Data capture
