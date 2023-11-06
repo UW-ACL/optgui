@@ -33,6 +33,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
 void PathGraphicsItem::setColor(QColor color) {
     QMutexLocker(&this->mutex_);
     this->pen_.setColor(color);
+    this->waypoints_pen_.setColor(color);
 }
 
 QRectF PathGraphicsItem::boundingRect() const {
