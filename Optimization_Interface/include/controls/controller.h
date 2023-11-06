@@ -17,6 +17,8 @@
 #include "include/graphics/canvas.h"
 #include "include/models/constraint_model.h"
 #include "include/window/port_dialog.h"
+#include "include/window/save_dialog.h"
+#include "include/window/load_dialog.h"
 #include "include/network/drone_socket.h"
 #include "include/network/ellipse_socket.h"
 #include "include/network/cylinder_socket.h"
@@ -38,7 +40,7 @@ class Controller : public QObject {
 
     // add constraints
     void addEllipse(QPointF const &point, qreal radius = 120);
-    void addCylinder(QPointF const &point, qreal radius = 120);
+    void addCylinder(QPointF const &point, qreal width = 20);
     void addPolygon(QVector<QPointF> points);
     void addPlane(QPointF const &p1, QPointF const &p2);
 
@@ -62,6 +64,12 @@ class Controller : public QObject {
 
     // network functionality
     void setPorts();
+
+    // save configuration file
+    void saveFile();
+
+    // load configuration file
+    void loadFile();
 
     // control for executing traj
     void execute();
@@ -101,6 +109,15 @@ class Controller : public QObject {
 
  private:
     ConstraintModel *model_;
+    ConstraintModel *loaded_model_;
+
+    // configuration
+    QVector<EllipseModelItem *> ellipses_;
+    QVector<CylinderModelItem *> cylinders_;
+    QSet<PolygonModelItem *> polygons_;
+    QVector<PointModelItem *> waypoints_;
+    QSet<PointModelItem *> final_points_;
+    DroneModelItem * drone_;
 
     // QGraphicsScene
     Canvas *canvas_;
@@ -127,6 +144,8 @@ class Controller : public QObject {
 
     // network configuration dialog box
     PortDialog *port_dialog_;
+    SaveDialog *save_dialog_;
+    LoadDialog *load_dialog_;
     QVector<DroneSocket *> drone_sockets_;
     QVector<PointSocket *> final_point_sockets_;
     QVector<WaypointSocket *> waypoint_sockets_;

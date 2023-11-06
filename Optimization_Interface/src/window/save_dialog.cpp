@@ -40,6 +40,7 @@ void SaveDialog::saveConfig(ConstraintModel *model) {
 
     // Get models in current window
     ellipses_ = model->getEllipses();
+    cylinders_ = model->getCylinders();
     polygons_ = model->getPolygons();
     waypoints_ = model->getWaypoints();
     final_points_ = model->getPoints();
@@ -53,6 +54,17 @@ void SaveDialog::saveConfig(ConstraintModel *model) {
             stream << "Ellipse:" << endl;
             stream << "\tWidth: " << (*ptr)->getWidth() << endl; // width in pixels
             stream << "\tHeight: " << (*ptr)->getHeight() << endl; // height in pixels
+            stream << "\tRotation: " << (*ptr)->getRot() << endl; // clockwise rotation
+            stream << "\tPosition: " << (*ptr)->getPos().x() << ", " << (*ptr)->getPos().y() << endl; // x position in pixels
+            stream << "\tClearance: " << (*ptr)->getClearance() << endl; // clearance in meters
+            stream << "\tPort: " << (*ptr)->port_ << endl; // port
+        }
+        // Cylinders
+        for (QVector<CylinderModelItem *>::iterator ptr = cylinders_.begin(); ptr != cylinders_.end(); ++ptr) {
+            stream << "\nCylinder:" << endl;
+            stream << "\tWidth: " << (*ptr)->getWidth() << endl; // width in pixels
+            stream << "\tHeight: " << (*ptr)->getHeight() << endl; // height in pixels
+            stream << "\tTrigger Width: " << (*ptr)->getTriggerWidth() << endl; // trigger width in pixels
             stream << "\tRotation: " << (*ptr)->getRot() << endl; // clockwise rotation
             stream << "\tPosition: " << (*ptr)->getPos().x() << ", " << (*ptr)->getPos().y() << endl; // x position in pixels
             stream << "\tClearance: " << (*ptr)->getClearance() << endl; // clearance in meters

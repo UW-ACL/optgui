@@ -18,6 +18,7 @@
 
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/cylinder_graphics_item.h"
+#include "include/graphics/cylinder_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
 #include "include/graphics/polygon_resize_handle.h"
@@ -32,6 +33,8 @@ Controller::Controller(Canvas *canvas) {
     // set canvas and create new model
     this->canvas_ = canvas;
     this->model_ = new ConstraintModel();
+
+    this->loaded_model_ = new ConstraintModel();
 
     // set rendering order
     qreal renderLevel = std::numeric_limits<qreal>::max();
@@ -67,6 +70,12 @@ Controller::Controller(Canvas *canvas) {
     connect(this->port_dialog_, SIGNAL(setSocketPorts()),
             this, SLOT(startSockets()));
 
+    // initialize save dialog
+    this->save_dialog_ = new SaveDialog();
+
+    // initialize load dialog
+    this->load_dialog_ = new LoadDialog();
+
     // Initialize freeze_traj timer
     this->freeze_traj_timer_ = new QTimer();
     connect(this->freeze_traj_timer_, SIGNAL(timeout()),
@@ -96,6 +105,9 @@ Controller::~Controller() {
 
     // deinitialize port dialog
     delete this->port_dialog_;
+
+    // deinitialize save dialog
+    delete this->save_dialog_;
 
     // deinitialize network
     this->closeSockets();
@@ -203,32 +215,44 @@ void Controller::removeItem(QGraphicsItem *item) {
             this->removeEllipseSocket(model);
             // remove from QGraphicsScene canvas
             this->canvas_->removeItem(ellipse);
-            this->canvas_->ellipse_graphics_.remove(ellipse);
+            this->canvas_->ellipse_graphics_.removeOne(ellipse);
             // delete graphic
             delete ellipse;
             // delete data model
             this->model_->removeEllipse(model);
             delete model;
+            // set new ordering of waypoints
+            for (int i = 0; i < this->canvas_->ellipse_graphics_.size(); i++) {
+                this->canvas_->ellipse_graphics_.at(i)->setIndex(i);
+            }
+
             // exit switch
             break;
         }
-    case CYLINDER_GRAPHIC: {
-        // cast to specific graphic item type
-        CylinderGraphicsItem *cylinder = qgraphicsitem_cast<
-                CylinderGraphicsItem *>(item);
-        // get data model
-        CylinderModelItem *model = cylinder->model_;
-        // remove from QGraphicsScene canvas
-        this->canvas_->removeItem(cylinder);
-        this->canvas_->cylinder_graphics_.remove(cylinder);
-        // delete graphic
-        delete cylinder;
-        // delete data model
-        this->model_->removeCylinder(model);
-        delete model;
-        // exit switch
-        break;
-    }
+        case CYLINDER_GRAPHIC: {
+            // cast to specific graphic item type
+            CylinderGraphicsItem *cylinder = qgraphicsitem_cast<
+                    CylinderGraphicsItem *>(item);
+            // get data model
+            CylinderModelItem *model = cylinder->model_;
+            // delete network socket
+            this->removeCylinderSocket(model);
+            // remove from QGraphicsScene canvas
+            this->canvas_->removeItem(cylinder);
+            this->canvas_->cylinder_graphics_.removeOne(cylinder);
+            // delete graphic
+            delete cylinder;
+            // delete data model
+            this->model_->removeCylinder(model);
+            delete model;
+            // set new ordering of waypoints
+            for (int i = 0; i < this->canvas_->cylinder_graphics_.size(); i++) {
+                this->canvas_->cylinder_graphics_.at(i)->setIndex(i);
+            }
+
+            // exit switch
+            break;
+        }
         case POLYGON_GRAPHIC: {
             // cast to specific graphic item type
             PolygonGraphicsItem *polygon = qgraphicsitem_cast<
@@ -342,7 +366,7 @@ void Controller::addEllipse(QPointF const &point, qreal radius) {
 void Controller::addCylinder(QPointF const &point, qreal width) {
     // create new data model
     CylinderModelItem *item_model = new CylinderModelItem(point,
-        this->model_->getClearance(), width, width, width, 0);
+        this->model_->getClearance(), 1.2*width, width, 15*width, 0);
     // create graphic based on data model and save to model
     this->loadCylinder(item_model);
     // update color based on valid input code
@@ -401,6 +425,22 @@ void Controller::duplicateSelected() {
                                              ellipse->model_->getRot());
                 // create graphic based on data model and save to model
                 this->loadEllipse(new_model);
+                break;
+            }
+            case CYLINDER_GRAPHIC: {
+                // cast to ellipse graphic type
+                CylinderGraphicsItem *cylinder = qgraphicsitem_cast<
+                        CylinderGraphicsItem *>(item);
+                // create new data model
+                CylinderModelItem *new_model =
+                        new CylinderModelItem(cylinder->model_->getPos(),
+                                             cylinder->model_->getClearance(),
+                                             cylinder->model_->getHeight(),
+                                             cylinder->model_->getWidth(),
+                                             cylinder->model_->getTriggerWidth(),
+                                             cylinder->model_->getRot());
+                // create graphic based on data model and save to model
+                this->loadCylinder(new_model);
                 break;
             }
         }
@@ -718,6 +758,54 @@ void Controller::setPorts() {
     this->port_dialog_->open();
 }
 
+void Controller::saveFile() {
+    // save current configuration
+    this->save_dialog_->saveConfig(this->model_);
+}
+
+void Controller::loadFile() {
+    // load configuration from file
+    this->load_dialog_->loadConfig(this->loaded_model_);
+
+    ellipses_ = this->loaded_model_->getEllipses();
+    cylinders_ = this->loaded_model_->getCylinders();
+    waypoints_ = this->loaded_model_->getWaypoints();
+    final_points_ = this->loaded_model_->getPoints();
+    polygons_ = this->loaded_model_->getPolygons();
+    drone_ = this->loaded_model_->getDrones();
+
+    for (QVector<EllipseModelItem *>::iterator ptr = ellipses_.begin(); ptr != ellipses_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadEllipse(*ptr);
+        // update color based on valid input code
+        this->model_->updateEllipseColors();
+    }
+    for (QVector<CylinderModelItem *>::iterator ptr = cylinders_.begin(); ptr != cylinders_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadCylinder(*ptr);
+        // update color based on valid input code
+        this->model_->updateCylinderColors();
+    }
+    for (QVector<PointModelItem *>::iterator ptr = waypoints_.begin(); ptr != waypoints_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadWaypoint(*ptr);
+    }
+    for (QSet<PointModelItem *>::iterator ptr = final_points_.begin(); ptr != final_points_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadPoint(*ptr);
+    }
+    for (QSet<PolygonModelItem *>::iterator ptr = polygons_.begin(); ptr != polygons_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadPolygon(*ptr);
+    }
+    if (drone_ != NULL){
+        this->loadDrone(drone_);
+    }
+
+    this->loaded_model_ = new ConstraintModel();
+    
+}
+
 // ============ NETWORK CONTROLS ============
 
 void Controller::startSockets() {
@@ -915,11 +1003,12 @@ void Controller::removeWaypointSocket(PointModelItem *model) {
 
 void Controller::loadEllipse(EllipseModelItem *item_model) {
     // create new graphic for data model
+    quint32 index = this->canvas_->ellipse_graphics_.size();
     EllipseGraphicsItem *item_graphic =
-            new EllipseGraphicsItem(item_model);
+            new EllipseGraphicsItem(item_model, index);
     // add graphic to canvas
     this->canvas_->addItem(item_graphic);
-    this->canvas_->ellipse_graphics_.insert(item_graphic);
+    this->canvas_->ellipse_graphics_.append(item_graphic);
     item_graphic->setRotation(item_model->getRot());
     // add graphic to model
     this->model_->addEllipse(item_model);
@@ -930,11 +1019,13 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
 
 void Controller::loadCylinder(CylinderModelItem *item_model) {
     // create new graphic for data model
+    quint32 index = this->canvas_->cylinder_graphics_.size();
+    // create new graphic for data model
     CylinderGraphicsItem *item_graphic =
-            new CylinderGraphicsItem(item_model);
+            new CylinderGraphicsItem(item_model, index);
     // add graphic to canvas
     this->canvas_->addItem(item_graphic);
-    this->canvas_->cylinder_graphics_.insert(item_graphic);
+    this->canvas_->cylinder_graphics_.append(item_graphic);
     item_graphic->setRotation(item_model->getRot());
     // add graphic to model
     this->model_->addCylinder(item_model);

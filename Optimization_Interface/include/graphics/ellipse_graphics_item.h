@@ -21,6 +21,7 @@ qreal const ELLIPSE_BORDER = 15;
 class EllipseGraphicsItem : public QGraphicsItem {
  public:
     explicit EllipseGraphicsItem(EllipseModelItem *model,
+                                 quint32 index,
                                  QGraphicsItem *parent = nullptr);
     ~EllipseGraphicsItem();
 
@@ -43,6 +44,9 @@ class EllipseGraphicsItem : public QGraphicsItem {
     // change color to red for displaying errors
     void setRed(bool isOverlap);
 
+    // set ordering of ellipse
+    void setIndex(quint32 index);
+
  protected:
     // shape to paint
     QPainterPath shape() const override;
@@ -63,6 +67,9 @@ class EllipseGraphicsItem : public QGraphicsItem {
 
     // scale zoom level
     qreal getScalingFactor() const;
+
+    // ordering of ellipse
+    quint32 index_;
 };
 
 }  // namespace optgui

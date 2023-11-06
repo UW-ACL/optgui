@@ -160,7 +160,6 @@ void ComputeThread::run() {
         skyenet::outputs const &O =
             this->fly_.update(this->model_->isFreeFinalTime());
 
-
         // Iterations in resulting trajectory
         quint32 size = P.K;
         // GUI trajecotry points

@@ -26,6 +26,7 @@ class SaveDialog : public QDialog {
     void saveConfig(ConstraintModel *model);
 
     QVector<EllipseModelItem *> ellipses_;
+    QVector<CylinderModelItem *> cylinders_;
     QSet<PolygonModelItem *> polygons_;
     QVector<PointModelItem *> waypoints_;
     QSet<PointModelItem *> final_points_;

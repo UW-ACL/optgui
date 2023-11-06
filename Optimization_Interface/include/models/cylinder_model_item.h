@@ -19,7 +19,7 @@
 
 namespace optgui {
 
-qreal const DEFAULT_WIDTH = 50;
+qreal const DEFAULT_WIDTH = 20;
 
 class CylinderModelItem : public DataModel {
  public:

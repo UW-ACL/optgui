@@ -61,6 +61,12 @@ class View : public QGraphicsView {
     // open network configuration dialog
     void setPorts();
 
+    // save configuration file
+    void saveFile();
+
+    // load configuration file
+    void loadFile();
+
     // execute staged traj
     void execute();
 

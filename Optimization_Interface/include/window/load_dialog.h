@@ -26,7 +26,8 @@ class LoadDialog : public QDialog {
     // load configuration file
     void loadConfig(ConstraintModel *model);
 
-    QSet<EllipseModelItem *> ellipses_;
+    QVector<EllipseModelItem *> ellipses_;
+    QVector<CylinderModelItem *> cylinders_;
     QSet<PolygonModelItem *> polygons_;
     QVector<PointModelItem *> waypoints_;
     QSet<PointModelItem *> final_points_;
@@ -35,6 +36,7 @@ class LoadDialog : public QDialog {
     qreal wid;
     qreal hei;
     qreal rot;
+    qreal trigwid;
     QPointF pos;
     qreal cle;
     quint16 por = NULL;
