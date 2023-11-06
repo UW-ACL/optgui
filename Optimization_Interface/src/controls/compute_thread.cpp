@@ -79,8 +79,8 @@ void ComputeThread::run() {
         if (this->getTarget() == nullptr) {
             // clear current trajectory
             this->getTrajGraphic()->model_->setPoints(QVector<QPointF>());
-            autogen::packet::traj3dof empty_traj;
-            this->model_->setCurrTraj3dof(this->drone_->model_, empty_traj);
+            autogen::packet::traj2dof empty_traj;
+            this->model_->setCurrTraj2dof(this->drone_->model_, empty_traj);
             continue;
         }
 
@@ -102,15 +102,16 @@ void ComputeThread::run() {
             emit updateMessage(this->drone_->model_);
         }
         // Dont compute if invalid input
-//        if (input_code != INPUT_CODE::VALID_INPUT) {
-//            continue;
-//        }
+        //        if (input_code != INPUT_CODE::VALID_INPUT) {
+        //            continue;
+        //        }
 
         // Parameters
 
         // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();
         this->model_->loadEllipseConstraints(&P);
+        this->model_->loadCylinderConstraints(&P);
         this->model_->loadPosConstraints(&P);
 
         double r_i[3] = { 0 };
@@ -157,15 +158,15 @@ void ComputeThread::run() {
 
         // Run SCvx algorithm for free or fixed final time
         skyenet::outputs const &O =
-                this->fly_.update(this->model_->isFreeFinalTime());
+            this->fly_.update(this->model_->isFreeFinalTime());
 
         // Iterations in resulting trajectory
         quint32 size = P.K;
         // GUI trajecotry points
         QVector<QPointF> trajectory = QVector<QPointF>();
         // Mikipilot trajectory to send to drone
-        autogen::packet::traj3dof drone_traj3dof_data;
-        drone_traj3dof_data.K = size;
+        autogen::packet::traj2dof drone_traj2dof_data;
+        drone_traj2dof_data.K = size;
 
         for (quint32 i = 0; i < size; i++) {
             // Add points to GUI trajectory
@@ -176,21 +177,21 @@ void ComputeThread::run() {
                                       gui_coords.y()));
 
             // Add data to mikipilot trajectory
-            // drone_traj3dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
-            drone_traj3dof_data.time(i) = O.t[i];
+            // drone_traj2dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
+            drone_traj2dof_data.time(i) = O.t[i];
 
             // XYZ to NED conversion
-            drone_traj3dof_data.pos_ned(0, i) =  O.r[1][i];
-            drone_traj3dof_data.pos_ned(1, i) =  O.r[0][i];
-            drone_traj3dof_data.pos_ned(2, i) = -O.r[2][i];
+            drone_traj2dof_data.pos_ned(0, i) =  O.r[1][i];
+            drone_traj2dof_data.pos_ned(1, i) =  O.r[0][i];
+            // drone_traj2dof_data.pos_ned(2, i) = -O.r[2][i];
 
-            drone_traj3dof_data.vel_ned(0, i) =  O.v[1][i];
-            drone_traj3dof_data.vel_ned(1, i) =  O.v[0][i];
-            drone_traj3dof_data.vel_ned(2, i) = -O.v[2][i];
+            drone_traj2dof_data.vel_ned(0, i) =  O.v[1][i];
+            drone_traj2dof_data.vel_ned(1, i) =  O.v[0][i];
+            // drone_traj2dof_data.vel_ned(2, i) = -O.v[2][i];
 
-            drone_traj3dof_data.accl_ned(0, i) =  O.a[1][i];
-            drone_traj3dof_data.accl_ned(1, i) =  O.a[0][i];
-            drone_traj3dof_data.accl_ned(2, i) = -O.a[2][i];
+            drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i];
+            drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i];
+            // drone_traj2dof_data.accl_ned(2, i) = -O.a[2][i];
         }
 
         // Do not display new trajectories if executing
@@ -200,16 +201,16 @@ void ComputeThread::run() {
 
         // set points on graphical display
         this->getTrajGraphic()->model_->setPoints(trajectory);
-        this->model_->setCurrTraj3dof(this->drone_->model_,
-                                      drone_traj3dof_data);
+        this->model_->setCurrTraj2dof(this->drone_->model_,
+                                      drone_traj2dof_data);
 
         // OUTPUT VIOLATIONS: initial and final pos violation
         qreal accum = pow(O.rf_relax[0], 2)  // final pos
-                    + pow(O.rf_relax[1], 2)
+                    + pow(O.rf_relax[1], 2) 
                     + pow(O.rf_relax[2], 2)
 
                     + pow(O.ri_relax[0], 2)  // initial pos
-                    + pow(O.ri_relax[1], 2)
+                    + pow(O.ri_relax[1], 2) 
                     + pow(O.ri_relax[2], 2)
 
                     + pow(O.dtau, 2);  // change in time
@@ -250,9 +251,9 @@ void ComputeThread::setFeasibilityColor(bool is_feasible) {
 }
 
 INPUT_CODE ComputeThread::validateInputs(
-        QVector<QRegion> const &ellipse_regions,
-        QVector3D const &initial_pos,
-        QVector3D const &final_pos) {
+    QVector<QRegion> const &ellipse_regions,
+    QVector3D const &initial_pos,
+    QVector3D const &final_pos) {
     // get truncated drone pos
     QPoint trunc_intial_pos(initial_pos.x(), initial_pos.y());
     // get truncated final pos

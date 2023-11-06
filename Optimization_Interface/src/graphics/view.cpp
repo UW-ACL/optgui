@@ -151,6 +151,7 @@ void View::initializeMenuPanel() {
     this->initializeDroneButton(this->menu_panel_);
     this->initializeFinalPointButton(this->menu_panel_);
     this->initializeEllipseButton(this->menu_panel_);
+    this->initializeCylinderButton(this->menu_panel_);
     this->initializePolygonButton(this->menu_panel_);
     this->initializePlaneButton(this->menu_panel_);
     this->initializeWaypointButton(this->menu_panel_);
@@ -173,6 +174,9 @@ void View::initializeMenuPanel() {
 
     // on fly update
     this->initializeTrajLockToggle(this->menu_panel_);
+
+    // on fly update
+    this->initializeStageToggle(this->menu_panel_);
 
     // simulation toggle
     this->initializeSimToggle(this->menu_panel_);
@@ -244,6 +248,13 @@ void View::mousePressEvent(QMouseEvent *event) {
             qreal scaling_factor = this->matrix().m11();
             this->controller_->addEllipse(pos,
                                           DEFAULT_RAD / scaling_factor);
+            break;
+        }
+        case CYLINDER: {
+            // add cylinder scaled by zoom factor
+            qreal scaling_factor = this->matrix().m11();
+            this->controller_->addCylinder(pos,
+                                          DEFAULT_WIDTH / scaling_factor);
             break;
         }
         case POLYGON: {
@@ -609,6 +620,30 @@ void View::initializeEllipseButton(MenuPanel *panel) {
                                         Qt::AlignTop|Qt::AlignCenter);
 
     connect(ellipse_button, SIGNAL(changeState(STATE)),
+            this, SLOT(setState(STATE)));
+}
+
+void View::initializeCylinderButton(MenuPanel *panel) {
+    MenuButton *cylinder_button = new MenuButton(CYLINDER, panel->menu_);
+    QPixmap pix(50, 50);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    painter.setRenderHint(QPainter::Antialiasing);
+    QPen pen(Qt::black);
+    pen.setWidth(2);
+    painter.setPen(pen);
+    painter.setBrush(Qt::green);
+    painter.drawRect(1, 12, 48, 24);
+    cylinder_button->setPixmap(pix);
+    cylinder_button->setToolTip(tr("Add cylinder constraint"));
+    this->panel_widgets_.append(cylinder_button);
+    this->toggle_buttons_.append(cylinder_button);
+
+    panel->menu_->layout()->addWidget(cylinder_button);
+    panel->menu_->layout()->setAlignment(cylinder_button,
+                                        Qt::AlignTop|Qt::AlignCenter);
+
+    connect(cylinder_button, SIGNAL(changeState(STATE)),
             this, SLOT(setState(STATE)));
 }
 
@@ -1194,6 +1229,11 @@ void View::toggleSim(int state) {
     this->controller_->setSimulated(state == Qt::Checked);
 }
 
+void View::toggleStage(int state) {
+    // toggle between simulate execution or actual execution
+    this->controller_->setStageBool(state == Qt::Checked);
+}
+
 void View::toggleTrajLock(int state) {
     this->controller_->setTrajLock(state == Qt::Checked);
 }
@@ -1283,6 +1323,22 @@ void View::initializeFinaltime(MenuPanel *panel) {
 
     // Set table size
     this->skyefly_params_table_->resizeColumnsToContents();
+}
+
+void View::initializeStageToggle(MenuPanel *panel) {
+    QCheckBox *stage_toggle = new QCheckBox("No Stage", panel->menu_);
+    stage_toggle->
+            setToolTip(tr("Disable Staging of Trajectory"));
+    stage_toggle->setMinimumHeight(35);
+    stage_toggle->setCheckState(Qt::Unchecked);
+    panel->menu_->layout()->addWidget(stage_toggle);
+    panel->menu_->layout()->setAlignment(stage_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(stage_toggle);
+
+    // Connect execute button
+    connect(stage_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleStage(int)));
 }
 
 void View::initializeSimToggle(MenuPanel *panel) {

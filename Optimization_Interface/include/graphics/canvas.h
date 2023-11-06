@@ -16,6 +16,7 @@
 #include "include/graphics/waypoint_graphics_item.h"
 #include "include/graphics/point_graphics_item.h"
 #include "include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/cylinder_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
 
@@ -36,6 +37,7 @@ class Canvas : public QGraphicsScene {
 
     QSet<DroneGraphicsItem *> drone_graphics_;
     QVector<EllipseGraphicsItem *> ellipse_graphics_;
+    QVector<CylinderGraphicsItem *> cylinder_graphics_;
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
     QSet<PointGraphicsItem *> final_points_;

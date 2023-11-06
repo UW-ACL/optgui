@@ -17,7 +17,7 @@
 #include <limits>
 
 #include "include/graphics/point_graphics_item.h"
-#include "include/graphics/ellipse_graphics_item.h"
+#include "include/graphics/cylinder_graphics_item.h"
 #include "include/graphics/polygon_graphics_item.h"
 #include "include/graphics/plane_graphics_item.h"
 #include "include/graphics/polygon_resize_handle.h"
@@ -83,6 +83,9 @@ Controller::Controller(Canvas *canvas) {
 
     // Set traj lock. Cannot execute traj while already executing.
     this->traj_lock_ = false;
+
+    // Set disable stage bool to false
+    this->is_stage_booled_ = false;
 
     // capture data on by default
     this->capture_data_ = true;
@@ -225,6 +228,30 @@ void Controller::removeItem(QGraphicsItem *item) {
             // exit switch
             break;
         }
+        case CYLINDER_GRAPHIC: {
+            // cast to specific graphic item type
+            CylinderGraphicsItem *cylinder = qgraphicsitem_cast<
+                    CylinderGraphicsItem *>(item);
+            // get data model
+            CylinderModelItem *model = cylinder->model_;
+            // delete network socket
+            this->removeCylinderSocket(model);
+            // remove from QGraphicsScene canvas
+            this->canvas_->removeItem(cylinder);
+            this->canvas_->cylinder_graphics_.removeOne(cylinder);
+            // delete graphic
+            delete cylinder;
+            // delete data model
+            this->model_->removeCylinder(model);
+            delete model;
+            // set new ordering of waypoints
+            for (int i = 0; i < this->canvas_->cylinder_graphics_.size(); i++) {
+                this->canvas_->cylinder_graphics_.at(i)->setIndex(i);
+            }
+
+            // exit switch
+            break;
+        }
         case POLYGON_GRAPHIC: {
             // cast to specific graphic item type
             PolygonGraphicsItem *polygon = qgraphicsitem_cast<
@@ -335,6 +362,16 @@ void Controller::addEllipse(QPointF const &point, qreal radius) {
     this->model_->updateEllipseColors();
 }
 
+void Controller::addCylinder(QPointF const &point, qreal width) {
+    // create new data model
+    CylinderModelItem *item_model = new CylinderModelItem(point,
+        this->model_->getClearance(), 1.2*width, width, 70*width, 0);
+    // create graphic based on data model and save to model
+    this->loadCylinder(item_model);
+    // update color based on valid input code
+    this->model_->updateCylinderColors();
+}
+
 void Controller::addPolygon(QVector<QPointF> points) {
     // create new data model
     PolygonModelItem *item_model = new PolygonModelItem(points);
@@ -387,6 +424,22 @@ void Controller::duplicateSelected() {
                                              ellipse->model_->getRot());
                 // create graphic based on data model and save to model
                 this->loadEllipse(new_model);
+                break;
+            }
+            case CYLINDER_GRAPHIC: {
+                // cast to ellipse graphic type
+                CylinderGraphicsItem *cylinder = qgraphicsitem_cast<
+                        CylinderGraphicsItem *>(item);
+                // create new data model
+                CylinderModelItem *new_model =
+                        new CylinderModelItem(cylinder->model_->getPos(),
+                                             cylinder->model_->getClearance(),
+                                             cylinder->model_->getHeight(),
+                                             cylinder->model_->getWidth(),
+                                             cylinder->model_->getTriggerWidth(),
+                                             cylinder->model_->getRot());
+                // create graphic based on data model and save to model
+                this->loadCylinder(new_model);
                 break;
             }
         }
@@ -448,7 +501,7 @@ void Controller::freeze_traj() {
     // update data output with traj
     if (this->capture_data_) {
         this->createOutputFile();
-        this->updateOutputFile(this->model_->getStagedTraj3dof(),
+        this->updateOutputFile(this->model_->getStagedTraj2dof(),
                                this->model_->getStagedDrone(),
                                this->traj_index_);
     }
@@ -480,7 +533,7 @@ void Controller::tickLiveReference() {
     // move to next traj point in model
     if (this->model_->tickPathStaged()) {
         // more points in tracked traj
-        autogen::packet::traj3dof traj = this->model_->getStagedTraj3dof();
+        autogen::packet::traj2dof traj = this->model_->getStagedTraj2dof();
 
         // get graphic for current drone
         DroneGraphicsItem *drone = nullptr;
@@ -544,6 +597,8 @@ void Controller::tickLiveReference() {
 
 
 void Controller::execute() {
+    if(this->is_stage_booled_)
+        stageTraj(); // Forces stage of trajectory for Dyanmic Obstacle Avoidance
     // get staged drone
     DroneModelItem *staged_drone = this->model_->getStagedDrone();
 
@@ -570,7 +625,7 @@ void Controller::execute() {
         }
 
         emit trajectoryExecuted(staged_drone,
-                                this->model_->getStagedTraj3dof());
+                                this->model_->getStagedTraj2dof());
     } else if (this->freeze_traj_timer_->isActive() &&
                !this->traj_lock_ &&
                this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
@@ -580,7 +635,7 @@ void Controller::execute() {
         // this->model_->setPathPoints(this->model_->getPathStagedPoints());
 
         emit trajectoryExecuted(staged_drone,
-                                this->model_->getStagedTraj3dof());
+                                this->model_->getStagedTraj2dof());
     }
 }
 
@@ -622,7 +677,7 @@ void Controller::createOutputFile() {
     }
 }
 
-void Controller::updateOutputFile(autogen::packet::traj3dof const &traj, DroneModelItem *staged_drone, int index) {
+void Controller::updateOutputFile(autogen::packet::traj2dof const &traj, DroneModelItem *staged_drone, int index) {
     QTextStream stream(this->output_file_);
 
     // time
@@ -650,7 +705,7 @@ void Controller::updateOutputFile(autogen::packet::traj3dof const &traj, DroneMo
 }
 
 void Controller::stageTraj() {
-    // stage current traj if not currently tracking executed traj and
+    // stage current traj if not currently tracking executed traj and if
     // current traj is feasible
     if (!this->freeze_traj_timer_->isActive() &&
             this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
@@ -668,6 +723,11 @@ void Controller::unstageTraj() {
 void Controller::setSimulated(bool state) {
     // flag to simulate traj instead of sending to vehicle
     this->is_simulated_ = state;
+}
+
+void Controller::setStageBool(bool state) {
+    // flag to simulate traj instead of sending to vehicle
+    this->is_stage_booled_ = state;
 }
 
 void Controller::setTrajLock(bool state) {
@@ -707,6 +767,7 @@ void Controller::loadFile() {
     this->load_dialog_->loadConfig(this->loaded_model_);
 
     ellipses_ = this->loaded_model_->getEllipses();
+    cylinders_ = this->loaded_model_->getCylinders();
     waypoints_ = this->loaded_model_->getWaypoints();
     final_points_ = this->loaded_model_->getPoints();
     polygons_ = this->loaded_model_->getPolygons();
@@ -717,6 +778,12 @@ void Controller::loadFile() {
         this->loadEllipse(*ptr);
         // update color based on valid input code
         this->model_->updateEllipseColors();
+    }
+    for (QVector<CylinderModelItem *>::iterator ptr = cylinders_.begin(); ptr != cylinders_.end(); ++ptr) {
+        // create graphic based on data model and save to model
+        this->loadCylinder(*ptr);
+        // update color based on valid input code
+        this->model_->updateCylinderColors();
     }
     for (QVector<PointModelItem *>::iterator ptr = waypoints_.begin(); ptr != waypoints_.end(); ++ptr) {
         // create graphic based on data model and save to model
@@ -750,10 +817,10 @@ void Controller::startSockets() {
             DroneSocket *temp = new DroneSocket(graphic);
             connect(this,
                     SIGNAL(trajectoryExecuted(DroneModelItem *,
-                                             const autogen::packet::traj3dof)),
+                                             const autogen::packet::traj2dof)),
                     temp,
                     SLOT(rx_trajectory(DroneModelItem *,
-                                       const autogen::packet::traj3dof)));
+                                       const autogen::packet::traj2dof)));
             connect(temp, SIGNAL(refresh_graphics()),
                     this->canvas_, SLOT(update()));
             this->drone_sockets_.append(temp);
@@ -789,6 +856,16 @@ void Controller::startSockets() {
             this->ellipse_sockets_.append(temp);
         }
     }
+
+    // create cylinder sockets
+    for (CylinderGraphicsItem *graphic : this->canvas_->cylinder_graphics_) {
+        if (graphic->model_->port_ > 0) {
+            CylinderSocket *temp = new CylinderSocket(graphic);
+            connect(temp, SIGNAL(refresh_graphics()),
+                    this->canvas_, SLOT(update()));
+            this->cylinder_sockets_.append(temp);
+        }
+    }
 }
 
 void Controller::closeSockets() {
@@ -815,6 +892,12 @@ void Controller::closeSockets() {
         delete socket;
     }
     this->ellipse_sockets_.clear();
+
+    // close cylinder sockets
+    for (CylinderSocket *socket : this->cylinder_sockets_) {
+        delete socket;
+    }
+    this->cylinder_sockets_.clear();
 }
 
 void Controller::removeEllipseSocket(EllipseModelItem *model) {
@@ -834,6 +917,26 @@ void Controller::removeEllipseSocket(EllipseModelItem *model) {
 
     if (found) {
         this->ellipse_sockets_.removeAt(index);
+    }
+}
+
+void Controller::removeCylinderSocket(CylinderModelItem *model) {
+    // search for socket for given data model and delete it if
+    // it exists
+    int index = 0;
+    bool found = false;
+
+    for (CylinderSocket *socket : this->cylinder_sockets_) {
+        if (socket->cylinder_item_->model_ == model) {
+            delete socket;
+            found = true;
+            break;
+        }
+        index++;
+    }
+
+    if (found) {
+        this->cylinder_sockets_.removeAt(index);
     }
 }
 
@@ -908,6 +1011,23 @@ void Controller::loadEllipse(EllipseModelItem *item_model) {
     item_graphic->setRotation(item_model->getRot());
     // add graphic to model
     this->model_->addEllipse(item_model);
+    // render graphic
+    this->canvas_->bringToFront(item_graphic);
+    item_graphic->update(item_graphic->boundingRect());
+}
+
+void Controller::loadCylinder(CylinderModelItem *item_model) {
+    // create new graphic for data model
+    quint32 index = this->canvas_->cylinder_graphics_.size();
+    // create new graphic for data model
+    CylinderGraphicsItem *item_graphic =
+            new CylinderGraphicsItem(item_model, index);
+    // add graphic to canvas
+    this->canvas_->addItem(item_graphic);
+    this->canvas_->cylinder_graphics_.append(item_graphic);
+    item_graphic->setRotation(item_model->getRot());
+    // add graphic to model
+    this->model_->addCylinder(item_model);
     // render graphic
     this->canvas_->bringToFront(item_graphic);
     item_graphic->update(item_graphic->boundingRect());

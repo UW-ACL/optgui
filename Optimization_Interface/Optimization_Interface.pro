@@ -64,6 +64,8 @@ SOURCES += \
     src/globals.cpp \
     src/graphics/ellipse_graphics_item.cpp \
     src/graphics/ellipse_resize_handle.cpp \
+    src/graphics/cylinder_graphics_item.cpp \
+    src/graphics/cylinder_resize_handle.cpp \
     src/graphics/polygon_graphics_item.cpp \
     src/graphics/polygon_resize_handle.cpp \
     src/graphics/plane_graphics_item.cpp \
@@ -76,6 +78,7 @@ SOURCES += \
     src/window/port_dialog/port_selector.cpp \
     src/network/drone_socket.cpp \
     src/network/ellipse_socket.cpp \
+    src/network/cylinder_socket.cpp \
     src/graphics/point_graphics_item.cpp \
     src/network/point_socket.cpp
 
@@ -95,6 +98,9 @@ HEADERS += \
     include/models/ellipse_model_item.h \
     include/graphics/ellipse_graphics_item.h \
     include/graphics/ellipse_resize_handle.h \
+    include/models/cylinder_model_item.h \
+    include/graphics/cylinder_graphics_item.h \
+    include/graphics/cylinder_resize_handle.h \
     include/graphics/polygon_graphics_item.h \
     include/models/polygon_model_item.h \
     include/graphics/polygon_resize_handle.h \
@@ -111,6 +117,7 @@ HEADERS += \
     include/window/port_dialog/port_selector.h \
     include/models/data_model.h \
     include/network/ellipse_socket.h \
+    include/network/cylinder_socket.h \
     include/models/point_model_item.h \
     include/graphics/point_graphics_item.h \
     include/network/drone_socket.h \

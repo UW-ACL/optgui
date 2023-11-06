@@ -98,6 +98,7 @@ class View : public QGraphicsView {
     void updateFeedbackMessage();
     void setCurrEndpoints();
     void toggleSim(int);
+    void toggleStage(int);
     void toggleTrajLock(int);
     void toggleFreeFinalTime(int);
     void toggleDataCapture(int);
@@ -164,11 +165,13 @@ class View : public QGraphicsView {
     void initializeFinalPointButton(MenuPanel *panel);
     void initializeDroneButton(MenuPanel *panel);
     void initializeEllipseButton(MenuPanel *panel);
+    void initializeCylinderButton(MenuPanel *panel);
     void initializeFlipButton(MenuPanel *panel);
     void initializeExecButton(MenuPanel *panel);
     void initializeStageButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
+    void initializeStageToggle(MenuPanel *panel);
     void initializeSimToggle(MenuPanel *panel);
     void initializeTrajLockToggle(MenuPanel *panel);
     void initializeFreeFinalTimeToggle(MenuPanel *panel);

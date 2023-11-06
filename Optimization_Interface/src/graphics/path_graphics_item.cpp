@@ -22,6 +22,10 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
     this->pen_ = QPen(RED);
     this->pen_.setWidth(this->width_);
 
+    // Set waypoints pen
+    this->waypoints_pen_ = QPen(RED);
+    this->waypoints_pen_.setWidth(2 * this->width_);
+
     // Set flags
     this->setFlags(QGraphicsItem::ItemSendsScenePositionChanges);
 }
@@ -46,12 +50,16 @@ void PathGraphicsItem::paint(QPainter *painter,
     // Draw current traj
     qreal scaling_factor = this->getScalingFactor();
     this->pen_.setWidthF(this->width_ / scaling_factor);
-    painter->setPen(this->pen_);
     quint32 size = this->model_->getSize();
     for (quint32 i = 1; i < size; i++) {
+        //painter->setPen(this->pen_);
         QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
                     mapFromScene(this->model_->getPointAt(i)));
         painter->drawLine(line);
+
+        painter->setPen(this->waypoints_pen_);
+        painter->drawEllipse(this->model_->getPointAt(i), 0.5 * this->width_ / scaling_factor,
+                             0.5 * this->width_ / scaling_factor);
     }
 }
 

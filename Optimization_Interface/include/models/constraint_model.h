@@ -21,6 +21,7 @@
 #include "include/globals.h"
 #include "include/models/point_model_item.h"
 #include "include/models/ellipse_model_item.h"
+#include "include/models/cylinder_model_item.h"
 #include "include/models/polygon_model_item.h"
 #include "include/models/plane_model_item.h"
 #include "include/models/path_model_item.h"
@@ -42,6 +43,12 @@ class ConstraintModel {
     void addEllipse(EllipseModelItem *item);
     void removeEllipse(EllipseModelItem *item);
     QVector<EllipseModelItem *> getEllipses();
+
+    // functions for cylinder hoop data models
+    // caller responsible for deleting pointer
+    void addCylinder(CylinderModelItem *item);
+    void removeCylinder(CylinderModelItem *item);
+    QVector<CylinderModelItem *> getCylinders();
 
     // functions for polygon constraint data models
     // caller responsible for deleting pointer
@@ -93,12 +100,12 @@ class ConstraintModel {
     void stageTraj();
     void unstageTraj();
 
-    autogen::packet::traj3dof getCurrTraj3dof(DroneModelItem *drone);
-    void setCurrTraj3dof(DroneModelItem *drone,
-                         autogen::packet::traj3dof traj3dof_data);
+    autogen::packet::traj2dof getCurrTraj2dof(DroneModelItem *drone);
+    void setCurrTraj2dof(DroneModelItem *drone,
+                         autogen::packet::traj2dof traj2dof_data);
 
     // functions for staged traj network packet
-    autogen::packet::traj3dof getStagedTraj3dof();
+    autogen::packet::traj2dof getStagedTraj2dof();
     bool getIsTrajStaged();
     DroneModelItem *getStagedDrone();
 
@@ -132,6 +139,12 @@ class ConstraintModel {
     // mark overlapping ellipses as red
     void updateEllipseColors();
 
+    // calculate regions for cylinders to use for
+    // overlap detection
+    QVector<QRegion> getCylinderRegions();
+    // mark overlapping cylinders as red
+    void updateCylinderColors();
+
     QPointF getWpPos(int index);
 
     void setCurrDrone(DroneModelItem *drone);
@@ -143,6 +156,7 @@ class ConstraintModel {
     void loadWaypointConstraints(skyenet::params *P,
                                  double wp[skyenet::MAX_WAYPOINTS][3]);
     void loadEllipseConstraints(skyenet::params *P);
+    void loadCylinderConstraints(skyenet::params *P);
     void loadPosConstraints(skyenet::params *P);
 
 private:
@@ -150,7 +164,7 @@ private:
 
     // skyenet params
     skyenet::params P_;
-    autogen::packet::traj3dof drone_staged_traj3dof_data_;
+    autogen::packet::traj2dof drone_staged_traj2dof_data_;
 
     // input and feasibility status
     INPUT_CODE input_code_;
@@ -167,6 +181,7 @@ private:
 
     // Constraints
     QVector<EllipseModelItem *> ellipses_;
+    QVector<CylinderModelItem *> cylinders_;
     QSet<PolygonModelItem *> polygons_;
     QSet<PlaneModelItem *> planes_;
 
@@ -175,7 +190,7 @@ private:
     PathModelItem *path_staged_;
     DroneModelItem *staged_drone_;
     QMap<DroneModelItem *, QPair<PathModelItem *,
-                                 autogen::packet::traj3dof>> drones_;
+                                 autogen::packet::traj2dof>> drones_;
     QSet<PointModelItem *> final_points_;
     DroneModelItem *curr_drone_;
 

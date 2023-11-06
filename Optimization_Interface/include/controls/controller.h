@@ -21,6 +21,7 @@
 #include "include/window/load_dialog.h"
 #include "include/network/drone_socket.h"
 #include "include/network/ellipse_socket.h"
+#include "include/network/cylinder_socket.h"
 #include "include/network/waypoint_socket.h"
 #include "include/network/point_socket.h"
 #include "include/controls/compute_thread.h"
@@ -39,6 +40,7 @@ class Controller : public QObject {
 
     // add constraints
     void addEllipse(QPointF const &point, qreal radius = 120);
+    void addCylinder(QPointF const &point, qreal width = 20);
     void addPolygon(QVector<QPointF> points);
     void addPlane(QPointF const &p1, QPointF const &p2);
 
@@ -78,6 +80,7 @@ class Controller : public QObject {
 
     // toggle simulate traj
     void setSimulated(bool state);
+    void setStageBool(bool state);
     void setTrajLock(bool state);
     void setFreeFinalTime(bool state);
     void setDataCapture(bool state);
@@ -91,7 +94,7 @@ class Controller : public QObject {
     INPUT_CODE getIsValidInput();
 
  signals:
-    void trajectoryExecuted(DroneModelItem *, autogen::packet::traj3dof data);
+    void trajectoryExecuted(DroneModelItem *, autogen::packet::traj2dof data);
     // signal view to update
     void finalTime(qreal time);
     void updateMessage();
@@ -110,6 +113,7 @@ class Controller : public QObject {
 
     // configuration
     QVector<EllipseModelItem *> ellipses_;
+    QVector<CylinderModelItem *> cylinders_;
     QSet<PolygonModelItem *> polygons_;
     QVector<PointModelItem *> waypoints_;
     QSet<PointModelItem *> final_points_;
@@ -124,13 +128,14 @@ class Controller : public QObject {
 
     // flag for simulated traj
     bool is_simulated_;
+    bool is_stage_booled_;
     bool traj_lock_;
 
     // Data capture
     bool capture_data_;
     QFile *output_file_;
     void createOutputFile();
-    void updateOutputFile(const autogen::packet::traj3dof &traj,
+    void updateOutputFile(const autogen::packet::traj2dof &traj,
                           DroneModelItem *staged_drone, int index);
 
     // freeze traj timer
@@ -145,10 +150,12 @@ class Controller : public QObject {
     QVector<PointSocket *> final_point_sockets_;
     QVector<WaypointSocket *> waypoint_sockets_;
     QVector<EllipseSocket *> ellipse_sockets_;
+    QVector<CylinderSocket *> cylinder_sockets_;
 
     // remove items
     void removeDroneSocket(DroneModelItem *model);
     void removeEllipseSocket(EllipseModelItem *model);
+    void removeCylinderSocket(CylinderModelItem *model);
     void removePointSocket(PointModelItem *model);
     void removeWaypointSocket(PointModelItem *model);
     void closeSockets();
@@ -157,6 +164,7 @@ class Controller : public QObject {
     void loadDrone(DroneModelItem *model);
     void loadPoint(PointModelItem *model);
     void loadEllipse(EllipseModelItem *model);
+    void loadCylinder(CylinderModelItem *model);
     void loadPolygon(PolygonModelItem *model);
     void loadPlane(PlaneModelItem *model);
     void loadWaypoint(PointModelItem *model);

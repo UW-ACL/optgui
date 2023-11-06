@@ -45,6 +45,11 @@ ConstraintModel::~ConstraintModel() {
         delete ellipse;
     }
 
+    // Delete cylinders
+    for (CylinderModelItem *cylinder : this->cylinders_) {
+        delete cylinder;
+    }
+
     // Delete polygons
     for (PolygonModelItem *polygon : this->polygons_) {
         delete polygon;
@@ -66,7 +71,7 @@ ConstraintModel::~ConstraintModel() {
     }
     // Delete drones and associated traj
     for ( QMap<DroneModelItem *, QPair<PathModelItem *,
-          autogen::packet::traj3dof>>::iterator iter = this->drones_.begin();
+          autogen::packet::traj2dof>>::iterator iter = this->drones_.begin();
          iter != this->drones_.end(); iter++) {
         delete iter.key();  // delete drone
         delete iter.value().first;  // delete path
@@ -97,8 +102,8 @@ QSet<PointModelItem *> ConstraintModel::getPoints() {
 void ConstraintModel::addDrone(DroneModelItem *drone, PathModelItem *traj) {
     QMutexLocker locker(&this->model_lock_);
     this->drones_.insert(drone,
-                         QPair<PathModelItem *, autogen::packet::traj3dof>
-                                (traj, autogen::packet::traj3dof()));
+                         QPair<PathModelItem *, autogen::packet::traj2dof>
+                                (traj, autogen::packet::traj2dof()));
 }
 
 void ConstraintModel::removeDrone(DroneModelItem *item) {
@@ -130,6 +135,21 @@ void ConstraintModel::removeEllipse(EllipseModelItem *item) {
 
 QVector<EllipseModelItem *> ConstraintModel::getEllipses(){
     return this->ellipses_;
+}
+
+void ConstraintModel::addCylinder(CylinderModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->cylinders_.push_back(item);
+}
+
+void ConstraintModel::removeCylinder(CylinderModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    int idx = this->cylinders_.indexOf(item);
+    this->cylinders_.remove(idx);
+}
+
+QVector<CylinderModelItem *> ConstraintModel::getCylinders(){
+    return this->cylinders_;
 }
 
 void ConstraintModel::addPolygon(PolygonModelItem *item) {
@@ -240,36 +260,36 @@ void ConstraintModel::setFinaltime(qreal finaltime) {
     this->P_.tf = finaltime;
 }
 
-autogen::packet::traj3dof
-        ConstraintModel::getCurrTraj3dof(DroneModelItem *drone) {
+autogen::packet::traj2dof
+        ConstraintModel::getCurrTraj2dof(DroneModelItem *drone) {
     QMutexLocker locker(&this->model_lock_);
     // find drone
     QMap<DroneModelItem *, QPair<PathModelItem *,
-            autogen::packet::traj3dof>>::iterator iter =
+            autogen::packet::traj2dof>>::iterator iter =
             this->drones_.find(drone);
     if (iter != this->drones_.end()) {
-        // get traj3dof for drone
+        // get traj2dof for drone
         return (*iter).second;
     }
-    return autogen::packet::traj3dof();
+    return autogen::packet::traj2dof();
 }
 
-void ConstraintModel::setCurrTraj3dof(DroneModelItem *drone,
-                                     autogen::packet::traj3dof traj3dof_data) {
+void ConstraintModel::setCurrTraj2dof(DroneModelItem *drone,
+                                     autogen::packet::traj2dof traj2dof_data) {
     QMutexLocker locker(&this->model_lock_);
     // find drone
     QMap<DroneModelItem *, QPair<PathModelItem *,
-            autogen::packet::traj3dof>>::iterator iter =
+            autogen::packet::traj2dof>>::iterator iter =
             this->drones_.find(drone);
     if (iter != this->drones_.end()) {
-        // set traj3dof for drone
-        (*iter).second = traj3dof_data;
+        // set traj2dof for drone
+        (*iter).second = traj2dof_data;
     }
 }
 
-autogen::packet::traj3dof ConstraintModel::getStagedTraj3dof() {
+autogen::packet::traj2dof ConstraintModel::getStagedTraj2dof() {
     QMutexLocker locker(&this->model_lock_);
-    return this->drone_staged_traj3dof_data_;
+    return this->drone_staged_traj2dof_data_;
 }
 
 DroneModelItem *ConstraintModel::getStagedDrone() {
@@ -284,10 +304,10 @@ void ConstraintModel::stageTraj() {
         this->staged_drone_ = this->curr_drone_;
         // find drone
         QMap<DroneModelItem *, QPair<PathModelItem *,
-                autogen::packet::traj3dof>>::iterator iter =
+                autogen::packet::traj2dof>>::iterator iter =
                 this->drones_.find(this->curr_drone_);
         if (iter != this->drones_.end()) {
-            this->drone_staged_traj3dof_data_ = (*iter).second;
+            this->drone_staged_traj2dof_data_ = (*iter).second;
             this->path_staged_->setPoints((*iter).first->getPoints());
             this->traj_staged_ = true;
         }
@@ -465,6 +485,7 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     port_table->setRowCount(this->final_points_.size()
                             + this->waypoints_.size()
                             + this->ellipses_.size()
+                            + this->cylinders_.size()
 //                          + this->polygons_.size()
 //                          + this->planes_.size()
                             );
@@ -502,6 +523,21 @@ void ConstraintModel::fillTable(QTableWidget *port_table,
     for (EllipseModelItem *model : this->ellipses_) {
         port_table->setItem(row, 0,
                 new QTableWidgetItem("Ellipse " + QString::number(count)));
+        port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
+
+        port_table->setCellWidget(row, 1,
+                new PortSelector(ports, model, port_table));
+        ports->insert(model->port_);
+
+        row++;
+        count++;
+    }
+
+    // Set cylinders
+    count = 1;
+    for (CylinderModelItem *model : this->cylinders_) {
+        port_table->setItem(row, 0,
+                new QTableWidgetItem("Cylinder " + QString::number(count)));
         port_table->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
         port_table->setCellWidget(row, 1,
@@ -589,6 +625,31 @@ void ConstraintModel::updateEllipseColors() {
     }
 }
 
+QVector<QRegion> ConstraintModel::getCylinderRegions() {
+    QMutexLocker locker(&this->model_lock_);
+    QVector<QRegion> regions;
+    for (CylinderModelItem *cylinder : this->cylinders_) {
+        regions.append(cylinder->getRegion());
+    }
+    return regions;
+}
+
+void ConstraintModel::updateCylinderColors() {
+    QMutexLocker locker(&this->model_lock_);
+
+    if (this->input_code_ == INPUT_CODE::VALID_INPUT) {
+        // show cylinders as valid
+        for (CylinderModelItem *cylinder : this->cylinders_) {
+            cylinder->setIsOverlap(false);
+        }
+    } else {
+        // show cylinders as invalid
+        for (CylinderModelItem *cylinder : this->cylinders_) {
+            cylinder->setIsOverlap(true);
+        }
+    }
+}
+
 void ConstraintModel::loadWaypointConstraints(
             skyenet::params *P,
             double wp[skyenet::MAX_WAYPOINTS][3]) {
@@ -648,6 +709,37 @@ void ConstraintModel::loadEllipseConstraints(skyenet::params *P) {
         }
     }
     P->obs.n = index;
+}
+
+void ConstraintModel::loadCylinderConstraints(skyenet::params *P) {
+    QMutexLocker locker(&this->model_lock_);
+
+    quint32 index = 0;
+    for (CylinderModelItem *cylinder : this->cylinders_) {
+        // calculate cylinder properties
+
+        qreal p_c = (cylinder->getWidth() / GRID_SIZE);
+        qreal p_g = ((cylinder->getWidth() + cylinder->getTriggerWidth())/ GRID_SIZE);
+        qreal l_c = (cylinder->getHeight() / GRID_SIZE);
+        qreal yaw = cylinder->getRot();
+
+        QPointF cylinder_pos = cylinder->getPos();
+        QVector3D xyz_coords = guiXyzToXyz(cylinder_pos.x(), cylinder_pos.y(), 0);
+
+        P->hoops.c_x[index] = xyz_coords.x();
+        P->hoops.c_y[index] = xyz_coords.y();
+        P->hoops.p_c[index] = p_c;
+        P->hoops.p_g[index] = p_g;
+        P->hoops.l_c[index] = l_c;
+        P->hoops.yaw[index] = -yaw;
+        index++;
+        // dont go over max
+        if (index >= skyenet::MAX_OBS) {
+            P->hoops.n = index;
+            return;
+        }
+    }
+    P->hoops.n = index;
 }
 
 void ConstraintModel::loadPosConstraints(skyenet::params *P) {

@@ -67,6 +67,11 @@ void LoadDialog::loadConfig(ConstraintModel *model) {
             new_item = !new_item;
             continue;
         }
+        else if (line[0] == "Cylinder"){
+            new_item_type = 'c';
+            new_item = !new_item;
+            continue;
+        }
         else if (line[0] == "Waypoints"){
             new_item_type = 'w';
             new_item = !new_item;
@@ -106,6 +111,16 @@ void LoadDialog::loadConfig(ConstraintModel *model) {
                     item_model->port_ = por;
                 // create graphic based on data model and save to model
                 model->addEllipse(item_model);
+            }
+            else if (old_item_type == 'c'){
+                // create new data model
+                CylinderModelItem *item_model = new CylinderModelItem(pos, cle, hei, wid, trigwid, rot);
+                //EllipseModelItem *item_model = new EllipseModelItem(pos, cle, hei, wid, rot);
+                if (por != NULL)
+                    item_model->port_ = por;
+                // create graphic based on data model and save to model
+                //model->addEllipse(item_model);
+                model->addCylinder(item_model);
             }
             else if (old_item_type == 'w'){
                 // create new data model
@@ -153,6 +168,9 @@ void LoadDialog::loadConfig(ConstraintModel *model) {
         }
         else if (line[0].contains("Rotation")){
             rot = line[1].toDouble();
+        }
+        else if (line[0].contains("Trigger Width")){
+            trigwid = line[1].toDouble();
         }
         else if (line[0].contains("Width")){
             wid = line[1].toDouble();

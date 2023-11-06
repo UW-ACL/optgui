@@ -40,6 +40,7 @@ class PathGraphicsItem : public QGraphicsItem {
 
  private:
     QPen pen_;
+    QPen waypoints_pen_;
     quint32 width_;
     QMutex mutex_;  // mutex lock for compute thread setting color
     qreal getScalingFactor() const;

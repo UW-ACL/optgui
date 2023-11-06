@@ -66,10 +66,10 @@ void DroneSocket::readPendingDatagrams() {
 }
 
 void DroneSocket::rx_trajectory(DroneModelItem *drone,
-                                const autogen::packet::traj3dof data) {
+                                const autogen::packet::traj2dof data) {
     if (drone == this->drone_item_->model_) {
-        autogen::serializable::traj3dof
-                <autogen::topic::traj3dof::UNDEFINED> ser_data;
+        autogen::serializable::traj2dof
+                <autogen::topic::traj2dof::UNDEFINED> ser_data;
         ser_data = data;
         char buffer[4096] = {0};
         ser_data.serialize(reinterpret_cast<uint8 *>(buffer));
