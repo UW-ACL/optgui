@@ -183,7 +183,7 @@ void ComputeThread::run() {
 
                 // Add data to mikipilot trajectory
                 // drone_traj2dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
-//                if (j == this->active_traj_){
+                if (j == this->active_traj_){
                     drone_traj2dof_data.time(i) = O.t[i][j];
 
                     // XYZ to NED conversion
@@ -198,7 +198,7 @@ void ComputeThread::run() {
                     drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i][j];
                     drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i][j];
                     // drone_traj2dof_data.accl_ned(2, i) = -O.a[2][i];
-//                }
+                }
             }
             trajectories.append(trajectory);
 
@@ -238,15 +238,15 @@ void ComputeThread::run() {
             }
             emit updateMessage(this->drone_->model_);
 
-            this->setFeasibilityColor(is_feasible);
+            this->setFeasibilityColor(is_feasible && j == this->active_traj_, j);
         }
     }
 }
 
-void ComputeThread::setFeasibilityColor(bool is_feasible) {
+void ComputeThread::setFeasibilityColor(bool is_feasible, int traj_idx) {
     // get graphics items
     DroneGraphicsItem *drone = this->getDroneGraphic();
-    PathGraphicsItem *traj = this->getTrajGraphic(0); // TODO
+    PathGraphicsItem *traj = this->getTrajGraphic(traj_idx); // TODO
 
     // set feasiblility color
     if (is_feasible) {

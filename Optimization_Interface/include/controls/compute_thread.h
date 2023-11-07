@@ -71,7 +71,7 @@ class ComputeThread : public QThread {
     INPUT_CODE validateInputs(QVector<QRegion> const &ellipse_regions,
                               QVector3D const &initial_pos,
                               QVector3D const &final_pos);
-    void setFeasibilityColor(bool is_feasible);
+    void setFeasibilityColor(bool is_feasible, int traj_idx);
 
     bool getRunFlag();
 };

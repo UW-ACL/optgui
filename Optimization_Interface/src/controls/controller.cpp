@@ -138,20 +138,21 @@ void Controller::removeItem(QGraphicsItem *item) {
                     this->compute_threads_.find(model);
             if (iter != this->compute_threads_.end()) {
                 // get traj
-                PathGraphicsItem *traj = (*iter)->getTrajGraphic(0); // TODO
-                PathModelItem *traj_model = traj->model_;
+                for (int i = 0; i < 10; i++){
+                    PathGraphicsItem *traj = (*iter)->getTrajGraphic(i); // TODO
+                    PathModelItem *traj_model = traj->model_;
 
+                    // remove traj
+                    this->canvas_->removeItem(traj);
+                    this->canvas_->path_graphics_.remove(traj);
+                    delete traj;
+                    delete traj_model;
+                }
                 // stop compute
                 (*iter)->stopCompute();
                 // deletion will be handled by deletelater slot
                 // remove from map
                 iter = this->compute_threads_.erase(iter);
-
-                // remove traj
-                this->canvas_->removeItem(traj);
-                this->canvas_->path_graphics_.remove(traj);
-                delete traj;
-                delete traj_model;
             }
 
             // remove drone
@@ -1003,6 +1004,23 @@ void Controller::setCurrDrone(DroneModelItem *drone) {
         }
     }
 }
+
+/*void Controller::setCurrTraj(PathModelItem *traj) {
+    if (!this->model_->isCurrTraj(traj)) {
+        this->model_->setCurrTraj(traj);
+
+        if (traj != nullptr) {
+            for (PathGraphicsItem *path_graphic :
+                    this->canvas_->path_graphics_) {
+                if (path_graphic->model_ == traj) {
+                    path_graphic->is_curr_traj_ = true;
+                } else {
+                    path_graphic->is_curr_traj_ = false;
+                }
+            }
+        }
+    }
+}*/
 
 FEASIBILITY_CODE Controller::getIsValidTraj() {
     return this->model_->getIsValidTraj();
