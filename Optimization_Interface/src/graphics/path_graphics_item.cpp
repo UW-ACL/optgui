@@ -33,6 +33,7 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
 void PathGraphicsItem::setColor(QColor color) {
     QMutexLocker(&this->mutex_);
     this->pen_.setColor(color);
+    this->waypoints_pen_.setColor(color);
 }
 
 QRectF PathGraphicsItem::boundingRect() const {
@@ -52,7 +53,7 @@ void PathGraphicsItem::paint(QPainter *painter,
     this->pen_.setWidthF(this->width_ / scaling_factor);
     quint32 size = this->model_->getSize();
     for (quint32 i = 1; i < size; i++) {
-        //painter->setPen(this->pen_);
+        painter->setPen(this->pen_);
         QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
                     mapFromScene(this->model_->getPointAt(i)));
         painter->drawLine(line);

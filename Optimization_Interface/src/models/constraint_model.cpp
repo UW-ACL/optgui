@@ -96,6 +96,10 @@ void ConstraintModel::removePoint(PointModelItem *item) {
     this->final_points_.remove(item);
 }
 
+QSet<PointModelItem *> ConstraintModel::getPoints() {
+    return this->final_points_;
+}
+
 void ConstraintModel::addDrone(DroneModelItem *drone, PathModelItem *traj) {
     QMutexLocker locker(&this->model_lock_);
     this->drones_.insert(drone,
@@ -112,14 +116,41 @@ void ConstraintModel::removeDrone(DroneModelItem *item) {
     this->drones_.remove(item);
 }
 
+DroneModelItem* ConstraintModel::getDrones(){
+    if (drones_.count() > 0)
+        return this->drones_.firstKey();
+    else
+        return NULL;
+}
+
 void ConstraintModel::addEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->ellipses_.insert(item);
+    this->ellipses_.push_back(item);
 }
 
 void ConstraintModel::removeEllipse(EllipseModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
-    this->ellipses_.remove(item);
+    int idx = this->ellipses_.indexOf(item);
+    this->ellipses_.remove(idx);
+}
+
+QVector<EllipseModelItem *> ConstraintModel::getEllipses(){
+    return this->ellipses_;
+}
+
+void ConstraintModel::addCylinder(CylinderModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    this->cylinders_.push_back(item);
+}
+
+void ConstraintModel::removeCylinder(CylinderModelItem *item) {
+    QMutexLocker locker(&this->model_lock_);
+    int idx = this->cylinders_.indexOf(item);
+    this->cylinders_.remove(idx);
+}
+
+QVector<CylinderModelItem *> ConstraintModel::getCylinders(){
+    return this->cylinders_;
 }
 
 void ConstraintModel::addCylinder(CylinderModelItem *item) {
@@ -140,6 +171,10 @@ void ConstraintModel::addPolygon(PolygonModelItem *item) {
 void ConstraintModel::removePolygon(PolygonModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
     this->polygons_.remove(item);
+}
+
+QSet<PolygonModelItem *> ConstraintModel::getPolygons() {
+    return this->polygons_;
 }
 
 void ConstraintModel::addPlane(PlaneModelItem *item) {
@@ -171,6 +206,10 @@ quint32 ConstraintModel::getNumWaypoints() {
 void ConstraintModel::reverseWaypoints() {
     QMutexLocker locker(&this->model_lock_);
     std::reverse(this->waypoints_.begin(), this->waypoints_.end());
+}
+
+QVector<PointModelItem *> ConstraintModel::getWaypoints(){
+    return this->waypoints_;
 }
 
 void ConstraintModel::setPathStagedModel(PathModelItem *trajectory) {

@@ -31,8 +31,8 @@ class MainWindow : public QMainWindow {
     // window menu
     QMenu *file_menu_;
     // save/load functionality (not currently supported)
-//    QAction *save_file_;
-//    QAction *load_file_;
+    QAction *save_file_;
+    QAction *load_file_;
     // open network configuration dialog
     QAction *set_ports_;
 };

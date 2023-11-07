@@ -61,6 +61,12 @@ class View : public QGraphicsView {
     // open network configuration dialog
     void setPorts();
 
+    // save configuration file
+    void saveFile();
+
+    // load configuration file
+    void loadFile();
+
     // execute staged traj
     void execute();
 
@@ -92,6 +98,7 @@ class View : public QGraphicsView {
     void updateFeedbackMessage();
     void setCurrEndpoints();
     void toggleSim(int);
+    void toggleStage(int);
     void toggleTrajLock(int);
     void toggleFreeFinalTime(int);
     void toggleDataCapture(int);
@@ -164,6 +171,7 @@ class View : public QGraphicsView {
     void initializeStageButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
+    void initializeStageToggle(MenuPanel *panel);
     void initializeSimToggle(MenuPanel *panel);
     void initializeTrajLockToggle(MenuPanel *panel);
     void initializeFreeFinalTimeToggle(MenuPanel *panel);

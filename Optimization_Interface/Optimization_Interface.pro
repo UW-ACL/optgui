@@ -32,6 +32,7 @@ INCLUDEPATH += $$PWD/../../skyenet/csocp/
 INCLUDEPATH += $$PWD/../../mikipilot
 INCLUDEPATH += $$PWD/../../mikipilot/build/gcs/executable/
 
+
 # //SKYENET//
 LIBS += -L$$PWD/../../skyenet/algorithm -lalgorithm    # looks for libalgorithm.a file
 LIBS += -L$$PWD/../../skyenet/cprs/build -lCPRS        # looks for libCPRS.a
@@ -75,6 +76,8 @@ SOURCES += \
     src/graphics/drone_graphics_item.cpp \
     src/graphics/path_graphics_item.cpp \
     src/window/port_dialog.cpp \
+    src/window/save_dialog.cpp \
+    src/window/load_dialog.cpp \
     src/window/port_dialog/drone_id_selector.cpp \
     src/window/port_dialog/port_selector.cpp \
     src/network/drone_socket.cpp \
@@ -112,6 +115,8 @@ HEADERS += \
     include/models/drone_model_item.h \
     include/graphics/path_graphics_item.h \
     include/window/port_dialog.h \
+    include/window/save_dialog.h \
+    include/window/load_dialog.h \
     include/window/port_dialog/drone_id_selector.h \
     include/window/port_dialog/port_selector.h \
     include/models/data_model.h \

@@ -14,6 +14,7 @@
 namespace optgui {
 
 CylinderGraphicsItem::CylinderGraphicsItem(CylinderModelItem *model,
+                                         quint32 index,
                                          QGraphicsItem *parent)
     : QGraphicsItem(parent) {
     // Set model
@@ -35,6 +36,9 @@ CylinderGraphicsItem::CylinderGraphicsItem(CylinderModelItem *model,
     this->setFlags(QGraphicsItem::ItemIsMovable |
                    QGraphicsItem::ItemIsSelectable |
                    QGraphicsItem::ItemSendsGeometryChanges);
+
+    // set ordering of ellipse
+    this->index_ = index;
 
     // Set position
     this->setPos(this->model_->getPos());
@@ -127,6 +131,13 @@ void CylinderGraphicsItem::paint(QPainter *painter,
     painter->drawRect(QRectF(-clearance_width, -clearance_height,
                                     clearance_width * 2, clearance_height * 2));
 
+    QFont font = painter->font();
+    font.setPointSizeF(14 / scaling_factor);
+    painter->setFont(font);
+    painter->setPen(Qt::red);
+    painter->drawText(this->boundingRect(), Qt::AlignHCenter,
+                              QString::number(this->index_ + 1));
+
     // Label with port
     if (this->model_->port_ != 0) {
         painter->rotate(-this->rotation());
@@ -147,6 +158,11 @@ void CylinderGraphicsItem::paint(QPainter *painter,
 int CylinderGraphicsItem::type() const {
     // return unique graphics type
     return CYLINDER_GRAPHIC;
+}
+
+void CylinderGraphicsItem::setIndex(quint32 index) {
+    // set ordering of cylinder
+    this->index_ = index;
 }
 
 QPainterPath CylinderGraphicsItem::shape() const {

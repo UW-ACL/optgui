@@ -21,6 +21,7 @@ qreal const CYLINDER_BORDER = 15;
 class CylinderGraphicsItem : public QGraphicsItem {
  public:
     explicit CylinderGraphicsItem(CylinderModelItem *model,
+                                 quint32 index,
                                  QGraphicsItem *parent = nullptr);
     ~CylinderGraphicsItem();
 
@@ -43,6 +44,9 @@ class CylinderGraphicsItem : public QGraphicsItem {
     // change color to red for displaying errors
     void setRed(bool isOverlap);
 
+    // set ordering of cylinder
+    void setIndex(quint32 index);
+
  protected:
     // shape to paint
     QPainterPath shape() const override;
@@ -63,6 +67,9 @@ class CylinderGraphicsItem : public QGraphicsItem {
 
     // scale zoom level
     qreal getScalingFactor() const;
+
+    // ordering of cylinder
+    quint32 index_;
 };
 
 }  // namespace optgui
