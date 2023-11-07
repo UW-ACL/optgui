@@ -267,7 +267,7 @@ void ComputeThread::run() {
 
         for (quint32 i = 0; i < size; i++) {
             // Add data to mikipilot trajectory
-            drone_traj2dof_data.time(i) = O.t[i];
+            drone_traj2dof_data.time(i) = O.t[i][sel_target_tag];
 
             // XYZ to NED conversion
             drone_traj2dof_data.pos_ned(0, i) =  O.r[1][i][sel_target_tag];
