@@ -50,11 +50,6 @@ class ConstraintModel {
     void removeCylinder(CylinderModelItem *item);
     QVector<CylinderModelItem *> getCylinders();
 
-    // functions for cylinder hoop data models
-    // caller responsible for deleting pointer
-    void addCylinder(CylinderModelItem *item);
-    void removeCylinder(CylinderModelItem *item);
-
     // functions for polygon constraint data models
     // caller responsible for deleting pointer
     void addPolygon(PolygonModelItem *item);

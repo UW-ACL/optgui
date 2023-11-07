@@ -153,16 +153,6 @@ QVector<CylinderModelItem *> ConstraintModel::getCylinders(){
     return this->cylinders_;
 }
 
-void ConstraintModel::addCylinder(CylinderModelItem *item) {
-    QMutexLocker locker(&this->model_lock_);
-    this->cylinders_.insert(item);
-}
-
-void ConstraintModel::removeCylinder(CylinderModelItem *item) {
-    QMutexLocker locker(&this->model_lock_);
-    this->cylinders_.remove(item);
-}
-
 void ConstraintModel::addPolygon(PolygonModelItem *item) {
     QMutexLocker locker(&this->model_lock_);
     this->polygons_.insert(item);
@@ -411,6 +401,10 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     uint32 row_index = 0;
     this->P_.K = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.scp_iters = qobject_cast<QSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
+    this->P_.interp_ref = qobject_cast<QSpinBox *>
+            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.w_obj = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.w_trust = qobject_cast<QDoubleSpinBox *>
@@ -420,8 +414,6 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
     this->P_.eps_cvg = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.subopt_tol = qobject_cast<QDoubleSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.scp_iters = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.tf_max = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();

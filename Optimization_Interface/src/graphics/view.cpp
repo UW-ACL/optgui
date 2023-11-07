@@ -831,7 +831,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // Create table
     this->skyefly_params_table_ = new QTableWidget(panel->menu_);
     this->skyefly_params_table_->setColumnCount(1);  // fill with spinboxes
-    this->skyefly_params_table_->setRowCount(13);  // how many params to edit
+    this->skyefly_params_table_->setRowCount(15);  // how many params to edit
         // vertical headers are spinbox labels
     this->skyefly_params_table_->verticalHeader()->setVisible(true);
     this->skyefly_params_table_->verticalHeader()->
@@ -864,6 +864,32 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_K);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("K"));
+    row_index++;
+
+    // P.scp_iters
+    QSpinBox *params_scp_iters =
+            new QSpinBox(this->skyefly_params_table_);
+    params_scp_iters->setRange(0, 100);
+    params_scp_iters->setValue(default_P.scp_iters);
+    connect(params_scp_iters, SIGNAL(valueChanged(int)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_scp_iters);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("scp_iters"));
+    row_index++;
+
+    // P.interp_ref
+    QSpinBox *params_interp_ref =
+            new QSpinBox(this->skyefly_params_table_);
+    params_interp_ref->setRange(0, 1);
+    params_interp_ref->setValue(default_P.interp_ref);
+    connect(params_interp_ref, SIGNAL(valueChanged(bool)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_interp_ref);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("interp_ref"));
     row_index++;
 
     // P.w_obj
@@ -931,19 +957,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("eps_subopt"));
     row_index++;
 
-    // P.scp_iters
-    QSpinBox *params_scp_iters =
-            new QSpinBox(this->skyefly_params_table_);
-    params_scp_iters->setRange(0, 100);
-    params_scp_iters->setValue(default_P.scp_iters);
-    connect(params_scp_iters, SIGNAL(valueChanged(int)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_scp_iters);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("scp_iters"));
-    row_index++;
-
     // P.tf_max
     QDoubleSpinBox *params_tf_max =
             new QDoubleSpinBox(this->skyefly_params_table_);
@@ -1000,7 +1013,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("a_min"));
     row_index++;
-    */
+    
 
     // P.a_max
     QDoubleSpinBox *params_a_max =

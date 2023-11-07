@@ -184,18 +184,19 @@ void ComputeThread::run() {
             QPointF curr_final_pos_2D = this->getPooledTarget(i)->getPos();
             QVector3D curr_final_pos = QVector3D(curr_final_pos_2D.x(), curr_final_pos_2D.y(), 0);
 
-        // validate inputs
-        INPUT_CODE input_code = this->validateInputs(ellipse_regions,
-                                                     initial_pos, final_pos);
-        // set valid input and update message if changed
-        if (this->model_->setIsValidInput(input_code)) {
-            this->model_->updateEllipseColors();
-            emit updateMessage(this->drone_->model_);
+            // validate inputs
+            INPUT_CODE input_code = this->validateInputs(ellipse_regions,
+                                                        initial_pos, curr_final_pos);
+            // set valid input and update message if changed
+            if (this->model_->setIsValidInput(input_code)) {
+                this->model_->updateEllipseColors();
+                emit updateMessage(this->drone_->model_);
+            }
+            // Dont compute if invalid input
+            //        if (input_code != INPUT_CODE::VALID_INPUT) {
+            //            continue;
+            //        }
         }
-        // Dont compute if invalid input
-        //        if (input_code != INPUT_CODE::VALID_INPUT) {
-        //            continue;
-        //        }
 
         // ..:: Build Skyenet parameters ::..
 
