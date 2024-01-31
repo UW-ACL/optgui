@@ -168,15 +168,17 @@ void ComputeThread::run() {
         autogen::packet::traj2dof drone_traj2dof_data;
         drone_traj2dof_data.K = size;
 
-        for (quint32 i = 0; i < size; i++) {
-            // Add points to GUI trajectory
-            QVector3D gui_coords = xyzToGuiXyz(O.r[0][i],
-                                               O.r[1][i],
-                                               O.r[2][i]);
-            trajectory.append(QPointF(gui_coords.x(),
-                                      gui_coords.y()));
+        // Add points to GUI trajectory
+        for (quint32 i = 0; i < size - 1; i++) {
+            for (quint32 j=0; j < P.Ksub - 1; j++) {
+                quint32 idx = i * (P.Ksub - 1) + j;
+                QVector3D gui_coords = xyzToGuiXyz(O.xprop(0, idx), O.xprop(1, idx), O.xprop(2, idx));
+                trajectory.append(QPointF(gui_coords.x(), gui_coords.y()));
+            }
+        }
 
-            // Add data to mikipilot trajectory
+        // Add points to mikipilot trajectory
+        for (quint32 i = 0; i < size; i++) {
             // drone_traj2dof_data.clock_angle(k) = 90.0/180.0*3.141592*P.dt*k;
             drone_traj2dof_data.time(i) = O.t[i];
 
