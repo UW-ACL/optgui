@@ -19,6 +19,7 @@ namespace optgui {
 class PathGraphicsItem : public QGraphicsItem {
  public:
     explicit PathGraphicsItem(PathModelItem *model,
+                              quint32 Ksub,
                               QGraphicsItem *parent = nullptr,
                               quint32 size = 4);
     // rough area of graphic
@@ -44,6 +45,7 @@ class PathGraphicsItem : public QGraphicsItem {
     quint32 width_;
     QMutex mutex_;  // mutex lock for compute thread setting color
     qreal getScalingFactor() const;
+    quint32 Ksub_;
 };
 
 }  // namespace optgui

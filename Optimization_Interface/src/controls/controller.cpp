@@ -54,8 +54,9 @@ Controller::Controller(Canvas *canvas) {
     // initialize trajectory sent model and graphic
     PathModelItem *trajectory_sent_model = new PathModelItem();
     this->model_->setPathStagedModel(trajectory_sent_model);
+    skyenet::params P = this->model_->getSkyeFlyParams();
     this->canvas_->path_staged_graphic_ =
-            new PathGraphicsItem(trajectory_sent_model);
+            new PathGraphicsItem(trajectory_sent_model, P.Ksub);
     this->canvas_->path_staged_graphic_->setColor(GREEN);
     this->canvas_->path_staged_graphic_->setZValue(renderLevel);
     renderLevel = std::nextafter(renderLevel, 0);
@@ -1090,8 +1091,9 @@ void Controller::loadDrone(DroneModelItem *item_model) {
     item_graphic->update(item_graphic->boundingRect());
 
     // create path graphic
+    skyenet::params P = this->model_->getSkyeFlyParams();
     PathGraphicsItem *path_graphic_ =
-            new PathGraphicsItem(trajectory_model);
+            new PathGraphicsItem(trajectory_model, P.Ksub);
     path_graphic_->setZValue(this->traj_render_level_);
     this->canvas_->path_graphics_.insert(path_graphic_);
     this->canvas_->addItem(path_graphic_);

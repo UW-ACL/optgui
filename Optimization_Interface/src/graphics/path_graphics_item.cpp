@@ -11,11 +11,13 @@
 namespace optgui {
 
 PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
+                                   quint32 Ksub,
                                    QGraphicsItem *parent,
                                    quint32 size)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
+    this->Ksub_ = Ksub;
     this->width_ = size;
 
     // Set pen
@@ -59,8 +61,11 @@ void PathGraphicsItem::paint(QPainter *painter,
         painter->drawLine(line);
 
         painter->setPen(this->waypoints_pen_);
-        painter->drawEllipse(this->model_->getPointAt(i), 0.5 * this->width_ / scaling_factor,
-                             0.5 * this->width_ / scaling_factor);
+
+        if (i % (Ksub_ - 1) == 0) {
+            painter->drawEllipse(this->model_->getPointAt(i), 0.5 * this->width_ / scaling_factor,
+                                    0.5 * this->width_ / scaling_factor);
+        }
     }
 }
 
