@@ -158,7 +158,7 @@ void ComputeThread::run() {
 
         // Run SCvx algorithm for free or fixed final time
         skyenet::outputs const &O =
-            this->fly_.update(this->model_->isFreeFinalTime());
+            this->fly_.update(this->model_->isCTCS(), this->model_->isFreeFinalTime());
 
         // Iterations in resulting trajectory
         quint32 size = P.K;

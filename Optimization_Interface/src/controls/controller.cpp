@@ -736,8 +736,11 @@ void Controller::setTrajLock(bool state) {
     this->traj_lock_ = state;
 }
 
+void Controller::setCTCS(bool state) {
+    this->model_->setCTCS(state);
+}
+
 void Controller::setFreeFinalTime(bool state) {
-    // TODO(dtsull16): reset inputs?
     this->model_->setFreeFinalTime(state);
 }
 

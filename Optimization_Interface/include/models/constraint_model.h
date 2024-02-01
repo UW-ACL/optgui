@@ -127,6 +127,8 @@ class ConstraintModel {
     // (live reference)
     void setLiveReferenceMode(bool reference_mode);
     bool isLiveReference();
+    void setCTCS(bool CTCS);
+    bool isCTCS();
     void setFreeFinalTime(bool free_final_time);
     bool isFreeFinalTime();
 
@@ -174,6 +176,7 @@ private:
     bool traj_staged_;
     // flag for tracking a sent trajectory
     bool is_live_reference_;
+    bool is_CTCS_;
     bool is_free_final_time_;
 
     // Clearance around ellipses in meters

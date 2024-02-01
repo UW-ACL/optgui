@@ -161,6 +161,8 @@ void View::initializeMenuPanel() {
     this->initializeDuplicateButton(this->menu_panel_);
     // feedback
     this->initializeMessageBox(this->menu_panel_);
+    // CTCS
+    this->initializeCTCSToggle(this->menu_panel_);
     // final time
     this->initializeFreeFinalTimeToggle(this->menu_panel_);
     this->initializeFinaltime(this->menu_panel_);
@@ -1177,6 +1179,10 @@ void View::toggleTrajLock(int state) {
     this->controller_->setTrajLock(state == Qt::Checked);
 }
 
+void View::toggleCTCS(int state) {
+    this->controller_->setCTCS(state == Qt::Checked);
+}
+
 void View::toggleFreeFinalTime(int state) {
     this->controller_->setFreeFinalTime(state == Qt::Checked);
 }
@@ -1330,11 +1336,29 @@ void View::initializeDataCaptureToggle(MenuPanel *panel) {
             this, SLOT(toggleDataCapture(int)));
 }
 
+void View::initializeCTCSToggle(MenuPanel *panel) {
+    QCheckBox *ctcs_toggle =
+            new QCheckBox("CTCS", panel->menu_);
+    ctcs_toggle->
+            setToolTip(tr("Toggle CTCS"));
+    ctcs_toggle->setMinimumHeight(35);
+    ctcs_toggle->setCheckState(Qt::Unchecked);
+    panel->menu_->layout()->addWidget(ctcs_toggle);
+    panel->menu_->layout()->setAlignment(
+                ctcs_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(ctcs_toggle);
+
+    // Connect execute button
+    connect(ctcs_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleCTCS(int)));
+}
+
 void View::initializeFreeFinalTimeToggle(MenuPanel *panel) {
     QCheckBox *free_final_time_toggle =
             new QCheckBox("Free Final Time", panel->menu_);
     free_final_time_toggle->
-            setToolTip(tr("Toggle simulate trajectory"));
+            setToolTip(tr("Toggle free final time"));
     free_final_time_toggle->setMinimumHeight(35);
     free_final_time_toggle->setCheckState(Qt::Unchecked);
     panel->menu_->layout()->addWidget(free_final_time_toggle);

@@ -35,6 +35,7 @@ ConstraintModel::ConstraintModel() : model_lock_(), P_() {
     // initialize live reference mode to disable updating
     // current trajectory
     this->is_live_reference_ = false;
+    this->is_CTCS_ = false;
     this->is_free_final_time_ = false;
 }
 
@@ -361,6 +362,16 @@ bool ConstraintModel::isLiveReference() {
 void ConstraintModel::setLiveReferenceMode(bool reference_mode) {
     QMutexLocker locker(&this->model_lock_);
     this->is_live_reference_ = reference_mode;
+}
+
+bool ConstraintModel::isCTCS() {
+    QMutexLocker locker(&this->model_lock_);
+    return this->is_CTCS_;
+}
+
+void ConstraintModel::setCTCS(bool CTCS) {
+    QMutexLocker locker(&this->model_lock_);
+    this->is_CTCS_ = CTCS;
 }
 
 bool ConstraintModel::isFreeFinalTime() {

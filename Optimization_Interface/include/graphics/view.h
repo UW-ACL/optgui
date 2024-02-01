@@ -100,6 +100,7 @@ class View : public QGraphicsView {
     void toggleSim(int);
     void toggleStage(int);
     void toggleTrajLock(int);
+    void toggleCTCS(int);
     void toggleFreeFinalTime(int);
     void toggleDataCapture(int);
 
@@ -174,6 +175,7 @@ class View : public QGraphicsView {
     void initializeStageToggle(MenuPanel *panel);
     void initializeSimToggle(MenuPanel *panel);
     void initializeTrajLockToggle(MenuPanel *panel);
+    void initializeCTCSToggle(MenuPanel *panel);
     void initializeFreeFinalTimeToggle(MenuPanel *panel);
     // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);

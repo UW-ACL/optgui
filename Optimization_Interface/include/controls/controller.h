@@ -82,6 +82,7 @@ class Controller : public QObject {
     void setSimulated(bool state);
     void setStageBool(bool state);
     void setTrajLock(bool state);
+    void setCTCS(bool state);
     void setFreeFinalTime(bool state);
     void setDataCapture(bool state);
 
