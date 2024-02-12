@@ -153,7 +153,7 @@ void ComputeThread::run() {
         // check to reset inputs
         if (this->target_changed_) {
             this->target_changed_ = false;
-            this->fly_.resetInputs(r_i, v_i, a_i, r_f, wp,this->model_->isFreeFinalTime());
+            this->fly_.resetInputs(r_i, v_i, a_i, r_f, wp, this->model_->isCTCS(), this->model_->isFreeFinalTime());
         }
 
         // Run SCvx algorithm for free or fixed final time
