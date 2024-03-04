@@ -53,7 +53,7 @@ class Canvas : public QGraphicsScene {
     void bringSelectedToFront();
 
     // manually force a re-render of item
-    void updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *);
+    void updateGraphicsItems(PathGraphicsItem *, PathGraphicsItem *, DroneGraphicsItem *);
 
  private:
     qreal getScalingFactor();

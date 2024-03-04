@@ -152,9 +152,8 @@ void Controller::removeItem(QGraphicsItem *item) {
             QMap<DroneModelItem *, ComputeThread *>::iterator iter =
                     this->compute_threads_.find(model);
             if (iter != this->compute_threads_.end()) {
-                // get traj
-                PathGraphicsItem *traj = (*iter)->getTrajGraphic();
-                PathModelItem *traj_model = traj->model_;
+                // get solution traj
+                PathGraphicsItem *traj_sol = (*iter)->getTrajSolGraphic();
 
                 // stop compute
                 (*iter)->stopCompute();
@@ -163,10 +162,23 @@ void Controller::removeItem(QGraphicsItem *item) {
                 iter = this->compute_threads_.erase(iter);
 
                 // remove traj
-                this->canvas_->removeItem(traj);
-                this->canvas_->path_graphics_.remove(traj);
-                delete traj;
-                delete traj_model;
+                this->canvas_->removeItem(traj_sol);
+                this->canvas_->path_graphics_.remove(traj_sol);
+                delete traj_sol;
+
+                // get simulation traj
+                PathGraphicsItem *traj_sim = (*iter)->getTrajSimGraphic();
+
+                // stop compute
+                (*iter)->stopCompute();
+                // deletion will be handled by deletelater slot
+                // remove from map
+                iter = this->compute_threads_.erase(iter);
+
+                // remove traj
+                this->canvas_->removeItem(traj_sim);
+                this->canvas_->path_graphics_.remove(traj_sim);
+                delete traj_sim;
             }
 
             // remove drone
@@ -621,7 +633,7 @@ void Controller::execute() {
         QMap<DroneModelItem *, ComputeThread *>::iterator iter =
                 this->compute_threads_.find(staged_drone);
         if (iter != this->compute_threads_.end()) {
-            (*iter)->getTrajGraphic()->model_->
+            (*iter)->getTrajSolGraphic()->model_->
                     setPoints(this->model_->getPathStagedPoints());
         }
 
@@ -1077,44 +1089,63 @@ void Controller::loadPoint(PointModelItem *item_model) {
 }
 
 void Controller::loadDrone(DroneModelItem *item_model) {
-    // create path model for selected trajectory
-    PathModelItem *trajectory_model = new PathModelItem();
+    // create path models for selected trajectory
+    PathModelItem *trajectory_model_sol = new PathModelItem();
+    PathModelItem *trajectory_model_sim = new PathModelItem();
 
     // create drone graphic
     DroneGraphicsItem *item_graphic =
             new DroneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->drone_graphics_.insert(item_graphic);
-    this->model_->addDrone(item_model, trajectory_model);
+    this->model_->addDrone(item_model, trajectory_model_sol);
     item_graphic->setZValue(this->drone_render_level_);
     item_graphic->update(item_graphic->boundingRect());
 
-    // create path graphic for selected trajectory
-    PathGraphicsItem *path_graphic_ = 
-            new PathGraphicsItem(trajectory_model);
-    path_graphic_->setZValue(this->traj_render_level_);
-    this->canvas_->path_graphics_.insert(path_graphic_);
-    this->canvas_->addItem(path_graphic_);
-
-    // create path graphics for pooled trajectories (allocated up to MAX_TARGETS)
-    PathGraphicsItem *path_graphic_pool_[skyenet::MAX_TARGETS];
+    // create solution path graphics for pooled trajectories (allocated up to MAX_TARGETS)
+    PathGraphicsItem *path_graphic_sol_pool_[skyenet::MAX_TARGETS];
     for (int i = 0; i < skyenet::MAX_TARGETS; i++){
         PathModelItem *trajectory_model = new PathModelItem();
-        path_graphic_pool_[i] = 
+        path_graphic_sol_pool_[i] = 
                 new PathGraphicsItem(trajectory_model);
-        path_graphic_pool_[i]->setZValue(this->traj_render_level_);
-        this->canvas_->path_graphics_.insert(path_graphic_pool_[i]);
-        this->canvas_->addItem(path_graphic_pool_[i]);
+        path_graphic_sol_pool_[i]->setZValue(this->traj_render_level_);
+        this->canvas_->path_graphics_.insert(path_graphic_sol_pool_[i]);
+        this->canvas_->addItem(path_graphic_sol_pool_[i]);
     }
+
+    // create simulation path graphics for pooled trajectories (allocated up to MAX_TARGETS)
+    PathGraphicsItem *path_graphic_sim_pool_[skyenet::MAX_TARGETS];
+    for (int i = 0; i < skyenet::MAX_TARGETS; i++){
+        PathModelItem *trajectory_model = new PathModelItem();
+        path_graphic_sim_pool_[i] = 
+                new PathGraphicsItem(trajectory_model);
+        path_graphic_sim_pool_[i]->setZValue(this->traj_render_level_);
+        this->canvas_->path_graphics_.insert(path_graphic_sim_pool_[i]);
+        this->canvas_->addItem(path_graphic_sim_pool_[i]);
+    }
+
+    // create solution path graphic for selected trajectory
+    PathGraphicsItem *path_graphic_sol_ = 
+            new PathGraphicsItem(trajectory_model_sol);
+    path_graphic_sol_->setZValue(this->traj_render_level_);
+    this->canvas_->path_graphics_.insert(path_graphic_sol_);
+    this->canvas_->addItem(path_graphic_sol_);
+
+    // create simulation path graphic for selected trajectory
+    PathGraphicsItem *path_graphic_sim_ = 
+            new PathGraphicsItem(trajectory_model_sim);
+    path_graphic_sim_->setZValue(this->traj_render_level_);
+    this->canvas_->path_graphics_.insert(path_graphic_sim_);
+    this->canvas_->addItem(path_graphic_sim_);
 
     // create compute thread
     ComputeThread *compute_thread_ =
-            new ComputeThread(this->model_, item_graphic, path_graphic_, path_graphic_pool_);
+            new ComputeThread(this->model_, item_graphic, path_graphic_sol_, path_graphic_sim_, path_graphic_sol_pool_, path_graphic_sim_pool_);
     this->compute_threads_.insert(item_model, compute_thread_);
     connect(compute_thread_,
-            SIGNAL(updateGraphics(PathGraphicsItem *, DroneGraphicsItem *)),
+            SIGNAL(updateGraphics(PathGraphicsItem *, PathGraphicsItem *, DroneGraphicsItem *)),
             this->canvas_,
-            SLOT(updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *)));
+            SLOT(updateGraphicsItems(PathGraphicsItem *, PathGraphicsItem *, DroneGraphicsItem *)));
     connect(compute_thread_,
             SIGNAL(finalTime(DroneModelItem *, qreal)),
             this,

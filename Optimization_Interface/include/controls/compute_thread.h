@@ -26,12 +26,16 @@ class ComputeThread : public QThread {
  public:
     explicit ComputeThread(ConstraintModel *model,
                            DroneGraphicsItem *drone,
-                           PathGraphicsItem *traj_graphic,
-                           PathGraphicsItem *traj_graphic_pool[skyenet::MAX_TARGETS]);
+                           PathGraphicsItem *traj_graphic_sol,
+                           PathGraphicsItem *traj_graphic_sim,
+                           PathGraphicsItem *traj_graphic_sol_pool[skyenet::MAX_TARGETS],
+                           PathGraphicsItem *traj_graphic_sim_pool[skyenet::MAX_TARGETS]);
     ~ComputeThread();
 
-    PathGraphicsItem *getTrajGraphic();
-    PathGraphicsItem *getPooledTrajGraphic(quint32 tag);
+    PathGraphicsItem *getTrajSolGraphic();
+    PathGraphicsItem *getTrajSimGraphic();
+    PathGraphicsItem *getPooledTrajSolGraphic(quint32 tag);
+    PathGraphicsItem *getPooledTrajSimGraphic(quint32 tag);
     void setTarget(PointModelItem *target);
    //  void addPooledTarget(PointModelItem *target);
     void setPooledTargets(PointModelItem* targets[skyenet::MAX_TARGETS], quint32 num_targets);
@@ -48,7 +52,8 @@ class ComputeThread : public QThread {
 
  // slots for signals from thread are run in parent thread
  signals:
-    void updateGraphics(PathGraphicsItem *traj_graphic,
+    void updateGraphics(PathGraphicsItem *traj_graphic_sol,
+                        PathGraphicsItem *traj_graphic_sim,
                         DroneGraphicsItem *drone_graphic);
     void updateMessage(DroneModelItem *drone);
     void finalTime(DroneModelItem *drone, double final_time);
@@ -62,11 +67,13 @@ class ComputeThread : public QThread {
     // vehicle and target
     DroneGraphicsItem *drone_;
     PointModelItem *target_;
-    PathGraphicsItem *traj_graphic_;
+    PathGraphicsItem *traj_graphic_sol_;
+    PathGraphicsItem *traj_graphic_sim_;
 
     // target pool (options) for multitarget traj opt (e.g. DDTO)
     PointModelItem *target_pool_[skyenet::MAX_TARGETS];
-    PathGraphicsItem *traj_graphic_pool_[skyenet::MAX_TARGETS];
+    PathGraphicsItem *traj_graphic_sol_pool_[skyenet::MAX_TARGETS];
+    PathGraphicsItem *traj_graphic_sim_pool_[skyenet::MAX_TARGETS];
 
     // compute traj flag
     bool run_loop_;

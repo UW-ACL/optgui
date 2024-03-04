@@ -14,19 +14,32 @@ namespace optgui {
 
 ComputeThread::ComputeThread(ConstraintModel *model,
                              DroneGraphicsItem *drone,
-                             PathGraphicsItem *traj_graphic,
-                             PathGraphicsItem *traj_graphic_pool[skyenet::MAX_TARGETS]) : mutex_() {
+                             PathGraphicsItem *traj_graphic_sol,
+                             PathGraphicsItem *traj_graphic_sim,
+                             PathGraphicsItem *traj_graphic_sol_pool[skyenet::MAX_TARGETS],
+                             PathGraphicsItem *traj_graphic_sim_pool[skyenet::MAX_TARGETS]) : mutex_() {
     this->model_ = model;
+
     // start running compute loop on construction
     this->run_loop_ = true;
     this->drone_ = drone;
-    this->traj_graphic_ = traj_graphic;
+    this->traj_graphic_sol_ = traj_graphic_sol;
+    this->traj_graphic_sim_ = traj_graphic_sim;
     this->target_ = nullptr;
     this->target_changed_ = true;
     this->num_pooled_targets_ = 0;
     this->julia_initialized_ = false;
     for (int i = 0; i < skyenet::MAX_TARGETS; i++) {
-        this->traj_graphic_pool_[i] = traj_graphic_pool[i];
+        this->traj_graphic_sol_pool_[i] = traj_graphic_sol_pool[i];
+        this->traj_graphic_sim_pool_[i] = traj_graphic_sim_pool[i];
+    }
+
+    // Set drawing flags for PathGraphicsItems
+    traj_graphic_sol_->draw_lines = false;
+    traj_graphic_sim_->draw_points = false;
+    for (int i = 0; i < skyenet::MAX_TARGETS; i++) {
+      traj_graphic_sol_pool_[i]->draw_lines = false;
+      traj_graphic_sim_pool_[i]->draw_points = false;
     }
 }
 
@@ -128,14 +141,24 @@ bool ComputeThread::getRunFlag() {
     return this->run_loop_;
 }
 
-PathGraphicsItem *ComputeThread::getTrajGraphic() {
+PathGraphicsItem *ComputeThread::getTrajSolGraphic() {
     QMutexLocker(&this->mutex_);
-    return this->traj_graphic_;
+    return this->traj_graphic_sol_;
 }
 
-PathGraphicsItem *ComputeThread::getPooledTrajGraphic(quint32 tag) {
+PathGraphicsItem *ComputeThread::getTrajSimGraphic() {
     QMutexLocker(&this->mutex_);
-    return this->traj_graphic_pool_[tag];
+    return this->traj_graphic_sim_;
+}
+
+PathGraphicsItem *ComputeThread::getPooledTrajSolGraphic(quint32 tag) {
+    QMutexLocker(&this->mutex_);
+    return this->traj_graphic_sol_pool_[tag];
+}
+
+PathGraphicsItem *ComputeThread::getPooledTrajSimGraphic(quint32 tag) {
+    QMutexLocker(&this->mutex_);
+    return this->traj_graphic_sim_pool_[tag];
 }
 
 DroneGraphicsItem *ComputeThread::getDroneGraphic() {
@@ -160,7 +183,8 @@ void ComputeThread::run() {
         // Do not compute trajectory if no final point selected
         if (this->getTarget() == nullptr) {
             // clear current trajectory
-            this->getTrajGraphic()->model_->setPoints(QVector<QPointF>());
+            this->getTrajSolGraphic()->model_->setPoints(QVector<QPointF>());
+            this->getTrajSimGraphic()->model_->setPoints(QVector<QPointF>());
             autogen::packet::traj2dof empty_traj;
             this->model_->setCurrTraj2dof(this->drone_->model_, empty_traj);
             continue;
@@ -263,13 +287,14 @@ void ComputeThread::run() {
         skyenet::outputs const &O = this->fly_.update(this->num_pooled_targets_);
 
         // Iterations in resulting trajectory
-        quint32 size = P.K;
+        quint32 size_sol = P.K;
+        quint32 size_sim = P.sim_steps*(P.K-1);
         
         // ..:: Build Mikipilot trajectory to send to drone ::..
         autogen::packet::traj2dof drone_traj2dof_data;
-        drone_traj2dof_data.K = size;
+        drone_traj2dof_data.K = size_sol;
 
-        for (quint32 i = 0; i < size; i++) {
+        for (quint32 i = 0; i < size_sol; i++) {
             // Add data to mikipilot trajectory
             drone_traj2dof_data.time(i) = O.t[i][sel_target_tag];
 
@@ -295,41 +320,52 @@ void ComputeThread::run() {
         // overlaps with setting live reference mode
         if (this->model_->isLiveReference() || !this->getRunFlag()) continue;
 
+
         // Loop through each pooled target
         QVector<QPointF> empty_trajectory = QVector<QPointF>();
         for (int i = 0; i < skyenet::MAX_TARGETS; i++) {
             if (i < this->num_pooled_targets_) {
-                // GUI trajectory points
-                QVector<QPointF> trajectory = QVector<QPointF>();
+                // Solution points
+                QVector<QPointF> trajectory_sol = QVector<QPointF>();
 
                 // Add points to GUI trajectory
-                for (quint32 j = 0; j < size; j++) {
+                for (quint32 j = 0; j < size_sol; j++) {
                     QVector3D gui_coords = xyzToGuiXyz(O.r[0][j][i],
-                                                    O.r[1][j][i],
-                                                    O.r[2][j][i]);
-                    trajectory.append(QPointF(gui_coords.x(),
-                                            gui_coords.y()));
+                                                       O.r[1][j][i],
+                                                       O.r[2][j][i]);
+                    trajectory_sol.append(QPointF(gui_coords.x(),
+                                                  gui_coords.y()));
                 }
-                // set points on graphical display
+                // Set points on graphical display
                 if (i == sel_target_tag) {
-                    this->getTrajGraphic()->model_->setPoints(trajectory);
-                    this->getPooledTrajGraphic(i)->model_->setPoints(empty_trajectory);
+                    this->getTrajSolGraphic()->model_->setPoints(trajectory_sol);
+                    this->getPooledTrajSolGraphic(i)->model_->setPoints(empty_trajectory);
                 } else {
-                    this->getPooledTrajGraphic(i)->model_->setPoints(trajectory);
+                    this->getPooledTrajSolGraphic(i)->model_->setPoints(trajectory_sol);
                 }
 
-                // OUTPUT VIOLATIONS: initial and final pos violation
-                qreal accum = pow(O.rf_relax[0][i], 2)  // final pos
-                            + pow(O.rf_relax[1][i], 2)
-                            + pow(O.rf_relax[2][i], 2)
-                            + pow(O.ri_relax[0][i], 2)  // initial pos
-                            + pow(O.ri_relax[1][i], 2)
-                            + pow(O.ri_relax[2][i], 2)
-                            + pow(O.dtau, 2);  // change in time
+                // Simulation points
+                QVector<QPointF> trajectory_sim = QVector<QPointF>();
+
+                // Add points to GUI trajectory
+                for (quint32 j = 0; j < size_sim; j++) {
+                    QVector3D gui_coords = xyzToGuiXyz(O.r_sim[0][j][i],
+                                                       O.r_sim[1][j][i],
+                                                       O.r_sim[2][j][i]);
+                    trajectory_sim.append(QPointF(gui_coords.x(),
+                                                  gui_coords.y()));
+                }
+                // Set points on graphical display
+                if (i == sel_target_tag) {
+                    this->getTrajSimGraphic()->model_->setPoints(trajectory_sim);
+                    this->getPooledTrajSimGraphic(i)->model_->setPoints(empty_trajectory);
+                } else {
+                    this->getPooledTrajSimGraphic(i)->model_->setPoints(trajectory_sim);
+                }
 
                 bool is_feasible;
-                if (accum > 0.25) {
-                    // infeasible traj, setfeasibility  code and traj color to red
+                if (!O.ddto_converged) {
+                    // infeasible traj, set feasibility  code and traj color to red
                     if (i == sel_target_tag) {
                         this->model_->setIsValidTraj(FEASIBILITY_CODE::INFEASIBLE);
                     }
@@ -350,7 +386,8 @@ void ComputeThread::run() {
                 }
             } else {
                 // No valid trajectory (unallocated, set empty trajectory)
-                this->getPooledTrajGraphic(i)->model_->setPoints(empty_trajectory);
+                this->getPooledTrajSolGraphic(i)->model_->setPoints(empty_trajectory);
+                this->getPooledTrajSimGraphic(i)->model_->setPoints(empty_trajectory);
             }
         }
     }
@@ -359,31 +396,37 @@ void ComputeThread::run() {
 void ComputeThread::setFeasibilityColor(bool is_feasible) {
     // get graphics items
     DroneGraphicsItem *drone = this->getDroneGraphic();
-    PathGraphicsItem *traj = this->getTrajGraphic();
+    PathGraphicsItem *traj_sol = this->getTrajSolGraphic();
+    PathGraphicsItem *traj_sim = this->getTrajSimGraphic();
 
     // set feasiblility color
     if (is_feasible) {
-        traj->setColor(YELLOW);
+        traj_sol->setColor(YELLOW);
+        traj_sim->setColor(YELLOW);
         drone->setIsFeasible(true);
     } else {
-        traj->setColor(RED);
+        traj_sol->setColor(RED);
+        traj_sim->setColor(RED);
         drone->setIsFeasible(false);
     }
-    emit updateGraphics(traj, drone);
+    emit updateGraphics(traj_sol, traj_sim, drone);
 }
 
 void ComputeThread::setPooledFeasibilityColor(bool is_feasible, quint32 tag) {
     // get graphics items
     DroneGraphicsItem *drone = this->getDroneGraphic();
-    PathGraphicsItem *traj = this->getPooledTrajGraphic(tag);
+    PathGraphicsItem *traj_sol = this->getPooledTrajSolGraphic(tag);
+    PathGraphicsItem *traj_sim = this->getPooledTrajSimGraphic(tag);
 
     // set feasiblility color
     if (is_feasible) {
-        traj->setColor(TRANS_YELLOW);
+        traj_sol->setColor(TRANS_YELLOW);
+        traj_sim->setColor(TRANS_YELLOW);
     } else {
-        traj->setColor(RED);
+        traj_sol->setColor(TRANS_RED);
+        traj_sim->setColor(TRANS_RED);
     }
-    emit updateGraphics(traj, drone);
+    emit updateGraphics(traj_sol, traj_sim, drone);
 }
 
 INPUT_CODE ComputeThread::validateInputs(

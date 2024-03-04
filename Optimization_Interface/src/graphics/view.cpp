@@ -831,7 +831,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // Create table
     this->skyefly_params_table_ = new QTableWidget(panel->menu_);
     this->skyefly_params_table_->setColumnCount(1);  // fill with spinboxes
-    this->skyefly_params_table_->setRowCount(15);  // how many params to edit
+    this->skyefly_params_table_->setRowCount(18);  // how many params to edit
         // vertical headers are spinbox labels
     this->skyefly_params_table_->verticalHeader()->setVisible(true);
     this->skyefly_params_table_->verticalHeader()->
@@ -877,6 +877,32 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_scp_iters);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("scp_iters"));
+    row_index++;
+
+    // P.sim_steps
+    QSpinBox *params_sim_steps =
+            new QSpinBox(this->skyefly_params_table_);
+    params_sim_steps->setRange(0, 100);
+    params_sim_steps->setValue(default_P.sim_steps);
+    connect(params_sim_steps, SIGNAL(valueChanged(int)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_sim_steps);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("sim_steps"));
+    row_index++;
+
+    // P.enable_ctcs
+    QSpinBox *params_enable_ctcs =
+            new QSpinBox(this->skyefly_params_table_);
+    params_enable_ctcs->setRange(0, 1);
+    params_enable_ctcs->setValue(default_P.ctcs_enabled);
+    connect(params_enable_ctcs, SIGNAL(valueChanged(bool)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_enable_ctcs);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("enable_ctcs"));
     row_index++;
 
     // P.interp_ref
@@ -935,6 +961,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     QDoubleSpinBox *params_eps_cvg =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_eps_cvg->setRange(0, 10000);
+    params_eps_cvg->setDecimals(6);
     params_eps_cvg->setValue(default_P.eps_cvg);
     connect(params_eps_cvg, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -944,10 +971,25 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
             setVerticalHeaderItem(row_index, new QTableWidgetItem("eps_cvg"));
     row_index++;
 
+    // P.eps_ctcs
+    QDoubleSpinBox *params_eps_ctcs =
+            new QDoubleSpinBox(this->skyefly_params_table_);
+    params_eps_ctcs->setRange(0, 10000);
+    params_eps_ctcs->setDecimals(6);
+    params_eps_ctcs->setValue(default_P.eps_ctcs);
+    connect(params_eps_ctcs, SIGNAL(valueChanged(double)),
+            this, SLOT(setSkyeFlyParams()));
+
+    this->skyefly_params_table_->setCellWidget(row_index, 0, params_eps_ctcs);
+    this->skyefly_params_table_->
+            setVerticalHeaderItem(row_index, new QTableWidgetItem("eps_ctcs"));
+    row_index++;
+
     // P.eps_subopt
     QDoubleSpinBox *params_eps_subopt =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_eps_subopt->setRange(0, 10000);
+    params_eps_subopt->setDecimals(6);
     params_eps_subopt->setValue(default_P.subopt_tol);
     connect(params_eps_subopt, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));
@@ -974,6 +1016,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     QDoubleSpinBox *params_dt_min =
             new QDoubleSpinBox(this->skyefly_params_table_);
     params_dt_min->setRange(0,100);
+    params_dt_min->setDecimals(6);
     params_dt_min->setValue(default_P.dt_min);
     connect(params_dt_min, SIGNAL(valueChanged(double)),
             this, SLOT(setSkyeFlyParams()));

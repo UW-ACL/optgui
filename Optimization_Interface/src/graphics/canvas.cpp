@@ -97,14 +97,20 @@ void Canvas::bringSelectedToFront() {
     }
 }
 
-void Canvas::updateGraphicsItems(PathGraphicsItem *traj,
+void Canvas::updateGraphicsItems(PathGraphicsItem *traj_sol,
+                                 PathGraphicsItem *traj_sim,
                                  DroneGraphicsItem *drone) {
     // verify graphics exist
-    if (this->path_graphics_.contains(traj) &&
-        this->drone_graphics_.contains(drone)) {
-        // schedule re-draw
-        traj->update(traj->boundingRect());
-        drone->update(drone->boundingRect());
+    if (this->drone_graphics_.contains(drone)) {
+        if (this->path_graphics_.contains(traj_sol)) {
+            // schedule re-draw (including drone)
+            traj_sol->update(traj_sol->boundingRect());
+            drone->update(drone->boundingRect());
+        }
+        if (this->path_graphics_.contains(traj_sim)) {
+            // schedule re-draw
+            traj_sim->update(traj_sim->boundingRect());
+        }
     }
 }
 

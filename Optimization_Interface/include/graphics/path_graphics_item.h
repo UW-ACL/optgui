@@ -31,6 +31,10 @@ class PathGraphicsItem : public QGraphicsItem {
 
     PathModelItem *model_;
 
+    // Flags to customize what we draw based on type of model
+    bool draw_lines = true;
+    bool draw_points = true;
+
  protected:
     // shape to draw
     QPainterPath shape() const override;

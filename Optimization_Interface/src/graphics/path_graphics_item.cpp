@@ -53,14 +53,17 @@ void PathGraphicsItem::paint(QPainter *painter,
     this->pen_.setWidthF(this->width_ / scaling_factor);
     quint32 size = this->model_->getSize();
     for (quint32 i = 1; i < size; i++) {
-        painter->setPen(this->pen_);
-        QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
-                    mapFromScene(this->model_->getPointAt(i)));
-        painter->drawLine(line);
-
-        painter->setPen(this->waypoints_pen_);
-        painter->drawEllipse(this->model_->getPointAt(i), 0.5 * this->width_ / scaling_factor,
+        if (this->draw_lines){
+            painter->setPen(this->pen_);
+            QLineF line(mapFromScene(this->model_->getPointAt(i - 1)),
+                        mapFromScene(this->model_->getPointAt(i)));
+            painter->drawLine(line);
+        }
+        if (this->draw_points){
+            painter->setPen(this->waypoints_pen_);
+            painter->drawEllipse(this->model_->getPointAt(i), 0.5 * this->width_ / scaling_factor,
                              0.5 * this->width_ / scaling_factor);
+        }
     }
 }
 
