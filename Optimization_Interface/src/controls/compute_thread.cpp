@@ -299,17 +299,12 @@ void ComputeThread::run() {
             drone_traj2dof_data.time(i) = O.t[i][sel_target_tag];
 
             // XYZ to NED conversion
-            drone_traj2dof_data.pos_ned(0, i) =  O.r[1][i][sel_target_tag];
-            drone_traj2dof_data.pos_ned(1, i) =  O.r[0][i][sel_target_tag];
-            // drone_traj2dof_data.pos_ned(2, i) = -O.r[2][i][sel_target_tag];
-
-            drone_traj2dof_data.vel_ned(0, i) =  O.v[1][i][sel_target_tag];
-            drone_traj2dof_data.vel_ned(1, i) =  O.v[0][i][sel_target_tag];
-            // drone_traj2dof_data.vel_ned(2, i) = -O.v[2][i][sel_target_tag];
-
+            drone_traj2dof_data.pos_ned(0, i)  =  O.r[1][i][sel_target_tag];
+            drone_traj2dof_data.pos_ned(1, i)  =  O.r[0][i][sel_target_tag];
+            drone_traj2dof_data.vel_ned(0, i)  =  O.v[1][i][sel_target_tag];
+            drone_traj2dof_data.vel_ned(1, i)  =  O.v[0][i][sel_target_tag];
             drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i][sel_target_tag];
             drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i][sel_target_tag];
-            // drone_traj2dof_data.accl_ned(2, i) = -O.a[2][i][sel_target_tag];
         }
         this->model_->setCurrTraj2dof(this->drone_->model_,
                                         drone_traj2dof_data);
