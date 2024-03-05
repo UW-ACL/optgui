@@ -306,15 +306,12 @@ void ComputeThread::run() {
             drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i][sel_target_tag];
             drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i][sel_target_tag];
         }
-        this->model_->setCurrTraj2dof(this->drone_->model_,
-                                        drone_traj2dof_data);
 
         // ..:: Build GUI trajectory for visualization ::..
         // Do not display new trajectories if executing
         // sent trajectory. Needed because sometimes compute
         // overlaps with setting live reference mode
         if (this->model_->isLiveReference() || !this->getRunFlag()) continue;
-
 
         // Loop through each pooled target
         QVector<QPointF> empty_trajectory = QVector<QPointF>();
@@ -385,6 +382,10 @@ void ComputeThread::run() {
                 this->getPooledTrajSimGraphic(i)->model_->setPoints(empty_trajectory);
             }
         }
+
+        // Send 2 DoF trajectory packet
+        this->model_->setCurrTraj2dof(this->drone_->model_,
+                                        drone_traj2dof_data);
     }
 }
 
