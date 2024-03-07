@@ -208,12 +208,16 @@ void Controller::removeItem(QGraphicsItem *item) {
             this->removePointSocket(model);
             // remove from QGraphicsScene canvas
             this->canvas_->removeItem(point);
-            this->canvas_->final_points_.remove(point);
+            this->canvas_->final_points_.removeOne(point);
             // delete graphic
             delete point;
             // delete data model
             this->model_->removePoint(model);
             delete model;
+            // set new ordering of waypoints
+            for (int i = 0; i < this->canvas_->final_points_.size(); i++) {
+                this->canvas_->final_points_.at(i)->setIndex(i);
+            }
             // exit switch
             break;
         }
@@ -499,9 +503,13 @@ void Controller::updateMessage(DroneModelItem *drone) {
 }
 
 void Controller::freeze_traj() {
+    // Get current staged traj
+    autogen::packet::traj2dof cur_stage_traj = this->model_->getStagedTraj2dof();
+    float t_diff = cur_stage_traj.time(1) - cur_stage_traj.time(0);
+    std::cout << "t_diff = " << t_diff << std::endl;
+
     // compute time difference between each point on traj
-    int msec = (1000 * this->model_->getFinaltime()) /
-            (this->model_->getHorizon() - 1);
+    int msec = (1000 * t_diff);
     // start timer to next time interval
     this->freeze_traj_timer_->start(msec);
     if (this->traj_lock_) {
@@ -586,6 +594,11 @@ void Controller::tickLiveReference() {
             this->updateOutputFile(traj, staged_drone, index);
         }
 
+        // Update timer time delta
+        float t_diff = traj.time(this->traj_index_) - traj.time(this->traj_index_-1);
+        int msec = (1000 * t_diff);
+        this->freeze_traj_timer_->start(msec);
+
         this->traj_index_++;
     } else {
         // close output file
@@ -633,7 +646,7 @@ void Controller::execute() {
         QMap<DroneModelItem *, ComputeThread *>::iterator iter =
                 this->compute_threads_.find(staged_drone);
         if (iter != this->compute_threads_.end()) {
-            (*iter)->getTrajSolGraphic()->model_->
+            (*iter)->getTrajSimGraphic()->model_->
                     setPoints(this->model_->getPathStagedPoints());
         }
 
@@ -1076,11 +1089,12 @@ void Controller::loadPlane(PlaneModelItem *item_model) {
 
 void Controller::loadPoint(PointModelItem *item_model) {
     // create new graphic for data model
+    quint32 index = this->canvas_->final_points_.size();
     PointGraphicsItem *item_graphic =
-            new PointGraphicsItem(item_model);
+            new PointGraphicsItem(item_model, index);
     // add graphic to canvas
     this->canvas_->addItem(item_graphic);
-    this->canvas_->final_points_.insert(item_graphic);
+    this->canvas_->final_points_.append(item_graphic);
     // add graphic to model
     this->model_->addPoint(item_model);
     // render graphic
@@ -1098,7 +1112,7 @@ void Controller::loadDrone(DroneModelItem *item_model) {
             new DroneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->drone_graphics_.insert(item_graphic);
-    this->model_->addDrone(item_model, trajectory_model_sol);
+    this->model_->addDrone(item_model, trajectory_model_sim);
     item_graphic->setZValue(this->drone_render_level_);
     item_graphic->update(item_graphic->boundingRect());
 

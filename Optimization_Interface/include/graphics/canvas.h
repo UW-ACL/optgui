@@ -40,7 +40,7 @@ class Canvas : public QGraphicsScene {
     QVector<CylinderGraphicsItem *> cylinder_graphics_;
     QSet<PolygonGraphicsItem *> polygon_graphics_;
     QSet<PlaneGraphicsItem *> plane_graphics_;
-    QSet<PointGraphicsItem *> final_points_;
+    QVector<PointGraphicsItem *> final_points_;
     QVector<WaypointGraphicsItem *> waypoint_graphics_;
 
  protected:

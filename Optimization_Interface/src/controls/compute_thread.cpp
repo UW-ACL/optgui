@@ -277,12 +277,6 @@ void ComputeThread::run() {
         // Initialize problem
         this->fly_.setParams(P, r_i, v_i, a_i, r_f, wp);
 
-        // check to reset inputs
-        // if (this->target_changed_) {
-        //     this->target_changed_ = false;
-        //     this->fly_.resetInputs(r_i, v_i, a_i, r_f, wp);
-        // }
-
         // ..:: Run SCvx algorithm for fixed final time ::..
         skyenet::outputs const &O = this->fly_.update(this->num_pooled_targets_);
 
@@ -292,19 +286,27 @@ void ComputeThread::run() {
         
         // ..:: Build Mikipilot trajectory to send to drone ::..
         autogen::packet::traj2dof drone_traj2dof_data;
-        drone_traj2dof_data.K = size_sol;
+        quint32 max_packet_nodes = MIN(size_sim, drone_traj2dof_data.time.length());
+        quint32 sim_idx;
+        
+        drone_traj2dof_data.K = max_packet_nodes;
+        for (quint32 i = 0; i < max_packet_nodes; i++){
+            if (max_packet_nodes <= drone_traj2dof_data.time.length()){
+                sim_idx = i;
+            } else { // must perform downsampling
+                sim_idx = quint32(round(float(i)*float(size_sim)/float(drone_traj2dof_data.time.length())));
+            }
 
-        for (quint32 i = 0; i < size_sol; i++) {
             // Add data to mikipilot trajectory
-            drone_traj2dof_data.time(i) = O.t[i][sel_target_tag];
+            drone_traj2dof_data.time(i) = O.t_sim[sim_idx][sel_target_tag];
 
             // XYZ to NED conversion
-            drone_traj2dof_data.pos_ned(0, i)  =  O.r[1][i][sel_target_tag];
-            drone_traj2dof_data.pos_ned(1, i)  =  O.r[0][i][sel_target_tag];
-            drone_traj2dof_data.vel_ned(0, i)  =  O.v[1][i][sel_target_tag];
-            drone_traj2dof_data.vel_ned(1, i)  =  O.v[0][i][sel_target_tag];
-            drone_traj2dof_data.accl_ned(0, i) =  O.a[1][i][sel_target_tag];
-            drone_traj2dof_data.accl_ned(1, i) =  O.a[0][i][sel_target_tag];
+            drone_traj2dof_data.pos_ned(0, i)  =  O.r_sim[1][sim_idx][sel_target_tag];
+            drone_traj2dof_data.pos_ned(1, i)  =  O.r_sim[0][sim_idx][sel_target_tag];
+            drone_traj2dof_data.vel_ned(0, i)  =  O.v_sim[1][sim_idx][sel_target_tag];
+            drone_traj2dof_data.vel_ned(1, i)  =  O.v_sim[0][sim_idx][sel_target_tag];
+            drone_traj2dof_data.accl_ned(0, i) =  O.a_sim[1][sim_idx][sel_target_tag];
+            drone_traj2dof_data.accl_ned(1, i) =  O.a_sim[0][sim_idx][sel_target_tag];
         }
 
         // ..:: Build GUI trajectory for visualization ::..
@@ -347,6 +349,7 @@ void ComputeThread::run() {
                     trajectory_sim.append(QPointF(gui_coords.x(),
                                                   gui_coords.y()));
                 }
+
                 // Set points on graphical display
                 if (i == sel_target_tag) {
                     this->getTrajSimGraphic()->model_->setPoints(trajectory_sim);

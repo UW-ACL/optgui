@@ -14,12 +14,14 @@
 namespace optgui {
 
 PointGraphicsItem::PointGraphicsItem(PointModelItem *model,
+                                     quint32 index,
                                      QGraphicsItem *parent,
                                      qreal radius)
     : QGraphicsItem(parent) {
     // Set model
     this->model_ = model;
     this->radius_ = radius;
+    this->index_ = index;
 
     // Set pen
     QColor fill = RED;
@@ -71,9 +73,18 @@ void PointGraphicsItem::paint(QPainter *painter,
     qreal rad = this->radius_ / scaling_factor;
     painter->drawEllipse(QRectF(-rad, -rad, rad * 2, rad * 2));
 
-    // Label with port
-    if (this->model_->port_ != 0) {
-        painter->setPen(BLACK);
+    // Draw label
+    painter->setPen(BLACK);
+    QFont font = painter->font();
+
+    if (this->model_->port_ == 0) {
+        // label with index
+        font.setPointSizeF(14 / scaling_factor);
+        painter->setFont(font);
+        painter->drawText(this->boundingRect(), Qt::AlignCenter,
+                          QString::number(this->index_ + 1));
+    } else {
+        // Or label with port
         QPointF text_pos(this->mapFromScene(this->model_->getPos()));
         QFont font = painter->font();
         font.setPointSizeF(10 / scaling_factor);
@@ -85,6 +96,12 @@ void PointGraphicsItem::paint(QPainter *painter,
                           Qt::AlignCenter,
                           QString::number(this->model_->port_));
     }
+
+}
+
+void PointGraphicsItem::setIndex(quint32 index) {
+    // set ordering of point
+    this->index_ = index;
 }
 
 int PointGraphicsItem::type() const {

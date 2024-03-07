@@ -18,6 +18,7 @@ namespace optgui {
 class PointGraphicsItem : public QGraphicsItem {
  public:
     explicit PointGraphicsItem(PointModelItem *model,
+                               quint32 index,
                                QGraphicsItem *parent = nullptr,
                                qreal radius = 16);
     PointModelItem *model_;
@@ -29,6 +30,8 @@ class PointGraphicsItem : public QGraphicsItem {
                QWidget *widget = nullptr) override;
     // unique type of graphic class
     int type() const override;
+    // set ordering of point
+    void setIndex(quint32 index);
 
  protected:
     // shape to draw
@@ -47,6 +50,9 @@ class PointGraphicsItem : public QGraphicsItem {
 
     // scale zoom level
     qreal getScalingFactor() const;
+
+    // ordering of point
+    quint32 index_;
 };
 
 }  // namespace optgui
