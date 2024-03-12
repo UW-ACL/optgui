@@ -16,6 +16,7 @@ ComputeThread::ComputeThread(ConstraintModel *model,
                              DroneGraphicsItem *drone,
                              PathGraphicsItem *traj_graphic_sol,
                              PathGraphicsItem *traj_graphic_sim,
+                             PathGraphicsItem *traj_graphic_stg,
                              PathGraphicsItem *traj_graphic_sol_pool[skyenet::MAX_TARGETS],
                              PathGraphicsItem *traj_graphic_sim_pool[skyenet::MAX_TARGETS]) : mutex_() {
     this->model_ = model;
@@ -25,6 +26,7 @@ ComputeThread::ComputeThread(ConstraintModel *model,
     this->drone_ = drone;
     this->traj_graphic_sol_ = traj_graphic_sol;
     this->traj_graphic_sim_ = traj_graphic_sim;
+    this->traj_graphic_stg_ = traj_graphic_stg;
     this->target_ = nullptr;
     this->target_changed_ = true;
     this->num_pooled_targets_ = 0;
@@ -41,6 +43,11 @@ ComputeThread::ComputeThread(ConstraintModel *model,
       traj_graphic_sol_pool_[i]->draw_lines = false;
       traj_graphic_sim_pool_[i]->draw_points = false;
     }
+
+    // Init flags
+    this->is_ctcs_enabled_ = true;
+    this->is_init_auto_ = true;
+    this->is_init_ddto_ = true;
 }
 
 ComputeThread::~ComputeThread() {
@@ -151,6 +158,12 @@ PathGraphicsItem *ComputeThread::getTrajSimGraphic() {
     return this->traj_graphic_sim_;
 }
 
+PathGraphicsItem *ComputeThread::getTrajStgGraphic() {
+    QMutexLocker(&this->mutex_);
+    return this->traj_graphic_stg_;
+}
+
+
 PathGraphicsItem *ComputeThread::getPooledTrajSolGraphic(quint32 tag) {
     QMutexLocker(&this->mutex_);
     return this->traj_graphic_sol_pool_[tag];
@@ -167,11 +180,11 @@ DroneGraphicsItem *ComputeThread::getDroneGraphic() {
 }
 
 void ComputeThread::run() {
-    // run compute loop until flagged to stop
-    while (this->getRunFlag()) {
+    // Initialize Julia
+    this->initializeJulia();
 
-        // Initialize Julia
-        this->initializeJulia();
+    // Run compute loop until flagged to stop
+    while (this->getRunFlag()) {
 
         // ..:: Trajectory computation decision ::..
         // Do not compute new trajectories if executing
@@ -223,6 +236,7 @@ void ComputeThread::run() {
         }
 
         // ..:: Build Skyenet parameters ::..
+                
 
         // Get params
         skyenet::params P = this->model_->getSkyeFlyParams();
@@ -277,6 +291,13 @@ void ComputeThread::run() {
         // Initialize problem
         this->fly_.setParams(P, r_i, v_i, a_i, r_f, wp);
 
+        // Update togglable params
+        this->fly_.setToggleables(
+            this->is_ctcs_enabled_,
+            this->is_init_auto_,
+            this->is_init_ddto_
+        );
+
         // ..:: Run SCvx algorithm for fixed final time ::..
         skyenet::outputs const &O = this->fly_.update(this->num_pooled_targets_);
 
@@ -286,15 +307,17 @@ void ComputeThread::run() {
         
         // ..:: Build Mikipilot trajectory to send to drone ::..
         autogen::packet::traj2dof drone_traj2dof_data;
-        quint32 max_packet_nodes = MIN(size_sim, drone_traj2dof_data.time.length());
+        quint32 max_packet_size = drone_traj2dof_data.time.length();
+        quint32 size_packet = MIN(size_sim, max_packet_size);
         quint32 sim_idx;
-        
-        drone_traj2dof_data.K = max_packet_nodes;
-        for (quint32 i = 0; i < max_packet_nodes; i++){
-            if (max_packet_nodes <= drone_traj2dof_data.time.length()){
+
+        QVector<QPointF> trajectory_stg = QVector<QPointF>();
+        drone_traj2dof_data.K = size_packet;
+        for (quint32 i = 0; i < size_packet; i++){
+            if (size_sim <= max_packet_size){
                 sim_idx = i;
             } else { // must perform downsampling
-                sim_idx = quint32(round(float(i)*float(size_sim)/float(drone_traj2dof_data.time.length())));
+                sim_idx = quint32(round(float(i)*float(size_sim)/float(max_packet_size)));
             }
 
             // Add data to mikipilot trajectory
@@ -307,7 +330,15 @@ void ComputeThread::run() {
             drone_traj2dof_data.vel_ned(1, i)  =  O.v_sim[0][sim_idx][sel_target_tag];
             drone_traj2dof_data.accl_ned(0, i) =  O.a_sim[1][sim_idx][sel_target_tag];
             drone_traj2dof_data.accl_ned(1, i) =  O.a_sim[0][sim_idx][sel_target_tag];
+
+            // Add points to GUI trajectory
+            QVector3D gui_coords = xyzToGuiXyz(O.r_sim[0][sim_idx][sel_target_tag],
+                                                O.r_sim[1][sim_idx][sel_target_tag],
+                                                O.r_sim[2][sim_idx][sel_target_tag]);
+            trajectory_stg.append(QPointF(gui_coords.x(),
+                                          gui_coords.y()));
         }
+        this->getTrajStgGraphic()->model_->setPoints(trajectory_stg);
 
         // ..:: Build GUI trajectory for visualization ::..
         // Do not display new trajectories if executing
@@ -319,10 +350,8 @@ void ComputeThread::run() {
         QVector<QPointF> empty_trajectory = QVector<QPointF>();
         for (int i = 0; i < skyenet::MAX_TARGETS; i++) {
             if (i < this->num_pooled_targets_) {
-                // Solution points
+                // Add solution points to GUI trajectory
                 QVector<QPointF> trajectory_sol = QVector<QPointF>();
-
-                // Add points to GUI trajectory
                 for (quint32 j = 0; j < size_sol; j++) {
                     QVector3D gui_coords = xyzToGuiXyz(O.r[0][j][i],
                                                        O.r[1][j][i],
@@ -330,6 +359,7 @@ void ComputeThread::run() {
                     trajectory_sol.append(QPointF(gui_coords.x(),
                                                   gui_coords.y()));
                 }
+
                 // Set points on graphical display
                 if (i == sel_target_tag) {
                     this->getTrajSolGraphic()->model_->setPoints(trajectory_sol);
@@ -338,10 +368,8 @@ void ComputeThread::run() {
                     this->getPooledTrajSolGraphic(i)->model_->setPoints(trajectory_sol);
                 }
 
-                // Simulation points
+                // Add simulation points to GUI trajectory
                 QVector<QPointF> trajectory_sim = QVector<QPointF>();
-
-                // Add points to GUI trajectory
                 for (quint32 j = 0; j < size_sim; j++) {
                     QVector3D gui_coords = xyzToGuiXyz(O.r_sim[0][j][i],
                                                        O.r_sim[1][j][i],
@@ -408,7 +436,8 @@ void ComputeThread::setFeasibilityColor(bool is_feasible) {
         traj_sim->setColor(RED);
         drone->setIsFeasible(false);
     }
-    emit updateGraphics(traj_sol, traj_sim, drone);
+    emit updateGraphics(traj_sol, drone);
+    emit updateGraphics(traj_sim, drone);
 }
 
 void ComputeThread::setPooledFeasibilityColor(bool is_feasible, quint32 tag) {
@@ -425,7 +454,8 @@ void ComputeThread::setPooledFeasibilityColor(bool is_feasible, quint32 tag) {
         traj_sol->setColor(TRANS_RED);
         traj_sim->setColor(TRANS_RED);
     }
-    emit updateGraphics(traj_sol, traj_sim, drone);
+    emit updateGraphics(traj_sol, drone);
+    emit updateGraphics(traj_sim, drone);
 }
 
 INPUT_CODE ComputeThread::validateInputs(
@@ -474,6 +504,18 @@ INPUT_CODE ComputeThread::validateInputs(
         */
     }
     return INPUT_CODE::VALID_INPUT;
+}
+
+void ComputeThread::setCTCS(bool state) {
+    this->is_ctcs_enabled_ = state;
+}
+
+void ComputeThread::setInitAuto(bool state) {
+    this->is_init_auto_ = state;
+}
+
+void ComputeThread::setInitDDTO(bool state) {
+    this->is_init_ddto_ = state;
 }
 
 }  // namespace optgui

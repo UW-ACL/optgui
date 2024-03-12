@@ -98,8 +98,9 @@ class View : public QGraphicsView {
     void updateFeedbackMessage();
     void setCurrEndpoints();
     void toggleSim(int);
-    void toggleStage(int);
-    void toggleTrajLock(int);
+    void toggleCTCS(int);
+    void toggleInitAuto(int);
+    void toggleInitDDTO(int);
     void toggleFreeFinalTime(int);
     void toggleDataCapture(int);
 
@@ -171,9 +172,10 @@ class View : public QGraphicsView {
     void initializeStageButton(MenuPanel *panel);
     void initializeFinaltime(MenuPanel *panel);
     void initializeDuplicateButton(MenuPanel *panel);
-    void initializeStageToggle(MenuPanel *panel);
     void initializeSimToggle(MenuPanel *panel);
-    void initializeTrajLockToggle(MenuPanel *panel);
+    void initializeCTCSToggle(MenuPanel *panel);
+    void initializeInitAutoToggle(MenuPanel *panel);
+    void initializeInitDDTOToggle(MenuPanel *panel);
     void initializeFreeFinalTimeToggle(MenuPanel *panel);
     // expert panel skyefly params
     void initializeSkyeFlyParamsTable(MenuPanel *panel);

@@ -28,17 +28,22 @@ class ComputeThread : public QThread {
                            DroneGraphicsItem *drone,
                            PathGraphicsItem *traj_graphic_sol,
                            PathGraphicsItem *traj_graphic_sim,
+                           PathGraphicsItem *traj_graphic_stg,
                            PathGraphicsItem *traj_graphic_sol_pool[skyenet::MAX_TARGETS],
                            PathGraphicsItem *traj_graphic_sim_pool[skyenet::MAX_TARGETS]);
     ~ComputeThread();
 
     PathGraphicsItem *getTrajSolGraphic();
     PathGraphicsItem *getTrajSimGraphic();
+    PathGraphicsItem *getTrajStgGraphic();
     PathGraphicsItem *getPooledTrajSolGraphic(quint32 tag);
     PathGraphicsItem *getPooledTrajSimGraphic(quint32 tag);
     void setTarget(PointModelItem *target);
    //  void addPooledTarget(PointModelItem *target);
     void setPooledTargets(PointModelItem* targets[skyenet::MAX_TARGETS], quint32 num_targets);
+    void setCTCS(bool state);
+    void setInitAuto(bool state);
+    void setInitDDTO(bool state);
     void reInit();
     PointModelItem *getTarget();
     PointModelItem *getPooledTarget(quint32 tag);
@@ -52,8 +57,7 @@ class ComputeThread : public QThread {
 
  // slots for signals from thread are run in parent thread
  signals:
-    void updateGraphics(PathGraphicsItem *traj_graphic_sol,
-                        PathGraphicsItem *traj_graphic_sim,
+    void updateGraphics(PathGraphicsItem *traj_graphic,
                         DroneGraphicsItem *drone_graphic);
     void updateMessage(DroneModelItem *drone);
     void finalTime(DroneModelItem *drone, double final_time);
@@ -69,6 +73,7 @@ class ComputeThread : public QThread {
     PointModelItem *target_;
     PathGraphicsItem *traj_graphic_sol_;
     PathGraphicsItem *traj_graphic_sim_;
+    PathGraphicsItem *traj_graphic_stg_;
 
     // target pool (options) for multitarget traj opt (e.g. DDTO)
     PointModelItem *target_pool_[skyenet::MAX_TARGETS];
@@ -87,6 +92,11 @@ class ComputeThread : public QThread {
 
     bool julia_initialized_;
 
+    // Flags corresponding to controller toggles
+    bool is_ctcs_enabled_;
+    bool is_init_auto_;
+    bool is_init_ddto_;
+
     // Keeps count of the number of targets in consideration
     quint32 num_pooled_targets_;
 
@@ -95,7 +105,6 @@ class ComputeThread : public QThread {
                               QVector3D const &final_pos);
     void setFeasibilityColor(bool is_feasible);
     void setPooledFeasibilityColor(bool is_feasible, quint32 tag);
-
     bool getRunFlag();
 };
 

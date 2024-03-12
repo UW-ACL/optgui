@@ -82,12 +82,6 @@ Controller::Controller(Canvas *canvas) {
             this, SLOT(tickLiveReference()));
     this->is_simulated_ = false;
 
-    // Set traj lock. Cannot execute traj while already executing.
-    this->traj_lock_ = false;
-
-    // Set disable stage bool to false
-    this->is_stage_booled_ = false;
-
     // capture data on by default
     this->capture_data_ = true;
     this->output_file_ = nullptr;
@@ -512,11 +506,6 @@ void Controller::freeze_traj() {
     int msec = (1000 * t_diff);
     // start timer to next time interval
     this->freeze_traj_timer_->start(msec);
-    if (this->traj_lock_) {
-        this->model_->setLiveReferenceMode(true);
-    } else {
-        this->model_->setLiveReferenceMode(false);
-    }
 
     this->traj_index_ = 0;
     // update data output with traj
@@ -621,10 +610,7 @@ void Controller::tickLiveReference() {
                 this->canvas_->path_staged_graphic_->boundingRect());
 }
 
-
 void Controller::execute() {
-    if(this->is_stage_booled_)
-        stageTraj(); // Forces stage of trajectory for Dyanmic Obstacle Avoidance
     // get staged drone
     DroneModelItem *staged_drone = this->model_->getStagedDrone();
 
@@ -653,7 +639,6 @@ void Controller::execute() {
         emit trajectoryExecuted(staged_drone,
                                 this->model_->getStagedTraj2dof());
     } else if (this->freeze_traj_timer_->isActive() &&
-               !this->traj_lock_ &&
                this->model_->getIsValidTraj() == FEASIBILITY_CODE::FEASIBLE) {
         this->setStagedPath();
         this->freeze_traj();
@@ -751,13 +736,25 @@ void Controller::setSimulated(bool state) {
     this->is_simulated_ = state;
 }
 
-void Controller::setStageBool(bool state) {
-    // flag to simulate traj instead of sending to vehicle
-    this->is_stage_booled_ = state;
+void Controller::setCTCS(bool state) {
+    // update all compute threads with CTCS enable flag
+    for (ComputeThread *thread : this->compute_threads_) {
+        thread->setCTCS(state);
+    }
 }
 
-void Controller::setTrajLock(bool state) {
-    this->traj_lock_ = state;
+void Controller::setInitAuto(bool state) {
+    // update all compute threads with InitAuto enable flag
+    for (ComputeThread *thread : this->compute_threads_) {
+        thread->setInitAuto(state);
+    }
+}
+
+void Controller::setInitDDTO(bool state) {
+    // update all compute threads with InitDDTO enable flag
+    for (ComputeThread *thread : this->compute_threads_) {
+        thread->setInitDDTO(state);
+    }
 }
 
 void Controller::setFreeFinalTime(bool state) {
@@ -1106,13 +1103,14 @@ void Controller::loadDrone(DroneModelItem *item_model) {
     // create path models for selected trajectory
     PathModelItem *trajectory_model_sol = new PathModelItem();
     PathModelItem *trajectory_model_sim = new PathModelItem();
+    PathModelItem *trajectory_model_stg = new PathModelItem();
 
     // create drone graphic
     DroneGraphicsItem *item_graphic =
             new DroneGraphicsItem(item_model);
     this->canvas_->addItem(item_graphic);
     this->canvas_->drone_graphics_.insert(item_graphic);
-    this->model_->addDrone(item_model, trajectory_model_sim);
+    this->model_->addDrone(item_model, trajectory_model_stg);
     item_graphic->setZValue(this->drone_render_level_);
     item_graphic->update(item_graphic->boundingRect());
 
@@ -1152,14 +1150,21 @@ void Controller::loadDrone(DroneModelItem *item_model) {
     this->canvas_->path_graphics_.insert(path_graphic_sim_);
     this->canvas_->addItem(path_graphic_sim_);
 
+    // create staged path graphic for selected trajectory
+    PathGraphicsItem *path_graphic_stg_ = 
+            new PathGraphicsItem(trajectory_model_stg);
+    path_graphic_stg_->setZValue(this->traj_render_level_);
+    this->canvas_->path_graphics_.insert(path_graphic_stg_);
+    this->canvas_->addItem(path_graphic_stg_);
+
     // create compute thread
     ComputeThread *compute_thread_ =
-            new ComputeThread(this->model_, item_graphic, path_graphic_sol_, path_graphic_sim_, path_graphic_sol_pool_, path_graphic_sim_pool_);
+            new ComputeThread(this->model_, item_graphic, path_graphic_sol_, path_graphic_sim_, path_graphic_stg_, path_graphic_sol_pool_, path_graphic_sim_pool_);
     this->compute_threads_.insert(item_model, compute_thread_);
     connect(compute_thread_,
-            SIGNAL(updateGraphics(PathGraphicsItem *, PathGraphicsItem *, DroneGraphicsItem *)),
+            SIGNAL(updateGraphics(PathGraphicsItem *, DroneGraphicsItem *)),
             this->canvas_,
-            SLOT(updateGraphicsItems(PathGraphicsItem *, PathGraphicsItem *, DroneGraphicsItem *)));
+            SLOT(updateGraphicsItems(PathGraphicsItem *, DroneGraphicsItem *)));
     connect(compute_thread_,
             SIGNAL(finalTime(DroneModelItem *, qreal)),
             this,

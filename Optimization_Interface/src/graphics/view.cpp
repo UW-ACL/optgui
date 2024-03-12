@@ -172,14 +172,11 @@ void View::initializeMenuPanel() {
     // add space at the bottom
     this->menu_panel_->menu_layout_->insertStretch(-1, 1);
 
-    // on fly update
-    this->initializeTrajLockToggle(this->menu_panel_);
-
-    // on fly update
-    this->initializeStageToggle(this->menu_panel_);
-
-    // simulation toggle
+    // toggles
     this->initializeSimToggle(this->menu_panel_);
+    this->initializeCTCSToggle(this->menu_panel_);
+    this->initializeInitAutoToggle(this->menu_panel_);
+    this->initializeInitDDTOToggle(this->menu_panel_);
 
     // exec
     this->initializeExecButton(this->menu_panel_);
@@ -831,7 +828,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // Create table
     this->skyefly_params_table_ = new QTableWidget(panel->menu_);
     this->skyefly_params_table_->setColumnCount(1);  // fill with spinboxes
-    this->skyefly_params_table_->setRowCount(18);  // how many params to edit
+    this->skyefly_params_table_->setRowCount(16);  // how many params to edit
         // vertical headers are spinbox labels
     this->skyefly_params_table_->verticalHeader()->setVisible(true);
     this->skyefly_params_table_->verticalHeader()->
@@ -869,7 +866,7 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     // P.scp_iters
     QSpinBox *params_scp_iters =
             new QSpinBox(this->skyefly_params_table_);
-    params_scp_iters->setRange(0, 100);
+    params_scp_iters->setRange(0, 10000);
     params_scp_iters->setValue(default_P.scp_iters);
     connect(params_scp_iters, SIGNAL(valueChanged(int)),
             this, SLOT(setSkyeFlyParams()));
@@ -890,32 +887,6 @@ void View::initializeSkyeFlyParamsTable(MenuPanel *panel) {
     this->skyefly_params_table_->setCellWidget(row_index, 0, params_sim_steps);
     this->skyefly_params_table_->
             setVerticalHeaderItem(row_index, new QTableWidgetItem("sim_steps"));
-    row_index++;
-
-    // P.enable_ctcs
-    QSpinBox *params_enable_ctcs =
-            new QSpinBox(this->skyefly_params_table_);
-    params_enable_ctcs->setRange(0, 1);
-    params_enable_ctcs->setValue(default_P.ctcs_enabled);
-    connect(params_enable_ctcs, SIGNAL(valueChanged(bool)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_enable_ctcs);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("enable_ctcs"));
-    row_index++;
-
-    // P.interp_ref
-    QSpinBox *params_interp_ref =
-            new QSpinBox(this->skyefly_params_table_);
-    params_interp_ref->setRange(0, 1);
-    params_interp_ref->setValue(default_P.interp_ref);
-    connect(params_interp_ref, SIGNAL(valueChanged(bool)),
-            this, SLOT(setSkyeFlyParams()));
-
-    this->skyefly_params_table_->setCellWidget(row_index, 0, params_interp_ref);
-    this->skyefly_params_table_->
-            setVerticalHeaderItem(row_index, new QTableWidgetItem("interp_ref"));
     row_index++;
 
     // P.w_obj
@@ -1170,13 +1141,19 @@ void View::toggleSim(int state) {
     this->controller_->setSimulated(state == Qt::Checked);
 }
 
-void View::toggleStage(int state) {
+void View::toggleCTCS(int state) {
     // toggle between simulate execution or actual execution
-    this->controller_->setStageBool(state == Qt::Checked);
+    this->controller_->setCTCS(state == Qt::Checked);
 }
 
-void View::toggleTrajLock(int state) {
-    this->controller_->setTrajLock(state == Qt::Checked);
+void View::toggleInitAuto(int state) {
+    // toggle between simulate execution or actual execution
+    this->controller_->setInitAuto(state == Qt::Checked);
+}
+
+void View::toggleInitDDTO(int state) {
+    // toggle between simulate execution or actual execution
+    this->controller_->setInitDDTO(state == Qt::Checked);
 }
 
 void View::toggleFreeFinalTime(int state) {
@@ -1266,22 +1243,6 @@ void View::initializeFinaltime(MenuPanel *panel) {
     this->skyefly_params_table_->resizeColumnsToContents();
 }
 
-void View::initializeStageToggle(MenuPanel *panel) {
-    QCheckBox *stage_toggle = new QCheckBox("No Stage", panel->menu_);
-    stage_toggle->
-            setToolTip(tr("Disable Staging of Trajectory"));
-    stage_toggle->setMinimumHeight(35);
-    stage_toggle->setCheckState(Qt::Unchecked);
-    panel->menu_->layout()->addWidget(stage_toggle);
-    panel->menu_->layout()->setAlignment(stage_toggle, Qt::AlignBottom);
-
-    this->panel_widgets_.append(stage_toggle);
-
-    // Connect execute button
-    connect(stage_toggle, SIGNAL(stateChanged(int)),
-            this, SLOT(toggleStage(int)));
-}
-
 void View::initializeSimToggle(MenuPanel *panel) {
     QCheckBox *sim_toggle = new QCheckBox("Simulate", panel->menu_);
     sim_toggle->
@@ -1298,20 +1259,52 @@ void View::initializeSimToggle(MenuPanel *panel) {
             this, SLOT(toggleSim(int)));
 }
 
-void View::initializeTrajLockToggle(MenuPanel *panel) {
-    QCheckBox *traj_lock_toggle = new QCheckBox("Traj Lock", panel->menu_);
-    traj_lock_toggle->
-            setToolTip(tr("Lock Executed Trajectory"));
-    traj_lock_toggle->setMinimumHeight(35);
-    traj_lock_toggle->setCheckState(Qt::Unchecked);
-    panel->menu_->layout()->addWidget(traj_lock_toggle);
-    panel->menu_->layout()->setAlignment(traj_lock_toggle, Qt::AlignBottom);
+void View::initializeCTCSToggle(MenuPanel *panel) {
+    QCheckBox *ctcs_toggle = new QCheckBox("Enable CTCS", panel->menu_);
+    ctcs_toggle->
+            setToolTip(tr("Enable CTCS (continuous-time constraint satisfaction)"));
+    ctcs_toggle->setMinimumHeight(35);
+    ctcs_toggle->setCheckState(Qt::Checked);
+    panel->menu_->layout()->addWidget(ctcs_toggle);
+    panel->menu_->layout()->setAlignment(ctcs_toggle, Qt::AlignBottom);
 
-    this->panel_widgets_.append(traj_lock_toggle);
+    this->panel_widgets_.append(ctcs_toggle);
 
     // Connect execute button
-    connect(traj_lock_toggle, SIGNAL(stateChanged(int)),
-            this, SLOT(toggleTrajLock(int)));
+    connect(ctcs_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleCTCS(int)));
+}
+
+void View::initializeInitAutoToggle(MenuPanel *panel) {
+    QCheckBox *init_auto_toggle = new QCheckBox("Init: Auto", panel->menu_);
+    init_auto_toggle->
+            setToolTip(tr("Enable automatic initial guess generation (with linear interpolation)"));
+    init_auto_toggle->setMinimumHeight(35);
+    init_auto_toggle->setCheckState(Qt::Checked);
+    panel->menu_->layout()->addWidget(init_auto_toggle);
+    panel->menu_->layout()->setAlignment(init_auto_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(init_auto_toggle);
+
+    // Connect execute button
+    connect(init_auto_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleInitAuto(int)));
+}
+
+void View::initializeInitDDTOToggle(MenuPanel *panel) {
+    QCheckBox *init_ddto_toggle = new QCheckBox("Init: DDTO", panel->menu_);
+    init_ddto_toggle->
+            setToolTip(tr("Enable DDTO for automatic initial guess instead of linear interpolation (only used if Init: Auto is checked)"));
+    init_ddto_toggle->setMinimumHeight(35);
+    init_ddto_toggle->setCheckState(Qt::Checked);
+    panel->menu_->layout()->addWidget(init_ddto_toggle);
+    panel->menu_->layout()->setAlignment(init_ddto_toggle, Qt::AlignBottom);
+
+    this->panel_widgets_.append(init_ddto_toggle);
+
+    // Connect execute button
+    connect(init_ddto_toggle, SIGNAL(stateChanged(int)),
+            this, SLOT(toggleInitDDTO(int)));
 }
 
 void View::initializeDataCaptureToggle(MenuPanel *panel) {

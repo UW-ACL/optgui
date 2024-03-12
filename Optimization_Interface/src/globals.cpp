@@ -17,6 +17,7 @@ namespace optgui {
     QColor const BLACK = QColor(0x1B, 0x1B, 0x1B);
     QColor const TRANS_YELLOW = QColor(0x66, 0x57, 0x18); // not technically transparent, just darker yellow, looks better in GUI
     QColor const TRANS_RED = QColor(0x75, 0x1e, 0x1c);
+    QColor const TRANSPARENT = QColor(0xFF, 0xFF, 0xFF, 0x00);
     // QColor const TRANS_YELLOW = QColor(0xE8, 0xC6, 0x38, 0x50);
 
     QVector3D nedToGuiXyz(qreal n, qreal e, qreal d) {

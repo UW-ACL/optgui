@@ -80,8 +80,9 @@ class Controller : public QObject {
 
     // toggle simulate traj
     void setSimulated(bool state);
-    void setStageBool(bool state);
-    void setTrajLock(bool state);
+    void setCTCS(bool state);
+    void setInitAuto(bool state);
+    void setInitDDTO(bool state);
     void setFreeFinalTime(bool state);
     void setDataCapture(bool state);
 
@@ -128,10 +129,8 @@ class Controller : public QObject {
     qreal waypoints_render_level_;
     qreal traj_render_level_;
 
-    // flag for simulated traj
+    // Flags from toggles
     bool is_simulated_;
-    bool is_stage_booled_;
-    bool traj_lock_;
 
     // Data capture
     bool capture_data_;

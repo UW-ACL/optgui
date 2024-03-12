@@ -405,10 +405,6 @@ void ConstraintModel::setSkyeFlyParams(QTableWidget *params_table) {
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.sim_steps = qobject_cast<QSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.ctcs_enabled = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
-    this->P_.interp_ref = qobject_cast<QSpinBox *>
-            (params_table->cellWidget(row_index++, 0))->value();
     this->P_.w_obj = qobject_cast<QDoubleSpinBox *>
             (params_table->cellWidget(row_index++, 0))->value();
     this->P_.w_trust = qobject_cast<QDoubleSpinBox *>

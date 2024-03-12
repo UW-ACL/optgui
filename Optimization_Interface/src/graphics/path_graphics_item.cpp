@@ -19,11 +19,11 @@ PathGraphicsItem::PathGraphicsItem(PathModelItem *model,
     this->width_ = size;
 
     // Set pen
-    this->pen_ = QPen(RED);
+    this->pen_ = QPen(TRANSPARENT);
     this->pen_.setWidth(this->width_);
 
     // Set waypoints pen
-    this->waypoints_pen_ = QPen(RED);
+    this->waypoints_pen_ = QPen(TRANSPARENT);
     this->waypoints_pen_.setWidth(2 * this->width_);
 
     // Set flags
